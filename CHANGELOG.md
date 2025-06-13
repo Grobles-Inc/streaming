@@ -1,8 +1,5 @@
 ## v1.4.0 (2025-05-25)
 
-### Feat
-
-- **clerk**: add Clerk for auth and protected route (#146)
 
 ### Fix
 

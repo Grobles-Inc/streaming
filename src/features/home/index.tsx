@@ -28,6 +28,7 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-4">
           <Button onClick={() => navigate({ to: '/sign-in' })}>Iniciar Sesión</Button>
+          <Button variant="outline" onClick={() => navigate({ to: '/apps' })}>Dashboard</Button>
         </div>
       </nav>
       {/* Menu as Tabs (responsive) */}

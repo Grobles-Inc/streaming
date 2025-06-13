@@ -1,0 +1,67 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Technology Stack Details
+
+## UI Component Libraries
+
+### Radix UI Primitives
+The project uses extensive Radix UI components for accessible, unstyled primitives:
+- **Alert Dialog** - Modal dialogs for confirmations
+- **Avatar** - User profile images
+- **Checkbox** - Form checkboxes
+- **Collapsible** - Expandable content sections
+- **Dialog** - Modal dialogs
+- **Dropdown Menu** - Context menus
+- **Icons** - Icon library
+- **Label** - Form labels
+- **Popover** - Floating content
+- **Radio Group** - Radio button groups
+- **Scroll Area** - Custom scrollable areas
+- **Select** - Dropdown selects
+- **Separator** - Visual dividers
+- **Slot** - Component composition
+- **Switch** - Toggle switches
+- **Tabs** - Tabbed interfaces
+- **Tooltip** - Hover information
+
+### Additional UI Libraries
+- **Input OTP** - One-time password inputs
+- **React Day Picker** - Date picker component
+- **React Top Loading Bar** - Progress indicators
+- **Sonner** - Toast notifications
+- **CMDK** - Command palette interface
+
+## Data & State Management
+
+### TanStack Ecosystem
+- **TanStack Query** - Server state management with caching
+- **TanStack Router** - Type-safe client-side routing
+- **TanStack Table** - Headless table component
+
+### State Management
+- **Zustand** - Lightweight state management
+- **React Hook Form** - Form state management
+- **Zod** - Schema validation
+
+## Styling & Animation
+- **Tailwind CSS v4** - Utility-first CSS framework
+- **Tailwind Merge** - Utility class merging
+- **Class Variance Authority** - Component variant management
+- **CLSX** - Conditional class names
+- **TW Animate CSS** - Tailwind animations
+
+## Development Tools
+- **TypeScript** - Type safety
+- **ESLint** - Code linting with TypeScript support
+- **Prettier** - Code formatting with import sorting
+- **Knip** - Unused dependency detection
+- **Vite** - Build tool and dev server
+
+## Utilities
+- **Axios** - HTTP client
+- **Date-fns** - Date manipulation
+- **JS Cookie** - Cookie management
+- **Faker.js** - Mock data generation (dev dependency)

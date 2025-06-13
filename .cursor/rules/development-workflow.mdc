@@ -1,0 +1,46 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Development Workflow
+
+## Available Scripts
+Based on [package.json](mdc:package.json), the following scripts are available:
+
+### Development
+- `bun run dev` - Start development server with Vite
+- `bun run preview` - Preview production build locally
+
+### Building
+- `bun run build` - Build for production (TypeScript compilation + Vite build)
+
+### Code Quality
+- `bun run lint` - Run ESLint to check code quality
+- `bun run format:check` - Check code formatting with Prettier
+- `bun run format` - Format code with Prettier
+- `bun run knip` - Detect unused dependencies and exports
+
+## Development Guidelines
+
+### Code Style
+- Use TypeScript for all new code
+- Follow ESLint rules defined in [eslint.config.js](mdc:eslint.config.js)
+- Use Prettier for consistent formatting (config in [.prettierrc](mdc:.prettierrc))
+- Import sorting is handled by `@trivago/prettier-plugin-sort-imports`
+
+### Component Development
+- Use ShadCN UI components from [src/components/](mdc:src/components)
+- Follow the component structure in [components.json](mdc:components.json)
+- Use Radix UI primitives for accessibility
+- Style with Tailwind CSS classes
+
+### State Management
+- Use Zustand stores in [src/stores/](mdc:src/stores) for global state
+- Use TanStack Query for server state management
+- Use React Hook Form with Zod validation for forms
+
+### Routing
+- Define routes in [src/routes/](mdc:src/routes) using TanStack Router
+- Route tree is auto-generated in [src/routeTree.gen.ts](mdc:src/routeTree.gen.ts)
+

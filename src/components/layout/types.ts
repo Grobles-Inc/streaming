@@ -41,4 +41,11 @@ interface SidebarData {
   navGroups: NavGroup[]
 }
 
-export type { SidebarData, NavGroup, NavItem, NavCollapsible, NavLink }
+interface Service {
+  name: string
+  subtitle: string
+  icon: string
+  tab: string
+}
+
+export type { SidebarData, NavGroup, NavItem, NavCollapsible, NavLink, Service }

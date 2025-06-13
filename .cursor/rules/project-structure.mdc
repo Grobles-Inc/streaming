@@ -1,0 +1,53 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Project Structure Guide
+
+## Root Directory
+- [package.json](mdc:package.json) - Project configuration and dependencies
+- [vite.config.ts](mdc:vite.config.ts) - Vite build configuration
+- [tsconfig.json](mdc:tsconfig.json) - TypeScript configuration
+- [tsconfig.app.json](mdc:tsconfig.app.json) - App-specific TypeScript config
+- [tsconfig.node.json](mdc:tsconfig.node.json) - Node.js TypeScript config
+- [components.json](mdc:components.json) - ShadCN UI configuration
+- [index.html](mdc:index.html) - HTML entry point
+- [knip.config.ts](mdc:knip.config.ts) - Unused dependency detection config
+- [netlify.toml](mdc:netlify.toml) - Netlify deployment configuration
+
+## Source Code Structure (`src/`)
+- [src/main.tsx](mdc:src/main.tsx) - Application entry point
+- [src/index.css](mdc:src/index.css) - Global styles
+- [src/vite-env.d.ts](mdc:src/vite-env.d.ts) - Vite environment types
+- [src/routeTree.gen.ts](mdc:src/routeTree.gen.ts) - Auto-generated TanStack Router routes
+
+### Core Directories
+- [src/components/](mdc:src/components) - Reusable UI components (ShadCN + custom)
+- [src/features/](mdc:src/features) - Feature-specific components and logic
+- [src/routes/](mdc:src/routes) - TanStack Router route definitions
+- [src/stores/](mdc:src/stores) - Zustand state management stores
+- [src/hooks/](mdc:src/hooks) - Custom React hooks
+- [src/lib/](mdc:src/lib) - Utility libraries and configurations
+- [src/utils/](mdc:src/utils) - Helper functions and utilities
+- [src/context/](mdc:src/context) - React context providers
+- [src/config/](mdc:src/config) - Application configuration
+- [src/assets/](mdc:src/assets) - Static assets (images, fonts, etc.)
+
+## Public Directory
+- [public/](mdc:public) - Static files served directly
+
+## Configuration Files
+- [eslint.config.js](mdc:eslint.config.js) - ESLint configuration
+- [.prettierrc](mdc:.prettierrc) - Prettier formatting rules
+- [.prettierignore](mdc:.prettierignore) - Files to ignore in formatting
+- [.gitignore](mdc:.gitignore) - Git ignore rules
+- [cz.yaml](mdc:cz.yaml) - Commitizen configuration
+
+## Development Workflow
+1. Routes are defined in [src/routes/](mdc:src/routes)
+2. Route tree is auto-generated in [src/routeTree.gen.ts](mdc:src/routeTree.gen.ts)
+3. Components are organized by feature in [src/features/](mdc:src/features)
+4. Shared components go in [src/components/](mdc:src/components)
+5. State management uses Zustand stores in [src/stores/](mdc:src/stores)
+

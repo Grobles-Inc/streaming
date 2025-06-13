@@ -1,0 +1,44 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# ShadCN Admin Project Overview
+
+This is a modern React admin dashboard built with the following key technologies:
+
+## Core Framework & Build Tools
+- **React 19** with TypeScript for the frontend framework
+- **Vite** as the build tool and development server
+- **TanStack Router** for client-side routing
+- **TanStack Query** for server state management
+
+## UI & Styling
+- **Tailwind CSS v4** for styling with custom animations via `tw-animate-css`
+- **ShadCN UI** components built on **Radix UI** primitives
+- **Lucide React** and **Tabler Icons** for iconography
+- **Recharts** for data visualization
+
+## State Management & Forms
+- **Zustand** for client-side state management
+- **React Hook Form** with **Zod** validation
+- **TanStack Table** for data table functionality
+
+## Development Tools
+- **ESLint** with TypeScript support for code linting
+- **Prettier** with import sorting for code formatting
+- **Knip** for detecting unused dependencies
+- **TypeScript** for type safety
+
+## Key Project Files
+- [package.json](mdc:package.json) - Project dependencies and scripts
+- [vite.config.ts](mdc:vite.config.ts) - Vite configuration
+- [tsconfig.json](mdc:tsconfig.json) - TypeScript configuration
+- [components.json](mdc:components.json) - ShadCN UI configuration
+- [src/main.tsx](mdc:src/main.tsx) - Application entry point
+- [src/routes/](mdc:src/routes/) - TanStack Router route definitions
+- [src/components/](mdc:src/components/) - Reusable UI components
+- [src/features/](mdc:src/features/) - Feature-specific components and logic
+- [src/stores/](mdc:src/stores/) - Zustand state stores
+- [src/hooks/](mdc:src/hooks/) - Custom React hooks
+- [src/lib/](mdc:src/lib/) - Utility libraries and configurations

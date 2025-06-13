@@ -15,7 +15,7 @@ import {
   IconPalette,
   IconServerOff,
   IconSettings,
-  IconShoppingBag,
+  IconShoppingCart,
   IconTool,
   IconUserCog,
   IconUserOff,
@@ -26,8 +26,8 @@ import { type SidebarData } from '../types'
 
 export const sidebarData: SidebarData = {
   user: {
-    name: 'satnaing',
-    email: 'satnaingdev@gmail.com',
+    name: 'Juan Perez',
+    email: 'juanperez@gmail.com',
     avatar: '/avatars/shadcn.jpg',
   },
   teams: [
@@ -91,7 +91,7 @@ export const sidebarData: SidebarData = {
         {
           title: 'Compras',
           url: '/vendedor/compras',
-          icon: IconShoppingBag,
+          icon: IconShoppingCart,
         },        
         {
           title: 'Recargas',

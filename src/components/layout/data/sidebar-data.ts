@@ -3,6 +3,7 @@ import {
   IconBrowserCheck,
   IconBug,
   IconChecklist,
+  IconCreditCard,
   IconError404,
   IconHelp,
   IconLayoutDashboard,
@@ -14,10 +15,11 @@ import {
   IconPalette,
   IconServerOff,
   IconSettings,
+  IconShoppingBag,
   IconTool,
   IconUserCog,
   IconUserOff,
-  IconUsers,
+  IconUsers
 } from '@tabler/icons-react'
 import { AudioWaveform, Command, GalleryVerticalEnd } from 'lucide-react'
 import { type SidebarData } from '../types'
@@ -75,6 +77,29 @@ export const sidebarData: SidebarData = {
           url: '/users',
           icon: IconUsers,
         },
+        
+      ],
+    },
+    {
+      title: 'Vendedor',
+      items: [
+        {
+          title: 'Dashboard',
+          url: '/vendedor',
+          icon: IconLayoutDashboard,
+        },        
+        {
+          title: 'Compras',
+          url: '/vendedor/compras',
+          icon: IconShoppingBag,
+        },        
+        {
+          title: 'Recargas',
+          url: '/vendedor/recargas',
+          badge: '3',
+          icon: IconCreditCard,
+        },
+        
         
       ],
     },

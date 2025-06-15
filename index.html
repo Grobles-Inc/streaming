@@ -1,17 +1,17 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/images/favicon.svg"
+      href="/images/favicon.png"
       media="(prefers-color-scheme: light)"
     />
     <link
       rel="icon"
       type="image/svg+xml"
-      href="/images/favicon_light.svg"
+      href="/images/favicon.png"
       media="(prefers-color-scheme: dark)"
     />
     <link
@@ -23,54 +23,126 @@
     <link
       rel="icon"
       type="image/png"
-      href="/images/favicon_light.png"
+      href="/images/favicon.png"
       media="(prefers-color-scheme: dark)"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://streamingweb.netlify.app" />
+
     <!-- Primary Meta Tags -->
-    <title>Shadcn Admin</title>
-    <meta name="title" content="Shadcn Admin" />
+    <title>Streaming Web - Plataforma de Compra y Venta de Productos Digitales</title>
+    <meta name="title" content="Streaming Web - Plataforma de Compra y Venta de Productos Digitales" />
     <meta
       name="description"
-      content="Admin Dashboard UI built with Shadcn and Vite."
+      content="Streaming Web es la plataforma líder para comprar y vender productos digitales. Descubre contenido exclusivo, música, videos, cursos y más. Transacciones seguras y entrega instantánea."
     />
+    <meta name="keywords" content="productos digitales, streaming, música, videos, cursos online, contenido digital, compra venta digital, plataforma digital" />
+    <meta name="author" content="Streaming Web" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://shadcn-admin.netlify.app" />
-    <meta property="og:title" content="Shadcn Admin" />
+    <meta property="og:url" content="https://streamingweb.netlify.app" />
+    <meta property="og:title" content="Streaming Web - Plataforma de Compra y Venta de Productos Digitales" />
     <meta
       property="og:description"
-      content="Admin Dashboard UI built with Shadcn and Vite."
+      content="Streaming Web es la plataforma líder para comprar y vender productos digitales. Descubre contenido exclusivo, música, videos, cursos y más. Transacciones seguras y entrega instantánea."
     />
     <meta
       property="og:image"
-      content="https://shadcn-admin.netlify.app/images/shadcn-admin.png"
+      content="https://streamingweb.netlify.app/images/streamingweb.png"
     />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Streaming Web - Plataforma de Productos Digitales" />
+    <meta property="og:site_name" content="Streaming Web" />
+    <meta property="og:locale" content="es_ES" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://shadcn-admin.netlify.app" />
-    <meta property="twitter:title" content="Shadcn Admin" />
+    <meta property="twitter:url" content="https://streamingweb.netlify.app" />
+    <meta property="twitter:title" content="Streaming Web - Plataforma de Compra y Venta de Productos Digitales" />
     <meta
       property="twitter:description"
-      content="Admin Dashboard UI built with Shadcn and Vite."
+      content="Streaming Web es la plataforma líder para comprar y vender productos digitales. Descubre contenido exclusivo, música, videos, cursos y más. Transacciones seguras y entrega instantánea."
     />
     <meta
       property="twitter:image"
-      content="https://shadcn-admin.netlify.app/images/shadcn-admin.png"
+      content="https://streamingweb.netlify.app/images/streamingweb.png"
     />
+    <meta property="twitter:image:alt" content="Streaming Web - Plataforma de Productos Digitales" />
 
-    <!-- font family -->
+    <!-- Additional SEO Meta Tags -->
+    <meta name="theme-color" content="#fff" />
+    <meta name="msapplication-TileColor" content="#ffffff" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Streaming Web" />
+    <meta name="application-name" content="Streaming Web" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- Language Alternatives -->
+    <link rel="alternate" hreflang="es" href="https://streamingweb.netlify.app" />
+    <link rel="alternate" hreflang="en" href="https://streamingweb.netlify.app/en" />
+    <link rel="alternate" hreflang="x-default" href="https://streamingweb.netlify.app" />
+
+    <!-- Preconnect for Performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://img.icons8.com" crossorigin />
+    
+    <!-- font family -->
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&display=swap"
       rel="stylesheet"
     />
 
-    <meta name="theme-color" content="#fff" />
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Streaming Web",
+      "description": "Plataforma de compra y venta de productos digitales",
+      "url": "https://streamingweb.netlify.app",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://streamingweb.netlify.app/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Streaming Web",
+        "url": "https://streamingweb.netlify.app"
+      },
+      "sameAs": [
+        "https://twitter.com/streamingweb",
+        "https://facebook.com/streamingweb",
+        "https://instagram.com/streamingweb"
+      ]
+    }
+    </script>
+
+    <!-- Organization Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Streaming Web",
+      "url": "https://streamingweb.netlify.app",
+      "logo": "https://streamingweb.netlify.app/images/streamingweb.png",
+      "description": "Plataforma líder para comprar y vender productos digitales",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "availableLanguage": ["Spanish", "English"]
+      }
+    }
+    </script>
   </head>
 
   <body class="group/body">

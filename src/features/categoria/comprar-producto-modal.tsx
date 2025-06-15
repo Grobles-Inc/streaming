@@ -32,7 +32,6 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
   }
 
   function buyProduct() {
-    console.log("buyProduct")
     toast.success("Producto comprado correctamente", { duration: 3000 })
     onOpenChange(false)
   }

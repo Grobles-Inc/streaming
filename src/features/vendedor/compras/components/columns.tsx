@@ -9,6 +9,28 @@ import { useState } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
+const PasswordCell = ({ value }: { value: string }) => {
+  const [isVisible, setIsVisible] = useState(false)
+
+  return (
+    <div className='flex space-x-2'>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span
+            className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[20rem] cursor-pointer'
+            onClick={() => setIsVisible(!isVisible)}
+          >
+            {isVisible ? value : '●●●●●●'}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{isVisible ? 'Ocultar' : 'Mostrar'} la clave</p>
+        </TooltipContent>
+      </Tooltip>
+    </div>
+  )
+}
+
 export const columns: ColumnDef<Compra>[] = [
 
   {
@@ -99,26 +121,7 @@ export const columns: ColumnDef<Compra>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Clave' />
     ),
-    cell: ({ row }) => {
-      const [isVisible, setIsVisible] = useState(false)
-      return (
-        <div className='flex space-x-2'>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span
-                className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[20rem] cursor-pointer'
-                onClick={() => setIsVisible(!isVisible)}
-              >
-                {isVisible ? row.getValue('clave_cuenta') : '●●●●●●'}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{isVisible ? 'Ocultar' : 'Mostrar'} la clave</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-      )
-    },
+    cell: ({ row }) => <PasswordCell value={row.getValue('clave_cuenta')} />,
     enableSorting: false,
   },
   {

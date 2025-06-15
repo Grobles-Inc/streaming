@@ -3,7 +3,6 @@ import {
   IconExclamationCircle,
   IconFlag,
   IconHelpOctagon,
-  IconRosetteDiscountCheck,
   IconStopwatch
 } from '@tabler/icons-react'
 import { CompraEstado } from './schema'

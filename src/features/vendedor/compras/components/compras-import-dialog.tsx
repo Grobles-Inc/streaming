@@ -1,12 +1,3 @@
-import { z } from 'zod'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { showSubmittedData } from '@/utils/show-submitted-data'
-import { AlertCircleIcon, PaperclipIcon, UploadIcon, XIcon } from "lucide-react"
-import {
-  formatBytes,
-  useFileUpload,
-} from "@/hooks/use-file-upload"
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -22,10 +13,17 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
-  FormMessage,
+  FormMessage
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
+import {
+  formatBytes,
+  useFileUpload,
+} from "@/hooks/use-file-upload"
+import { showSubmittedData } from '@/utils/show-submitted-data'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { AlertCircleIcon, PaperclipIcon, UploadIcon, XIcon } from "lucide-react"
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 const initialFiles = [
   {
     name: "document.pdf",

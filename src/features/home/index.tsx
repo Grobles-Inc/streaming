@@ -1,7 +1,7 @@
 import LandingHeader from '@/components/layout/landing-header'
 import { Link } from '@tanstack/react-router'
 import ProductoCard from '../categoria/producto-card'
-import { categorias, destacados, masVendidos } from '@/data/sample'
+import { categorias, destacados, masVendidos } from './data/sample'
 import CategoriaCard from './categoria-card'
 
 export default function Home() {

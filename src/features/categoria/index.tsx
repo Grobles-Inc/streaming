@@ -2,9 +2,9 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import React from 'react'
-import { menuTabs, productos } from '../../data/sample'
-import ProductoCard from './producto-card'
 import { Link } from '@tanstack/react-router'
+import { menuTabs, productos } from './data/sample'
+import ProductoCard from './producto-card'
 
 export default function Categorias({ nombre }: { nombre: string }) {
   const [activeTab, setActiveTab] = React.useState(nombre)

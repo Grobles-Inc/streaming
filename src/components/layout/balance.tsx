@@ -1,17 +1,16 @@
-import * as React from 'react'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { ChevronsUpDown, Wallet, Plus as PlusIcon } from 'lucide-react'
-import { SidebarMenuButton, useSidebar } from '../ui/sidebar'
+import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { ChevronsUpDown, Plus as PlusIcon, Wallet } from 'lucide-react'
+import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { SidebarMenuButton, useSidebar } from '../ui/sidebar'
 
 export function Balance({ balance }: { balance: number }) {
   const { isMobile } = useSidebar()
-  const [open, setOpen] = React.useState(false)
   const [dialogOpen, setDialogOpen] = React.useState(false)
   const form = useForm<{ amount: number }>({
     defaultValues: { amount: 0 },

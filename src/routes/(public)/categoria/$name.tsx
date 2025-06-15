@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import Categoria from '@/features/categoria'
-import { productos } from '@/data/sample'
+import { productos } from '@/features/categoria/data/sample'
 import LandingHeader from '@/components/layout/landing-header'
 
 const getProductos = (categoria: string) => {

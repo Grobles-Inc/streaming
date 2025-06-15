@@ -1,4 +1,4 @@
-import { Service } from "@/components/layout/types"
+import { Service } from "./types"
 
 export const menuTabs = [
   { key: 'max', label: 'Max' },

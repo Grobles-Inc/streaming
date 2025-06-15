@@ -1,5 +1,5 @@
-import { IconDownload, IconPlus } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
+import { IconUpload } from '@tabler/icons-react'
 import { useCompras } from '../context/compras-context'
 
 export function ComprasPrimaryButtons() {
@@ -11,10 +11,7 @@ export function ComprasPrimaryButtons() {
         className='space-x-1'
         onClick={() => setOpen('import')}
       >
-        <span>Importar</span> <IconDownload size={18} />
-      </Button>
-      <Button className='space-x-1' onClick={() => setOpen('create')}>
-        <span>Comprar</span> <IconPlus size={18} />
+        <span>Importar</span> <IconUpload size={18} />
       </Button>
     </div>
   )

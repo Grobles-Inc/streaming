@@ -112,7 +112,6 @@ export function ComprasImportDialog({ open, onOpenChange }: Props) {
               name='file'
               render={() => (
                 <FormItem className='mb-2 space-y-1'>
-                  <FormLabel>Archivo</FormLabel>
                   <FormControl>
                     <div className="flex flex-col gap-2">
                       {/* Drop area */}
@@ -188,20 +187,6 @@ export function ComprasImportDialog({ open, onOpenChange }: Props) {
                           </div>
                         </div>
                       )}
-
-                      <p
-                        aria-live="polite"
-                        role="region"
-                        className="text-muted-foreground mt-2 text-center text-xs"
-                      >
-                        Cargador de archivo único con tamaño máximo ∙{" "}
-                        <a
-                          href="https://github.com/origin-space/originui/tree/main/docs/use-file-upload.md"
-                          className="hover:text-foreground underline"
-                        >
-                          API de uso
-                        </a>
-                      </p>
                     </div>
                   </FormControl>
                   <FormMessage />

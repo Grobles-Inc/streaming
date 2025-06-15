@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { CheckIcon, PlusCircledIcon } from '@radix-ui/react-icons'
+import { CheckIcon, MixerHorizontalIcon } from '@radix-ui/react-icons'
 import { Column } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -26,6 +26,7 @@ interface DataTableFacetedFilterProps<TData, TValue> {
   options: {
     label: string
     value: string
+    color: string
     icon?: React.ComponentType<{ className?: string }>
   }[]
 }
@@ -42,7 +43,7 @@ export function DataTableFacetedFilter<TData, TValue>({
     <Popover>
       <PopoverTrigger asChild>
         <Button variant='outline' size='sm' className='h-8 border-dashed'>
-          <PlusCircledIcon className='mr-2 h-4 w-4' />
+          <MixerHorizontalIcon className='mr-2 h-4 w-4' />
           {title}
           {selectedValues?.size > 0 && (
             <>
@@ -66,6 +67,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                     .filter((option) => selectedValues.has(option.value))
                     .map((option) => (
                       <Badge
+
                         variant='secondary'
                         key={option.value}
                         className='rounded-sm px-1 font-normal'
@@ -117,7 +119,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                     )}
                     <span>{option.label}</span>
                     {facets?.get(option.value) && (
-                      <span className='ml-auto flex h-4 w-4 items-center justify-center font-mono text-xs'>
+                      <span className={cn('ml-auto rounded   flex h-4 w-4 items-center justify-center font-mono text-xs', option.color)}>
                         {facets.get(option.value)}
                       </span>
                     )}

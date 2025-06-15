@@ -1,8 +1,9 @@
 import {
-  IconCircle,
   IconCircleCheck,
-  IconCircleX,
   IconExclamationCircle,
+  IconFlag,
+  IconHelpOctagon,
+  IconRosetteDiscountCheck,
   IconStopwatch
 } from '@tabler/icons-react'
 import { CompraEstado } from './schema'
@@ -58,27 +59,33 @@ export const estados = [
   {
     value: 'resuelto',
     label: 'Resuelto',
-    icon: IconExclamationCircle,
+    icon: IconCircleCheck,
+    color: 'bg-green-500 text-white dark:text-white border-green-500',
+
   },
   {
-    value: 'en_soporte',
-    label: 'En Soporte',
-    icon: IconCircle,
+    value: 'soporte',
+    label: 'Soporte',
+    icon: IconHelpOctagon,
+    color: 'bg-yellow-400 text-white dark:text-white border-yellow-500',
   },
   {
     value: 'vencidos',
     label: 'Vencido',
     icon: IconStopwatch,
+    color: 'bg-red-500 text-white dark:text-white border-red-500',
   },
   {
     value: 'pedido',
     label: 'Pedido',
-    icon: IconCircleCheck,
+    icon: IconExclamationCircle,
+    color: 'bg-blue-500 text-white dark:text-white border-blue-500',
   },
   {
     value: 'entregado',
     label: 'Entregado',
-    icon: IconCircleX,
+    icon: IconFlag,
+    color: 'bg-gray-100/30 text-gray-900 dark:text-gray-200 border-gray-200',
   },
 ]
 

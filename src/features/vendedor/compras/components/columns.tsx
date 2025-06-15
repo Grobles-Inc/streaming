@@ -62,12 +62,14 @@ export const columns: ColumnDef<Compra>[] = [
         </div>
       )
     },
+    enableHiding: false,
   },
   {
     accessorKey: 'email_cuenta',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Email' />
     ),
+    enableSorting: false,
 
   },
   {
@@ -191,9 +193,11 @@ export const columns: ColumnDef<Compra>[] = [
       const dias_restantes = row.getValue('dias_restantes') as number
       const badgeColor = diasRestantesMap.get(dias_restantes) as string
       return (
-        <Badge className={cn('capitalize', badgeColor)}>
-          {dias_restantes}
-        </Badge>
+        <div className='flex justify-center'>
+          <Badge className={cn('capitalize h-7 w-7 rounded-full', badgeColor)}>
+            {dias_restantes}
+          </Badge>
+        </div>
       )
     },
     enableSorting: false,
@@ -204,5 +208,7 @@ export const columns: ColumnDef<Compra>[] = [
       <DataTableColumnHeader column={column} title='Opciones' />
     ),
     cell: ({ row }) => <DataTableRowActions row={row} />,
+    enableSorting: false,
+    enableHiding: false,
   },
 ]

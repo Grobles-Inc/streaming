@@ -27,7 +27,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
           <Badge className='absolute left-2 bottom-[270px]'>Nuevo</Badge>
         )}
 
-        <CardContent className='flex flex-col px-4'>
+        <CardContent className='flex flex-col p-2 md:px-4'>
 
           <span className="text-xs text-gray-500 font-semibold  mb-1">Proveedor: {producto.proveedor}</span>
           <span className="font-bold md:text-lg mb-1 leading-tight">{producto.titulo}</span>
@@ -45,7 +45,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
           </div>
 
         </CardContent>
-        <CardFooter className='px-4'>
+        <CardFooter className='md:px-4 px-2'>
           <Button variant={producto.stock === 0 ? "destructive" : "default"} className="w-full" onClick={() => setOpen(true)} disabled={producto.stock === 0}>
             {producto.stock === 0 ? "Agotado" : "VER PRODUCTO"}
           </Button>

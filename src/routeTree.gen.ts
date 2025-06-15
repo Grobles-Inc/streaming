@@ -33,7 +33,7 @@ import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
-import { Route as AuthenticatedCategoriaIdRouteImport } from './routes/_authenticated/categoria/$id'
+import { Route as publicCategoriaNameRouteImport } from './routes/(public)/categoria/$name'
 import { Route as AuthenticatedVendedorRecargasIndexRouteImport } from './routes/_authenticated/vendedor/recargas/index'
 import { Route as AuthenticatedVendedorComprasIndexRouteImport } from './routes/_authenticated/vendedor/compras/index'
 
@@ -164,12 +164,11 @@ const AuthenticatedSettingsAccountRoute =
     path: '/account',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
-const AuthenticatedCategoriaIdRoute =
-  AuthenticatedCategoriaIdRouteImport.update({
-    id: '/categoria/$id',
-    path: '/categoria/$id',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
+const publicCategoriaNameRoute = publicCategoriaNameRouteImport.update({
+  id: '/(public)/categoria/$name',
+  path: '/categoria/$name',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedVendedorRecargasIndexRoute =
   AuthenticatedVendedorRecargasIndexRouteImport.update({
     id: '/vendedor/recargas/',
@@ -197,7 +196,7 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof publicIndexRoute
-  '/categoria/$id': typeof AuthenticatedCategoriaIdRoute
+  '/categoria/$name': typeof publicCategoriaNameRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
@@ -225,7 +224,7 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof publicIndexRoute
-  '/categoria/$id': typeof AuthenticatedCategoriaIdRoute
+  '/categoria/$name': typeof publicCategoriaNameRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
@@ -255,7 +254,7 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/(public)/': typeof publicIndexRoute
-  '/_authenticated/categoria/$id': typeof AuthenticatedCategoriaIdRoute
+  '/(public)/categoria/$name': typeof publicCategoriaNameRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
@@ -286,7 +285,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
-    | '/categoria/$id'
+    | '/categoria/$name'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
@@ -314,7 +313,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
-    | '/categoria/$id'
+    | '/categoria/$name'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
@@ -343,7 +342,7 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/(public)/'
-    | '/_authenticated/categoria/$id'
+    | '/(public)/categoria/$name'
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
@@ -372,6 +371,7 @@ export interface RootRouteChildren {
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
   publicIndexRoute: typeof publicIndexRoute
+  publicCategoriaNameRoute: typeof publicCategoriaNameRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -544,12 +544,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsAccountRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
-    '/_authenticated/categoria/$id': {
-      id: '/_authenticated/categoria/$id'
-      path: '/categoria/$id'
-      fullPath: '/categoria/$id'
-      preLoaderRoute: typeof AuthenticatedCategoriaIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/(public)/categoria/$name': {
+      id: '/(public)/categoria/$name'
+      path: '/categoria/$name'
+      fullPath: '/categoria/$name'
+      preLoaderRoute: typeof publicCategoriaNameRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/vendedor/recargas/': {
       id: '/_authenticated/vendedor/recargas/'
@@ -593,7 +593,6 @@ const AuthenticatedSettingsRouteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
-  AuthenticatedCategoriaIdRoute: typeof AuthenticatedCategoriaIdRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
@@ -606,7 +605,6 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
-  AuthenticatedCategoriaIdRoute: AuthenticatedCategoriaIdRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
@@ -635,6 +633,7 @@ const rootRouteChildren: RootRouteChildren = {
   errors500Route: errors500Route,
   errors503Route: errors503Route,
   publicIndexRoute: publicIndexRoute,
+  publicCategoriaNameRoute: publicCategoriaNameRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

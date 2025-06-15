@@ -1,12 +1,16 @@
-import { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
-import { labels, priorities, statuses } from '../data/data'
-import { Task } from '../data/schema'
+import { ColumnDef } from '@tanstack/react-table'
+import { diasRestantesMap, estadosMap, productoOpciones } from '../data/data'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
+import { cn } from '@/lib/utils'
+import { Compra } from '../data/schema'
+import { useState } from 'react'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
-export const columns: ColumnDef<Task>[] = [
+export const columns: ColumnDef<Compra>[] = [
+
   {
     id: 'select',
     header: ({ table }) => (
@@ -31,89 +35,174 @@ export const columns: ColumnDef<Task>[] = [
     enableSorting: false,
     enableHiding: false,
   },
+
   {
     accessorKey: 'id',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Task' />
+      <DataTableColumnHeader column={column} title='ID' />
     ),
     cell: ({ row }) => <div className='w-[80px]'>{row.getValue('id')}</div>,
     enableSorting: false,
     enableHiding: false,
   },
   {
-    accessorKey: 'title',
+    accessorKey: 'producto',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Title' />
+      <DataTableColumnHeader column={column} title='Producto' />
     ),
     cell: ({ row }) => {
-      const label = labels.find((label) => label.value === row.original.label)
+      const label = productoOpciones.find((label) => label.value === row.original.producto)
 
       return (
         <div className='flex space-x-2'>
           {label && <Badge variant='outline'>{label.label}</Badge>}
-          <span className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
-            {row.getValue('title')}
+          <span className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[20rem]'>
+            {row.getValue('producto')}
           </span>
         </div>
       )
     },
   },
   {
-    accessorKey: 'status',
+    accessorKey: 'email_cuenta',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Status' />
+      <DataTableColumnHeader column={column} title='Email' />
+    ),
+
+  },
+  {
+    accessorKey: 'estado',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Estado' />
     ),
     cell: ({ row }) => {
-      const status = statuses.find(
-        (status) => status.value === row.getValue('status')
-      )
-
-      if (!status) {
-        return null
-      }
-
+      const { estado } = row.original
+      const badgeColor = estadosMap.get(estado)
       return (
-        <div className='flex w-[100px] items-center'>
-          {status.icon && (
-            <status.icon className='text-muted-foreground mr-2 h-4 w-4' />
-          )}
-          <span>{status.label}</span>
+        <div className='flex space-x-2'>
+          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
+            {row.getValue('estado')}
+          </Badge>
         </div>
       )
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id))
     },
+    enableHiding: false,
+    enableSorting: false,
   },
   {
-    accessorKey: 'priority',
+    accessorKey: 'clave_cuenta',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Priority' />
+      <DataTableColumnHeader column={column} title='Clave' />
     ),
     cell: ({ row }) => {
-      const priority = priorities.find(
-        (priority) => priority.value === row.getValue('priority')
-      )
-
-      if (!priority) {
-        return null
-      }
-
+      const [isVisible, setIsVisible] = useState(false)
       return (
-        <div className='flex items-center'>
-          {priority.icon && (
-            <priority.icon className='text-muted-foreground mr-2 h-4 w-4' />
-          )}
-          <span>{priority.label}</span>
+        <div className='flex space-x-2'>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[20rem] cursor-pointer'
+                onClick={() => setIsVisible(!isVisible)}
+              >
+                {isVisible ? row.getValue('clave_cuenta') : '●●●●●●'}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isVisible ? 'Ocultar' : 'Mostrar'} la clave</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       )
     },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
-    },
+    enableSorting: false,
   },
   {
-    id: 'actions',
+    accessorKey: 'url_cuenta',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='URL' />
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'perfil',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Perfil' />
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'pin',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='PIN' />
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'fecha_inicio',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Fecha de inicio' />
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'fecha_termino',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Fecha de término' />
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'monto_reembolso',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Monto de reembolso' />
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'nombre_cliente',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Cliente' />
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'telefono_cliente',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Teléfono' />
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'proveedor',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Proveedor' />
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'dias_restantes',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Días restantes' />
+    ),
+    cell: ({ row }) => {
+      const dias_restantes = row.getValue('dias_restantes') as number
+      const badgeColor = diasRestantesMap.get(dias_restantes) as string
+      return (
+        <Badge className={cn('capitalize', badgeColor)}>
+          {dias_restantes}
+        </Badge>
+      )
+    },
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'opciones',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Opciones' />
+    ),
     cell: ({ row }) => <DataTableRowActions row={row} />,
   },
 ]

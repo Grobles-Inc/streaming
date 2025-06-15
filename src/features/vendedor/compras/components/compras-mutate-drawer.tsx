@@ -23,36 +23,54 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { SelectDropdown } from '@/components/select-dropdown'
-import { Task } from '../data/schema'
+import { Compra } from '../data/schema'
 
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
-  currentRow?: Task
+  currentRow?: Compra
 }
 
 const formSchema = z.object({
-  title: z.string().min(1, 'Title is required.'),
-  status: z.string().min(1, 'Please select a status.'),
-  label: z.string().min(1, 'Please select a label.'),
-  priority: z.string().min(1, 'Please choose a priority.'),
+  producto: z.string().min(1, 'Producto es requerido.'),
+  email_cuenta: z.string().min(1, 'Email es requerido.'),
+  clave_cuenta: z.string().min(1, 'Clave es requerida.'),
+  url_cuenta: z.string().min(1, 'URL es requerida.'),
+  perfil: z.string().min(1, 'Perfil es requerido.'),
+  pin: z.string().min(1, 'Pin es requerido.'),
+  fecha_inicio: z.string().min(1, 'Fecha de inicio es requerida.'),
+  fecha_termino: z.string().min(1, 'Fecha de término es requerida.'),
+  monto_reembolso: z.number().min(1, 'Monto de reembolso es requerido.'),
+  nombre_cliente: z.string().min(1, 'Nombre del cliente es requerido.'),
+  telefono_cliente: z.string().min(1, 'Teléfono del cliente es requerido.'),
+  proveedor: z.string().min(1, 'Proveedor es requerido.'),
+  dias_restantes: z.number().min(1, 'Días restantes es requerido.'),
 })
-type TasksForm = z.infer<typeof formSchema>
+type ComprasForm = z.infer<typeof formSchema>
 
-export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
+export function ComprasMutateDrawer({ open, onOpenChange, currentRow }: Props) {
   const isUpdate = !!currentRow
 
-  const form = useForm<TasksForm>({
+  const form = useForm<ComprasForm>({
     resolver: zodResolver(formSchema),
     defaultValues: currentRow ?? {
-      title: '',
-      status: '',
-      label: '',
-      priority: '',
+      producto: '',
+      email_cuenta: '',
+      clave_cuenta: '',
+      url_cuenta: '',
+      perfil: '',
+      pin: '',
+      fecha_inicio: '',
+      fecha_termino: '',
+      monto_reembolso: 0,
+      nombre_cliente: '',
+      telefono_cliente: '',
+      proveedor: '',
+      dias_restantes: 0,
     },
   })
 
-  const onSubmit = (data: TasksForm) => {
+  const onSubmit = (data: ComprasForm) => {
     // do something with the form data
     onOpenChange(false)
     form.reset()
@@ -69,28 +87,28 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
     >
       <SheetContent className='flex flex-col'>
         <SheetHeader className='text-left'>
-          <SheetTitle>{isUpdate ? 'Update' : 'Create'} Task</SheetTitle>
+          <SheetTitle>{isUpdate ? 'Actualizar' : 'Crear'} Compra</SheetTitle>
           <SheetDescription>
             {isUpdate
-              ? 'Update the task by providing necessary info.'
-              : 'Add a new task by providing necessary info.'}
-            Click save when you&apos;re done.
+              ? 'Actualiza la compra proporcionando la información necesaria.'
+              : 'Añade una nueva compra proporcionando la información necesaria.'}
+            Haz clic en guardar cuando hayas terminado.
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
           <form
-            id='tasks-form'
+            id='compras-form'
             onSubmit={form.handleSubmit(onSubmit)}
             className='flex-1 space-y-5 px-4'
           >
             <FormField
               control={form.control}
-              name='title'
+              name='producto'
               render={({ field }) => (
                 <FormItem className='space-y-1'>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel>Producto</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder='Enter a title' />
+                    <Input {...field} placeholder='Ingrese un producto' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -98,10 +116,10 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
             />
             <FormField
               control={form.control}
-              name='status'
+              name='email_cuenta'
               render={({ field }) => (
                 <FormItem className='space-y-1'>
-                  <FormLabel>Status</FormLabel>
+                  <FormLabel>Email de la cuenta</FormLabel>
                   <SelectDropdown
                     defaultValue={field.value}
                     onValueChange={field.onChange}
@@ -120,7 +138,7 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
             />
             <FormField
               control={form.control}
-              name='label'
+              name='clave_cuenta'
               render={({ field }) => (
                 <FormItem className='relative space-y-3'>
                   <FormLabel>Label</FormLabel>
@@ -158,7 +176,7 @@ export function TasksMutateDrawer({ open, onOpenChange, currentRow }: Props) {
             />
             <FormField
               control={form.control}
-              name='priority'
+              name='url_cuenta'
               render={({ field }) => (
                 <FormItem className='relative space-y-3'>
                   <FormLabel>Priority</FormLabel>

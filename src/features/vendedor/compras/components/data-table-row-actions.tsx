@@ -1,6 +1,3 @@
-import { DotsHorizontalIcon } from '@radix-ui/react-icons'
-import { Row } from '@tanstack/react-table'
-import { IconTrash } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -15,9 +12,12 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useTasks } from '../context/tasks-context'
-import { labels } from '../data/data'
-import { taskSchema } from '../data/schema'
+import { DotsHorizontalIcon } from '@radix-ui/react-icons'
+import { IconHeadphones, IconNote, IconRepeat, IconTrash } from '@tabler/icons-react'
+import { Row } from '@tanstack/react-table'
+import { useCompras } from '../context/compras-context'
+import { productoOpciones } from '../data/data'
+import { compraSchema } from '../data/schema'
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>
@@ -26,9 +26,9 @@ interface DataTableRowActionsProps<TData> {
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const task = taskSchema.parse(row.original)
+  const compra = compraSchema.parse(row.original)
 
-  const { setOpen, setCurrentRow } = useTasks()
+  const { setOpen, setCurrentRow } = useCompras()
 
   return (
     <DropdownMenu modal={false}>
@@ -44,37 +44,66 @@ export function DataTableRowActions<TData>({
       <DropdownMenuContent align='end' className='w-[160px]'>
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(task)
+            setCurrentRow(compra)
             setOpen('update')
           }}
         >
-          Edit
+          Renovar
+          <DropdownMenuShortcut>
+            <IconRepeat size={16} />
+          </DropdownMenuShortcut>
         </DropdownMenuItem>
-        <DropdownMenuItem disabled>Make a copy</DropdownMenuItem>
-        <DropdownMenuItem disabled>Favorite</DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => {
+            setCurrentRow(compra)
+            setOpen('update')
+          }}
+        >
+          Notas
+          <DropdownMenuShortcut>
+            <IconNote size={16} />
+          </DropdownMenuShortcut>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem
+          onClick={() => {
+            setCurrentRow(compra)
+            setOpen('renovar')
+          }}
+        >
+          Soporte
+          <DropdownMenuShortcut>
+            <IconHeadphones size={16} />
+          </DropdownMenuShortcut>
+        </DropdownMenuItem>
+
+
+
         <DropdownMenuSeparator />
         <DropdownMenuSub>
-          <DropdownMenuSubTrigger>Labels</DropdownMenuSubTrigger>
+          <DropdownMenuSubTrigger>Producto</DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
-            <DropdownMenuRadioGroup value={task.label}>
-              {labels.map((label) => (
-                <DropdownMenuRadioItem key={label.value} value={label.value}>
-                  {label.label}
+            <DropdownMenuRadioGroup value={compra.producto}>
+              {productoOpciones.map((opcion) => (
+                <DropdownMenuRadioItem key={opcion.value} value={opcion.value}>
+                  {opcion.label}
                 </DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
+
         <DropdownMenuSeparator />
         <DropdownMenuItem
+          variant='destructive'
           onClick={() => {
-            setCurrentRow(task)
+            setCurrentRow(compra)
             setOpen('delete')
           }}
         >
-          Delete
+          Cancelar
           <DropdownMenuShortcut>
-            <IconTrash size={16} />
+            <IconTrash color='red' size={16} />
           </DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>

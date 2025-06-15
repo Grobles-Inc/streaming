@@ -3,14 +3,16 @@ import { Main } from '@/components/layout/main'
 import { Search } from '@/components/search'
 import { columns } from './components/columns'
 import { DataTable } from './components/data-table'
-import { TasksDialogs } from './components/tasks-dialogs'
-import { TasksPrimaryButtons } from './components/tasks-primary-buttons'
-import TasksProvider from './context/tasks-context'
-import { tasks } from './data/tasks'
+import { ComprasDialogs } from './components/compras-dialogs'
+import { ComprasPrimaryButtons } from './components/compras-primary-buttons'
+import ComprasProvider from './context/compras-context'
+import { compras } from './data/compras'
+import { compraSchema } from './data/schema'
 
 export default function Compras() {
+  const comprasList = compras.map(compra => compraSchema.parse(compra))
   return (
-    <TasksProvider>
+    <ComprasProvider>
       <Header fixed>
         <Search />
 
@@ -24,14 +26,14 @@ export default function Compras() {
               Aquí puedes ver la lista de tus compras.
             </p>
           </div>
-          <TasksPrimaryButtons />
+          <ComprasPrimaryButtons />
         </div>
         <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
-          <DataTable data={tasks} columns={columns} />
+          <DataTable data={comprasList} columns={columns} />
         </div>
       </Main>
 
-      <TasksDialogs />
-    </TasksProvider>
+      <ComprasDialogs />
+    </ComprasProvider>
   )
 }

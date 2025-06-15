@@ -1,29 +1,29 @@
 import { showSubmittedData } from '@/utils/show-submitted-data'
 import { ConfirmDialog } from '@/components/confirm-dialog'
-import { useTasks } from '../context/tasks-context'
-import { TasksImportDialog } from './tasks-import-dialog'
-import { TasksMutateDrawer } from './tasks-mutate-drawer'
+import { useCompras } from '../context/compras-context'
+import { ComprasImportDialog } from './compras-import-dialog'
+import { ComprasMutateDrawer } from './compras-mutate-drawer'
 
-export function TasksDialogs() {
-  const { open, setOpen, currentRow, setCurrentRow } = useTasks()
+export function ComprasDialogs() {
+  const { open, setOpen, currentRow, setCurrentRow } = useCompras()
   return (
     <>
-      <TasksMutateDrawer
-        key='task-create'
+      <ComprasMutateDrawer
+        key='compras-create'
         open={open === 'create'}
         onOpenChange={() => setOpen('create')}
       />
 
-      <TasksImportDialog
-        key='tasks-import'
+      <ComprasImportDialog
+        key='compras-import'
         open={open === 'import'}
         onOpenChange={() => setOpen('import')}
       />
 
       {currentRow && (
         <>
-          <TasksMutateDrawer
-            key={`task-update-${currentRow.id}`}
+          <ComprasMutateDrawer
+            key={`compras-update-${currentRow.id}`}
             open={open === 'update'}
             onOpenChange={() => {
               setOpen('update')
@@ -51,19 +51,19 @@ export function TasksDialogs() {
               }, 500)
               showSubmittedData(
                 currentRow,
-                'The following task has been deleted:'
+                'La siguiente compra ha sido cancelada:'
               )
             }}
             className='max-w-md'
-            title={`Delete this task: ${currentRow.id} ?`}
+            title={`Cancelar esta compra: ${currentRow.id} ?`}
             desc={
               <>
-                You are about to delete a task with the ID{' '}
+                Estás a punto de cancelar la compra con el ID{' '}
                 <strong>{currentRow.id}</strong>. <br />
-                This action cannot be undone.
+                Esta acción no se puede deshacer.
               </>
             }
-            confirmText='Delete'
+            confirmText='Cancelar'
           />
         </>
       )}

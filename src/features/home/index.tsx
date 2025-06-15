@@ -12,8 +12,8 @@ export default function Home() {
       {/* Menu as Tabs (responsive) */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 md:gap-6 gap-2 pt-4">
         {categorias.map((tab) => (
-          <Link key={tab.name} to={`/categoria/${tab.name}`} asChild>
-            <CategoriaCard key={tab.name} categoria={tab} />
+          <Link key={tab.tab} to="/categoria/$name" params={{ name: tab.tab.toLowerCase() }}>
+            <CategoriaCard key={tab.tab} categoria={tab} />
           </Link>
 
         ))}

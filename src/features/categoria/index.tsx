@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import React from 'react'
 import { menuTabs, productos } from '../../data/sample'
 import ProductoCard from './producto-card'
+import { Link } from '@tanstack/react-router'
 
 export default function Categorias({ nombre }: { nombre: string }) {
   const [activeTab, setActiveTab] = React.useState(nombre)
@@ -14,9 +15,12 @@ export default function Categorias({ nombre }: { nombre: string }) {
         {/* Desktop Tabs */}
         <TabsList className="hidden sm:flex ">
           {menuTabs.map((tab) => (
-            <TabsTrigger key={tab.key} value={tab.key} className="whitespace-nowrap">
-              {tab.label}
-            </TabsTrigger>
+            <Link key={tab.key} to="/categoria/$name" params={{ name: tab.key.toLowerCase() }} >
+
+              <TabsTrigger key={tab.key} value={tab.key} className="whitespace-nowrap">
+                {tab.label}
+              </TabsTrigger>
+            </Link>
           ))}
         </TabsList>
         {/* Mobile Sheet Trigger */}
@@ -59,15 +63,29 @@ export default function Categorias({ nombre }: { nombre: string }) {
           </Sheet>
         </div>
         {/* Tab Content (services grid) */}
-        {menuTabs.map((tab) => (
-          <TabsContent key={tab.key} value={tab.key}>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4  md:gap-6 gap-2 pt-4">
-              {productos.filter(producto => producto.categoria === tab.key).map((producto) => (
-                <ProductoCard key={producto.titulo} producto={producto} />
-              ))}
-            </div>
-          </TabsContent>
-        ))}
+        {menuTabs.map((tab) => {
+          const filteredProductos = productos.filter(producto => producto.categoria === tab.key)
+
+          return (
+            <TabsContent key={tab.key} value={tab.key}>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 md:gap-6 gap-2 pt-4">
+                {filteredProductos.length === 0 ? (
+                  <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                    <div className="text-4xl mb-4">📦</div>
+                    <h3 className="text-lg font-semibold mb-2">No hay productos</h3>
+                    <p className="text-muted-foreground">
+                      No se encontraron productos en esta categoría.
+                    </p>
+                  </div>
+                ) : (
+                  filteredProductos.map((producto) => (
+                    <ProductoCard key={producto.titulo} producto={producto} />
+                  ))
+                )}
+              </div>
+            </TabsContent>
+          )
+        })}
       </Tabs>
     </div>
   )

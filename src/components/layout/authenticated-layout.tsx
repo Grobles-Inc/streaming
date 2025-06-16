@@ -32,8 +32,9 @@ export function AuthenticatedLayout({ children }: Props) {
         >
           {children ? children : <Outlet />}
         </div>
-        <Footer />
-      </SidebarProvider>
+    
+      </SidebarProvider>    
+      <Footer />
     </SearchProvider>
   )
 }

@@ -6,7 +6,7 @@ export const recargas = [
     saldo: 9,
     fecha: '2025-01-01',
     estado: 'aprobado',
-    método: 'transferencia',
+    metodo: 'transferencia',
   },
   {
     id: '8782',
@@ -15,7 +15,7 @@ export const recargas = [
     saldo: 8.5,
     fecha: '2025-01-01',
     estado: 'pendiente',
-    método: 'yape',
+    metodo: 'yape',
   },
   {
     id: '8783',
@@ -24,7 +24,7 @@ export const recargas = [
     saldo: 18,
     fecha: '2025-01-01',
     estado: 'aprobado',
-    método: 'yape',
+    metodo: 'yape',
   },
   {
     id: '8784',
@@ -33,7 +33,7 @@ export const recargas = [
     saldo: 180,
     fecha: '2025-01-01',
     estado: 'rechazado',
-    método: 'transferencia',
+    metodo: 'transferencia',
   }
   
 ]

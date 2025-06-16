@@ -1,7 +1,9 @@
-import { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { estados } from '../data/data'
+import { cn } from '@/lib/utils'
+import { IconBan, IconProgressCheck, IconTimeDuration0 } from '@tabler/icons-react'
+import { ColumnDef } from '@tanstack/react-table'
+import { estadosMap } from '../data/data'
 import { Recarga } from '../data/schema'
 import { DataTableColumnHeader } from './data-table-column-header'
 
@@ -47,7 +49,7 @@ export const columns: ColumnDef<Recarga>[] = [
     cell: ({ row }) => {
       return (
         <div className='flex items-center'>
-          <Badge>{row.getValue('monto')}</Badge>
+          <span className='font-mono'>$ {row.getValue('monto')}</span>
         </div>
       )
     },
@@ -60,23 +62,26 @@ export const columns: ColumnDef<Recarga>[] = [
       <DataTableColumnHeader column={column} title='Estado' />
     ),
     cell: ({ row }) => {
-      const estado = estados.find(
-        (estado) => estado.value === row.getValue('estado')
-      )
-
-      if (!estado) {
-        return null
-      }
-
+      const { estado } = row.original
+      const badgeColor = estadosMap.get(estado)
       return (
-        <div className='flex w-[100px] items-center'>
-          {estado.icon && (
-            <estado.icon className='text-muted-foreground mr-2 h-4 w-4' />
-          )}
-          <span>{estado.label}</span>
+        <div className='flex space-x-2'>
+          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
+            {estado === 'aprobado' && (
+              <IconProgressCheck />
+            )}
+            {estado === 'pendiente' && (
+              <IconTimeDuration0 />
+            )}
+            {estado === 'rechazado' && (
+              <IconBan />
+            )}
+            {row.getValue('estado')}
+          </Badge>
         </div>
       )
     },
+
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id))
     },
@@ -90,7 +95,7 @@ export const columns: ColumnDef<Recarga>[] = [
     cell: ({ row }) => {
       return (
         <div className='flex items-center'>
-          <span>{row.getValue('comision')}</span>
+          <span className='font-mono'>$ {row.getValue('comision')}</span>
         </div>
       )
     },
@@ -104,7 +109,7 @@ export const columns: ColumnDef<Recarga>[] = [
     cell: ({ row }) => {
       return (
         <div className='flex items-center'>
-          <span>{row.getValue('saldo')}</span>
+          <span className='font-mono'>$ {row.getValue('saldo')}</span>
         </div>
       )
     },

@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { useSaldo } from '@/stores/balanceStore'
 import { Producto } from '@/types'
 import { toast } from 'sonner'
 
@@ -13,9 +14,16 @@ type ComprarProductoModalProps = {
 
 export default function ComprarProductoModal({ open, onOpenChange, producto }: ComprarProductoModalProps) {
   if (!producto) return null
+  const { monto, actualizarSaldo } = useSaldo()
 
   function buyProduct() {
+    if (!producto?.precioUSD) return
+    if (monto < producto?.precioUSD) {
+      toast.error("No tienes suficiente saldo", { duration: 3000 })
+      return
+    }
     toast.success("Producto comprado correctamente", { duration: 3000 })
+    actualizarSaldo(monto - producto?.precioUSD)
     onOpenChange(false)
   }
   return (

@@ -24,7 +24,7 @@ interface DesembolsoMessage {
 export async function EnviarWhatsAppMessage(
   message: string,
   businessPhone: string,
-  device: 'mobile' | 'desktop' | 'web' = 'web'
+  device: 'mobile' | 'web' = 'mobile'
 ) {
   const encodedMessage = encodeURIComponent(message)
   const webUrl = `https://web.whatsapp.com/send?phone=+51${businessPhone}&text=${encodedMessage}`
@@ -54,13 +54,14 @@ export async function EnviarWhatsAppMessage(
 export async function RecargaMessage(
   message: RecargaMessage,
   businessPhone: string,
-  device: 'mobile' | 'desktop' | 'web' = 'web'
+  device: 'mobile' | 'web' = 'mobile'
 ) {
   const formattedMessage = `Hola, quiero hacer una *recarga* con los siguientes datos:
 
 *DETALLES DE LA RECARGA:*
 - *Cliente:* ${message.nombre_cliente}
 - *Monto:* S/. ${message.monto.toFixed(2)}
+- *Comisión:* S/. ${(message.monto * 0.03).toFixed(2)}
 - *Método:* ${message.metodo}
 - *ID Cliente:* ${message.id_cliente}`
 
@@ -70,7 +71,7 @@ export async function RecargaMessage(
 export async function PublicacionMessage(
   message: PublicacionMessage,
   businessPhone: string,
-  device: 'mobile' | 'desktop' | 'web' = 'web'
+  device: 'mobile' | 'web' = 'mobile'
 ) {
   const formattedMessage = `Hola, quiero publicar un *producto* con los siguientes datos:
 
@@ -78,6 +79,7 @@ export async function PublicacionMessage(
 - *Cliente:* ${message.nombre_cliente}
 - *Producto:* ${message.nombre_producto}
 - *Método:* ${message.metodo}
+- *Comisión:* S/. 5.00
 - *ID Cliente:* ${message.id_cliente}
 - *ID Producto:* ${message.id_producto}`
 
@@ -87,13 +89,14 @@ export async function PublicacionMessage(
 export async function DesembolsoMessage(
   message: DesembolsoMessage,
   businessPhone: string,
-  device: 'mobile' | 'desktop' | 'web' = 'web'
+  device: 'mobile' | 'web' = 'mobile'
 ) {
   const formattedMessage = `Hola, quiero hacer un *desembolso* con los siguientes datos:
 
 *DETALLES DEL DESEMBOLSO:*
 - *Cliente:* ${message.nombre_cliente}
 - *Monto:* S/. ${message.monto.toFixed(2)}
+- *Comisión:* S/. ${(message.monto * 0.05).toFixed(2)}
 - *Método:* ${message.metodo}
 - *ID Cliente:* ${message.id_cliente}`
 

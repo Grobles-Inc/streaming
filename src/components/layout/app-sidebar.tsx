@@ -14,7 +14,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible='icon' variant='floating' {...props}>
       <SidebarHeader>
-        <Balance balance={100} />
+        <Balance />
       </SidebarHeader>
       <SidebarContent>
         {sidebarData.navGroups.map((props) => (

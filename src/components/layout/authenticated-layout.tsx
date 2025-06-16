@@ -5,6 +5,7 @@ import { SearchProvider } from '@/context/search-context'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import SkipToMain from '@/components/skip-to-main'
+import { Footer } from '../footer'
 
 interface Props {
   children?: React.ReactNode
@@ -31,6 +32,7 @@ export function AuthenticatedLayout({ children }: Props) {
         >
           {children ? children : <Outlet />}
         </div>
+        <Footer />
       </SidebarProvider>
     </SearchProvider>
   )

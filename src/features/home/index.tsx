@@ -10,7 +10,7 @@ export default function Home() {
       {/* Top bar */}
       <LandingHeader />
       {/* Menu as Tabs (responsive) */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 md:gap-6 gap-2 pt-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 md:gap-6 gap-2 md:p-6 p-4">
         {categorias.map((tab) => (
           <Link key={tab.tab} to="/categoria/$name" params={{ name: tab.tab.toLowerCase() }}>
             <CategoriaCard key={tab.tab} categoria={tab} />
@@ -21,7 +21,7 @@ export default function Home() {
       {/* Productos Destacados */}
       <div className="md:px-8 px-4 pt-12">
         <h2 className="text-2xl font-bold mb-4">Productos Destacados</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 md:gap-6 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4  md:gap-6 gap-4">
           {destacados.map((service) => (
             <ProductoCard key={service.titulo} producto={service} />
           ))}
@@ -30,7 +30,7 @@ export default function Home() {
       {/* Los más vendidos */}
       <div className="md:px-8 px-4 pt-12 pb-12">
         <h2 className="text-2xl font-bold mb-4">Los más vendidos</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 md:gap-6 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4  md:gap-6 gap-4">
           {masVendidos.map((service) => (
             <ProductoCard key={service.titulo} producto={service} />
           ))}

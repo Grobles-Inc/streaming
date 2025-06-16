@@ -11,9 +11,9 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
   const [open, setOpen] = useState(false)
   return (
     <>
-      <Card className='relative pt-0 w-full max-w-sm '>
+      <Card className='relative pt-0 pb-4 md:pb-6 w-full max-w-sm  gap-2 md:gap-6'>
         <CardHeader className='p-0'>
-          <img src={producto.imagen} alt={producto.titulo} className="w-full h-52 object-cover rounded-t-lg" />
+          <img src={producto.imagen} alt={producto.titulo} className="w-full md:h-52 h-36 object-cover rounded-t-lg" />
         </CardHeader>
         {/* A pedido badge */}
         {producto.aPedido && (
@@ -24,28 +24,29 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
 
         )}
         {producto.nuevo && (
-          <Badge className='absolute left-2 bottom-[270px]'>Nuevo</Badge>
+          <Badge className='absolute left-2 md:bottom-[250px] bottom-44'>Nuevo</Badge>
         )}
 
-        <CardContent className='flex flex-col p-2 md:px-4'>
+        <CardContent className='flex flex-col px-4 '>
 
-          <span className="text-xs text-gray-500 font-semibold  mb-1">Proveedor: {producto.proveedor}</span>
-          <span className="font-bold md:text-lg mb-1 leading-tight">{producto.titulo}</span>
+          <span className="text-xs text-gray-500 font-semibold  mb-1">{producto.proveedor.toUpperCase()}</span>
+          <span className="font-bold md:text-lg mb-1 hidden md:block  leading-tight">{producto.titulo}</span>
+          <span className="font-bold md:text-lg mb-1 md:hidden truncate  leading-tight">{producto.titulo}</span>
           <div className="md:flex flex-row hidden justify-between items-center w-full mb-2">
             <span className="text-xs text-green-600 ">Renovable: <span className="font-bold">${producto.precioRenovable.toFixed(2)}</span></span>
           </div>
-          <div className="flex flex-row justify-between items-center w-full mb-2">
-            <span className="text-xs text-muted-foreground">Soles: S/.{producto.precioSoles.toFixed(2)}</span>
-          </div>
+
+
           {/* Stock y precios */}
           <div className="flex flex-row justify-between items-center w-full mb-2">
-            <span className="text-xs hidden md:block text-foreground">Stock: <span className="font-bold">{producto.stock}</span></span>
+            <Badge className='hidden md:block'>Stock: {producto.stock} </Badge>
 
-            <span className="font-bold text-xl text-foreground">${producto.precioUSD.toFixed(2)}</span>
+            <div className='flex w-full justify-between md:justify-end md:gap-2 items-baseline mt-4'><span className="text-xs text-muted-foreground">S/.{producto.precioSoles.toFixed(2)} </span>
+              <span className="font-bold text-xl text-foreground">     ${producto.precioUSD.toFixed(2)}</span></div>
           </div>
 
         </CardContent>
-        <CardFooter className='md:px-4 px-2'>
+        <CardFooter className='px-4'>
           <Button variant={producto.stock === 0 ? "destructive" : "default"} className="w-full" onClick={() => setOpen(true)} disabled={producto.stock === 0}>
             {producto.stock === 0 ? "Agotado" : "VER PRODUCTO"}
           </Button>

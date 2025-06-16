@@ -8,24 +8,8 @@ export const categorias: Service[] = [
   { name: 'Prime Video', subtitle: 'Prime Video', icon: '🔵', tab: 'prime_video' },
   { name: 'Google', subtitle: 'Google', icon: '🟢', tab: 'google' },
   { name: 'Busca Personas', subtitle: 'Busca Personas', icon: '🧑‍💼', tab: 'busca_personas' },
-  { name: 'DramBox', subtitle: 'DramBox', icon: '🟣', tab: 'drambox' },
-  { name: 'Vix', subtitle: 'Vix', icon: '🟠', tab: 'max' },
-  { name: 'Redes Sociales', subtitle: 'Redes Sociales', icon: '🎉', tab: 'redes_sociales' },
-  { name: 'Licencias', subtitle: 'Licencias', icon: '💻', tab: 'licencias' },
-  { name: 'Tinder', subtitle: 'Tinder', icon: '❤️', tab: 'redes_sociales' },
-  { name: 'Duolingo', subtitle: 'Duolingo', icon: '🟩', tab: 'duolingo' },
-  { name: 'Viki Rakuten', subtitle: 'Viki Rakuten', icon: '🔵', tab: 'max' },
-  { name: 'Free Fire', subtitle: 'Free Fire', icon: '🎮', tab: 'free_fire' },
-  { name: 'Sentinel-Equifax', subtitle: 'Sentinel-Equifax', icon: '🟢', tab: 'sentinel' },
-  { name: 'LIGA 1 MAX', subtitle: 'LIGA 1 MAX', icon: '🔴', tab: 'liga_1_max' },
-  { name: 'DESCANSO MED', subtitle: 'DESCANSO MED', icon: '👨‍⚕️', tab: 'descanso_med' },
-  { name: 'IPTV Smarters', subtitle: 'IPTV Smarters', icon: '📺', tab: 'max' },
-  { name: 'Youtube Premium', subtitle: 'Youtube Premium', icon: '▶️', tab: 'max' },
-  { name: 'Flujo Tv', subtitle: 'Flujo Tv', icon: '🟠', tab: 'max' },
-  { name: 'Movistar Play', subtitle: 'Movistar Play', icon: '🔵', tab: 'max' },
-  { name: 'Directv Go', subtitle: 'Directv Go', icon: '🔵', tab: 'max' },
-  { name: 'Crunchyroll', subtitle: 'Crunchyroll', icon: '🟠', tab: 'max' },
-  { name: 'Paramount', subtitle: 'Paramount', icon: '🔷', tab: 'max' },
+ 
+ 
 ]
 
 

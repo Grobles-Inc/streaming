@@ -5,24 +5,30 @@ import React from 'react'
 import { Link } from '@tanstack/react-router'
 import { menuTabs, productos } from './data/sample'
 import ProductoCard from './producto-card'
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+
 
 export default function Categorias({ nombre }: { nombre: string }) {
   const [activeTab, setActiveTab] = React.useState(nombre)
   const [isOpen, setIsOpen] = React.useState(false)
   return (
     <div className="px-4 md:px-8 pt-4 ">
+      <h1 className='text-xl md:text-2xl  font-bold my-2'>Categorías</h1>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         {/* Desktop Tabs */}
-        <TabsList className="hidden sm:flex ">
-          {menuTabs.map((tab) => (
-            <Link key={tab.key} to="/categoria/$name" params={{ name: tab.key.toLowerCase() }} >
+        <ScrollArea className="w-full rounded-md border whitespace-nowrap hidden md:block">
+          <TabsList className="hidden sm:flex h-14 gap-2 px-4 ">
+            {menuTabs.map((tab) => (
+              <Link key={tab.key} to="/categoria/$name" params={{ name: tab.key.toLowerCase() }} >
 
-              <TabsTrigger key={tab.key} value={tab.key} className="whitespace-nowrap">
-                {tab.label}
-              </TabsTrigger>
-            </Link>
-          ))}
-        </TabsList>
+                <TabsTrigger key={tab.key} value={tab.key} className="whitespace-nowrap px-3 py-2 hover:opacity-70 ">
+                  {tab.label}
+                </TabsTrigger>
+              </Link>
+            ))}
+          </TabsList>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
         {/* Mobile Sheet Trigger */}
         <div className="sm:hidden mb-4">
           <Sheet open={isOpen} onOpenChange={setIsOpen}>

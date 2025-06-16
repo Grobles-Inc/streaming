@@ -39,7 +39,7 @@ interface Props {
   onOpenChange: (open: boolean) => void
 }
 
-export function TasksImportDialog({ open, onOpenChange }: Props) {
+export function RecargasImportDialog({ open, onOpenChange }: Props) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { file: undefined },

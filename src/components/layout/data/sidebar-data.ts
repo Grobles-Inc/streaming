@@ -148,7 +148,7 @@ const baseNavGroups = [
       },
       {
         title: 'Reportes Globales',
-        url: '/admin/reports',
+        url: '/admin/reportes-globales',
         icon: IconChartBar,
         roles: ['admin'],
       },

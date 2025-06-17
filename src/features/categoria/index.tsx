@@ -6,6 +6,11 @@ import { Link } from '@tanstack/react-router'
 import { menuTabs, productos } from './data/sample'
 import ProductoCard from './producto-card'
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 
 export default function Categorias({ nombre }: { nombre: string }) {
@@ -22,7 +27,14 @@ export default function Categorias({ nombre }: { nombre: string }) {
               <Link key={tab.key} to="/categoria/$name" params={{ name: tab.key.toLowerCase() }} >
 
                 <TabsTrigger key={tab.key} value={tab.key} className="whitespace-nowrap px-3 py-2 hover:opacity-70 ">
-                  {tab.label}
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <img src={tab.icon} alt={tab.label} className="size-10" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{tab.label}</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </TabsTrigger>
               </Link>
             ))}

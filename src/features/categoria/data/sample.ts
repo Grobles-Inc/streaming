@@ -1,19 +1,19 @@
 
 export const menuTabs = [
-  { key: 'max', label: 'Max' },
-  { key: 'disney', label: 'Disney' },
-  { key: 'netflix', label: 'Netflix' },
-  { key: 'busca_personas', label: 'Busca Personas' },
-  { key: 'descanso_med', label: 'DESCANSO MED' },
-  { key: 'drambox', label: 'DramBox' },
-  { key: 'duolingo', label: 'Duolingo' },
-  { key: 'free_fire', label: 'Free Fire' },
-  { key: 'google', label: 'Google' },
-  { key: 'licencias', label: 'Licencias' },
-  { key: 'liga_1_max', label: 'LIGA 1 MAX' },
-  { key: 'prime_video', label: 'Prime Video' },
-  { key: 'redes_sociales', label: 'Redes Sociales' },
-  { key: 'sentinel', label: 'Sentinel' },
+  { key: 'max', label: 'Max', icon:"https://img.icons8.com/?size=200&id=57080&format=png&color=000000" },
+  { key: 'disney', label: 'Disney', icon:"https://img.icons8.com/?size=200&id=rrtOAHJcHL38&format=png&color=000000" },
+  { key: 'netflix', label: 'Netflix', icon:"https://img.icons8.com/?size=200&id=20519&format=png&color=000000" },
+  { key: 'busca_personas', label: 'Busca Personas', icon:"https://img.icons8.com/?size=200&id=8959&format=png&color=000000" },
+  { key: 'descanso_med', label: 'DESCANSO MED', icon:"https://img.icons8.com/?size=200&id=bzZ1vLaK5u1A&format=png&color=000000" },
+  { key: 'drambox', label: 'DramBox', icon:"https://imgs.search.brave.com/rdBcE15XI28JEfRfVRB8ZW9outSuqED68402VKHG7Wg/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9wbmdo/ZHByby5jb20vd3At/Y29udGVudC90aGVt/ZXMvcG5naGRwcm8v/ZG93bmxvYWQvc29j/aWFsLW1lZGlhLWFu/ZC1icmFuZHMvZHJh/bWFib3gtbG9nby1p/Y29uLnBuZw" },
+  { key: 'duolingo', label: 'Duolingo', icon:"https://img.icons8.com/?size=200&id=jJS472JMXlsE&format=png&color=000000" },
+  { key: 'free_fire', label: 'Free Fire', icon:"https://img.icons8.com/?size=200&id=Wp2G7sYdft8K&format=png&color=000000" },
+  { key: 'google', label: 'Google', icon:"https://img.icons8.com/?size=200&id=17949&format=png&color=000000" },
+  { key: 'licencias', label: 'Licencias', icon:"https://img.icons8.com/?size=200&id=50564&format=png&color=000000" },
+  { key: 'espn', label: 'ESPN', icon:"https://img.icons8.com/?size=200&id=jlWmrRO117sm&format=png&color=000000" },
+  { key: 'prime_video', label: 'Prime Video', icon:"https://img.icons8.com/?size=200&id=mJTj7Q9EPSVn&format=png&color=000000" },
+  { key: 'redes_sociales', label: 'Redes Sociales', icon:"https://img.icons8.com/?size=200&id=118497&format=png&color=000000" },
+  { key: 'chatgpt', label: 'ChatGPT', icon:"https://img.icons8.com/?size=200&id=FBO05Dys9QCg&format=png&color=000000" },
 ]
 
 

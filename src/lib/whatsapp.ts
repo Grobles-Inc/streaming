@@ -13,10 +13,31 @@ interface PublicacionMessage {
   id_producto: string
 }
 
+interface CompraMessage {
+  producto_nombre: string
+  producto_precio: number
+  email_cuenta: string
+  clave_cuenta: string
+  url_cuenta: string
+  perfil?: string
+  pin?: string
+  fecha_inicio: string
+  fecha_termino: string
+  ciclo_facturacion: string
+}
+
 interface DesembolsoMessage {
   nombre_cliente: string
   monto: number
   metodo: string
+  id_cliente: string
+}
+
+interface SoporteMessage {
+  nombre_cliente: string
+  asunto: string
+  mensaje: string
+  id_producto: string
   id_cliente: string
 }
 
@@ -27,8 +48,8 @@ export async function EnviarWhatsAppMessage(
   device: 'mobile' | 'web' = 'mobile'
 ) {
   const encodedMessage = encodeURIComponent(message)
-  const webUrl = `https://web.whatsapp.com/send?phone=+51${businessPhone}&text=${encodedMessage}`
-  const mobileUrl = `https://wa.me/+51${businessPhone}?text=${encodedMessage}`
+  const webUrl = `https://web.whatsapp.com/send?phone=+${businessPhone}&text=${encodedMessage}`
+  const mobileUrl = `https://wa.me/+${businessPhone}?text=${encodedMessage}`
 
   try {
     // For mobile devices, try to open in the same window first
@@ -99,6 +120,45 @@ export async function DesembolsoMessage(
 - *Comisión:* S/. ${(message.monto * 0.05).toFixed(2)}
 - *Método:* ${message.metodo}
 - *ID Cliente:* ${message.id_cliente}`
+
+  return EnviarWhatsAppMessage(formattedMessage, businessPhone, device)
+}
+
+export async function SoporteMessage(
+  message: SoporteMessage,
+  businessPhone: string,
+  device: 'mobile' | 'web' = 'mobile'
+) {
+  const formattedMessage = `Hola, necesito *soporte* con los siguientes datos:
+
+*DETALLES DEL SOPORTE:*
+- *Cliente:* ${message.nombre_cliente}
+- *Asunto:* ${message.asunto}
+- *Mensaje:* ${message.mensaje}
+- *ID Cliente:* ${message.id_cliente}
+- *ID Producto:* ${message.id_producto}`
+
+  return EnviarWhatsAppMessage(formattedMessage, businessPhone, device)
+}
+
+export async function CompraMessage(
+  message: CompraMessage,
+  businessPhone: string,
+  device: 'mobile' | 'web' = 'mobile'
+) {
+  const formattedMessage = `Hola, estos son los datos de tu *compra*:
+
+*DETALLES DE LA COMPRA:*
+- *Producto:* ${message.producto_nombre}
+- *Precio:* S/. ${message.producto_precio.toFixed(2)}
+- *Email:* ${message.email_cuenta}
+- *Clave:* ${message.clave_cuenta}
+- *URL:* ${message.url_cuenta}
+- *Perfil:* ${message.perfil}
+- *PIN:* ${message.pin}
+- *Fecha de inicio:* ${message.fecha_inicio}
+- *Fecha de término:* ${message.fecha_termino}
+- *Ciclo de facturación:* ${message.ciclo_facturacion}`
 
   return EnviarWhatsAppMessage(formattedMessage, businessPhone, device)
 }

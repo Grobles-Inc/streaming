@@ -16,6 +16,9 @@ export const estadosMap = new Map<CompraEstado, string>([
   ['entregado', 'bg-gray-100/30 text-gray-900 dark:text-gray-200 border-gray-200'],
 ])
 
+
+
+
 export const diasRestantesMap = new Map<number, string>([
   [5, 'bg-red-500 text-white dark:text-white border-red-500'],
   [10, 'bg-orange-400 text-white dark:text-white border-orange-500'],

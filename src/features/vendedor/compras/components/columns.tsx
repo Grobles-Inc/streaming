@@ -8,6 +8,11 @@ import { Compra } from '../data/schema'
 import { useState } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
+import { IconHeadphones } from '@tabler/icons-react'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { CompraMessage } from '@/lib/whatsapp'
+import { ComprasSoporteModal } from './compras-soporte-modal'
 
 const PasswordCell = ({ value }: { value: string }) => {
   const [isVisible, setIsVisible] = useState(false)
@@ -28,6 +33,44 @@ const PasswordCell = ({ value }: { value: string }) => {
         </TooltipContent>
       </Tooltip>
     </div>
+  )
+}
+
+const SoporteMessageCell = ({ row }: { row: Compra }) => {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <Button variant="ghost" className='flex items-center gap-1' onClick={() => setOpen(true)}>
+        <IconHeadphones />
+      </Button>
+      <ComprasSoporteModal open={open} setOpen={setOpen} currentRow={row} telefono={row.telefono_proveedor} />
+    </>
+  )
+}
+
+const CompraMessageCell = ({ row }: { row: Compra }) => {
+  const isMobile = useIsMobile()
+  const handleClick = () => {
+    CompraMessage({
+      producto_nombre: row.producto,
+      producto_precio: row.monto_reembolso,
+      email_cuenta: row.email_cuenta,
+      clave_cuenta: row.clave_cuenta,
+      url_cuenta: row.url_cuenta,
+      perfil: row.perfil,
+      pin: row.pin,
+      fecha_inicio: row.fecha_inicio,
+      fecha_termino: row.fecha_termino,
+      ciclo_facturacion: '30 días',
+    }, '51914019629', isMobile ? 'mobile' : 'web')
+  }
+  return (
+    <Button variant="ghost" className='flex items-center gap-1' onClick={handleClick}>
+      <img src="https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000" className='size-6' />
+      <span className='text-green-500'>
+        {row.telefono_cliente.slice(2)}
+      </span>
+    </Button>
   )
 }
 
@@ -94,7 +137,15 @@ export const columns: ColumnDef<Compra>[] = [
     enableSorting: false,
 
   },
+
   {
+    accessorKey: 'clave_cuenta',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Clave' />
+    ),
+    cell: ({ row }) => <PasswordCell value={row.getValue('clave_cuenta')} />,
+    enableSorting: false,
+  }, {
     accessorKey: 'estado',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Estado' />
@@ -117,14 +168,6 @@ export const columns: ColumnDef<Compra>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: 'clave_cuenta',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Clave' />
-    ),
-    cell: ({ row }) => <PasswordCell value={row.getValue('clave_cuenta')} />,
-    enableSorting: false,
-  },
-  {
     accessorKey: 'url_cuenta',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='URL' />
@@ -144,29 +187,7 @@ export const columns: ColumnDef<Compra>[] = [
       <DataTableColumnHeader column={column} title='PIN' />
     ),
     enableSorting: false,
-  },
-  {
-    accessorKey: 'fecha_inicio',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Fecha de inicio' />
-    ),
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'fecha_termino',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Fecha de término' />
-    ),
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'monto_reembolso',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Monto de reembolso' />
-    ),
-    enableSorting: false,
-  },
-  {
+  }, {
     accessorKey: 'nombre_cliente',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Cliente' />
@@ -178,13 +199,40 @@ export const columns: ColumnDef<Compra>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Teléfono' />
     ),
+    cell: ({ row }) => <CompraMessageCell row={row.original} />,
     enableSorting: false,
   },
+  {
+    accessorKey: 'monto_reembolso',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Monto de reembolso' />
+    ),
+    enableSorting: false,
+    cell: ({ row }) => {
+      const { monto_reembolso } = row.original
+      return (
+        <div className='flex justify-center'>
+          <span>$ {monto_reembolso}</span>
+        </div>
+      )
+    },
+  },
+
+
   {
     accessorKey: 'proveedor',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Proveedor' />
     ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'telefono_proveedor',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Proveedor' />
+    ),
+    cell: ({ row }) =>
+      <SoporteMessageCell row={row.original} />,
     enableSorting: false,
   },
   {

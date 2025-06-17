@@ -11,6 +11,7 @@ const compraEstadoSchema = z.union([
   z.literal('entregado'),
 ])
 
+
 export const compraSchema = z.object({
   id: z.string(),
   producto: z.string(),
@@ -25,11 +26,13 @@ export const compraSchema = z.object({
   nombre_cliente: z.string(),
   telefono_cliente: z.string(),
   proveedor: z.string(),
+  telefono_proveedor: z.string(),
   dias_restantes: z.number(),
   estado: compraEstadoSchema,
 })
 
 
 export type CompraEstado = z.infer<typeof compraEstadoSchema>
-
 export type Compra = z.infer<typeof compraSchema>
+
+

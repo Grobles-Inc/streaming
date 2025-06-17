@@ -14,4 +14,5 @@ export interface Producto {
   detalles: string
   informacionDelProducto: string
   condicionesDeUso: string
+  periodo: string
 }

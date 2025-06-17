@@ -24,11 +24,11 @@ export default function LandingHeader() {
         </div>
         <div className="md:flex items-center gap-4 hidden ">
           <Button onClick={() => navigate({ to: '/sign-in' })}>Iniciar Sesión</Button>
-          <Button variant="outline" onClick={() => navigate({ to: '/apps' })}>Dashboard</Button>
+          <Button variant="outline" onClick={() => navigate({ to: '/dashboard' })}>Dashboard</Button>
         </div>
         <div className="flex items-center gap-2 md:hidden">
           <Button size="icon" variant="outline" onClick={() => navigate({ to: '/sign-in' })}><IconUser /></Button>
-          <Button size="icon" variant="outline" onClick={() => navigate({ to: '/apps' })}><IconDashboard /></Button>
+          <Button size="icon" variant="outline" onClick={() => navigate({ to: '/dashboard' })}><IconDashboard /></Button>
         </div>
       </div>
       <div className="flex-1 md:hidden md:mx-8">

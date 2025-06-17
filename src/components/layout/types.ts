@@ -1,21 +1,20 @@
 import { LinkProps } from '@tanstack/react-router'
 
+// Define the available roles
+type UserRole = 'vendedor' | 'proveedor' | 'admin'
+
 interface User {
   name: string
   email: string
   avatar: string
-}
-
-interface Team {
-  name: string
-  logo: React.ElementType
-  plan: string
+  role: UserRole
 }
 
 interface BaseNavItem {
   title: string
   badge?: string
   icon?: React.ElementType
+  roles?: UserRole[] // Optional roles that can access this item
 }
 
 type NavLink = BaseNavItem & {
@@ -33,11 +32,11 @@ type NavItem = NavCollapsible | NavLink
 interface NavGroup {
   title: string
   items: NavItem[]
+  roles?: UserRole[] // Optional roles that can see this group
 }
 
 interface SidebarData {
   user: User
-  teams: Team[]
   navGroups: NavGroup[]
 }
 
@@ -48,4 +47,4 @@ interface Categoria {
   tab: string
 }
 
-export type { SidebarData, NavGroup, NavItem, NavCollapsible, NavLink, Categoria }
+export type { SidebarData, NavGroup, NavItem, NavCollapsible, NavLink, Categoria , UserRole }

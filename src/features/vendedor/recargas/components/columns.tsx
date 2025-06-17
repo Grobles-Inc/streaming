@@ -49,7 +49,7 @@ export const columns: ColumnDef<Recarga>[] = [
     cell: ({ row }) => {
       return (
         <div className='flex items-center'>
-          <span className='font-mono'>$ {row.getValue('monto')}</span>
+          <span >$ {row.getValue('monto')}</span>
         </div>
       )
     },
@@ -67,15 +67,6 @@ export const columns: ColumnDef<Recarga>[] = [
       return (
         <div className='flex space-x-2'>
           <Badge variant='outline' className={cn('capitalize', badgeColor)}>
-            {estado === 'aprobado' && (
-              <IconProgressCheck />
-            )}
-            {estado === 'pendiente' && (
-              <IconTimeDuration0 />
-            )}
-            {estado === 'rechazado' && (
-              <IconBan />
-            )}
             {row.getValue('estado')}
           </Badge>
         </div>
@@ -86,6 +77,7 @@ export const columns: ColumnDef<Recarga>[] = [
       return value.includes(row.getValue(id))
     },
     enableSorting: false,
+    enableHiding: false,
   },
   {
     accessorKey: 'comision',
@@ -95,7 +87,7 @@ export const columns: ColumnDef<Recarga>[] = [
     cell: ({ row }) => {
       return (
         <div className='flex items-center'>
-          <span className='font-mono'>$ {row.getValue('comision')}</span>
+          <span >$ {row.getValue('comision')}</span>
         </div>
       )
     },
@@ -109,7 +101,7 @@ export const columns: ColumnDef<Recarga>[] = [
     cell: ({ row }) => {
       return (
         <div className='flex items-center'>
-          <span className='font-mono'>$ {row.getValue('saldo')}</span>
+          <span >$ {row.getValue('saldo')}</span>
         </div>
       )
     },

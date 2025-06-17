@@ -22,20 +22,20 @@ import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
 import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
-import { Route as AuthenticatedVendedorIndexRouteImport } from './routes/_authenticated/vendedor/index'
-import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
-import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
+import { Route as AuthenticatedRecargasIndexRouteImport } from './routes/_authenticated/recargas/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
-import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
-import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authenticated/apps/index'
+import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
+import { Route as AuthenticatedComprasIndexRouteImport } from './routes/_authenticated/compras/index'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
 import { Route as publicCategoriaNameRouteImport } from './routes/(public)/categoria/$name'
-import { Route as AuthenticatedVendedorRecargasIndexRouteImport } from './routes/_authenticated/vendedor/recargas/index'
-import { Route as AuthenticatedVendedorComprasIndexRouteImport } from './routes/_authenticated/vendedor/compras/index'
+import { Route as AuthenticatedAdminUsersIndexRouteImport } from './routes/_authenticated/admin/users/index'
+import { Route as AuthenticatedAdminTasksIndexRouteImport } from './routes/_authenticated/admin/tasks/index'
+import { Route as AuthenticatedAdminChatsIndexRouteImport } from './routes/_authenticated/admin/chats/index'
+import { Route as AuthenticatedAdminAppsIndexRouteImport } from './routes/_authenticated/admin/apps/index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -102,27 +102,17 @@ const AuthenticatedSettingsRouteRoute =
     path: '/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedVendedorIndexRoute =
-  AuthenticatedVendedorIndexRouteImport.update({
-    id: '/vendedor/',
-    path: '/vendedor/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
-  id: '/users/',
-  path: '/users/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedTasksIndexRoute = AuthenticatedTasksIndexRouteImport.update({
-  id: '/tasks/',
-  path: '/tasks/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedSettingsIndexRoute =
   AuthenticatedSettingsIndexRouteImport.update({
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedRecargasIndexRoute =
+  AuthenticatedRecargasIndexRouteImport.update({
+    id: '/recargas/',
+    path: '/recargas/',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedHelpCenterIndexRoute =
   AuthenticatedHelpCenterIndexRouteImport.update({
@@ -130,16 +120,18 @@ const AuthenticatedHelpCenterIndexRoute =
     path: '/help-center/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
-  id: '/chats/',
-  path: '/chats/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedAppsIndexRoute = AuthenticatedAppsIndexRouteImport.update({
-  id: '/apps/',
-  path: '/apps/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+const AuthenticatedDashboardIndexRoute =
+  AuthenticatedDashboardIndexRouteImport.update({
+    id: '/dashboard/',
+    path: '/dashboard/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedComprasIndexRoute =
+  AuthenticatedComprasIndexRouteImport.update({
+    id: '/compras/',
+    path: '/compras/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsNotificationsRoute =
   AuthenticatedSettingsNotificationsRouteImport.update({
     id: '/notifications',
@@ -169,16 +161,28 @@ const publicCategoriaNameRoute = publicCategoriaNameRouteImport.update({
   path: '/categoria/$name',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedVendedorRecargasIndexRoute =
-  AuthenticatedVendedorRecargasIndexRouteImport.update({
-    id: '/vendedor/recargas/',
-    path: '/vendedor/recargas/',
+const AuthenticatedAdminUsersIndexRoute =
+  AuthenticatedAdminUsersIndexRouteImport.update({
+    id: '/admin/users/',
+    path: '/admin/users/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedVendedorComprasIndexRoute =
-  AuthenticatedVendedorComprasIndexRouteImport.update({
-    id: '/vendedor/compras/',
-    path: '/vendedor/compras/',
+const AuthenticatedAdminTasksIndexRoute =
+  AuthenticatedAdminTasksIndexRouteImport.update({
+    id: '/admin/tasks/',
+    path: '/admin/tasks/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminChatsIndexRoute =
+  AuthenticatedAdminChatsIndexRouteImport.update({
+    id: '/admin/chats/',
+    path: '/admin/chats/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminAppsIndexRoute =
+  AuthenticatedAdminAppsIndexRouteImport.update({
+    id: '/admin/apps/',
+    path: '/admin/apps/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
@@ -201,15 +205,15 @@ export interface FileRoutesByFullPath {
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
-  '/apps': typeof AuthenticatedAppsIndexRoute
-  '/chats': typeof AuthenticatedChatsIndexRoute
+  '/compras': typeof AuthenticatedComprasIndexRoute
+  '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
+  '/recargas': typeof AuthenticatedRecargasIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
-  '/tasks': typeof AuthenticatedTasksIndexRoute
-  '/users': typeof AuthenticatedUsersIndexRoute
-  '/vendedor': typeof AuthenticatedVendedorIndexRoute
-  '/vendedor/compras': typeof AuthenticatedVendedorComprasIndexRoute
-  '/vendedor/recargas': typeof AuthenticatedVendedorRecargasIndexRoute
+  '/admin/apps': typeof AuthenticatedAdminAppsIndexRoute
+  '/admin/chats': typeof AuthenticatedAdminChatsIndexRoute
+  '/admin/tasks': typeof AuthenticatedAdminTasksIndexRoute
+  '/admin/users': typeof AuthenticatedAdminUsersIndexRoute
 }
 export interface FileRoutesByTo {
   '': typeof AuthenticatedRouteRouteWithChildren
@@ -229,15 +233,15 @@ export interface FileRoutesByTo {
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
-  '/apps': typeof AuthenticatedAppsIndexRoute
-  '/chats': typeof AuthenticatedChatsIndexRoute
+  '/compras': typeof AuthenticatedComprasIndexRoute
+  '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
+  '/recargas': typeof AuthenticatedRecargasIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
-  '/tasks': typeof AuthenticatedTasksIndexRoute
-  '/users': typeof AuthenticatedUsersIndexRoute
-  '/vendedor': typeof AuthenticatedVendedorIndexRoute
-  '/vendedor/compras': typeof AuthenticatedVendedorComprasIndexRoute
-  '/vendedor/recargas': typeof AuthenticatedVendedorRecargasIndexRoute
+  '/admin/apps': typeof AuthenticatedAdminAppsIndexRoute
+  '/admin/chats': typeof AuthenticatedAdminChatsIndexRoute
+  '/admin/tasks': typeof AuthenticatedAdminTasksIndexRoute
+  '/admin/users': typeof AuthenticatedAdminUsersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -259,15 +263,15 @@ export interface FileRoutesById {
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
-  '/_authenticated/apps/': typeof AuthenticatedAppsIndexRoute
-  '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
+  '/_authenticated/compras/': typeof AuthenticatedComprasIndexRoute
+  '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
+  '/_authenticated/recargas/': typeof AuthenticatedRecargasIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
-  '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
-  '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
-  '/_authenticated/vendedor/': typeof AuthenticatedVendedorIndexRoute
-  '/_authenticated/vendedor/compras/': typeof AuthenticatedVendedorComprasIndexRoute
-  '/_authenticated/vendedor/recargas/': typeof AuthenticatedVendedorRecargasIndexRoute
+  '/_authenticated/admin/apps/': typeof AuthenticatedAdminAppsIndexRoute
+  '/_authenticated/admin/chats/': typeof AuthenticatedAdminChatsIndexRoute
+  '/_authenticated/admin/tasks/': typeof AuthenticatedAdminTasksIndexRoute
+  '/_authenticated/admin/users/': typeof AuthenticatedAdminUsersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -290,15 +294,15 @@ export interface FileRouteTypes {
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
-    | '/apps'
-    | '/chats'
+    | '/compras'
+    | '/dashboard'
     | '/help-center'
+    | '/recargas'
     | '/settings/'
-    | '/tasks'
-    | '/users'
-    | '/vendedor'
-    | '/vendedor/compras'
-    | '/vendedor/recargas'
+    | '/admin/apps'
+    | '/admin/chats'
+    | '/admin/tasks'
+    | '/admin/users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | ''
@@ -318,15 +322,15 @@ export interface FileRouteTypes {
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
-    | '/apps'
-    | '/chats'
+    | '/compras'
+    | '/dashboard'
     | '/help-center'
+    | '/recargas'
     | '/settings'
-    | '/tasks'
-    | '/users'
-    | '/vendedor'
-    | '/vendedor/compras'
-    | '/vendedor/recargas'
+    | '/admin/apps'
+    | '/admin/chats'
+    | '/admin/tasks'
+    | '/admin/users'
   id:
     | '__root__'
     | '/_authenticated'
@@ -347,15 +351,15 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
-    | '/_authenticated/apps/'
-    | '/_authenticated/chats/'
+    | '/_authenticated/compras/'
+    | '/_authenticated/dashboard/'
     | '/_authenticated/help-center/'
+    | '/_authenticated/recargas/'
     | '/_authenticated/settings/'
-    | '/_authenticated/tasks/'
-    | '/_authenticated/users/'
-    | '/_authenticated/vendedor/'
-    | '/_authenticated/vendedor/compras/'
-    | '/_authenticated/vendedor/recargas/'
+    | '/_authenticated/admin/apps/'
+    | '/_authenticated/admin/chats/'
+    | '/_authenticated/admin/tasks/'
+    | '/_authenticated/admin/users/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -467,33 +471,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/vendedor/': {
-      id: '/_authenticated/vendedor/'
-      path: '/vendedor'
-      fullPath: '/vendedor'
-      preLoaderRoute: typeof AuthenticatedVendedorIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/users/': {
-      id: '/_authenticated/users/'
-      path: '/users'
-      fullPath: '/users'
-      preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/tasks/': {
-      id: '/_authenticated/tasks/'
-      path: '/tasks'
-      fullPath: '/tasks'
-      preLoaderRoute: typeof AuthenticatedTasksIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/settings/': {
       id: '/_authenticated/settings/'
       path: '/'
       fullPath: '/settings/'
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/recargas/': {
+      id: '/_authenticated/recargas/'
+      path: '/recargas'
+      fullPath: '/recargas'
+      preLoaderRoute: typeof AuthenticatedRecargasIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/help-center/': {
       id: '/_authenticated/help-center/'
@@ -502,18 +492,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHelpCenterIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/chats/': {
-      id: '/_authenticated/chats/'
-      path: '/chats'
-      fullPath: '/chats'
-      preLoaderRoute: typeof AuthenticatedChatsIndexRouteImport
+    '/_authenticated/dashboard/': {
+      id: '/_authenticated/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/apps/': {
-      id: '/_authenticated/apps/'
-      path: '/apps'
-      fullPath: '/apps'
-      preLoaderRoute: typeof AuthenticatedAppsIndexRouteImport
+    '/_authenticated/compras/': {
+      id: '/_authenticated/compras/'
+      path: '/compras'
+      fullPath: '/compras'
+      preLoaderRoute: typeof AuthenticatedComprasIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings/notifications': {
@@ -551,18 +541,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicCategoriaNameRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/vendedor/recargas/': {
-      id: '/_authenticated/vendedor/recargas/'
-      path: '/vendedor/recargas'
-      fullPath: '/vendedor/recargas'
-      preLoaderRoute: typeof AuthenticatedVendedorRecargasIndexRouteImport
+    '/_authenticated/admin/users/': {
+      id: '/_authenticated/admin/users/'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/vendedor/compras/': {
-      id: '/_authenticated/vendedor/compras/'
-      path: '/vendedor/compras'
-      fullPath: '/vendedor/compras'
-      preLoaderRoute: typeof AuthenticatedVendedorComprasIndexRouteImport
+    '/_authenticated/admin/tasks/': {
+      id: '/_authenticated/admin/tasks/'
+      path: '/admin/tasks'
+      fullPath: '/admin/tasks'
+      preLoaderRoute: typeof AuthenticatedAdminTasksIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/chats/': {
+      id: '/_authenticated/admin/chats/'
+      path: '/admin/chats'
+      fullPath: '/admin/chats'
+      preLoaderRoute: typeof AuthenticatedAdminChatsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/apps/': {
+      id: '/_authenticated/admin/apps/'
+      path: '/admin/apps'
+      fullPath: '/admin/apps'
+      preLoaderRoute: typeof AuthenticatedAdminAppsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
@@ -593,28 +597,26 @@ const AuthenticatedSettingsRouteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
-  AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
-  AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
+  AuthenticatedComprasIndexRoute: typeof AuthenticatedComprasIndexRoute
+  AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
-  AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
-  AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
-  AuthenticatedVendedorIndexRoute: typeof AuthenticatedVendedorIndexRoute
-  AuthenticatedVendedorComprasIndexRoute: typeof AuthenticatedVendedorComprasIndexRoute
-  AuthenticatedVendedorRecargasIndexRoute: typeof AuthenticatedVendedorRecargasIndexRoute
+  AuthenticatedRecargasIndexRoute: typeof AuthenticatedRecargasIndexRoute
+  AuthenticatedAdminAppsIndexRoute: typeof AuthenticatedAdminAppsIndexRoute
+  AuthenticatedAdminChatsIndexRoute: typeof AuthenticatedAdminChatsIndexRoute
+  AuthenticatedAdminTasksIndexRoute: typeof AuthenticatedAdminTasksIndexRoute
+  AuthenticatedAdminUsersIndexRoute: typeof AuthenticatedAdminUsersIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
-  AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
-  AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
+  AuthenticatedComprasIndexRoute: AuthenticatedComprasIndexRoute,
+  AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
-  AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
-  AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
-  AuthenticatedVendedorIndexRoute: AuthenticatedVendedorIndexRoute,
-  AuthenticatedVendedorComprasIndexRoute:
-    AuthenticatedVendedorComprasIndexRoute,
-  AuthenticatedVendedorRecargasIndexRoute:
-    AuthenticatedVendedorRecargasIndexRoute,
+  AuthenticatedRecargasIndexRoute: AuthenticatedRecargasIndexRoute,
+  AuthenticatedAdminAppsIndexRoute: AuthenticatedAdminAppsIndexRoute,
+  AuthenticatedAdminChatsIndexRoute: AuthenticatedAdminChatsIndexRoute,
+  AuthenticatedAdminTasksIndexRoute: AuthenticatedAdminTasksIndexRoute,
+  AuthenticatedAdminUsersIndexRoute: AuthenticatedAdminUsersIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

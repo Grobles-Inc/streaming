@@ -8,9 +8,20 @@ import {
 import { NavGroup } from '@/components/layout/nav-group'
 import { NavUser } from '@/components/layout/nav-user'
 import { Balance } from '@/components/layout/balance'
-import { sidebarData } from './data/sidebar-data'
+import { getSidebarData } from './data/sidebar-data'
+import { useAuthStore } from '@/stores/authStore'
+import { type UserRole } from './types'
+import { RoleSwitcher } from '../role-switcher'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const user = useAuthStore((state) => state.auth.user)
+
+  // Default to 'vendedor' if no user or role is available
+  const userRole: UserRole = user?.role || 'vendedor'
+
+  // Get role-based sidebar data
+  const sidebarData = getSidebarData(userRole)
+
   return (
     <Sidebar collapsible='icon' variant='floating' {...props}>
       <SidebarHeader>
@@ -22,6 +33,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ))}
       </SidebarContent>
       <SidebarFooter>
+        <RoleSwitcher />
         <NavUser user={sidebarData.user} />
       </SidebarFooter>
       <SidebarRail />

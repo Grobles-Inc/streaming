@@ -1,11 +1,10 @@
-import Cookies from 'js-cookie'
-import { Outlet } from '@tanstack/react-router'
-import { cn } from '@/lib/utils'
-import { SearchProvider } from '@/context/search-context'
-import { SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import SkipToMain from '@/components/skip-to-main'
-import { Footer } from '../footer'
+import { SidebarProvider } from '@/components/ui/sidebar'
+import { SearchProvider } from '@/context/search-context'
+import { cn } from '@/lib/utils'
+import { Outlet } from '@tanstack/react-router'
+import Cookies from 'js-cookie'
 
 interface Props {
   children?: React.ReactNode
@@ -32,9 +31,8 @@ export function AuthenticatedLayout({ children }: Props) {
         >
           {children ? children : <Outlet />}
         </div>
-    
-      </SidebarProvider>    
-      <Footer />
+
+      </SidebarProvider>
     </SearchProvider>
   )
 }

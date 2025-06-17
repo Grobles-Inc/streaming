@@ -1,12 +1,13 @@
 import Cookies from 'js-cookie'
 import { create } from 'zustand'
+import { type UserRole } from '@/components/layout/types'
 
 const ACCESS_TOKEN = 'thisisjustarandomstring'
 
 interface AuthUser {
   accountNo: string
   email: string
-  role: string[]
+  role: UserRole
   exp: number
 }
 

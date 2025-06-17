@@ -112,12 +112,6 @@ const baseNavGroups = [
     roles: ['proveedor'],
     items: [
       {
-        title: 'Dashboard',
-        url: '/proveedor',
-        icon: IconLayoutDashboard,
-        roles: ['proveedor'],
-      },
-      {
         title: 'Productos',
         url: '/proveedor/productos',
         icon: IconPackage,
@@ -130,15 +124,9 @@ const baseNavGroups = [
         roles: ['proveedor'],
       },
       {
-        title: 'Reportes',
+        title: 'Reportes y Finanzas',
         url: '/proveedor/reportes',
         icon: IconChartBar,
-        roles: ['proveedor'],
-      },
-      {
-        title: 'Finanzas',
-        url: '/proveedor/finanzas',
-        icon: IconReportMoney,
         roles: ['proveedor'],
       },
     ],

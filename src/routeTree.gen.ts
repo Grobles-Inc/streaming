@@ -32,6 +32,9 @@ import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_auth
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
 import { Route as publicCategoriaNameRouteImport } from './routes/(public)/categoria/$name'
+import { Route as AuthenticatedProveedorReportesIndexRouteImport } from './routes/_authenticated/proveedor/reportes/index'
+import { Route as AuthenticatedProveedorProductosIndexRouteImport } from './routes/_authenticated/proveedor/productos/index'
+import { Route as AuthenticatedProveedorPedidosIndexRouteImport } from './routes/_authenticated/proveedor/pedidos/index'
 import { Route as AuthenticatedAdminUsersIndexRouteImport } from './routes/_authenticated/admin/users/index'
 import { Route as AuthenticatedAdminTasksIndexRouteImport } from './routes/_authenticated/admin/tasks/index'
 import { Route as AuthenticatedAdminChatsIndexRouteImport } from './routes/_authenticated/admin/chats/index'
@@ -161,6 +164,24 @@ const publicCategoriaNameRoute = publicCategoriaNameRouteImport.update({
   path: '/categoria/$name',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedProveedorReportesIndexRoute =
+  AuthenticatedProveedorReportesIndexRouteImport.update({
+    id: '/proveedor/reportes/',
+    path: '/proveedor/reportes/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProveedorProductosIndexRoute =
+  AuthenticatedProveedorProductosIndexRouteImport.update({
+    id: '/proveedor/productos/',
+    path: '/proveedor/productos/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProveedorPedidosIndexRoute =
+  AuthenticatedProveedorPedidosIndexRouteImport.update({
+    id: '/proveedor/pedidos/',
+    path: '/proveedor/pedidos/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminUsersIndexRoute =
   AuthenticatedAdminUsersIndexRouteImport.update({
     id: '/admin/users/',
@@ -214,6 +235,9 @@ export interface FileRoutesByFullPath {
   '/admin/chats': typeof AuthenticatedAdminChatsIndexRoute
   '/admin/tasks': typeof AuthenticatedAdminTasksIndexRoute
   '/admin/users': typeof AuthenticatedAdminUsersIndexRoute
+  '/proveedor/pedidos': typeof AuthenticatedProveedorPedidosIndexRoute
+  '/proveedor/productos': typeof AuthenticatedProveedorProductosIndexRoute
+  '/proveedor/reportes': typeof AuthenticatedProveedorReportesIndexRoute
 }
 export interface FileRoutesByTo {
   '': typeof AuthenticatedRouteRouteWithChildren
@@ -242,6 +266,9 @@ export interface FileRoutesByTo {
   '/admin/chats': typeof AuthenticatedAdminChatsIndexRoute
   '/admin/tasks': typeof AuthenticatedAdminTasksIndexRoute
   '/admin/users': typeof AuthenticatedAdminUsersIndexRoute
+  '/proveedor/pedidos': typeof AuthenticatedProveedorPedidosIndexRoute
+  '/proveedor/productos': typeof AuthenticatedProveedorProductosIndexRoute
+  '/proveedor/reportes': typeof AuthenticatedProveedorReportesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -272,6 +299,9 @@ export interface FileRoutesById {
   '/_authenticated/admin/chats/': typeof AuthenticatedAdminChatsIndexRoute
   '/_authenticated/admin/tasks/': typeof AuthenticatedAdminTasksIndexRoute
   '/_authenticated/admin/users/': typeof AuthenticatedAdminUsersIndexRoute
+  '/_authenticated/proveedor/pedidos/': typeof AuthenticatedProveedorPedidosIndexRoute
+  '/_authenticated/proveedor/productos/': typeof AuthenticatedProveedorProductosIndexRoute
+  '/_authenticated/proveedor/reportes/': typeof AuthenticatedProveedorReportesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -303,6 +333,9 @@ export interface FileRouteTypes {
     | '/admin/chats'
     | '/admin/tasks'
     | '/admin/users'
+    | '/proveedor/pedidos'
+    | '/proveedor/productos'
+    | '/proveedor/reportes'
   fileRoutesByTo: FileRoutesByTo
   to:
     | ''
@@ -331,6 +364,9 @@ export interface FileRouteTypes {
     | '/admin/chats'
     | '/admin/tasks'
     | '/admin/users'
+    | '/proveedor/pedidos'
+    | '/proveedor/productos'
+    | '/proveedor/reportes'
   id:
     | '__root__'
     | '/_authenticated'
@@ -360,6 +396,9 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/chats/'
     | '/_authenticated/admin/tasks/'
     | '/_authenticated/admin/users/'
+    | '/_authenticated/proveedor/pedidos/'
+    | '/_authenticated/proveedor/productos/'
+    | '/_authenticated/proveedor/reportes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -541,6 +580,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicCategoriaNameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/proveedor/reportes/': {
+      id: '/_authenticated/proveedor/reportes/'
+      path: '/proveedor/reportes'
+      fullPath: '/proveedor/reportes'
+      preLoaderRoute: typeof AuthenticatedProveedorReportesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/proveedor/productos/': {
+      id: '/_authenticated/proveedor/productos/'
+      path: '/proveedor/productos'
+      fullPath: '/proveedor/productos'
+      preLoaderRoute: typeof AuthenticatedProveedorProductosIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/proveedor/pedidos/': {
+      id: '/_authenticated/proveedor/pedidos/'
+      path: '/proveedor/pedidos'
+      fullPath: '/proveedor/pedidos'
+      preLoaderRoute: typeof AuthenticatedProveedorPedidosIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/users/': {
       id: '/_authenticated/admin/users/'
       path: '/admin/users'
@@ -605,6 +665,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminChatsIndexRoute: typeof AuthenticatedAdminChatsIndexRoute
   AuthenticatedAdminTasksIndexRoute: typeof AuthenticatedAdminTasksIndexRoute
   AuthenticatedAdminUsersIndexRoute: typeof AuthenticatedAdminUsersIndexRoute
+  AuthenticatedProveedorPedidosIndexRoute: typeof AuthenticatedProveedorPedidosIndexRoute
+  AuthenticatedProveedorProductosIndexRoute: typeof AuthenticatedProveedorProductosIndexRoute
+  AuthenticatedProveedorReportesIndexRoute: typeof AuthenticatedProveedorReportesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -617,6 +680,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminChatsIndexRoute: AuthenticatedAdminChatsIndexRoute,
   AuthenticatedAdminTasksIndexRoute: AuthenticatedAdminTasksIndexRoute,
   AuthenticatedAdminUsersIndexRoute: AuthenticatedAdminUsersIndexRoute,
+  AuthenticatedProveedorPedidosIndexRoute:
+    AuthenticatedProveedorPedidosIndexRoute,
+  AuthenticatedProveedorProductosIndexRoute:
+    AuthenticatedProveedorProductosIndexRoute,
+  AuthenticatedProveedorReportesIndexRoute:
+    AuthenticatedProveedorReportesIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

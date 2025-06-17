@@ -8,8 +8,6 @@ import {
   IconMovie,
   IconDevices,
   IconPackage,
-  IconCheck,
-  IconX,
 } from '@tabler/icons-react'
 import { Producto, Categoria } from './schema'
 

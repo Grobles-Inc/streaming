@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { CalendarDays, Download, TrendingUp, TrendingDown, DollarSign, Package, Users, ShoppingCart, Activity } from 'lucide-react'
+import { CalendarDays, Download, TrendingUp, TrendingDown, DollarSign, Package, Users, Activity } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { Search } from '@/components/search'
 import { Main } from '@/components/layout/main'
@@ -17,7 +17,6 @@ import {
   Pie,
   PieChart,
   Cell,
-  Legend,
   Tooltip
 } from 'recharts'
 

@@ -13,7 +13,6 @@ import {
   IconNotification,
   IconPackage,
   IconPalette,
-  IconReportMoney,
   IconServerOff,
   IconSettings,
   IconShoppingCart,

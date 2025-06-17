@@ -17,9 +17,7 @@ interface DataTableRowActionsProps {
   row: Row<Producto>
 }
 
-export function DataTableRowActions({ row }: DataTableRowActionsProps) {
-  const producto = row.original
-
+export function DataTableRowActions({ row: _row }: DataTableRowActionsProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

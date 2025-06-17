@@ -2,14 +2,12 @@ import { Service } from "./types"
 
 
 export const categorias: Service[] = [
-  { name: 'Max', subtitle: 'Max', icon: '🔵', tab: 'max' },
-  { name: 'Netflix', subtitle: 'Netflix', icon: '🔴', tab: 'netflix' },
-  { name: 'Disney+', subtitle: 'Disney+', icon: '🔷', tab: 'disney' },
-  { name: 'Prime Video', subtitle: 'Prime Video', icon: '🔵', tab: 'prime_video' },
-  { name: 'Google', subtitle: 'Google', icon: '🟢', tab: 'google' },
-  { name: 'Busca Personas', subtitle: 'Busca Personas', icon: '🧑‍💼', tab: 'busca_personas' },
- 
- 
+  { name: 'Max', subtitle: 'Max', icon: 'https://img.icons8.com/?size=400&id=9tVdlpWe1F9k&format=png&color=000000', tab: 'max' },
+  { name: 'Netflix', subtitle: 'Netflix', icon: 'https://img.icons8.com/?size=400&id=20519&format=png&color=000000', tab: 'netflix' },
+  { name: 'Disney+', subtitle: 'Disney+', icon: 'https://img.icons8.com/?size=400&id=rrtOAHJcHL38&format=png&color=000000', tab: 'disney' },
+  { name: 'Prime Video', subtitle: 'Prime Video', icon: 'https://img.icons8.com/?size=400&id=Rs68BrhxH0XZ&format=png&color=000000', tab: 'prime_video' },
+  { name: 'Chat GPT', subtitle: 'Chat GPT', icon: 'https://img.icons8.com/?size=400&id=FBO05Dys9QCg&format=png&color=000000', tab: 'chatgpt' },
+
 ]
 
 

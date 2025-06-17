@@ -41,7 +41,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
           <div className="flex flex-row justify-between items-center w-full mb-2">
             <Badge className='hidden md:block'>Stock: {producto.stock} </Badge>
 
-            <div className='flex w-full justify-between md:justify-end md:gap-2 items-baseline mt-4'><span className="text-xs text-muted-foreground">S/.{producto.precioSoles.toFixed(2)} </span>
+            <div className='flex w-full justify-between md:justify-end md:gap-2 items-baseline mt-4 md:mt-0'><span className="text-xs text-muted-foreground">S/.{producto.precioSoles.toFixed(2)} </span>
               <span className="font-bold text-xl text-foreground">     ${producto.precioUSD.toFixed(2)}</span></div>
           </div>
 

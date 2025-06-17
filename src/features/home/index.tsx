@@ -10,7 +10,7 @@ export default function Home() {
       {/* Top bar */}
       <LandingHeader />
       {/* Menu as Tabs (responsive) */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 md:gap-6 gap-2 md:p-6 p-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5  md:gap-6 gap-2 md:p-6 p-4">
         {categorias.map((tab) => (
           <Link key={tab.tab} to="/categoria/$name" params={{ name: tab.tab.toLowerCase() }}>
             <CategoriaCard key={tab.tab} categoria={tab} />

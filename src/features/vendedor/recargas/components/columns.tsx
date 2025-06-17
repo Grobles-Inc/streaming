@@ -1,7 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
-import { IconBan, IconProgressCheck, IconTimeDuration0 } from '@tabler/icons-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { estadosMap } from '../data/data'
 import { Recarga } from '../data/schema'

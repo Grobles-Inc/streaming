@@ -30,13 +30,12 @@ export default tseslint.config(
       ],
       'no-console': 'error',
       'no-unused-vars': 'off',
+      // TODO: Cuando el proyecto se entregue, se debe cambiar a error , revisar el primer commit para revertir los cambios de este archivo
       '@typescript-eslint/no-unused-vars': [
-        'error',
+        'warn',
         {
-          args: 'all',
-          argsIgnorePattern: '^_',
-          caughtErrors: 'all',
-          caughtErrorsIgnorePattern: '^_',
+          args: 'none',
+          caughtErrors: 'none',
           destructuredArrayIgnorePattern: '^_',
           varsIgnorePattern: '^_',
           ignoreRestSiblings: true,

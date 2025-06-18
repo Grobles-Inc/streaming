@@ -23,6 +23,7 @@ export function RoleSwitcher() {
     } else {
       // Create a mock user for demo purposes
       setUser({
+        id: '1',
         accountNo: 'DEMO001',
         email: 'demo@example.com',
         role: newRole,

@@ -2,11 +2,12 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { useSaldo } from '@/stores/balanceStore'
 import { Producto } from '@/types'
 import { toast } from 'sonner'
 import { useState } from 'react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { useBilleteraByUsuario, useUpdateBilleteraSaldo } from '@/queries'
+import { useAuthStore } from '@/stores/authStore'
 
 type ComprarProductoModalProps = {
   open: boolean
@@ -16,7 +17,11 @@ type ComprarProductoModalProps = {
 
 export default function ComprarProductoModal({ open, onOpenChange, producto }: ComprarProductoModalProps) {
   if (!producto) return null
-  const { monto, actualizarSaldo } = useSaldo()
+  const { auth } = useAuthStore()
+  if (!auth?.user?.id) return null
+  const { data: billetera } = useBilleteraByUsuario(auth?.user?.id)
+  const { mutate: actualizarSaldo } = useUpdateBilleteraSaldo()
+  const monto = billetera?.saldo
   const [formData, setFormData] = useState({
     name: '',
     phone: ''
@@ -32,13 +37,13 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
   }
 
   function buyProduct() {
-    if (!producto?.precioUSD) return
-    if (monto < producto?.precioUSD) {
+    if (!producto?.precioUSD || !monto || !billetera?.id) return
+    if (monto && monto < producto?.precioUSD) {
       toast.error("No tienes suficiente saldo", { duration: 3000 })
       return
     }
     toast.success("Producto comprado correctamente", { duration: 3000 })
-    actualizarSaldo(monto - producto?.precioUSD)
+    actualizarSaldo({ id: billetera?.id, nuevoSaldo: monto - producto?.precioUSD })
     onOpenChange(false)
     setFormData({ name: '', phone: '' })
   }

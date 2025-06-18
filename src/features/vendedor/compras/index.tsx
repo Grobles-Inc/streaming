@@ -11,6 +11,7 @@ import { compraSchema } from './data/schema'
 
 export default function Compras() {
   const comprasList = compras.map(compra => compraSchema.parse(compra))
+  // const { data: compras } = useCompras()
   return (
     <ComprasProvider>
       <Header fixed>
@@ -32,7 +33,6 @@ export default function Compras() {
           <DataTable data={comprasList} columns={columns} />
         </div>
       </Main>
-
       <ComprasDialogs />
     </ComprasProvider>
   )

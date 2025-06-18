@@ -1,7 +1,4 @@
-import { z } from 'zod'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { showSubmittedData } from '@/utils/show-submitted-data'
+import { SelectDropdown } from '@/components/select-dropdown'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -22,8 +19,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { SelectDropdown } from '@/components/select-dropdown'
-import { Compra } from '../data/schema'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { Compra, compraSchema } from '../data/schema'
+import { useUpdateCompra } from '../queries'
 
 interface Props {
   open: boolean
@@ -31,50 +31,20 @@ interface Props {
   currentRow?: Compra
 }
 
-const formSchema = z.object({
-  producto: z.string().min(1, 'Producto es requerido.'),
-  email_cuenta: z.string().min(1, 'Email es requerido.'),
-  clave_cuenta: z.string().min(1, 'Clave es requerida.'),
-  url_cuenta: z.string().min(1, 'URL es requerida.'),
-  perfil: z.string().min(1, 'Perfil es requerido.'),
-  pin: z.string().min(1, 'Pin es requerido.'),
-  fecha_inicio: z.string().min(1, 'Fecha de inicio es requerida.'),
-  fecha_termino: z.string().min(1, 'Fecha de término es requerida.'),
-  monto_reembolso: z.number().min(1, 'Monto de reembolso es requerido.'),
-  nombre_cliente: z.string().min(1, 'Nombre del cliente es requerido.'),
-  telefono_cliente: z.string().min(1, 'Teléfono del cliente es requerido.'),
-  proveedor: z.string().min(1, 'Proveedor es requerido.'),
-  dias_restantes: z.number().min(1, 'Días restantes es requerido.'),
-})
-type ComprasForm = z.infer<typeof formSchema>
+
+type ComprasForm = z.infer<typeof compraSchema>
 
 export function ComprasMutateDrawer({ open, onOpenChange, currentRow }: Props) {
-  const isUpdate = !!currentRow
-
+  const { mutate: updateCompra, isPending } = useUpdateCompra()
   const form = useForm<ComprasForm>({
-    resolver: zodResolver(formSchema),
-    defaultValues: currentRow ?? {
-      producto: '',
-      email_cuenta: '',
-      clave_cuenta: '',
-      url_cuenta: '',
-      perfil: '',
-      pin: '',
-      fecha_inicio: '',
-      fecha_termino: '',
-      monto_reembolso: 0,
-      nombre_cliente: '',
-      telefono_cliente: '',
-      proveedor: '',
-      dias_restantes: 0,
-    },
+    resolver: zodResolver(compraSchema),
+    defaultValues: currentRow
   })
 
   const onSubmit = (data: ComprasForm) => {
-    // do something with the form data
+    updateCompra({ id: currentRow!.id, updates: data })
     onOpenChange(false)
     form.reset()
-    showSubmittedData(data)
   }
 
   return (
@@ -87,11 +57,9 @@ export function ComprasMutateDrawer({ open, onOpenChange, currentRow }: Props) {
     >
       <SheetContent className='flex flex-col'>
         <SheetHeader className='text-left'>
-          <SheetTitle>{isUpdate ? 'Actualizar' : 'Crear'} Compra</SheetTitle>
+          <SheetTitle>Actualizar Compra</SheetTitle>
           <SheetDescription>
-            {isUpdate
-              ? 'Actualiza la compra proporcionando la información necesaria.'
-              : 'Añade una nueva compra proporcionando la información necesaria.'}
+            Actualiza la compra proporcionando la información necesaria.
             Haz clic en guardar cuando hayas terminado.
           </SheetDescription>
         </SheetHeader>
@@ -214,10 +182,10 @@ export function ComprasMutateDrawer({ open, onOpenChange, currentRow }: Props) {
         </Form>
         <SheetFooter className='gap-2'>
           <SheetClose asChild>
-            <Button variant='outline'>Close</Button>
+            <Button variant='outline'>Cerrar</Button>
           </SheetClose>
-          <Button form='tasks-form' type='submit'>
-            Save changes
+          <Button form='compras-form' type='submit' disabled={isPending}>
+            {isPending ? 'Guardando...' : 'Guardar'}
           </Button>
         </SheetFooter>
       </SheetContent>

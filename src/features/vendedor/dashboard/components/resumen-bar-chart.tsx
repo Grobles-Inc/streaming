@@ -1,69 +1,26 @@
+import { useAuthStore } from '@/stores/authStore'
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Legend } from 'recharts'
+import { useRecargasByVendedor } from '../../recargas/queries'
+import { useComprasByVendedor } from '../../compras/queries'
 
-const data = [
-  {
-    name: 'Jan',
-    income: Math.floor(Math.random() * 5000) + 1000,
-    expense: Math.floor(Math.random() * 3000) + 500,
-  },
-  {
-    name: 'Feb',
-    income: Math.floor(Math.random() * 5000) + 1000,
-    expense: Math.floor(Math.random() * 3000) + 500,
-  },
-  {
-    name: 'Mar',
-    income: Math.floor(Math.random() * 5000) + 1000,
-    expense: Math.floor(Math.random() * 3000) + 500,
-  },
-  {
-    name: 'Apr',
-    income: Math.floor(Math.random() * 5000) + 1000,
-    expense: Math.floor(Math.random() * 3000) + 500,
-  },
-  {
-    name: 'May',
-    income: Math.floor(Math.random() * 5000) + 1000,
-    expense: Math.floor(Math.random() * 3000) + 500,
-  },
-  {
-    name: 'Jun',
-    income: Math.floor(Math.random() * 5000) + 1000,
-    expense: Math.floor(Math.random() * 3000) + 500,
-  },
-  {
-    name: 'Jul',
-    income: Math.floor(Math.random() * 5000) + 1000,
-    expense: Math.floor(Math.random() * 3000) + 500,
-  },
-  {
-    name: 'Aug',
-    income: Math.floor(Math.random() * 5000) + 1000,
-    expense: Math.floor(Math.random() * 3000) + 500,
-  },
-  {
-    name: 'Sep',
-    income: Math.floor(Math.random() * 5000) + 1000,
-    expense: Math.floor(Math.random() * 3000) + 500,
-  },
-  {
-    name: 'Oct',
-    income: Math.floor(Math.random() * 5000) + 1000,
-    expense: Math.floor(Math.random() * 3000) + 500,
-  },
-  {
-    name: 'Nov',
-    income: Math.floor(Math.random() * 5000) + 1000,
-    expense: Math.floor(Math.random() * 3000) + 500,
-  },
-  {
-    name: 'Dec',
-    income: Math.floor(Math.random() * 5000) + 1000,
-    expense: Math.floor(Math.random() * 3000) + 500,
-  },
-]
+
 
 export function ResumenBarChart() {
+  const { auth } = useAuthStore()
+  if (!auth.user?.id) {
+    return null
+  }
+  const { data: recargas } = useRecargasByVendedor(auth.user.id)
+  const { data: compras } = useComprasByVendedor(auth.user.id)
+  const totalRecargas = recargas?.reduce((acc, recarga) => acc + recarga.monto, 0) || 0
+  const totalCompras = compras?.reduce((acc, compra) => acc + compra.precio, 0) || 0
+  const data = [
+    {
+      name: 'Resumen',
+      recargas: totalRecargas,
+      compras: totalCompras,
+    },
+  ]
   return (
     <ResponsiveContainer width='100%' height={350}>
       <BarChart data={data}>
@@ -83,13 +40,13 @@ export function ResumenBarChart() {
         />
         <Legend />
         <Bar
-          dataKey='income'
+          dataKey='recargas'
           fill='#10b981'
           radius={[4, 4, 0, 0]}
           name='Income'
         />
         <Bar
-          dataKey='expense'
+          dataKey='compras'
           fill='#ef4444'
           radius={[4, 4, 0, 0]}
           name='Expense'

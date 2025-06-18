@@ -8,16 +8,23 @@ import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { SidebarMenuButton, useSidebar } from '../ui/sidebar'
-import { useSaldo } from '@/stores/balanceStore'
 import { DesembolsoMessage, RecargaMessage } from '@/lib/whatsapp'
+import { useBilleteraByUsuario, useUpdateBilleteraSaldo } from '@/queries'
+import { useAuthStore } from '@/stores/authStore'
 
 type OperacionSaldo = 'recargar' | 'retirar'
 
 export function Balance() {
   const { isMobile } = useSidebar()
-  const { monto, actualizarSaldo } = useSaldo()
+  const { auth } = useAuthStore()
   const [dialogOpen, setDialogOpen] = React.useState(false)
   const [operacion, setOperacion] = React.useState<OperacionSaldo>('recargar')
+  if (!auth.user?.id) {
+    return null
+  }
+  const { data: billetera } = useBilleteraByUsuario(auth.user.id)
+  const { mutate: actualizarSaldo } = useUpdateBilleteraSaldo()
+  const monto = billetera?.saldo || 0
 
   const form = useForm<{ amount: number }>({
     defaultValues: { amount: 0 },
@@ -37,7 +44,7 @@ export function Balance() {
       ? monto + data.amount
       : monto - data.amount
 
-    actualizarSaldo(nuevoMonto)
+    actualizarSaldo({ id: billetera?.id || '', nuevoSaldo: nuevoMonto })
 
     // Enviar mensaje solo para recargas
     if (operacion === 'recargar') {

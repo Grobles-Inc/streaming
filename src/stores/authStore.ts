@@ -5,6 +5,7 @@ import { type UserRole } from '@/components/layout/types'
 const ACCESS_TOKEN = 'thisisjustarandomstring'
 
 interface AuthUser {
+  id: string
   accountNo: string
   email: string
   role: UserRole

@@ -8,8 +8,8 @@ import { recargas } from './data/recargas'
 import { recargaSchema } from './data/schema'
 
 export default function Recargas() {
-
   const recargasList = recargas.map(recarga => recargaSchema.parse(recarga))
+  // const { data: recargas } = useRecargas()
   return (
     <RecargasProvider>
       <Header fixed>

@@ -1,19 +1,14 @@
-import { showSubmittedData } from '@/utils/show-submitted-data'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { useCompras } from '../context/compras-context'
+import { useReciclarCompra } from '../queries'
 import { ComprasImportDialog } from './compras-import-dialog'
 import { ComprasMutateDrawer } from './compras-mutate-drawer'
 
 export function ComprasDialogs() {
   const { open, setOpen, currentRow, setCurrentRow } = useCompras()
+  const { mutate: reciclarCompra, isPending } = useReciclarCompra()
   return (
     <>
-      <ComprasMutateDrawer
-        key='compras-create'
-        open={open === 'create'}
-        onOpenChange={() => setOpen('create')}
-      />
-
       <ComprasImportDialog
         key='compras-import'
         open={open === 'import'}
@@ -35,7 +30,7 @@ export function ComprasDialogs() {
           />
 
           <ConfirmDialog
-            key='task-delete'
+            key='compra-delete'
             destructive
             open={open === 'delete'}
             onOpenChange={() => {
@@ -45,25 +40,23 @@ export function ComprasDialogs() {
               }, 500)
             }}
             handleConfirm={() => {
+              reciclarCompra(currentRow.id)
               setOpen(null)
               setTimeout(() => {
                 setCurrentRow(null)
               }, 500)
-              showSubmittedData(
-                currentRow,
-                'La siguiente compra ha sido cancelada:'
-              )
             }}
             className='max-w-md'
-            title={`Cancelar esta compra: ${currentRow.id} ?`}
+            title={`Reciclar esta compra: ${currentRow.id} ?`}
             desc={
               <>
-                Estás a punto de cancelar la compra con el ID{' '}
+                Estás a punto de reciclar la compra con el ID{' '}
                 <strong>{currentRow.id}</strong>. <br />
                 Esta acción no se puede deshacer.
               </>
             }
-            confirmText='Cancelar'
+            confirmText={isPending ? 'Reciclando...' : 'Reciclar'}
+            isLoading={isPending}
           />
         </>
       )}

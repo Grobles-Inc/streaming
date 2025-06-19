@@ -6,6 +6,7 @@ import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { Search } from '@/components/search'
 import { IconUsers, IconPackage, IconWallet } from '@tabler/icons-react'
+import { RoleGuard } from '@/components/role-guard'
 
 const usuarios = [
     { id: 1, nombre: 'Juan Pérez', email: 'juan@gmail.com', rol: 'vendedor', estado: 'activo' },
@@ -27,7 +28,7 @@ const recargas = [
 
 export default function ReportesGlobalesPage() {
     return (
-        <>
+        <RoleGuard allowedRoles={['admin']}>
             <Header>
                 <div className="ml-auto flex items-center space-x-4">
                     <Search />
@@ -194,6 +195,6 @@ export default function ReportesGlobalesPage() {
                     </TabsContent>
                 </Tabs>
             </Main>
-        </>
+        </RoleGuard>
     );
 }

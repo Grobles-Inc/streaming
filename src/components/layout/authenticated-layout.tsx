@@ -3,8 +3,10 @@ import SkipToMain from '@/components/skip-to-main'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { SearchProvider } from '@/context/search-context'
 import { cn } from '@/lib/utils'
-import { Outlet } from '@tanstack/react-router'
+import { useAuth } from '@/stores/authStore'
+import { Navigate, Outlet } from '@tanstack/react-router'
 import Cookies from 'js-cookie'
+import { RoleGuard } from '../role-guard'
 
 interface Props {
   children?: React.ReactNode
@@ -12,6 +14,10 @@ interface Props {
 
 export function AuthenticatedLayout({ children }: Props) {
   const defaultOpen = Cookies.get('sidebar_state') !== 'false'
+  const { isAuthenticated } = useAuth()
+  if (!isAuthenticated) {
+    return <Navigate to="/sign-in" />
+  }
   return (
     <SearchProvider>
       <SidebarProvider defaultOpen={defaultOpen}>

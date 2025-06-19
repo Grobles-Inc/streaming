@@ -18,8 +18,8 @@ type ComprarProductoModalProps = {
 export default function ComprarProductoModal({ open, onOpenChange, producto }: ComprarProductoModalProps) {
   if (!producto) return null
   const { user } = useAuthStore()
-  if (!user?.id) return null
-  const { data: billetera } = useBilleteraByUsuario(user?.id)
+
+  const { data: billetera } = useBilleteraByUsuario(user?.id || '0')
   const { mutate: actualizarSaldo } = useUpdateBilleteraSaldo()
   const monto = billetera?.saldo
   const [formData, setFormData] = useState({
@@ -37,6 +37,10 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
   }
 
   function buyProduct() {
+    if (!user?.id) {
+      toast.error("Debes iniciar sesión para comprar un producto", { duration: 3000 })
+      return
+    }
     if (!producto?.precioUSD || !monto || !billetera?.id) return
     if (monto && monto < producto?.precioUSD) {
       toast.error("No tienes suficiente saldo", { duration: 3000 })
@@ -53,18 +57,12 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       <DialogContent className="max-w-md w-full">
         <DialogHeader className='flex flex-col gap-3'>
           <DialogTitle>{producto.categoria.toUpperCase()}</DialogTitle>
-          <DialogDescription>{producto.titulo} {producto.subtitulo}</DialogDescription>
+          <DialogDescription>{producto.titulo}</DialogDescription>
 
         </DialogHeader>
         <div className='flex justify-between'>
-          <div className="flex flex-col w-full mb-2">
-            <span className=" text-gray-500 font-semibold mb-1"> {producto.proveedor}</span>
-            <Badge>Renovable: <span className="font-bold">${producto.precioRenovable.toFixed(2)}</span></Badge>
-          </div>
-          <div className='flex flex-col items-end'>
-            <span className="font-bold text-2xl">${producto.precioUSD.toFixed(2)}</span>
-            <span className="text-xs text-muted-foreground"> S/.{producto.precioSoles.toFixed(2)}</span>
-          </div>
+          <span className=" text-gray-500 font-semibold mb-1">Proveedor: {producto.proveedor}</span>
+          <span className="font-bold text-2xl">${producto.precioUSD.toFixed(2)}</span>
         </div>
 
         {/* Accordion for Product Information */}
@@ -93,7 +91,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
 
         {/* Plan Selector (Read-only) */}
         <div className="mb-4">
-          <div className="font-semibold mb-1">Ciclo de compra</div>
+          <div className="font-semibold mb-1">Tiempo de compra</div>
           <div className="flex gap-4">
             <label
               className={`flex-1 border rounded-lg p-4 cursor-not-allowed transition-colors ${producto.periodo === '30' ? 'border-primary bg-secondary' : 'border-muted bg-transparent'} flex items-start gap-3`}
@@ -159,9 +157,8 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
           <Button
             className="w-full"
             onClick={buyProduct}
-            disabled={!isFormValid}
           >
-            {producto.textoBoton}
+            Comprar
           </Button>
         </DialogFooter>
       </DialogContent>

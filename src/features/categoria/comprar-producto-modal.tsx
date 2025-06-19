@@ -27,8 +27,6 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
     phone: ''
   })
 
-  const isFormValid = formData.name.trim() !== '' && formData.phone.trim() !== ''
-
   function handleInputChange(field: 'name' | 'phone', value: string) {
     setFormData(prev => ({
       ...prev,

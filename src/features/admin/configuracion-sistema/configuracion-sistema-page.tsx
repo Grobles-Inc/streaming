@@ -5,7 +5,6 @@ import { Switch } from '@/components/ui/switch'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { useState } from 'react'
-import { RoleGuard } from '@/components/role-guard'
 
 export default function ConfiguracionSistemaPage() {
   const [mantenimiento, setMantenimiento] = useState(false)
@@ -13,7 +12,7 @@ export default function ConfiguracionSistemaPage() {
   const [comision, setComision] = useState(10)
 
   return (
-    <RoleGuard allowedRoles={['admin']}>
+    <>
       <Header>
         <div className='ml-auto flex items-center space-x-4'>
           {/* Puedes agregar aquí buscador o acciones rápidas */}
@@ -82,6 +81,6 @@ export default function ConfiguracionSistemaPage() {
           </Card>
         </div>
       </Main>
-    </RoleGuard>
+    </>
   )
 }

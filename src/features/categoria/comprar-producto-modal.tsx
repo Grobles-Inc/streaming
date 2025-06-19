@@ -1,13 +1,12 @@
-import { Badge } from '@/components/ui/badge'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Producto } from '@/types'
-import { toast } from 'sonner'
-import { useState } from 'react'
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { useBilleteraByUsuario, useUpdateBilleteraSaldo } from '@/queries'
 import { useAuthStore } from '@/stores/authStore'
+import { Producto } from '@/types'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 type ComprarProductoModalProps = {
   open: boolean

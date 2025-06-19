@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils'
 import { useAuth } from '@/stores/authStore'
 import { Navigate, Outlet } from '@tanstack/react-router'
 import Cookies from 'js-cookie'
-import { RoleGuard } from '../role-guard'
 
 interface Props {
   children?: React.ReactNode

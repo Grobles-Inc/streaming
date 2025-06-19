@@ -46,7 +46,7 @@ export default function Dashboard() {
       </Header>
 
       {/* ===== Main ===== */}
-      <Main>
+      <Main className='space-y-4'>
         <div className='mb-2 flex items-center justify-between space-y-2'>
           <div>
             <h1 className='text-2xl font-bold tracking-tight'>Dashboard</h1>
@@ -55,6 +55,19 @@ export default function Dashboard() {
             </p>
           </div>
           <div className='flex items-center space-x-2'>
+            <Select
+              onValueChange={(value) => setTimeFilter(value as TimeFilter)}
+              defaultValue='month'
+            >
+              <SelectTrigger>
+                <SelectValue placeholder='Selecciona un filtro' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='day'>Diario</SelectItem>
+                <SelectItem value='week'>Semanal</SelectItem>
+                <SelectItem value='month'>Mensual</SelectItem>
+              </SelectContent>
+            </Select>
             <Button>Descargar</Button>
           </div>
         </div>
@@ -122,24 +135,12 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        <div className='grid grid-cols-1 gap-4 lg:grid-cols-7'>
-          <Card className='col-span-1 lg:col-span-3'>
+        <div className='grid grid-cols-1 gap-4 lg:grid-cols-4'>
+          <Card className='col-span-1 lg:col-span-2'>
             <CardHeader>
               <CardTitle className='flex items-center justify-between'>
                 Gráfico de Compras
-                <Select
-                  onValueChange={(value) => setTimeFilter(value as TimeFilter)}
-                  defaultValue='month'
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder='Selecciona un filtro' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='day'>Diario</SelectItem>
-                    <SelectItem value='week'>Semanal</SelectItem>
-                    <SelectItem value='month'>Mensual</SelectItem>
-                  </SelectContent>
-                </Select>
+
               </CardTitle>
               <CardDescription>
                 Comparativa de compras.
@@ -149,23 +150,11 @@ export default function Dashboard() {
               <ResumenComprasPieChart timeFilter={timeFilter} />
             </CardContent>
           </Card>
-          <Card className='col-span-1 lg:col-span-3'>
+          <Card className='col-span-1 lg:col-span-2'>
             <CardHeader>
               <CardTitle className='flex items-center justify-between'>
                 Gráfico de Recargas
-                <Select
-                  onValueChange={(value) => setTimeFilter(value as TimeFilter)}
-                  defaultValue='month'
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder='Selecciona un filtro' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='day'>Diario</SelectItem>
-                    <SelectItem value='week'>Semanal</SelectItem>
-                    <SelectItem value='month'>Mensual</SelectItem>
-                  </SelectContent>
-                </Select>
+
               </CardTitle>
               <CardDescription>
                 Comparativa de recargas

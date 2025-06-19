@@ -7,6 +7,7 @@ import {
   IconCreditCard,
   IconError404,
   IconHelp,
+  IconHome,
   IconLayoutDashboard,
   IconLock,
   IconLockAccess,
@@ -81,6 +82,20 @@ export const filterNavGroupsByRole = (groups: any[], userRole: UserRole) => {
 
 // Base navigation configuration
 const baseNavGroups = [  
+  {
+    title: 'Tienda',
+    roles: ['admin', 'seller', 'provider'],
+    items: [
+      
+      
+      {
+        title: 'Ir a la Tienda',
+        url: '/',
+        icon: IconHome,
+        roles: ['admin', 'seller', 'provider'],
+      }
+    ]
+  },
   {
     title: 'Vendedor',
     roles: ['seller'],

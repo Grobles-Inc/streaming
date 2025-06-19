@@ -37,8 +37,8 @@ export function ComprasSoporteModal({ open, setOpen, currentRow, telefono }: Com
       nombre_cliente: currentRow.nombre_cliente,
       asunto: subject,
       mensaje: message,
-      id_producto: currentRow.id,
-      id_cliente: currentRow.id,
+      id_producto: currentRow.producto_id || '',
+      id_cliente: currentRow.vendedor_id || '',
     }, telefono, isMobile ? 'mobile' : 'web')
     setSubject('')
     setMessage('')

@@ -83,7 +83,7 @@ export function DataTableRowActions<TData>({
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>Producto</DropdownMenuSubTrigger>
           <DropdownMenuSubContent>
-            <DropdownMenuRadioGroup value={compra.producto}>
+            <DropdownMenuRadioGroup value={compra.producto_id}>
               {productoOpciones.map((opcion) => (
                 <DropdownMenuRadioItem key={opcion.value} value={opcion.value}>
                   {opcion.label}

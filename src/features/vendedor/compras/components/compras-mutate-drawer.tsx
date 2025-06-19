@@ -42,7 +42,7 @@ export function ComprasMutateDrawer({ open, onOpenChange, currentRow }: Props) {
   })
 
   const onSubmit = (data: ComprasForm) => {
-    updateCompra({ id: currentRow!.id, updates: data })
+    updateCompra({ id: currentRow?.id || '', updates: data })
     onOpenChange(false)
     form.reset()
   }
@@ -71,7 +71,7 @@ export function ComprasMutateDrawer({ open, onOpenChange, currentRow }: Props) {
           >
             <FormField
               control={form.control}
-              name='producto'
+              name='producto_id'
               render={({ field }) => (
                 <FormItem className='space-y-1'>
                   <FormLabel>Producto</FormLabel>
@@ -144,7 +144,7 @@ export function ComprasMutateDrawer({ open, onOpenChange, currentRow }: Props) {
             />
             <FormField
               control={form.control}
-              name='url_cuenta'
+              name='perfil_cuenta'
               render={({ field }) => (
                 <FormItem className='relative space-y-3'>
                   <FormLabel>Priority</FormLabel>

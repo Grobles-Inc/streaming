@@ -13,20 +13,19 @@ const compraEstadoSchema = z.union([
 
 
 export const compraSchema = z.object({
-  id: z.string(),
-  producto: z.string().min(1, 'Producto es requerido.'),
+  id: z.string().optional(),
+  proveedor_id: z.string().min(1, 'Proveedor es requerido.'),
+  producto_id: z.string().min(1, 'Producto es requerido.'),
+  vendedor_id: z.string().min(1, 'Vendedor es requerido.'),
   email_cuenta: z.string().min(1, 'Email de la cuenta es requerido.'),
   clave_cuenta: z.string().min(1, 'Clave de la cuenta es requerida.'),
-  url_cuenta: z.string().min(1, 'URL de la cuenta es requerida.'),
-  perfil: z.string().min(1, 'Perfil es requerido.'),
-  pin: z.string().optional(),
+  perfil_cuenta: z.string().min(1, 'Perfil es requerido.'),
+  pin_cuenta: z.string().optional(),
+  nombre_cliente: z.string().min(1, 'Nombre del cliente es requerido.'),
+  telefono_cliente: z.string().min(1, 'Teléfono del cliente es requerido.'),
   fecha_inicio: z.string().min(1, 'Fecha de inicio es requerida.'),
   fecha_termino: z.string().min(1, 'Fecha de término es requerida.'),
   monto_reembolso: z.number().min(1, 'Monto de reembolso es requerido.'),
-  nombre_cliente: z.string().min(1, 'Nombre del cliente es requerido.'),
-  telefono_cliente: z.string().min(1, 'Teléfono del cliente es requerido.'),
-  proveedor: z.string().min(1, 'Proveedor es requerido.'),
-  telefono_proveedor: z.string().min(1, 'Teléfono del proveedor es requerido.'),
   dias_restantes: z.number().min(1, 'Días restantes es requerido.'),
   estado: compraEstadoSchema,
 })

@@ -87,6 +87,7 @@ export interface Database {
           descripcion: string | null
           informacion: string | null
           condiciones: string | null
+          url_cuenta: string | null
           precio: number
           stock: number
           categoria_id: string
@@ -101,6 +102,7 @@ export interface Database {
           descripcion?: string | null
           informacion?: string | null
           condiciones?: string | null
+          url_cuenta?: string | null
           precio: number
           stock: number
           categoria_id: string
@@ -115,6 +117,7 @@ export interface Database {
           descripcion?: string | null
           informacion?: string | null
           condiciones?: string | null
+          url_cuenta?: string | null
           precio?: number
           stock?: number
           categoria_id?: string
@@ -172,25 +175,43 @@ export interface Database {
           id: string
           proveedor_id: string
           producto_id: string
+          vendedor_id: string
           email_cuenta: string
           clave_cuenta: string
+          perfil_cuenta: string
           pin_cuenta?: string
+          productos: {
+            Row: {
+              id: string
+              nombre: string
+              precio: number
+            }
+          }
+          usuarios: {
+            Row: {
+              id: string
+              nombre: string
+              email: string
+            }
+          }
           perfil_usuario?: string
           nombre_cliente: string
           telefono_cliente: string
           precio: number
           estado: string
-          created_at: string
-          updated_at: string
+          fecha_inicio: string
+          fecha_termino: string
+          monto_reembolso: number
         }
         Insert: {
           id?: string
           proveedor_id: string
           producto_id: string
+          vendedor_id: string
           email_cuenta: string
           clave_cuenta: string
+          perfil_cuenta: string
           pin_cuenta?: string
-          perfil_usuario?: string
           nombre_cliente: string
           telefono_cliente: string
           precio: number
@@ -202,10 +223,11 @@ export interface Database {
           id?: string
           proveedor_id?: string
           producto_id?: string
+          vendedor_id?: string
           email_cuenta?: string
           clave_cuenta?: string
           pin_cuenta?: string
-          perfil_usuario?: string
+          perfil_cuenta?: string
           nombre_cliente?: string
           telefono_cliente?: string
           precio?: number

@@ -73,7 +73,15 @@ export const reciclarCompra = async (id: string): Promise<boolean> => {
 export const getComprasByVendedorId = async (vendedorId: string): Promise<Compra[]> => {
   const { data, error } = await supabase
     .from('compras')
-    .select('*')
+    .select(`
+      *,
+      productos:producto_id (
+        *
+      ),
+      usuarios:usuario_id (
+        *
+      )
+    `)
     .eq('vendedor_id', vendedorId)
     .order('created_at', { ascending: false })
 

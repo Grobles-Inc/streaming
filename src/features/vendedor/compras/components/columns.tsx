@@ -36,29 +36,29 @@ const PasswordCell = ({ value }: { value: string }) => {
   )
 }
 
-const SoporteMessageCell = ({ row }: { row: Compra }) => {
+const SoporteMessageCell = ({ row }: { row: Compra & { usuarios: { telefono: string } } }) => {
   const [open, setOpen] = useState(false)
   return (
     <>
       <Button variant="ghost" className='flex items-center gap-1' onClick={() => setOpen(true)}>
         <IconHeadphones />
       </Button>
-      <ComprasSoporteModal open={open} setOpen={setOpen} currentRow={row} telefono={row.telefono_proveedor} />
+      <ComprasSoporteModal open={open} setOpen={setOpen} currentRow={row} telefono={row.usuarios.telefono} />
     </>
   )
 }
 
-const CompraMessageCell = ({ row }: { row: Compra }) => {
+const CompraMessageCell = ({ row }: { row: Compra & { productos: { nombre: string, url_cuenta: string } } }) => {
   const isMobile = useIsMobile()
   const handleClick = () => {
     CompraMessage({
-      producto_nombre: row.producto,
+      producto_nombre: row.productos?.nombre,
       producto_precio: row.monto_reembolso,
       email_cuenta: row.email_cuenta,
       clave_cuenta: row.clave_cuenta,
-      url_cuenta: row.url_cuenta,
-      perfil: row.perfil,
-      pin: row.pin,
+      url_cuenta: row.productos?.url_cuenta,
+      perfil: row.perfil_cuenta,
+      pin: row.pin_cuenta,
       fecha_inicio: row.fecha_inicio,
       fecha_termino: row.fecha_termino,
       ciclo_facturacion: '30 días',
@@ -111,18 +111,20 @@ export const columns: ColumnDef<Compra>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'producto',
+    accessorKey: 'productos', // This matches the joined property from your query
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Producto' />
     ),
     cell: ({ row }) => {
-      const label = productoOpciones.find((label) => label.value === row.original.producto)
+      // Try to access the product name from the joined productos object, fallback to producto_id if not present
+      const productoNombre = (row.original as any)?.productos?.nombre || row.original.producto_id
+      const label = productoOpciones.find((label) => label.value === productoNombre)
 
       return (
         <div className='flex space-x-2'>
           {label && <Badge variant='outline'>{label.label}</Badge>}
           <span className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[20rem]'>
-            {row.getValue('producto')}
+            {productoNombre}
           </span>
         </div>
       )
@@ -199,7 +201,7 @@ export const columns: ColumnDef<Compra>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Teléfono' />
     ),
-    cell: ({ row }) => <CompraMessageCell row={row.original} />,
+    cell: ({ row }) => <CompraMessageCell row={row.original as Compra & { productos: { nombre: string, url_cuenta: string } }} />,
     enableSorting: false,
   },
   {
@@ -232,7 +234,7 @@ export const columns: ColumnDef<Compra>[] = [
       <DataTableColumnHeader column={column} title='Proveedor' />
     ),
     cell: ({ row }) =>
-      <SoporteMessageCell row={row.original} />,
+      <SoporteMessageCell row={row.original as Compra & { usuarios: { telefono: string } }} />,
     enableSorting: false,
   },
   {

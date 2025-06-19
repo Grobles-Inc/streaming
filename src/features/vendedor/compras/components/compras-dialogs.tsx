@@ -40,7 +40,7 @@ export function ComprasDialogs() {
               }, 500)
             }}
             handleConfirm={() => {
-              reciclarCompra(currentRow.id)
+              reciclarCompra(currentRow.id || '')
               setOpen(null)
               setTimeout(() => {
                 setCurrentRow(null)

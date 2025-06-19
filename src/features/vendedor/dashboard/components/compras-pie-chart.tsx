@@ -42,12 +42,12 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export function ResumenComprasPieChart({ timeFilter }: ResumenComprasPieChartProps) {
-  const { auth } = useAuthStore()
-  if (!auth.user?.id) {
+  const { user } = useAuthStore()
+  if (!user?.id) {
     return null
   }
 
-  const { data: compras } = useComprasByVendedor(auth.user.id)
+  const { data: compras } = useComprasByVendedor(user.id)
 
   // Filter recargas based on time filter
   const filterComprasByTime = (compras: any[], filter: TimeFilter) => {

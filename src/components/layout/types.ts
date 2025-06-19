@@ -1,13 +1,18 @@
 import { LinkProps } from '@tanstack/react-router'
 
-// Define the available roles
-type UserRole = 'vendedor' | 'proveedor' | 'admin'
+// Define the available roles (matching database schema)
+type UserRole = 'seller' | 'provider' | 'admin'
 
 interface User {
-  name: string
-  email: string
+  id: string
+  nombre: string
+  apellido: string
+  telefono: string
   avatar: string
-  role: UserRole
+  balance: number
+  rol: UserRole
+  created_at: string
+  updated_at: string
 }
 
 interface BaseNavItem {

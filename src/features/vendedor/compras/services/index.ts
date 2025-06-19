@@ -74,7 +74,7 @@ export const getComprasByVendedorId = async (vendedorId: string): Promise<Compra
   const { data, error } = await supabase
     .from('compras')
     .select('*')
-    .eq('usuario_id', vendedorId)
+    .eq('vendedor_id', vendedorId)
     .order('created_at', { ascending: false })
 
   if (error) {

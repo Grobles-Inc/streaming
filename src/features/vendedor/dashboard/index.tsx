@@ -26,13 +26,13 @@ type TimeFilter = 'day' | 'week' | 'month'
 
 export default function Dashboard() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('month')
-  const { auth } = useAuthStore()
-  if (!auth.user?.id) {
+  const { user } = useAuthStore()
+  if (!user?.id) {
     return null
   }
-  const { data: billetera } = useBilleteraByUsuario(auth.user.id)
-  const { data: recargas } = useRecargasByVendedor(auth.user.id)
-  const { data: compras } = useComprasByVendedor(auth.user.id)
+  const { data: billetera } = useBilleteraByUsuario(user.id)
+  const { data: recargas } = useRecargasByVendedor(user.id)
+  const { data: compras } = useComprasByVendedor(user.id)
   const saldo = billetera?.saldo || 0
   const totalRecargas = recargas?.reduce((acc, recarga) => acc + recarga.monto, 0) || 0
   const totalCompras = compras?.reduce((acc, compra) => acc + compra.precio, 0) || 0

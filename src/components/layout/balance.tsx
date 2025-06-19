@@ -16,13 +16,13 @@ type OperacionSaldo = 'recargar' | 'retirar'
 
 export function Balance() {
   const { isMobile } = useSidebar()
-  const { auth } = useAuthStore()
+  const { user } = useAuthStore()
   const [dialogOpen, setDialogOpen] = React.useState(false)
   const [operacion, setOperacion] = React.useState<OperacionSaldo>('recargar')
-  if (!auth.user?.id) {
+  if (!user?.id) {
     return null
   }
-  const { data: billetera } = useBilleteraByUsuario(auth.user.id)
+  const { data: billetera } = useBilleteraByUsuario(user.id)
   const { mutate: actualizarSaldo } = useUpdateBilleteraSaldo()
   const monto = billetera?.saldo || 0
 

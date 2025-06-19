@@ -83,50 +83,50 @@ export const filterNavGroupsByRole = (groups: any[], userRole: UserRole) => {
 const baseNavGroups = [  
   {
     title: 'Vendedor',
-    roles: ['vendedor'],
+    roles: ['seller'],
     items: [
       {
         title: 'Dashboard',
         url: '/dashboard',
         icon: IconLayoutDashboard,
-        roles: ['vendedor'],
+        roles: ['seller'],
       },        
       {
         title: 'Compras',
         url: '/compras',
         icon: IconShoppingCart,
-        roles: ['vendedor'],
+        roles: ['seller'],
       },        
       {
         title: 'Recargas',
         url: '/recargas',
         badge: '3',
         icon: IconCreditCard,
-        roles: ['vendedor'],
+        roles: ['seller'],
       },
     ],
   },
   {
     title: 'Proveedor',
-    roles: ['proveedor'],
+    roles: ['provider'],
     items: [
       {
         title: 'Productos',
         url: '/proveedor/productos',
         icon: IconPackage,
-        roles: ['proveedor'],
+        roles: ['provider'],
       },
       {
         title: 'Pedidos',
         url: '/proveedor/pedidos',
         icon: IconClipboardList,
-        roles: ['proveedor'],
+        roles: ['provider'],
       },
       {
         title: 'Reportes y Finanzas',
         url: '/proveedor/reportes',
         icon: IconChartBar,
-        roles: ['proveedor'],
+        roles: ['provider'],
       },
     ],
   },
@@ -156,74 +156,74 @@ const baseNavGroups = [
   },
   {
     title: 'Pages',
-    roles: ['admin', 'vendedor', 'proveedor'],
+    roles: ['admin', 'seller', 'provider'],
     items: [
       {
         title: 'Auth',
         icon: IconLockAccess,
-        roles: ['admin', 'vendedor', 'proveedor'],
+        roles: ['admin', 'seller', 'provider'],
         items: [
           {
             title: 'Sign In',
             url: '/sign-in',
-            roles: ['admin', 'vendedor', 'proveedor'],
+            roles: ['admin', 'seller', 'provider'],
           },
           {
             title: 'Sign In (2 Col)',
             url: '/sign-in-2',
-            roles: ['admin', 'vendedor', 'proveedor'],
+            roles: ['admin', 'seller', 'provider'],
           },
           {
             title: 'Sign Up',
             url: '/sign-up',
-            roles: ['admin', 'vendedor', 'proveedor'],
+            roles: ['admin', 'seller', 'provider'],
           },
           {
             title: 'Forgot Password',
             url: '/forgot-password',
-            roles: ['admin', 'vendedor', 'proveedor'],
+            roles: ['admin', 'seller', 'provider'],
           },
           {
             title: 'OTP',
             url: '/otp',
-            roles: ['admin', 'vendedor', 'proveedor'],
+            roles: ['admin', 'seller', 'provider'],
           },
         ],
       },
       {
         title: 'Errors',
         icon: IconBug,
-        roles: ['admin', 'vendedor', 'proveedor'],
+        roles: ['admin', 'seller', 'provider'],
         items: [
           {
             title: 'Unauthorized',
             url: '/401',
             icon: IconLock,
-            roles: ['admin', 'vendedor', 'proveedor'],
+            roles: ['admin', 'seller', 'provider'],
           },
           {
             title: 'Forbidden',
             url: '/403',
             icon: IconUserOff,
-            roles: ['admin', 'vendedor', 'proveedor'],
+            roles: ['admin', 'seller', 'provider'],
           },
           {
             title: 'Not Found',
             url: '/404',
             icon: IconError404,
-            roles: ['admin', 'vendedor', 'proveedor'],
+            roles: ['admin', 'seller', 'provider'],
           },
           {
             title: 'Internal Server Error',
             url: '/500',
             icon: IconServerOff,
-            roles: ['admin', 'vendedor', 'proveedor'    ],
+            roles: ['admin', 'seller', 'provider'],
           },
           {
             title: 'Maintenance Error',
             url: '/503',
             icon: IconBarrierBlock,
-            roles: ['admin', 'vendedor', 'proveedor'],
+            roles: ['admin', 'seller', 'provider'],
           },
         ],
       },
@@ -231,42 +231,42 @@ const baseNavGroups = [
   },
   {
     title: 'Otros',
-    roles: ['admin', 'vendedor', 'proveedor'],
+    roles: ['admin', 'seller', 'provider'],
     items: [
       {
         title: 'Configuración',
         icon: IconSettings,
-        roles: ['admin', 'vendedor', 'proveedor'],
+        roles: ['admin', 'seller', 'provider'],
         items: [
           {
             title: 'Perfil',
             url: '/settings',
             icon: IconUserCog,
-            roles: ['admin', 'vendedor', 'proveedor'],
+            roles: ['admin', 'seller', 'provider'],
           },
           {
             title: 'Cuenta',
             url: '/settings/account',
             icon: IconTool,
-            roles: ['admin', 'vendedor', 'proveedor'],
+            roles: ['admin', 'seller', 'provider'],
           },
           {
             title: 'Apariencia',
             url: '/settings/appearance',
             icon: IconPalette,
-            roles: ['admin', 'vendedor', 'proveedor'],
+            roles: ['admin', 'seller', 'provider'],
           },
           {
             title: 'Notificaciones',
             url: '/settings/notifications',
             icon: IconNotification,
-            roles: ['admin', 'vendedor', 'proveedor'],
+            roles: ['admin', 'seller', 'provider'],
           },
           {
             title: 'Pantalla',
             url: '/settings/display',
             icon: IconBrowserCheck,
-            roles: ['admin', 'vendedor', 'proveedor'],
+            roles: ['admin', 'seller', 'provider'],
           },
         ],
       },
@@ -274,26 +274,36 @@ const baseNavGroups = [
         title: 'Centro de Ayuda',
         url: '/help-center',
         icon: IconHelp,
-        roles: ['admin', 'vendedor', 'proveedor'],
+        roles: ['admin', 'seller', 'provider'],
       },
     ],
   },
 ]
 
-// Function to get sidebar data based on user role
-export const getSidebarData = (userRole: UserRole = 'vendedor'): SidebarData => {
+// Function to get sidebar data based on user role and user data
+export const getSidebarData = (userRole: UserRole = 'seller', user?: any): SidebarData => {
   const filteredGroups = filterNavGroupsByRole(baseNavGroups, userRole)
   
   return {
     user: {
-      name: 'Juan Perez',
-      email: 'juanperez@gmail.com',
-      avatar: '/avatars/shadcn.jpg',
-      role: userRole,
+      id: user?.id || '',
+      nombre: user?.nombre || '',
+      avatar: user?.avatar || '',
+      rol: user?.rol as UserRole || userRole,
+      apellido: user?.apellido || '',
+      telefono: user?.telefono || '',
+      balance: user?.balance || 0,
+      created_at: user?.created_at || '',
+      updated_at: user?.updated_at || '',
     },
     navGroups: filteredGroups,
   }
 }
 
-// Default export for backward compatibility
-export const sidebarData = getSidebarData('vendedor')
+// Function to get navigation groups only (without user data)
+export const getNavGroups = (userRole: UserRole = 'seller') => {
+  return filterNavGroupsByRole(baseNavGroups, userRole)
+}
+
+// Default export for backward compatibility - only navigation groups
+export const sidebarData = getNavGroups('seller')

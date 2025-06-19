@@ -13,9 +13,9 @@ export interface Database {
         Row: {
           id: string
           email: string
-          nombre: string
+          nombres: string
           avatar: string
-          apellido: string
+          apellidos: string
           telefono: string | null
           rol: 'provider' | 'admin' | 'seller'
           balance: number
@@ -25,9 +25,9 @@ export interface Database {
         Insert: {
           id?: string
           email: string
-          nombre: string
+          nombres: string
           avatar: string
-          apellido: string
+          apellidos: string
           telefono?: string | null
           rol?: 'provider' | 'admin' | 'seller'
           balance?: number
@@ -37,9 +37,9 @@ export interface Database {
         Update: {
           id?: string
           email?: string
-          nombre?: string
+          nombres?: string
           avatar?: string
-          apellido?: string
+          apellidos?: string
           telefono?: string | null
           rol?: 'provider' | 'admin' | 'seller'
           balance?: number
@@ -172,7 +172,7 @@ export interface Database {
       }
       compras: {
         Row: {
-          id: string
+          id?: string
           proveedor_id: string
           producto_id: string
           vendedor_id: string
@@ -180,22 +180,8 @@ export interface Database {
           clave_cuenta: string
           perfil_cuenta: string
           pin_cuenta?: string
-          productos: {
-            Row: {
-              id: string
-              nombre: string
-              precio: number
-            }
-          }
-          usuarios: {
-            Row: {
-              id: string
-              nombre: string
-              email: string
-            }
-          }
           perfil_usuario?: string
-          nombre_cliente: string
+          nombre_cliente: string         
           telefono_cliente: string
           precio: number
           estado: string
@@ -230,7 +216,7 @@ export interface Database {
           perfil_cuenta?: string
           nombre_cliente?: string
           telefono_cliente?: string
-          precio?: number
+          precio: number
           estado?: string
           created_at?: string
           updated_at?: string

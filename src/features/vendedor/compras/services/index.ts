@@ -2,6 +2,15 @@ import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/supabase'
 
 export type Compra = Database['public']['Tables']['compras']['Row']
+export type Usuario = Database['public']['Tables']['usuarios']['Row']
+export type Producto = Database['public']['Tables']['productos']['Row']
+
+export type CompraWithJoins = Compra & {
+  productos: Pick<Producto, 'nombre' | 'url_cuenta'> 
+  usuarios: Pick<Usuario, 'nombres' | 'apellidos'> 
+  vendedores: Pick<Usuario, 'nombres' | 'apellidos'>
+}
+
 export type CompraInsert = Database['public']['Tables']['compras']['Insert']
 export type CompraUpdate = Database['public']['Tables']['compras']['Update']
 
@@ -70,17 +79,13 @@ export const reciclarCompra = async (id: string): Promise<boolean> => {
 }
 
 // Get compras by vendedor ID
-export const getComprasByVendedorId = async (vendedorId: string): Promise<Compra[]> => {
+export const getComprasByVendedorId = async (vendedorId: string): Promise<CompraWithJoins[]> => {
   const { data, error } = await supabase
     .from('compras')
     .select(`
       *,
-      productos:producto_id (
-        *
-      ),
-      usuarios:usuario_id (
-        *
-      )
+      productos:producto_id (nombre, url_cuenta, precio),
+      usuarios:proveedor_id (nombres, apellidos)
     `)
     .eq('vendedor_id', vendedorId)
     .order('created_at', { ascending: false })

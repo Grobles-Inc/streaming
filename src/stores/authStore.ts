@@ -69,8 +69,8 @@ export const useAuthStore = create<AuthState>((set, _get) => ({
         .insert({
           id: data.user.id,
           email: data.user.email!,
-          nombre: userData.nombre!,
-          apellido: userData.apellido!,
+          nombres: userData.nombres!,
+          apellidos: userData.apellidos!,
           telefono: userData.telefono,
           rol: userData.rol || 'seller',
           balance: userData.balance || 0,

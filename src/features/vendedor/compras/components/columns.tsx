@@ -1,18 +1,16 @@
 import { Badge } from '@/components/ui/badge'
-import { ColumnDef } from '@tanstack/react-table'
-import { diasRestantesMap, estadosMap, productoOpciones } from '../data/data'
-import { DataTableColumnHeader } from './data-table-column-header'
-import { DataTableRowActions } from './data-table-row-actions'
-import { cn } from '@/lib/utils'
-import { Compra } from '../data/schema'
-import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Button } from '@/components/ui/button'
-import { IconHeadphones } from '@tabler/icons-react'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { cn } from '@/lib/utils'
 import { CompraMessage } from '@/lib/whatsapp'
-import { ComprasSoporteModal } from './compras-soporte-modal'
+import { ColumnDef } from '@tanstack/react-table'
+import { useState } from 'react'
+import { productoOpciones } from '../data/data'
+import { DataTableColumnHeader } from './data-table-column-header'
+import { DataTableRowActions } from './data-table-row-actions'
+import { CompraWithJoins } from '../services'
 
 const PasswordCell = ({ value }: { value: string }) => {
   const [isVisible, setIsVisible] = useState(false)
@@ -36,27 +34,17 @@ const PasswordCell = ({ value }: { value: string }) => {
   )
 }
 
-const SoporteMessageCell = ({ row }: { row: Compra & { usuarios: { telefono: string } } }) => {
-  const [open, setOpen] = useState(false)
-  return (
-    <>
-      <Button variant="ghost" className='flex items-center gap-1' onClick={() => setOpen(true)}>
-        <IconHeadphones />
-      </Button>
-      <ComprasSoporteModal open={open} setOpen={setOpen} currentRow={row} telefono={row.usuarios.telefono} />
-    </>
-  )
-}
 
-const CompraMessageCell = ({ row }: { row: Compra & { productos: { nombre: string, url_cuenta: string } } }) => {
+
+const CompraMessageCell = ({ row }: { row: CompraWithJoins }) => {
   const isMobile = useIsMobile()
   const handleClick = () => {
     CompraMessage({
-      producto_nombre: row.productos?.nombre,
+      producto_nombre: row.productos?.nombre || '',
       producto_precio: row.monto_reembolso,
       email_cuenta: row.email_cuenta,
       clave_cuenta: row.clave_cuenta,
-      url_cuenta: row.productos?.url_cuenta,
+      url_cuenta: row.productos?.url_cuenta || '',
       perfil: row.perfil_cuenta,
       pin: row.pin_cuenta,
       fecha_inicio: row.fecha_inicio,
@@ -74,7 +62,7 @@ const CompraMessageCell = ({ row }: { row: Compra & { productos: { nombre: strin
   )
 }
 
-export const columns: ColumnDef<Compra>[] = [
+export const columns: ColumnDef<CompraWithJoins>[] = [
 
   {
     id: 'select',
@@ -106,7 +94,11 @@ export const columns: ColumnDef<Compra>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='ID' />
     ),
-    cell: ({ row }) => <div className='w-[80px]'>{row.getValue('id')}</div>,
+    cell: ({ row }) => {
+      const idValue = row.getValue('id');
+      // Ensure idValue is a string before calling slice
+      return <div className='w-[80px]'>{typeof idValue === 'string' ? idValue.slice(0, 4) : ''}</div>;
+    },
     enableSorting: false,
     enableHiding: false,
   },
@@ -147,28 +139,8 @@ export const columns: ColumnDef<Compra>[] = [
     ),
     cell: ({ row }) => <PasswordCell value={row.getValue('clave_cuenta')} />,
     enableSorting: false,
-  }, {
-    accessorKey: 'estado',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Estado' />
-    ),
-    cell: ({ row }) => {
-      const { estado } = row.original
-      const badgeColor = estadosMap.get(estado)
-      return (
-        <div className='flex space-x-2'>
-          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
-            {row.getValue('estado')}
-          </Badge>
-        </div>
-      )
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
-    },
-    enableHiding: false,
-    enableSorting: false,
   },
+
   {
     accessorKey: 'url_cuenta',
     header: ({ column }) => (
@@ -177,14 +149,14 @@ export const columns: ColumnDef<Compra>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: 'perfil',
+    accessorKey: 'perfil_cuenta',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Perfil' />
     ),
     enableSorting: false,
   },
   {
-    accessorKey: 'pin',
+    accessorKey: 'pin_cuenta',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='PIN' />
     ),
@@ -201,7 +173,7 @@ export const columns: ColumnDef<Compra>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Teléfono' />
     ),
-    cell: ({ row }) => <CompraMessageCell row={row.original as Compra & { productos: { nombre: string, url_cuenta: string } }} />,
+    cell: ({ row }) => <CompraMessageCell row={row.original} />,
     enableSorting: false,
   },
   {
@@ -220,31 +192,43 @@ export const columns: ColumnDef<Compra>[] = [
     },
   },
 
-
   {
-    accessorKey: 'proveedor',
+    accessorKey: 'usuarios',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Proveedor' />
     ),
+    cell: ({ row }) => {
+      const { usuarios } = row.original
+      return <div className='flex justify-center'>{`${usuarios?.nombres || ''} ${usuarios?.apellidos || ''}`}</div>
+    },
     enableSorting: false,
   },
+  // {
+  //   accessorKey: 'proveedores',
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title='Proveedor' />
+  //   ),
+  //   cell: ({ row }) =>
+  //     <SoporteMessageCell row={row.original as Compra & { usuarios: { telefono: string } }} />,
+  //   enableSorting: false,
+  // },
   {
-    accessorKey: 'telefono_proveedor',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Proveedor' />
-    ),
-    cell: ({ row }) =>
-      <SoporteMessageCell row={row.original as Compra & { usuarios: { telefono: string } }} />,
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'dias_restantes',
+    accessorKey: 'fecha_termino',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Días restantes' />
     ),
     cell: ({ row }) => {
-      const dias_restantes = row.getValue('dias_restantes') as number
-      const badgeColor = diasRestantesMap.get(dias_restantes) as string
+      const fecha_termino = new Date(row.getValue('fecha_termino') as string)
+      const fecha_actual = new Date()
+      const dias_restantes = Math.ceil((fecha_termino.getTime() - fecha_actual.getTime()) / (1000 * 60 * 60 * 24))
+      let badgeColor = ''
+      if (dias_restantes < 5) {
+        badgeColor = 'bg-red-500 text-white dark:text-white border-red-500'
+      } else if (dias_restantes < 10) {
+        badgeColor = 'bg-orange-400 text-white dark:text-white border-orange-500'
+      } else if (dias_restantes < 30) {
+        badgeColor = 'bg-green-500 text-white dark:text-white border-green-500'
+      }
       return (
         <div className='flex justify-center'>
           <Badge className={cn('capitalize h-7 w-7 rounded-full', badgeColor)}>

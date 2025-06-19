@@ -8,10 +8,11 @@ import { ComprasPrimaryButtons } from './components/compras-primary-buttons'
 import ComprasProvider from './context/compras-context'
 import { compraSchema } from './data/schema'
 import { useCompras } from './queries'
+import { CompraWithJoins } from './services'
 
 export default function Compras() {
   const { data: compras } = useCompras()
-  const comprasList = compras?.data.map(compra => compraSchema.parse(compra))
+  const comprasList = compras?.data.map(compra => compraSchema.parse(compra)) as CompraWithJoins[]
   return (
     <ComprasProvider>
       <Header fixed>

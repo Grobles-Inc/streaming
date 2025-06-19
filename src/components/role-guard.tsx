@@ -10,8 +10,8 @@ interface RoleGuardProps {
 }
 
 export function RoleGuard({ children, allowedRoles, fallback }: RoleGuardProps) {
-  const user = useAuthStore((state) => state.auth.user)
-  const userRole: UserRole = user?.role || 'vendedor'
+  const { user } = useAuthStore()
+  const userRole: UserRole = user?.rol || 'seller'
 
   const hasAccess = hasRoleAccess(userRole, allowedRoles)
 

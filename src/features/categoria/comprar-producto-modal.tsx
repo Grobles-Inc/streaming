@@ -17,9 +17,9 @@ type ComprarProductoModalProps = {
 
 export default function ComprarProductoModal({ open, onOpenChange, producto }: ComprarProductoModalProps) {
   if (!producto) return null
-  const { auth } = useAuthStore()
-  if (!auth?.user?.id) return null
-  const { data: billetera } = useBilleteraByUsuario(auth?.user?.id)
+  const { user } = useAuthStore()
+  if (!user?.id) return null
+  const { data: billetera } = useBilleteraByUsuario(user?.id)
   const { mutate: actualizarSaldo } = useUpdateBilleteraSaldo()
   const monto = billetera?.saldo
   const [formData, setFormData] = useState({

@@ -156,6 +156,12 @@ const baseNavGroups = [
         roles: ['admin'],
       },
       {
+        title: 'Gestión de Categorías',
+        url: '/admin/categories',
+        icon: IconPackage,
+        roles: ['admin'],
+      },
+      {
         title: 'Configuración del Sistema',
         url: '/admin/settings',
         icon: IconSettings,

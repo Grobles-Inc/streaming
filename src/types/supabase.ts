@@ -176,14 +176,14 @@ export interface Database {
           proveedor_id: string
           producto_id: string
           vendedor_id: string
-          email_cuenta: string
+          email_cuenta: string,          
           clave_cuenta: string
           perfil_cuenta: string
           pin_cuenta?: string
           perfil_usuario?: string
           nombre_cliente: string         
           telefono_cliente: string
-          precio: number
+          precio: number          
           estado: string
           fecha_inicio: string
           fecha_termino: string

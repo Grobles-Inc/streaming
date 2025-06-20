@@ -7,12 +7,14 @@ import { ComprasDialogs } from './components/compras-dialogs'
 import { ComprasPrimaryButtons } from './components/compras-primary-buttons'
 import ComprasProvider from './context/compras-context'
 import { compraSchema } from './data/schema'
-import { useCompras } from './queries'
-import { CompraWithJoins } from './services'
+import { Compra } from './services'
+import { useAuth } from '@/stores/authStore'
+import { useComprasByVendedor } from './queries'
 
 export default function Compras() {
-  const { data: compras } = useCompras()
-  const comprasList = compras?.data.map(compra => compraSchema.parse(compra)) as CompraWithJoins[]
+  const { user } = useAuth()
+  const { data: compras } = useComprasByVendedor(user?.id as string)
+  const comprasList = compras?.map(compra => compraSchema.parse(compra)) as Compra[]
   return (
     <ComprasProvider>
       <Header fixed>

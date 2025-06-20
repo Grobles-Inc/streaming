@@ -3,6 +3,8 @@ import { useCompras } from '../context/compras-context'
 import { useReciclarCompra } from '../queries'
 import { ComprasImportDialog } from './compras-import-dialog'
 import { ComprasMutateDrawer } from './compras-mutate-drawer'
+import ComprasProductoDialog from './compras-producto-dialog'
+import { Producto } from '@/types'
 
 export function ComprasDialogs() {
   const { open, setOpen, currentRow, setCurrentRow } = useCompras()
@@ -14,6 +16,13 @@ export function ComprasDialogs() {
         open={open === 'import'}
         onOpenChange={() => setOpen('import')}
       />
+      <ComprasProductoDialog
+        key='compras-producto'
+        open={open === 'ver_producto'}
+        onOpenChange={() => setOpen('ver_producto')}
+        producto={currentRow?.productos as unknown as Producto}
+      />
+
 
       {currentRow && (
         <>

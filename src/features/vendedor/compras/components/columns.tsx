@@ -7,10 +7,12 @@ import { cn } from '@/lib/utils'
 import { CompraMessage } from '@/lib/whatsapp'
 import { ColumnDef } from '@tanstack/react-table'
 import { useState } from 'react'
-import { productoOpciones } from '../data/data'
+import { estadosMap, productoOpciones } from '../data/data'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
-import { CompraWithJoins } from '../services'
+import { Compra, CompraEstado } from '../data/schema'
+import { IconHeadphones } from '@tabler/icons-react'
+import { ComprasSoporteModal } from './compras-soporte-modal'
 
 const PasswordCell = ({ value }: { value: string }) => {
   const [isVisible, setIsVisible] = useState(false)
@@ -34,9 +36,19 @@ const PasswordCell = ({ value }: { value: string }) => {
   )
 }
 
+const SoporteMessageCell = ({ row }: { row: Compra }) => {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <Button variant="secondary" className='flex items-center gap-1' onClick={() => setOpen(true)}>
+        <IconHeadphones />
+      </Button>
+      <ComprasSoporteModal open={open} setOpen={setOpen} currentRow={row} telefono={row.usuarios?.telefono || ''} />
+    </>
+  )
+}
 
-
-const CompraMessageCell = ({ row }: { row: CompraWithJoins }) => {
+const CompraMessageCell = ({ row }: { row: Compra }) => {
   const isMobile = useIsMobile()
   const handleClick = () => {
     CompraMessage({
@@ -62,7 +74,7 @@ const CompraMessageCell = ({ row }: { row: CompraWithJoins }) => {
   )
 }
 
-export const columns: ColumnDef<CompraWithJoins>[] = [
+export const columns: ColumnDef<Compra>[] = [
 
   {
     id: 'select',
@@ -142,10 +154,36 @@ export const columns: ColumnDef<CompraWithJoins>[] = [
   },
 
   {
-    accessorKey: 'url_cuenta',
+    accessorKey: 'productos',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='URL' />
     ),
+    enableSorting: false,
+    cell: ({ row }) => {
+      const { productos } = row.original
+      return <div className='flex justify-center'>{productos?.url_cuenta}</div>
+    },
+  },
+  {
+    accessorKey: 'estado',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Estado' />
+    ),
+    cell: ({ row }) => {
+      const { estado } = row.original
+      const badgeColor = estadosMap.get(estado as CompraEstado)
+      return (
+        <div className='flex space-x-2'>
+          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
+            {row.getValue('estado')}
+          </Badge>
+        </div>
+      )
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id))
+    },
+    enableHiding: false,
     enableSorting: false,
   },
   {
@@ -199,19 +237,19 @@ export const columns: ColumnDef<CompraWithJoins>[] = [
     ),
     cell: ({ row }) => {
       const { usuarios } = row.original
-      return <div className='flex justify-center'>{`${usuarios?.nombres || ''} ${usuarios?.apellidos || ''}`}</div>
+      return <div className='flex justify-center'>{usuarios?.nombres}</div>
     },
     enableSorting: false,
   },
-  // {
-  //   accessorKey: 'proveedores',
-  //   header: ({ column }) => (
-  //     <DataTableColumnHeader column={column} title='Proveedor' />
-  //   ),
-  //   cell: ({ row }) =>
-  //     <SoporteMessageCell row={row.original as Compra & { usuarios: { telefono: string } }} />,
-  //   enableSorting: false,
-  // },
+  {
+    accessorKey: 'usuarios',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Proveedor' />
+    ),
+    cell: ({ row }) =>
+      <SoporteMessageCell row={row.original as Compra & { usuarios: { telefono: string } }} />,
+    enableSorting: false,
+  },
   {
     accessorKey: 'fecha_termino',
     header: ({ column }) => (

@@ -1,20 +1,19 @@
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { Search } from '@/components/search'
+import { useAuth } from '@/stores/authStore'
 import { columns } from './components/columns'
-import { DataTable } from './components/data-table'
 import { ComprasDialogs } from './components/compras-dialogs'
 import { ComprasPrimaryButtons } from './components/compras-primary-buttons'
+import { DataTable } from './components/data-table'
 import ComprasProvider from './context/compras-context'
 import { compraSchema } from './data/schema'
-import { Compra } from './services'
-import { useAuth } from '@/stores/authStore'
 import { useComprasByVendedor } from './queries'
 
 export default function Compras() {
   const { user } = useAuth()
   const { data: compras } = useComprasByVendedor(user?.id as string)
-  const comprasList = compras?.map(compra => compraSchema.parse(compra)) as Compra[]
+  const comprasList = compras?.map(compra => compraSchema.parse(compra))
   return (
     <ComprasProvider>
       <Header fixed>
@@ -33,7 +32,10 @@ export default function Compras() {
           <ComprasPrimaryButtons />
         </div>
         <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
-          <DataTable data={comprasList || []} columns={columns} />
+          <DataTable
+            data={comprasList || []}
+            columns={columns}
+          />
         </div>
       </Main>
       <ComprasDialogs />

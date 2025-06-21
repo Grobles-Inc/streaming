@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 import { IconEye } from '@tabler/icons-react'
+import { useState } from 'react'
 
 type Categoria = {
   id: string
@@ -71,7 +71,6 @@ export default function CategoriasPage() {
   const [descripcion, setDescripcion] = useState('')
   const [editId, setEditId] = useState<string | null>(null)
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<Categoria | null>(null)
-  const [imagenExpandida, setImagenExpandida] = useState<string | null>(null)
 
   function handleAgregar() {
     if (!nombre) return

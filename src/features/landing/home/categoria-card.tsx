@@ -1,18 +1,18 @@
-import { Categoria } from '@/components/layout/types'
 import { CardBody, CardContainer, CardItem } from "@/components/3d-card";
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Categoria } from '../services';
 
 export default function CategoriaCard({ categoria }: { categoria: Categoria }) {
   const isMobile = useIsMobile()
 
   if (isMobile) {
     return (
-      <Card key={categoria.name} className="flex flex-col items-center  hover:scale-105 transition-all duration-300 bg-gradient-to-b from-white to-zinc-200">
+      <Card key={categoria.nombre} className="flex flex-col items-center  hover:scale-105 transition-all duration-300 bg-gradient-to-b from-white to-zinc-200">
         <CardContent className="flex flex-col items-center">
-          <img src={categoria.icon} alt={categoria.name} className="size-24 mb-4" />
-          <span className="font-semibold text-base text-center">{categoria.name}</span>
+          <img src={categoria.imagen_url || ''} alt={categoria.nombre} className="size-24 mb-4" />
+          <span className="font-semibold text-base text-center">{categoria.nombre}</span>
         </CardContent>
       </Card>
 
@@ -30,7 +30,7 @@ export default function CategoriaCard({ categoria }: { categoria: Categoria }) {
           className="w-full "
         >
           <img
-            src={categoria.icon}
+            src={categoria.imagen_url || ''}
             height="500"
             width="500"
             className="h-44 w-full object-cover rounded-xl group-hover/card:shadow-xl"
@@ -42,7 +42,7 @@ export default function CategoriaCard({ categoria }: { categoria: Categoria }) {
           className='w-full mt-10 py-6 rounded-xl bg-black text-white '
 
         >
-          {categoria.name}
+          {categoria.nombre}
         </Button>
       </CardBody>
     </CardContainer>

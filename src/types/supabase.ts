@@ -88,15 +88,22 @@ export interface Database {
           informacion: string | null
           condiciones: string | null
           usuarios: {
-                         nombres: string
-            
+            nombres: string
           }
+          categorias: {
+            nombre: string
+          }
+          mas_vendido: boolean
+          destacado: boolean
+          a_pedido: boolean
+          nuevo: boolean
           url_cuenta: string | null
           tiempo_uso: number
           precio: number
           stock: number
           categoria_id: string
           proveedor_id: string
+
           imagen_url: string | null
           created_at: string
           updated_at: string
@@ -107,6 +114,10 @@ export interface Database {
           descripcion?: string | null
           informacion?: string | null
           condiciones?: string | null
+          mas_vendido: boolean
+          destacado: boolean
+          a_pedido: boolean
+          nuevo: boolean
           url_cuenta?: string | null
           tiempo_uso: number
           precio: number
@@ -123,6 +134,10 @@ export interface Database {
           descripcion?: string | null
           informacion?: string | null
           condiciones?: string | null
+          mas_vendido: boolean
+          destacado: boolean
+          a_pedido: boolean
+          nuevo: boolean
           url_cuenta?: string | null
           tiempo_uso: number
           precio?: number

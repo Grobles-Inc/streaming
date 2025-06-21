@@ -1,38 +1,38 @@
 import LandingHeader from '@/components/layout/landing-header'
 import { Link } from '@tanstack/react-router'
-import ProductoCard from '../categoria/producto-card'
-import { categorias, destacados, masVendidos } from './data/sample'
+import ProductoCard from '../categorias/producto-card'
 import CategoriaCard from './categoria-card'
+import { useCategorias } from '../queries'
+import { Categoria } from '../services'
+import { useProductos } from '../queries/productos'
 
 export default function Home() {
+  const { data: categorias } = useCategorias()
+  const { data: productos } = useProductos()
   return (
     <div className="min-h-screen bg-base-100">
-      {/* Top bar */}
       <LandingHeader />
-      {/* Menu as Tabs (responsive) */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5  md:gap-6 gap-2 md:p-6 p-4">
-        {categorias.map((tab) => (
-          <Link key={tab.tab} to="/categoria/$name" params={{ name: tab.tab.toLowerCase() }}>
-            <CategoriaCard key={tab.tab} categoria={tab} />
+        {categorias?.data.map((categoria) => (
+          <Link key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
+            <CategoriaCard key={categoria.id} categoria={categoria as Categoria} />
           </Link>
 
         ))}
       </div>
-      {/* Productos Destacados */}
       <div className="md:px-8 px-4 pt-12">
         <h2 className="text-2xl font-bold mb-4">Productos Destacados</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4  md:gap-6 gap-4">
-          {destacados.map((service) => (
-            <ProductoCard key={service.titulo} producto={service} />
+          {productos?.data.filter((producto) => producto.destacado).map((producto) => (
+            <ProductoCard key={producto.id} producto={producto} />
           ))}
         </div>
       </div>
-      {/* Los más vendidos */}
       <div className="md:px-8 px-4 pt-12 pb-12">
         <h2 className="text-2xl font-bold mb-4">Los más vendidos</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4  md:gap-6 gap-4">
-          {masVendidos.map((service) => (
-            <ProductoCard key={service.titulo} producto={service} />
+          {productos?.data.filter((producto) => producto.mas_vendido).map((producto) => (
+            <ProductoCard key={producto.id} producto={producto} />
           ))}
         </div>
       </div>

@@ -4,9 +4,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input'
 import { useBilleteraByUsuario, useUpdateBilleteraSaldo } from '@/queries'
 import { useAuthStore } from '@/stores/authStore'
-import { Producto } from '@/types'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { Producto } from '../services'
 
 type ComprarProductoModalProps = {
   open: boolean
@@ -38,13 +38,13 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       toast.error("Debes iniciar sesión para comprar un producto", { duration: 3000 })
       return
     }
-    if (!producto?.precioUSD || !monto || !billetera?.id) return
-    if (monto && monto < producto?.precioUSD) {
+    if (!producto?.precio || !monto || !billetera?.id) return
+    if (monto && monto < producto?.precio) {
       toast.error("No tienes suficiente saldo", { duration: 3000 })
       return
     }
     toast.success("Producto comprado correctamente", { duration: 3000 })
-    actualizarSaldo({ id: billetera?.id, nuevoSaldo: monto - producto?.precioUSD })
+    actualizarSaldo({ id: billetera?.id, nuevoSaldo: monto - producto?.precio })
     onOpenChange(false)
     setFormData({ name: '', phone: '' })
   }
@@ -53,13 +53,13 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md w-full">
         <DialogHeader className='flex flex-col gap-3'>
-          <DialogTitle>{producto.categoria.toUpperCase()}</DialogTitle>
-          <DialogDescription>{producto.titulo}</DialogDescription>
+          <DialogTitle>{producto.categorias.nombre.toUpperCase()}</DialogTitle>
+          <DialogDescription>{producto.descripcion}</DialogDescription>
 
         </DialogHeader>
         <div className='flex justify-between'>
-          <span className=" text-gray-500 font-semibold mb-1">Proveedor: {producto.proveedor}</span>
-          <span className="font-bold text-2xl">${producto.precioUSD.toFixed(2)}</span>
+          <span className=" text-gray-500 font-semibold mb-1">Proveedor: {producto.usuarios.nombres}</span>
+          <span className="font-bold text-2xl">${producto.precio.toFixed(2)}</span>
         </div>
 
         {/* Accordion for Product Information */}
@@ -67,21 +67,21 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
           <AccordionItem value="detalles">
             <AccordionTrigger>Detalles del producto</AccordionTrigger>
             <AccordionContent>
-              <p className="text-sm text-muted-foreground">{producto.detalles}</p>
+              <p className="text-sm text-muted-foreground">{producto.descripcion}</p>
             </AccordionContent>
           </AccordionItem>
 
           <AccordionItem value="informacion">
             <AccordionTrigger>Información adicional</AccordionTrigger>
             <AccordionContent>
-              <p className="text-sm text-muted-foreground">{producto.informacionDelProducto}</p>
+              <p className="text-sm text-muted-foreground">{producto.informacion}</p>
             </AccordionContent>
           </AccordionItem>
 
           <AccordionItem value="condiciones">
             <AccordionTrigger>Condiciones de uso</AccordionTrigger>
             <AccordionContent>
-              <p className="text-sm text-muted-foreground">{producto.condicionesDeUso}</p>
+              <p className="text-sm text-muted-foreground">{producto.condiciones}</p>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
@@ -91,13 +91,13 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
           <div className="font-semibold mb-1">Tiempo de compra</div>
           <div className="flex gap-4">
             <label
-              className={`flex-1 border rounded-lg p-4 cursor-not-allowed transition-colors ${producto.periodo === '30' ? 'border-primary bg-secondary' : 'border-muted bg-transparent'} flex items-start gap-3`}
+              className={`flex-1 border rounded-lg p-4 cursor-not-allowed transition-colors ${producto.tiempo_uso === 30 ? 'border-primary bg-secondary' : 'border-muted bg-transparent'} flex items-start gap-3`}
             >
               <input
                 type="radio"
                 name="plan"
                 value="30"
-                checked={producto.periodo === '30'}
+                checked={producto.tiempo_uso === 30}
                 disabled
                 className="accent-primary mt-1"
               />
@@ -107,13 +107,13 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
               </div>
             </label>
             <label
-              className={`flex-1 border rounded-lg p-4 cursor-not-allowed transition-colors ${producto.periodo === '1' ? 'border-primary bg-muted/30' : 'border-muted bg-transparent'} flex items-start gap-3`}
+              className={`flex-1 border rounded-lg p-4 cursor-not-allowed transition-colors ${producto.tiempo_uso === 1 ? 'border-primary bg-muted/30' : 'border-muted bg-transparent'} flex items-start gap-3`}
             >
               <input
                 type="radio"
                 name="plan"
                 value="1"
-                checked={producto.periodo === '1'}
+                checked={producto.tiempo_uso === 1}
                 disabled
                 className="accent-primary mt-1"
               />

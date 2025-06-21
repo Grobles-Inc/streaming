@@ -1,17 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import Categoria from '@/features/categoria'
-import { productos } from '@/features/categoria/data/sample'
+import Categoria from '@/features/landing/categorias'
 import LandingHeader from '@/components/layout/landing-header'
 
-const getProductos = (categoria: string) => {
-  return productos.filter(producto => producto.categoria === categoria)
-}
 
 export const Route = createFileRoute('/(public)/categoria/$name')({
-  loader: async ({ params }) => {
-    const productos = getProductos(params.name)
-    return { productos }
-  },
   component: CategoriaComponent
 })
 

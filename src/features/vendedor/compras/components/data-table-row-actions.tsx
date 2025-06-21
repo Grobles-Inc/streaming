@@ -3,21 +3,16 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
-import { IconHeadphones, IconNote, IconRepeat, IconTrash } from '@tabler/icons-react'
+import { IconEye, IconHeadphones, IconLoader2, IconNote, IconRepeat, IconTrash } from '@tabler/icons-react'
 import { Row } from '@tanstack/react-table'
 import { useCompras } from '../context/compras-context'
-import { productoOpciones } from '../data/data'
 import { compraSchema } from '../data/schema'
+import { useRenovarCompra } from '../queries'
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>
@@ -28,6 +23,7 @@ export function DataTableRowActions<TData>({
 }: DataTableRowActionsProps<TData>) {
   const compra = compraSchema.parse(row.original)
   const { setOpen, setCurrentRow } = useCompras()
+  const { mutate: renovarCompra, isPending } = useRenovarCompra()
 
   return (
     <DropdownMenu modal={false}>
@@ -43,13 +39,15 @@ export function DataTableRowActions<TData>({
       <DropdownMenuContent align='end' className='w-[160px]'>
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(compra)
-            setOpen('update')
+            if (compra.id) {
+              renovarCompra(compra.id)
+            }
           }}
+          disabled={isPending}
         >
           Renovar
           <DropdownMenuShortcut>
-            <IconRepeat size={16} />
+            {isPending ? <IconLoader2 className='animate-spin' size={16} /> : <IconRepeat size={16} />}
           </DropdownMenuShortcut>
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -67,7 +65,7 @@ export function DataTableRowActions<TData>({
         <DropdownMenuItem
           onClick={() => {
             setCurrentRow(compra)
-            setOpen('renovar')
+            setOpen('soporte')
           }}
         >
           Soporte
@@ -79,18 +77,17 @@ export function DataTableRowActions<TData>({
 
 
         <DropdownMenuSeparator />
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>Producto</DropdownMenuSubTrigger>
-          <DropdownMenuSubContent>
-            <DropdownMenuRadioGroup value={compra.producto_id}>
-              {productoOpciones.map((opcion) => (
-                <DropdownMenuRadioItem key={opcion.value} value={opcion.value}>
-                  {opcion.label}
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
+        <DropdownMenuItem
+          onClick={() => {
+            setCurrentRow(compra)
+            setOpen('ver_producto')
+          }}
+        >
+          Ver Producto
+          <DropdownMenuShortcut>
+            <IconEye size={16} />
+          </DropdownMenuShortcut>
+        </DropdownMenuItem>
 
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -100,7 +97,7 @@ export function DataTableRowActions<TData>({
             setOpen('delete')
           }}
         >
-          Cancelar
+          Reciclar
           <DropdownMenuShortcut>
             <IconTrash color='red' size={16} />
           </DropdownMenuShortcut>

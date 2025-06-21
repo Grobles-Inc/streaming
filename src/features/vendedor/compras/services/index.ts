@@ -56,6 +56,41 @@ export const updateCompra = async (id: string, updates: CompraUpdate): Promise<C
   return data
 }
 
+//Renovar compra
+
+//TODO: El numero de dias de renovacion debe recibirse como parametro
+export const renovarCompra = async (id: string): Promise<Compra | null> => {
+  // Get current compra to extend fecha_termino
+  const { data: currentCompra, error: fetchError } = await supabase
+    .from('compras')
+    .select('fecha_termino')
+    .eq('id', id)
+    .single()
+
+  if (fetchError) {
+    console.error('Error fetching compra:', fetchError)
+    return null
+  }
+
+  // Add 30 days to fecha_termino
+  const currentDate = new Date(currentCompra.fecha_termino)
+  const newDate = new Date(currentDate.setDate(currentDate.getDate() + 30))
+
+  const { data, error } = await supabase
+    .from('compras')
+    .update({ fecha_termino: newDate.toISOString() })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error renovando compra:', error)
+    return null
+  }
+
+  return data
+}
+
 // Recycle compra
 export const reciclarCompra = async (id: string): Promise<boolean> => {
   const { error } = await supabase
@@ -115,4 +150,23 @@ export const getComprasPaginated = async (
   }
 
   return { data: data || [], count: count || 0 }
+}
+
+
+//Get producto by id
+export const getProductoById = async (id: string): Promise<Producto | null> => {
+  const { data, error } = await supabase
+    .from('productos')
+    .select(`
+      *,
+      usuarios:proveedor_id (nombres)
+    `)
+    .eq('id', id)
+    .single()
+
+  if (error) {
+    console.error('Error fetching producto:', error)
+    return null
+  }
+  return data
 }

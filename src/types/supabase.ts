@@ -87,7 +87,12 @@ export interface Database {
           descripcion: string | null
           informacion: string | null
           condiciones: string | null
+          usuarios: {
+                         nombres: string
+            
+          }
           url_cuenta: string | null
+          tiempo_uso: number
           precio: number
           stock: number
           categoria_id: string
@@ -103,6 +108,7 @@ export interface Database {
           informacion?: string | null
           condiciones?: string | null
           url_cuenta?: string | null
+          tiempo_uso: number
           precio: number
           stock: number
           categoria_id: string
@@ -118,6 +124,7 @@ export interface Database {
           informacion?: string | null
           condiciones?: string | null
           url_cuenta?: string | null
+          tiempo_uso: number
           precio?: number
           stock?: number
           categoria_id?: string

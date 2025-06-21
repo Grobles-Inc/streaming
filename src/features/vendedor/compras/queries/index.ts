@@ -69,3 +69,27 @@ export const useReciclarCompra = () => {
     },
   })
 }
+
+export const useProductoById = (id: string) => {
+  return useQuery({
+    queryKey: ['productos', id],
+    queryFn: () => comprasService.getProductoById(id),
+    enabled: !!id,
+  })
+}
+
+export const useRenovarCompra = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => comprasService.renovarCompra(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['compras'] })
+      toast.success('Compra renovada correctamente')
+    },
+    onError: () => {
+      toast.error('Error al renovar la compra')
+    },
+  
+  })
+}

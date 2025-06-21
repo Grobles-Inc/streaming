@@ -11,8 +11,30 @@ import { estadosMap, productoOpciones } from '../data/data'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 import { Compra, CompraEstado } from '../data/schema'
-import { IconHeadphones } from '@tabler/icons-react'
-import { ComprasSoporteModal } from './compras-soporte-modal'
+import { useRenovarCompra } from '../queries'
+import { IconLoader2 } from '@tabler/icons-react'
+
+const DiasRestantesCell = ({ fecha_termino }: { fecha_termino: string }) => {
+  const { isPending } = useRenovarCompra()
+  const fecha_termino_date = new Date(fecha_termino)
+  const fecha_actual = new Date()
+  const dias_restantes = Math.ceil((fecha_termino_date.getTime() - fecha_actual.getTime()) / (1000 * 60 * 60 * 24))
+  let badgeColor = ''
+  if (dias_restantes < 5) {
+    badgeColor = 'bg-red-500 text-white dark:text-white border-red-500'
+  } else if (dias_restantes < 10) {
+    badgeColor = 'bg-orange-400 text-white dark:text-white border-orange-500'
+  } else if (dias_restantes < 30) {
+    badgeColor = 'bg-green-500 text-white dark:text-white border-green-500'
+  }
+  return (
+    <div className='flex justify-center'>
+      <Badge className={cn('capitalize h-7 w-7 rounded-full', badgeColor)}>
+        {isPending ? <IconLoader2 className='animate-spin' size={16} /> : dias_restantes}
+      </Badge>
+    </div>
+  )
+}
 
 const PasswordCell = ({ value }: { value: string }) => {
   const [isVisible, setIsVisible] = useState(false)
@@ -33,18 +55,6 @@ const PasswordCell = ({ value }: { value: string }) => {
         </TooltipContent>
       </Tooltip>
     </div>
-  )
-}
-
-const SoporteMessageCell = ({ row }: { row: Compra }) => {
-  const [open, setOpen] = useState(false)
-  return (
-    <>
-      <Button variant="secondary" className='flex items-center gap-1' onClick={() => setOpen(true)}>
-        <IconHeadphones />
-      </Button>
-      <ComprasSoporteModal open={open} setOpen={setOpen} currentRow={row} telefono={row.usuarios?.telefono || ''} />
-    </>
   )
 }
 
@@ -242,38 +252,12 @@ export const columns: ColumnDef<Compra>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: 'usuarios',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Proveedor' />
-    ),
-    cell: ({ row }) =>
-      <SoporteMessageCell row={row.original as Compra & { usuarios: { telefono: string } }} />,
-    enableSorting: false,
-  },
-  {
     accessorKey: 'fecha_termino',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Días restantes' />
     ),
     cell: ({ row }) => {
-      const fecha_termino = new Date(row.getValue('fecha_termino') as string)
-      const fecha_actual = new Date()
-      const dias_restantes = Math.ceil((fecha_termino.getTime() - fecha_actual.getTime()) / (1000 * 60 * 60 * 24))
-      let badgeColor = ''
-      if (dias_restantes < 5) {
-        badgeColor = 'bg-red-500 text-white dark:text-white border-red-500'
-      } else if (dias_restantes < 10) {
-        badgeColor = 'bg-orange-400 text-white dark:text-white border-orange-500'
-      } else if (dias_restantes < 30) {
-        badgeColor = 'bg-green-500 text-white dark:text-white border-green-500'
-      }
-      return (
-        <div className='flex justify-center'>
-          <Badge className={cn('capitalize h-7 w-7 rounded-full', badgeColor)}>
-            {dias_restantes}
-          </Badge>
-        </div>
-      )
+      return <DiasRestantesCell fecha_termino={row.original.fecha_termino as string} />
     },
     enableSorting: false,
   },

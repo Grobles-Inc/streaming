@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-base-100">
       <LandingHeader />
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5  md:gap-6 gap-2 md:p-6 p-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6  md:gap-6 gap-2 md:p-6 p-4">
         {categorias?.data.map((categoria) => (
           <Link key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
             <CategoriaCard key={categoria.id} categoria={categoria as Categoria} />
@@ -36,6 +36,7 @@ export default function Home() {
           ))}
         </div>
       </div>
+
     </div>
   )
 }

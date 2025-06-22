@@ -34,7 +34,7 @@ export default function CategoriaCard({ categoria }: { categoria: Categoria }) {
           ></feColorMatrix>
         </filter>
       </svg>
-      <div className="card-container">
+      <div className="card-container size-36 md:size-48 mx-auto">
         <div className="spin spin-blur"></div>
         <div className="spin spin-intense"></div>
         <div className="card-border">

@@ -1,8 +1,6 @@
 /* From Uiverse.io by SelfMadeSystem */ 
 .card-container {
   position: relative;
-  width: 200px;
-  height: 200px;
   border-radius: 1em;
 }
 

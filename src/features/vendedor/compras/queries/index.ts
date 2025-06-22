@@ -9,6 +9,13 @@ export const useCompras = () => {
   })
 }
 
+export const useLatestCompras = () => {
+  return useQuery({
+    queryKey: ['compras', 'latest'],
+    queryFn: () => comprasService.getLatestCompras(),
+  })
+}
+
 export const useComprasByVendedor = (vendedorId: string) => {
   return useQuery({
     queryKey: ['compras', 'vendedor', vendedorId],

@@ -11,12 +11,12 @@ const recargaEstadoSchema = z.union([
 
 export const recargaSchema = z.object({
   id: z.string(),
+  usuario_id: z.string(),
   monto: z.number(),
   comision: z.number(),
-  saldo: z.number(),
-  fecha: z.string(),
-  estado: z.enum(['aprobado', 'pendiente', 'rechazado']),
-  metodo: z.enum(['transferencia', 'yape']),
+  estado: recargaEstadoSchema,
+  metodo_pago: z.enum(['transferencia', 'yape']),
+  created_at: z.string(),
 })
 
 export type Recarga = z.infer<typeof recargaSchema>

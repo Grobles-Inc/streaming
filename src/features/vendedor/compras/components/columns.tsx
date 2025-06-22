@@ -125,13 +125,12 @@ export const columns: ColumnDef<Compra>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'productos', // This matches the joined property from your query
+    accessorKey: 'productos',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Producto' />
     ),
     cell: ({ row }) => {
-      // Try to access the product name from the joined productos object, fallback to producto_id if not present
-      const productoNombre = (row.original as any)?.productos?.nombre || row.original.producto_id
+      const productoNombre = (row.original as any)?.productos?.nombre
       const label = productoOpciones.find((label) => label.value === productoNombre)
 
       return (
@@ -143,7 +142,12 @@ export const columns: ColumnDef<Compra>[] = [
         </div>
       )
     },
+    filterFn: (row, _id, value) => {
+      const productoNombre = row.original?.productos?.nombre?.toLowerCase() || ''
+      return productoNombre.includes(value.toLowerCase())
+    },
     enableHiding: false,
+    enableSorting: false,
   },
   {
     accessorKey: 'email_cuenta',
@@ -164,7 +168,7 @@ export const columns: ColumnDef<Compra>[] = [
   },
 
   {
-    accessorKey: 'productos',
+    id: 'productos_url',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='URL' />
     ),

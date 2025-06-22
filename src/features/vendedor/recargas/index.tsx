@@ -4,12 +4,12 @@ import { Search } from '@/components/search'
 import { columns } from './components/columns'
 import { DataTable } from './components/data-table'
 import RecargasProvider from './context/recargas-context'
-import { recargas } from './data/recargas'
 import { recargaSchema } from './data/schema'
+import { useRecargas } from './queries'
 
 export default function Recargas() {
-  const recargasList = recargas.map(recarga => recargaSchema.parse(recarga))
-  // const { data: recargas } = useRecargas()
+  const { data: recargas } = useRecargas()
+  const recargasList = recargas?.data.map(recarga => recargaSchema.parse(recarga)) ?? []
   return (
     <RecargasProvider>
       <Header fixed>

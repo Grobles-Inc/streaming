@@ -23,6 +23,21 @@ export const createCompra = async (compra: CompraInsert): Promise<Compra | null>
   return data
 }
 
+// Get latest 5 compras
+export const getLatestCompras = async (): Promise<Compra[]> => {
+  const { data, error } = await supabase
+    .from('compras')
+    .select('*, productos:producto_id (nombre, url_cuenta, precio)')
+    .order('created_at', { ascending: false })
+    .limit(5)
+
+  if (error) {
+    console.error('Error fetching latest compras:', error)
+    return []
+  }
+
+  return data
+}
 // Get compra by ID
 export const getCompraById = async (id: string): Promise<Compra | null> => {
   const { data, error } = await supabase

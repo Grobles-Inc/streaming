@@ -43,13 +43,13 @@ export function ResumenBarChart() {
           dataKey='recargas'
           fill='#10b981'
           radius={[4, 4, 0, 0]}
-          name='Income'
+          name='Recargas'
         />
         <Bar
           dataKey='compras'
           fill='#ef4444'
           radius={[4, 4, 0, 0]}
-          name='Expense'
+          name='Compras'
         />
       </BarChart>
     </ResponsiveContainer>

@@ -36,25 +36,14 @@ export const columns: ColumnDef<Recarga>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='ID' />
     ),
-    cell: ({ row }) => <div className='w-[80px]'>{row.getValue('id')}</div>,
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: 'monto',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Monto' />
-    ),
     cell: ({ row }) => {
-      return (
-        <div className='flex items-center'>
-          <span >$ {row.getValue('monto')}</span>
-        </div>
-      )
+      const id = row.getValue('id') as string
+      return <div className='w-[80px]'>{id.slice(0, 6)}</div>
     },
     enableSorting: false,
     enableHiding: false,
   },
+
   {
     accessorKey: 'estado',
     header: ({ column }) => (
@@ -78,7 +67,45 @@ export const columns: ColumnDef<Recarga>[] = [
     enableSorting: false,
     enableHiding: false,
   },
+
+
   {
+    accessorKey: 'created_at',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Fecha' />
+    ),
+    cell: ({ row }) => {
+      return (
+        <div className='flex items-center'>
+          <span>{new Date(row.getValue('created_at')).toLocaleDateString('es-ES')}</span>
+        </div>
+      )
+    },
+    enableHiding: false,
+
+  }, {
+    accessorKey: 'metodo_pago',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Método de pago' />
+    ),
+    cell: ({ row }) => {
+      return <div className='flex items-center'>{row.getValue('metodo_pago')}</div>
+    },
+    enableSorting: false,
+  }, {
+    accessorKey: 'monto',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Monto' />
+    ),
+    cell: ({ row }) => {
+      return (
+        <div className='flex items-center'>
+          <span >$ {row.getValue('monto')}</span>
+        </div>
+      )
+    },
+    enableHiding: false,
+  }, {
     accessorKey: 'comision',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Comisión' />
@@ -95,31 +122,15 @@ export const columns: ColumnDef<Recarga>[] = [
   {
     accessorKey: 'saldo',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Saldo' />
+      <DataTableColumnHeader column={column} title="Saldo" />
     ),
     cell: ({ row }) => {
-      return (
-        <div className='flex items-center'>
-          <span >$ {row.getValue('saldo')}</span>
-        </div>
-      )
+      const saldo = row.original.monto - row.original.comision
+      return <div className='flex items-center'>
+        <span className='font-bold'>$ {saldo}</span>
+      </div>
     },
-    enableHiding: false,
+    enableSorting: false,
+  }
 
-  },
-  {
-    accessorKey: 'fecha',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Fecha' />
-    ),
-    cell: ({ row }) => {
-      return (
-        <div className='flex items-center'>
-          <span>{row.getValue('fecha')}</span>
-        </div>
-      )
-    },
-    enableHiding: false,
-
-  },
 ]

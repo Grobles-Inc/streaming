@@ -97,7 +97,9 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold'>+ $ {totalRecargas}</div>
-
+              <p className='text-muted-foreground text-xs'>
+                +20.1% desde el mes pasado
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -109,7 +111,9 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold'>- $ {totalCompras}</div>
-
+              <p className='text-muted-foreground text-xs'>
+                +20.1% desde el mes pasado
+              </p>
             </CardContent>
           </Card>
         </div>

@@ -72,7 +72,7 @@ export const estados = [
     color: 'bg-yellow-400 text-white dark:text-white border-yellow-500',
   },
   {
-    value: 'vencidos',
+    value: 'vencido',
     label: 'Vencido',
     icon: IconStopwatch,
     color: 'bg-red-500 text-white dark:text-white border-red-500',

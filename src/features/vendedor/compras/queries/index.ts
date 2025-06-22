@@ -16,6 +16,8 @@ export const useLatestCompras = () => {
   })
 }
 
+
+
 export const useComprasByVendedor = (vendedorId: string) => {
   return useQuery({
     queryKey: ['compras', 'vendedor', vendedorId],

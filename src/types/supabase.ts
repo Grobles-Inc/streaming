@@ -89,6 +89,7 @@ export interface Database {
           condiciones: string | null
           usuarios: {
             nombres: string
+            id: string
           }
           categorias: {
             nombre: string
@@ -103,7 +104,6 @@ export interface Database {
           stock: number
           categoria_id: string
           proveedor_id: string
-
           imagen_url: string | null
           created_at: string
           updated_at: string
@@ -165,6 +165,41 @@ export interface Database {
           }
         ]
       }
+      stock_productos: {
+        Row: {
+          id: number
+          producto_id: string
+          email: string | null
+          perfil: string | null
+          pin: string | null
+          clave: string | null
+        }
+        Insert: {
+          id?: number
+          producto_id: string
+          email: string | null
+          perfil: string | null
+          pin: string | null
+          clave: string | null
+        }
+        Update: {
+          id?: number
+          producto_id?: string
+          email?: string | null
+          perfil?: string | null
+          pin?: string | null
+          clave?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_productos_producto_id_fkey"
+            columns: ["producto_id"]
+            isOneToOne: false
+            referencedRelation: "productos"
+            referencedColumns: ["id"]
+          }
+        ]
+      },
       categorias: {
         Row: {
           id: string
@@ -198,10 +233,7 @@ export interface Database {
           proveedor_id: string
           producto_id: string
           vendedor_id: string
-          email_cuenta: string,          
-          clave_cuenta: string
-          perfil_cuenta: string
-          pin_cuenta?: string
+          stock_producto_id: number
           perfil_usuario?: string
           nombre_cliente: string         
           telefono_cliente: string
@@ -216,10 +248,7 @@ export interface Database {
           proveedor_id: string
           producto_id: string
           vendedor_id: string
-          email_cuenta: string
-          clave_cuenta: string
-          perfil_cuenta: string
-          pin_cuenta?: string
+          stock_producto_id: number
           nombre_cliente: string
           telefono_cliente: string
           precio: number
@@ -232,10 +261,7 @@ export interface Database {
           proveedor_id?: string
           producto_id?: string
           vendedor_id?: string
-          email_cuenta?: string
-          clave_cuenta?: string
-          pin_cuenta?: string
-          perfil_cuenta?: string
+          stock_producto_id?: number
           nombre_cliente?: string
           telefono_cliente?: string
           precio: number
@@ -256,6 +282,13 @@ export interface Database {
             columns: ["producto_id"]
             isOneToOne: false
             referencedRelation: "productos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compras_stock_producto_id_fkey"
+            columns: ["stock_producto_id"]
+            isOneToOne: false
+            referencedRelation: "stock_productos"
             referencedColumns: ["id"]
           }
         ]

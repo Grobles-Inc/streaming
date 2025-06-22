@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as categoriasService from '../services'
+import * as productosService from '../services/productos'
 import { toast } from 'sonner'
 
 export const useCategorias = () => {
@@ -20,7 +21,7 @@ export const useCategoriaById = (id: string) => {
 export const useProductosByCategoria = (categoriaId: string) => {
   return useQuery({
     queryKey: ['productos', categoriaId],
-    queryFn: () => categoriasService.getProductosByCategoria(categoriaId),
+    queryFn: () => productosService.getProductosByCategoria(categoriaId),
     enabled: !!categoriaId,
   })
 }

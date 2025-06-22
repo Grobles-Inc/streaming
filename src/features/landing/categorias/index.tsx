@@ -30,15 +30,15 @@ export default function Categoria({ nombre }: { nombre: string }) {
     <div className="px-4 md:px-8 pt-4 ">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <ScrollArea className="w-full rounded-md border whitespace-nowrap hidden md:block">
-          <TabsList className="hidden sm:flex h-14 gap-2 px-4 ">
+          <TabsList className="hidden sm:flex h-20 gap-2 px-4 ">
             {categorias?.data.map((categoria) => (
               <Link key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}
                 className={`${activeTab === categoria.id ? 'opacity-100 drop-shadow-md' : 'opacity-40'}`}
               >
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <TabsTrigger key={categoria.id} value={categoria.id} className="whitespace-nowrap px-3 py-2 hover:opacity-70 ">
-                      <img src={categoria.imagen_url || ''} alt={categoria.nombre} className="size-10" />
+                    <TabsTrigger key={categoria.id} value={categoria.id} className="whitespace-nowrap p-3 hover:opacity-70 ">
+                      <img src={categoria.imagen_url || ''} alt={categoria.nombre} className="size-16" />
                     </TabsTrigger>
                   </TooltipTrigger>
                   <TooltipContent>

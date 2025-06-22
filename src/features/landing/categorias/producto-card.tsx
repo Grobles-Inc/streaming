@@ -28,7 +28,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
           <Badge className='absolute left-2 md:bottom-[250px] bottom-44'>Nuevo</Badge>
         )}
 
-        <CardContent className='flex flex-col px-4 '>
+        <CardContent className='flex flex-col px-4  '>
 
           <span className="text-xs text-gray-500 font-semibold  mb-1">{producto.usuarios.nombres.toUpperCase()}</span>
           <span className="font-bold md:text-lg mb-1 hidden md:block  leading-tight">{producto.nombre}</span>
@@ -39,17 +39,18 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
 
 
           {/* Stock y precios */}
-          <div className="flex flex-row justify-between items-center w-full mb-2">
+          <div className="flex flex-col md:flex-row justify-between items-center w-full ">
             <Badge className='hidden md:block'>Stock: {producto.stock} </Badge>
 
-            <div className='flex w-full justify-between md:justify-end md:gap-2 items-baseline mt-4 md:mt-0'><span className="text-xs text-muted-foreground">S/.{(producto.precio * tasaDeConversion).toFixed(2)} </span>
-              <span className="font-bold text-xl text-foreground">     ${producto.precio.toFixed(2)}</span></div>
+            <div className='flex flex-col'>
+              <span className="font-bold text-xl text-foreground">     ${producto.precio.toFixed(2)}</span><span className="text-xs text-muted-foreground">S/.{(producto.precio * tasaDeConversion).toFixed(2)} </span>
+            </div>
           </div>
 
         </CardContent>
         <CardFooter className='px-4'>
           <Button variant={producto.stock === 0 ? "destructive" : "default"} className="w-full" onClick={() => setOpen(true)} disabled={producto.stock === 0}>
-            {producto.stock === 0 ? "Agotado" : "VER PRODUCTO"}
+            {producto.stock === 0 ? "Agotado" : "COMPRAR"}
           </Button>
         </CardFooter>
       </Card>

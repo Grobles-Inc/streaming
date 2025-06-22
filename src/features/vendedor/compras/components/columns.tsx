@@ -64,11 +64,11 @@ const CompraMessageCell = ({ row }: { row: Compra }) => {
     CompraMessage({
       producto_nombre: row.productos?.nombre || '',
       producto_precio: row.monto_reembolso,
-      email_cuenta: row.email_cuenta,
-      clave_cuenta: row.clave_cuenta,
+      email_cuenta: row.stock_productos?.email || '',
+      clave_cuenta: row.stock_productos?.clave || '',
       url_cuenta: row.productos?.url_cuenta || '',
-      perfil: row.perfil_cuenta,
-      pin: row.pin_cuenta,
+      perfil: row.stock_productos?.perfil || '',
+      pin: row.stock_productos?.pin || '',
       fecha_inicio: row.fecha_inicio,
       fecha_termino: row.fecha_termino,
       ciclo_facturacion: '30 días',
@@ -125,7 +125,7 @@ export const columns: ColumnDef<Compra>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'productos',
+    accessorKey: 'producto_nombre',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Producto' />
     ),
@@ -154,6 +154,10 @@ export const columns: ColumnDef<Compra>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Email' />
     ),
+    cell: ({ row }) => {
+      const { stock_productos } = row.original
+      return <div className='flex justify-center'>{stock_productos?.email}</div>
+    },
     enableSorting: false,
 
   },
@@ -163,12 +167,15 @@ export const columns: ColumnDef<Compra>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Clave' />
     ),
-    cell: ({ row }) => <PasswordCell value={row.getValue('clave_cuenta')} />,
+    cell: ({ row }) => {
+      const { stock_productos } = row.original
+      return <PasswordCell value={stock_productos?.clave || ''} />
+    },
     enableSorting: false,
   },
 
   {
-    id: 'productos_url',
+    id: 'url',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='URL' />
     ),
@@ -206,6 +213,10 @@ export const columns: ColumnDef<Compra>[] = [
       <DataTableColumnHeader column={column} title='Perfil' />
     ),
     enableSorting: false,
+    cell: ({ row }) => {
+      const { stock_productos } = row.original
+      return <div className='flex justify-center'>{stock_productos?.perfil}</div>
+    },
   },
   {
     accessorKey: 'pin_cuenta',
@@ -213,6 +224,10 @@ export const columns: ColumnDef<Compra>[] = [
       <DataTableColumnHeader column={column} title='PIN' />
     ),
     enableSorting: false,
+    cell: ({ row }) => {
+      const { stock_productos } = row.original
+      return <div className='flex justify-center'>{stock_productos?.pin}</div>
+    },
   }, {
     accessorKey: 'nombre_cliente',
     header: ({ column }) => (
@@ -245,7 +260,7 @@ export const columns: ColumnDef<Compra>[] = [
   },
 
   {
-    accessorKey: 'usuarios',
+    accessorKey: 'proveedor',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Proveedor' />
     ),

@@ -38,24 +38,6 @@ export const getCategoriaById = async (id: string): Promise<Categoria | null> =>
   return data
 }
 
-//Get productos by categoria
-export const getProductosByCategoria = async (categoriaId: string): Promise<Producto[]> => {
-  const { data, error } = await supabase
-    .from('productos')
-    .select(`
-      *,
-      categorias:categoria_id(nombre),
-      usuarios:proveedor_id(nombres)
-    `)
-    .eq('categoria_id', categoriaId)
-
-  if (error) {
-    console.error('Error fetching productos:', error)
-    return []
-  }
-
-  return data || []
-}
 
 // Update categoria
 export const updateCategoria = async (id: string, updates: CategoriaUpdate): Promise<Categoria | null> => {

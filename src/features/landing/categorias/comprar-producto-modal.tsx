@@ -1,12 +1,23 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useBilleteraByUsuario, useUpdateBilleteraSaldo } from '@/queries'
 import { useAuthStore } from '@/stores/authStore'
-import { useState } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { z } from 'zod'
 import { Producto } from '../services'
+import { useCreateCompra } from '../queries/compra'
+
+const formSchema = z.object({
+  nombre_cliente: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
+  telefono_cliente: z.string().min(10, 'El teléfono debe tener al menos 10 dígitos'),
+})
+
+type FormData = z.infer<typeof formSchema>
 
 type ComprarProductoModalProps = {
   open: boolean
@@ -16,24 +27,23 @@ type ComprarProductoModalProps = {
 
 export default function ComprarProductoModal({ open, onOpenChange, producto }: ComprarProductoModalProps) {
   if (!producto) return null
-  const { user } = useAuthStore()
 
+  const { user } = useAuthStore()
+  const { mutate: createCompra } = useCreateCompra()
   const { data: billetera } = useBilleteraByUsuario(user?.id || '0')
   const { mutate: actualizarSaldo } = useUpdateBilleteraSaldo()
   const monto = billetera?.saldo
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: ''
+  const stock_producto_id = 1
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      nombre_cliente: '',
+      telefono_cliente: '',
+    },
   })
 
-  function handleInputChange(field: 'name' | 'phone', value: string) {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
-  }
-
-  function buyProduct() {
+  function onSubmit(data: FormData) {
     if (!user?.id) {
       toast.error("Debes iniciar sesión para comprar un producto", { duration: 3000 })
       return
@@ -43,10 +53,21 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       toast.error("No tienes suficiente saldo", { duration: 3000 })
       return
     }
-    toast.success("Producto comprado correctamente", { duration: 3000 })
+
+    createCompra({
+      proveedor_id: producto.usuarios.id,
+      producto_id: producto.id,
+      vendedor_id: user.id,
+      nombre_cliente: data.nombre_cliente,
+      precio: producto.precio,
+      telefono_cliente: data.telefono_cliente,
+      stock_producto_id: stock_producto_id,
+    })
+
     actualizarSaldo({ id: billetera?.id, nuevoSaldo: monto - producto?.precio })
+    toast.success("Producto comprado correctamente", { duration: 3000 })
     onOpenChange(false)
-    setFormData({ name: '', phone: '' })
+    form.reset()
   }
 
   return (
@@ -126,38 +147,45 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
         </div>
 
         {/* Form Section */}
-        <div className="space-y-4">
-          <h3 className="font-semibold">Información de compra</h3>
-          <div className="space-y-3">
-            <div>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Nombre completo"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <h3 className="font-semibold">Información de compra</h3>
+            <div className="space-y-3">
+              <FormField
+                control={form.control}
+                name="nombre_cliente"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre completo</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ingresa tu nombre completo" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="telefono_cliente"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Número de teléfono</FormLabel>
+                    <FormControl>
+                      <Input type="tel" placeholder="Ingresa tu número de teléfono" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
-            <div>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="Número de teléfono"
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
 
-        <DialogFooter>
-          <Button
-            className="w-full"
-            onClick={buyProduct}
-          >
-            Comprar
-          </Button>
-        </DialogFooter>
+            <DialogFooter>
+              <Button type="submit" className="w-full">
+                Comprar
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   )

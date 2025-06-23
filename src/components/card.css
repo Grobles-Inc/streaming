@@ -14,7 +14,7 @@
   background: var(--primary-color);
   border-radius: inherit;
   box-shadow: 0 0 0.5rem var(--primary-color);
-  animation: hue-blink 100ms infinite;
+  animation: hue-blink 300ms infinite;
 }
 
 .card {

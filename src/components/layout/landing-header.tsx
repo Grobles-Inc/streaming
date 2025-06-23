@@ -8,7 +8,7 @@ import { Input } from '../ui/input'
 export default function LandingHeader() {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
-  const { data: billetera } = useBilleteraByUsuario(user?.id || '0')
+  const { data: billetera } = user ? useBilleteraByUsuario(user.id) : { data: null }
   return (
     <nav className="flex flex-col md:flex-row md:items-center md:justify-between md:px-6 px-4 py-4 gap-4 bg-base-100 shadow">
       <div className='flex flex-row justify-between items-center w-full'>

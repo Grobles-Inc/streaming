@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import ComprarProductoModal from './comprar-producto-modal'
 import ProductoInfoModal from './producto-info-modal'
 import { useState } from 'react'
-import { Producto } from '../services'
+import { Producto } from '../../services'
 import { IconFileInfo, IconHandClick, IconHeartHandshake } from '@tabler/icons-react'
 
 

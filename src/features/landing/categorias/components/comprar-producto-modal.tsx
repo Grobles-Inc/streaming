@@ -9,8 +9,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { Producto } from '../services'
-import { useCreateCompra } from '../queries/compra'
+import { Producto } from '../../services'
+import { useCreateCompra } from '../../queries/compra'
+import { PhoneInput } from './phone-input'
 
 const formSchema = z.object({
   nombre_cliente: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -60,7 +61,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       vendedor_id: user.id,
       nombre_cliente: data.nombre_cliente,
       precio: producto.precio,
-      telefono_cliente: data.telefono_cliente,
+      telefono_cliente: data.telefono_cliente.replace(/\s/g, ''),
       stock_producto_id: stock_producto_id,
     })
 
@@ -156,7 +157,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
                 name="nombre_cliente"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre completo</FormLabel>
+                    <FormLabel>Nombres y Apellidos</FormLabel>
                     <FormControl>
                       <Input placeholder="Ingresa tu nombre completo" {...field} />
                     </FormControl>
@@ -169,9 +170,9 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
                 name="telefono_cliente"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Número de teléfono</FormLabel>
+                    <FormLabel>Teléfono</FormLabel>
                     <FormControl>
-                      <Input type="tel" placeholder="Ingresa tu número de teléfono" {...field} />
+                      <PhoneInput {...field} defaultCountry="PE" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

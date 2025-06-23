@@ -48,8 +48,8 @@ export async function EnviarWhatsAppMessage(
   device: 'mobile' | 'web' = 'mobile'
 ) {
   const encodedMessage = encodeURIComponent(message)
-  const webUrl = `https://web.whatsapp.com/send?phone=+${businessPhone}&text=${encodedMessage}`
-  const mobileUrl = `https://wa.me/+${businessPhone}?text=${encodedMessage}`
+  const webUrl = `https://web.whatsapp.com/send?phone=${businessPhone}&text=${encodedMessage}`
+  const mobileUrl = `https://wa.me/${businessPhone}?text=${encodedMessage}`
 
   try {
     // For mobile devices, try to open in the same window first

@@ -27,13 +27,13 @@ export default function Categoria({ nombre }: { nombre: string }) {
   }, [categoriaId])
 
   return (
-    <div className="px-4 md:px-8 pt-4 ">
+    <div className="p-4  ">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <ScrollArea className="w-full rounded-md border whitespace-nowrap hidden md:block">
-          <TabsList className="hidden sm:flex h-20 gap-2 px-4 ">
+        <ScrollArea className="w-full rounded-md bg-white border whitespace-nowrap hidden md:block">
+          <TabsList className="hidden bg-white sm:flex h-24 gap-2 px-4 ">
             {categorias?.data.map((categoria) => (
               <Link key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}
-                className={`${activeTab === categoria.id ? 'opacity-100 drop-shadow-md' : 'opacity-40'}`}
+
               >
                 <Tooltip>
                   <TooltipTrigger asChild>

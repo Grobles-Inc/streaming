@@ -1,5 +1,5 @@
 import { useProductosByCategoria } from "../../queries"
-import ProductoCard from "../producto-card"
+import ProductoCard from "./producto-card"
 
 export function ProductsByCategory({ categoriaId }: { categoriaId: string }) {
   const { data: productos } = useProductosByCategoria(categoriaId)

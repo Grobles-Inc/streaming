@@ -4,11 +4,17 @@
   border-radius: 1em;
 }
 
+:root {
+  --primary-color: rgba(6, 49, 240, 0.333);
+}
+
 .card-border {
   position: absolute;
   inset: 0;
-  background: #0005;
+  background: var(--primary-color);
   border-radius: inherit;
+  box-shadow: 0 0 0.5rem var(--primary-color);
+  animation: hue-blink 100ms infinite;
 }
 
 .card {
@@ -21,13 +27,25 @@
   overflow: hidden;
 }
 
-
 .space {
   flex-grow: 1;
 }
 
+@keyframes hue-blink {
+  0%   { filter: hue-rotate(0deg); opacity: 1; }
+  50%  { filter: hue-rotate(180deg); opacity: 0.6; }
+  100% { filter: hue-rotate(360deg); opacity: 1; }
+}
 
-.content {
+.spin-blur {
+  background: var(--primary-color);
+  box-shadow: 0 0 1em var(--primary-color);
+  animation: hue-blink 100ms infinite;
+  border-radius: 50%;
+}
+
+
+/* .content {
   overflow: hidden;
 }
 
@@ -86,6 +104,9 @@
     rotate: 370deg;
   }
 }
+
+
+ */
 
 
 

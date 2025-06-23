@@ -100,7 +100,8 @@ export interface Database {
           nuevo: boolean
           url_cuenta: string | null
           tiempo_uso: number
-          precio: number
+          precio_vendedor: number
+          precio_publico: number
           stock: number
           categoria_id: string
           proveedor_id: string
@@ -120,7 +121,8 @@ export interface Database {
           nuevo: boolean
           url_cuenta?: string | null
           tiempo_uso: number
-          precio: number
+          precio_vendedor: number
+          precio_publico: number
           stock: number
           categoria_id: string
           proveedor_id: string
@@ -140,7 +142,8 @@ export interface Database {
           nuevo: boolean
           url_cuenta?: string | null
           tiempo_uso: number
-          precio?: number
+          precio_vendedor?: number
+          precio_publico?: number
           stock?: number
           categoria_id?: string
           proveedor_id?: string

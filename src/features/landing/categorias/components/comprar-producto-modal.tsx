@@ -49,8 +49,8 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       toast.error("Debes iniciar sesión para comprar un producto", { duration: 3000 })
       return
     }
-    if (!producto?.precio || !monto || !billetera?.id) return
-    if (monto && monto < producto?.precio) {
+    if (!producto?.precio_publico || !monto || !billetera?.id) return
+    if (monto && monto < producto?.precio_publico) {
       toast.error("No tienes suficiente saldo", { duration: 3000 })
       return
     }
@@ -60,12 +60,12 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       producto_id: producto.id,
       vendedor_id: user.id,
       nombre_cliente: data.nombre_cliente,
-      precio: producto.precio,
+      precio: producto.precio_publico,
       telefono_cliente: data.telefono_cliente.replace(/\s/g, ''),
       stock_producto_id: stock_producto_id,
     })
 
-    actualizarSaldo({ id: billetera?.id, nuevoSaldo: monto - producto?.precio })
+    actualizarSaldo({ id: billetera?.id, nuevoSaldo: monto - producto?.precio_publico })
     toast.success("Producto comprado correctamente", { duration: 3000 })
     onOpenChange(false)
     form.reset()
@@ -81,7 +81,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
         </DialogHeader>
         <div className='flex justify-between'>
           <span className=" text-gray-500 font-semibold mb-1">Proveedor: {producto.usuarios.nombres}</span>
-          <span className="font-bold text-2xl">${producto.precio.toFixed(2)}</span>
+          <span className="font-bold text-2xl">${producto.precio_publico.toFixed(2)}</span>
         </div>
 
         {/* Accordion for Product Information */}

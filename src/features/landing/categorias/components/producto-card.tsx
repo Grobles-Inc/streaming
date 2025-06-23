@@ -95,7 +95,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
           <span className="font-bold md:text-lg mb-1 hidden md:block  leading-tight">{producto.nombre}</span>
           <span className="font-bold md:text-lg text-sm mb-1 md:hidden truncate  leading-tight">{producto.nombre}</span>
           <div className="md:flex flex-row hidden justify-between items-center w-full mb-2">
-            <span className="text-xs text-green-600 ">Renovable: <span className="font-bold">${producto.precio.toFixed(2)}</span></span>
+            <span className="text-xs text-green-600 ">Renovable: <span className="font-bold">${producto.precio_publico.toFixed(2)}</span></span>
           </div>
 
 
@@ -104,7 +104,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
             <Badge className='hidden md:block'>Stock: {producto.stock} </Badge>
 
             <div className='flex md:flex-col flex-row-reverse justify-between md:justify-start items-center'>
-              <span className="font-bold md:text-xl text-foreground">     ${producto.precio.toFixed(2)}</span><span className="text-xs text-muted-foreground">S/.{(producto.precio * tasaDeConversion).toFixed(2)} </span>
+              <span className="font-bold md:text-xl text-foreground">     ${producto.precio_publico.toFixed(2)}</span><span className="text-xs text-muted-foreground">S/.{(producto.precio_publico * tasaDeConversion).toFixed(2)} </span>
             </div>
           </div>
 

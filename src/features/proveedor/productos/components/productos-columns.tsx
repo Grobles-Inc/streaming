@@ -127,6 +127,21 @@ export const columns: ColumnDef<Producto>[] = [
     meta: { className: 'w-24' },
   },
   {
+    accessorKey: 'precioPublico',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Precio Público' />
+    ),
+    cell: ({ row }) => {
+      const precioPublico = row.getValue('precioPublico') as number
+      return (
+        <div className='font-medium text-green-600'>
+          ${precioPublico.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+        </div>
+      )
+    },
+    meta: { className: 'w-32' },
+  },
+  {
     accessorKey: 'stock',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Stock' />

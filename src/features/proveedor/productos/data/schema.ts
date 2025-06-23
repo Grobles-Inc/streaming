@@ -20,6 +20,7 @@ export const productoSchema = z.object({
   proveedor: z.string(),
   categorias: z.array(categoriaSchema),
   precio: z.number(),
+  precioPublico: z.number(),
   stock: z.number(),
   fechaInicio: z.coerce.date(),
   fechaFinalizacion: z.coerce.date(),

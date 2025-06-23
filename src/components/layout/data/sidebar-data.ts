@@ -20,7 +20,8 @@ import {
   IconTool,
   IconUserCog,
   IconUserOff,
-  IconUsers
+  IconUsers,
+  IconWallet
 } from '@tabler/icons-react'
 import { type SidebarData, type UserRole } from '../types'
 
@@ -132,6 +133,12 @@ const baseNavGroups = [
         roles: ['provider'],
       },
       {
+        title: 'Cuentas',
+        url: '/proveedor/cuentas',
+        icon: IconUserCog,
+        roles: ['provider'],
+      },
+      {
         title: 'Pedidos',
         url: '/proveedor/pedidos',
         icon: IconClipboardList,
@@ -143,6 +150,12 @@ const baseNavGroups = [
         icon: IconChartBar,
         roles: ['provider'],
       },
+      {
+        title: 'Billetera',
+        url: '/proveedor/billetera',
+        icon: IconWallet,
+        roles: ['provider'],
+      }
     ],
   },
   {

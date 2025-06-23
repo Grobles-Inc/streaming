@@ -35,6 +35,8 @@ import { Route as publicCategoriaNameRouteImport } from './routes/(public)/categ
 import { Route as AuthenticatedProveedorReportesIndexRouteImport } from './routes/_authenticated/proveedor/reportes/index'
 import { Route as AuthenticatedProveedorProductosIndexRouteImport } from './routes/_authenticated/proveedor/productos/index'
 import { Route as AuthenticatedProveedorPedidosIndexRouteImport } from './routes/_authenticated/proveedor/pedidos/index'
+import { Route as AuthenticatedProveedorCuentasIndexRouteImport } from './routes/_authenticated/proveedor/cuentas/index'
+import { Route as AuthenticatedProveedorBilleteraIndexRouteImport } from './routes/_authenticated/proveedor/billetera/index'
 import { Route as AuthenticatedAdminUsersIndexRouteImport } from './routes/_authenticated/admin/users/index'
 import { Route as AuthenticatedAdminTasksIndexRouteImport } from './routes/_authenticated/admin/tasks/index'
 import { Route as AuthenticatedAdminSettingsIndexRouteImport } from './routes/_authenticated/admin/settings/index'
@@ -185,6 +187,18 @@ const AuthenticatedProveedorPedidosIndexRoute =
     path: '/proveedor/pedidos/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProveedorCuentasIndexRoute =
+  AuthenticatedProveedorCuentasIndexRouteImport.update({
+    id: '/proveedor/cuentas/',
+    path: '/proveedor/cuentas/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedProveedorBilleteraIndexRoute =
+  AuthenticatedProveedorBilleteraIndexRouteImport.update({
+    id: '/proveedor/billetera/',
+    path: '/proveedor/billetera/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminUsersIndexRoute =
   AuthenticatedAdminUsersIndexRouteImport.update({
     id: '/admin/users/',
@@ -259,6 +273,8 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AuthenticatedAdminSettingsIndexRoute
   '/admin/tasks': typeof AuthenticatedAdminTasksIndexRoute
   '/admin/users': typeof AuthenticatedAdminUsersIndexRoute
+  '/proveedor/billetera': typeof AuthenticatedProveedorBilleteraIndexRoute
+  '/proveedor/cuentas': typeof AuthenticatedProveedorCuentasIndexRoute
   '/proveedor/pedidos': typeof AuthenticatedProveedorPedidosIndexRoute
   '/proveedor/productos': typeof AuthenticatedProveedorProductosIndexRoute
   '/proveedor/reportes': typeof AuthenticatedProveedorReportesIndexRoute
@@ -293,6 +309,8 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AuthenticatedAdminSettingsIndexRoute
   '/admin/tasks': typeof AuthenticatedAdminTasksIndexRoute
   '/admin/users': typeof AuthenticatedAdminUsersIndexRoute
+  '/proveedor/billetera': typeof AuthenticatedProveedorBilleteraIndexRoute
+  '/proveedor/cuentas': typeof AuthenticatedProveedorCuentasIndexRoute
   '/proveedor/pedidos': typeof AuthenticatedProveedorPedidosIndexRoute
   '/proveedor/productos': typeof AuthenticatedProveedorProductosIndexRoute
   '/proveedor/reportes': typeof AuthenticatedProveedorReportesIndexRoute
@@ -329,6 +347,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/settings/': typeof AuthenticatedAdminSettingsIndexRoute
   '/_authenticated/admin/tasks/': typeof AuthenticatedAdminTasksIndexRoute
   '/_authenticated/admin/users/': typeof AuthenticatedAdminUsersIndexRoute
+  '/_authenticated/proveedor/billetera/': typeof AuthenticatedProveedorBilleteraIndexRoute
+  '/_authenticated/proveedor/cuentas/': typeof AuthenticatedProveedorCuentasIndexRoute
   '/_authenticated/proveedor/pedidos/': typeof AuthenticatedProveedorPedidosIndexRoute
   '/_authenticated/proveedor/productos/': typeof AuthenticatedProveedorProductosIndexRoute
   '/_authenticated/proveedor/reportes/': typeof AuthenticatedProveedorReportesIndexRoute
@@ -366,6 +386,8 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/tasks'
     | '/admin/users'
+    | '/proveedor/billetera'
+    | '/proveedor/cuentas'
     | '/proveedor/pedidos'
     | '/proveedor/productos'
     | '/proveedor/reportes'
@@ -400,6 +422,8 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/tasks'
     | '/admin/users'
+    | '/proveedor/billetera'
+    | '/proveedor/cuentas'
     | '/proveedor/pedidos'
     | '/proveedor/productos'
     | '/proveedor/reportes'
@@ -435,6 +459,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/settings/'
     | '/_authenticated/admin/tasks/'
     | '/_authenticated/admin/users/'
+    | '/_authenticated/proveedor/billetera/'
+    | '/_authenticated/proveedor/cuentas/'
     | '/_authenticated/proveedor/pedidos/'
     | '/_authenticated/proveedor/productos/'
     | '/_authenticated/proveedor/reportes/'
@@ -640,6 +666,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProveedorPedidosIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/proveedor/cuentas/': {
+      id: '/_authenticated/proveedor/cuentas/'
+      path: '/proveedor/cuentas'
+      fullPath: '/proveedor/cuentas'
+      preLoaderRoute: typeof AuthenticatedProveedorCuentasIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/proveedor/billetera/': {
+      id: '/_authenticated/proveedor/billetera/'
+      path: '/proveedor/billetera'
+      fullPath: '/proveedor/billetera'
+      preLoaderRoute: typeof AuthenticatedProveedorBilleteraIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/users/': {
       id: '/_authenticated/admin/users/'
       path: '/admin/users'
@@ -728,6 +768,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminSettingsIndexRoute: typeof AuthenticatedAdminSettingsIndexRoute
   AuthenticatedAdminTasksIndexRoute: typeof AuthenticatedAdminTasksIndexRoute
   AuthenticatedAdminUsersIndexRoute: typeof AuthenticatedAdminUsersIndexRoute
+  AuthenticatedProveedorBilleteraIndexRoute: typeof AuthenticatedProveedorBilleteraIndexRoute
+  AuthenticatedProveedorCuentasIndexRoute: typeof AuthenticatedProveedorCuentasIndexRoute
   AuthenticatedProveedorPedidosIndexRoute: typeof AuthenticatedProveedorPedidosIndexRoute
   AuthenticatedProveedorProductosIndexRoute: typeof AuthenticatedProveedorProductosIndexRoute
   AuthenticatedProveedorReportesIndexRoute: typeof AuthenticatedProveedorReportesIndexRoute
@@ -748,6 +790,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminSettingsIndexRoute: AuthenticatedAdminSettingsIndexRoute,
   AuthenticatedAdminTasksIndexRoute: AuthenticatedAdminTasksIndexRoute,
   AuthenticatedAdminUsersIndexRoute: AuthenticatedAdminUsersIndexRoute,
+  AuthenticatedProveedorBilleteraIndexRoute:
+    AuthenticatedProveedorBilleteraIndexRoute,
+  AuthenticatedProveedorCuentasIndexRoute:
+    AuthenticatedProveedorCuentasIndexRoute,
   AuthenticatedProveedorPedidosIndexRoute:
     AuthenticatedProveedorPedidosIndexRoute,
   AuthenticatedProveedorProductosIndexRoute:

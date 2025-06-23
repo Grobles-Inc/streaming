@@ -26,7 +26,7 @@ export default function ComprasProductoDialog({ open, onOpenChange, id }: Compra
           </DialogHeader>
           <div className='flex justify-between'>
             <span className=" text-gray-500 font-semibold mb-1">Proveedor: {producto?.usuarios?.nombres}</span>
-            <span className="font-bold text-2xl">${producto?.precio.toFixed(2)}</span>
+            <span className="font-bold text-2xl">${producto?.precio_publico.toFixed(2)}</span>
           </div>
 
           {/* Accordion for Product Information */}

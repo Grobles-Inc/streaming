@@ -54,13 +54,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     if (error) {
       toast.error(error.message)
     } else {
-      toast.success('Login successful')
-
-      // Get the user data to determine role-based redirect
       const user = useAuthStore.getState().user
       const userRole = user?.rol
-
-      // Redirect based on user role
       switch (userRole) {
         case 'admin':
           navigate({ to: '/admin/users' })

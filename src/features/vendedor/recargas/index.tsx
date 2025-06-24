@@ -1,20 +1,25 @@
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { Search } from '@/components/search'
 import { columns } from './components/columns'
 import { DataTable } from './components/data-table'
 import RecargasProvider from './context/recargas-context'
 import { recargaSchema } from './data/schema'
 import { useRecargas } from './queries'
+import { ThemeSwitch } from '@/components/theme-switch'
+import { ProfileDropdown } from '@/components/profile-dropdown'
 
 export default function Recargas() {
   const { data: recargas } = useRecargas()
   const recargasList = recargas?.data.map(recarga => recargaSchema.parse(recarga)) ?? []
   return (
     <RecargasProvider>
-      <Header fixed>
-        <Search />
+      <Header>
+        <div className='ml-auto flex items-center space-x-4'>
+          <ThemeSwitch />
+          <ProfileDropdown />
+        </div>
       </Header>
+
       <Main>
         <div className='mb-2'>
           <h2 className='text-2xl font-bold tracking-tight'>Recargas</h2>

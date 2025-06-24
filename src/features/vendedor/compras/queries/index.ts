@@ -9,10 +9,10 @@ export const useCompras = () => {
   })
 }
 
-export const useLatestCompras = () => {
+export const useLatestCompras = (usuarioId: string) => {
   return useQuery({
     queryKey: ['compras', 'latest'],
-    queryFn: () => comprasService.getLatestCompras(),
+    queryFn: () => comprasService.getLatestCompras(usuarioId),
   })
 }
 

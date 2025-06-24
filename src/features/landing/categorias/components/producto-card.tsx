@@ -16,13 +16,13 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
   const tasaDeConversion = 3.7
   return (
     <>
-      <Card className='relative overflow-hidden pb-4 md:pb-6 w-full max-w-sm gap-2 md:gap-6'>
-        <CardHeader className="relative z-0 px-0">
-          <img src={producto.imagen_url || ''} alt={producto.nombre} className="w-full rounded mb-2 mt-6 px-4" />
+      <Card className='relative overflow-hidden pb-4 pt-0 md:pb-6 w-full max-w-sm gap-4 md:gap-6'>
+        <CardHeader className="relative z-0 px-0 ">
+          <img src={producto.imagen_url || ''} alt={producto.nombre} className='w-full' />
           {!producto.nuevo && (
-            <Badge className='ml-4'>Nuevo</Badge>
+            <Badge className='ml-4 mt-2'>Nuevo</Badge>
           )}
-          <div className="absolute  flex-col right-2 flex gap-1">
+          <div className="absolute  flex-col right-2 top-2 flex gap-1">
             <Button size="icon" variant="secondary" title="Información del Producto" onClick={() => {
               setInfoModalType('informacion')
               setInfoModalOpen(true)

@@ -1,6 +1,7 @@
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { Search } from '@/components/search'
+import { ProfileDropdown } from '@/components/profile-dropdown'
+import { ThemeSwitch } from '@/components/theme-switch'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -19,6 +20,7 @@ import { useComprasByVendedor } from '../compras/queries'
 import { useRecargasByVendedor } from '../recargas/queries'
 import { ResumenComprasPieChart } from './components/compras-pie-chart'
 import { ComprasRecientes } from './components/compras-recientes'
+import OperacionSaldoModal from './components/recargar-saldo-modal'
 import { ResumenRecargasPieChart } from './components/recargas-pie-chart'
 import { ResumenBarChart } from './components/resumen-bar-chart'
 
@@ -26,36 +28,46 @@ type TimeFilter = 'day' | 'week' | 'month'
 
 export default function Dashboard() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('month')
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [dialogOpenRetirar, setDialogOpenRetirar] = useState(false)
   const { user } = useAuthStore()
   if (!user?.id) {
     return null
   }
-  const { data: billetera } = useBilleteraByUsuario(user.id)
-  const { data: recargas } = useRecargasByVendedor(user.id)
-  const { data: compras } = useComprasByVendedor(user.id)
+  const { data: billetera, isLoading: isLoadingBilletera } = useBilleteraByUsuario(user.id)
+  const { data: recargas, isLoading: isLoadingRecargas } = useRecargasByVendedor(user.id)
+  const { data: compras, isLoading: isLoadingCompras } = useComprasByVendedor(user.id)
   const saldo = billetera?.saldo || 0
   const totalRecargas = recargas?.reduce((acc, recarga) => acc + recarga.monto, 0) || 0
   const totalCompras = compras?.reduce((acc, compra) => acc + compra.precio, 0) || 0
   return (
     <>
       {/* ===== Top Heading ===== */}
+
       <Header>
         <div className='ml-auto flex items-center space-x-4'>
-          <Search />
+          <ThemeSwitch />
+          <ProfileDropdown />
         </div>
       </Header>
 
       {/* ===== Main ===== */}
       <Main className='space-y-4'>
-        <div className='mb-2 flex items-center justify-between space-y-2'>
+        <div className='mb-2 flex flex-col md:flex-row md:items-center justify-between space-y-2'>
           <div>
             <h1 className='text-2xl font-bold tracking-tight'>Dashboard</h1>
-            <p className='text-muted-foreground'>
+            <p className='text-muted-foreground hidden md:block'>
               Revisa tus estadísticas, recargas, compras y más.
             </p>
           </div>
           <div className='flex items-center space-x-2'>
-            <Select
+
+            <Button onClick={() => setDialogOpen(true)}>
+              Recargar
+            </Button>
+            <Button variant='secondary' onClick={() => setDialogOpenRetirar(true)} hidden={user?.rol === 'seller'}>
+              Retirar
+            </Button><Select
               onValueChange={(value) => setTimeFilter(value as TimeFilter)}
               defaultValue='month'
             >
@@ -68,7 +80,8 @@ export default function Dashboard() {
                 <SelectItem value='month'>Mensual</SelectItem>
               </SelectContent>
             </Select>
-            <Button>Descargar</Button>
+            <OperacionSaldoModal open={dialogOpen} onOpenChange={setDialogOpen} operacion='recargar' />
+            <OperacionSaldoModal open={dialogOpenRetirar} onOpenChange={setDialogOpenRetirar} operacion='retirar' />
           </div>
         </div>
 
@@ -82,10 +95,19 @@ export default function Dashboard() {
               <IconWallet className='text-muted-foreground ' />
             </CardHeader>
             <CardContent>
-              <div className='text-2xl font-bold'>$ {saldo}</div>
-              <p className='text-muted-foreground text-xs'>
-                +20.1% desde el mes pasado
-              </p>
+              {isLoadingBilletera ? (
+                <div className='space-y-2'>
+                  <div className='h-8 bg-muted rounded animate-pulse w-24' />
+                  <div className='h-3 bg-muted rounded animate-pulse w-32' />
+                </div>
+              ) : (
+                <>
+                  <div className='text-2xl font-bold'>$ {saldo}</div>
+                  <p className='text-muted-foreground text-xs'>
+                    +20.1% desde el mes pasado
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
           <Card>
@@ -96,10 +118,19 @@ export default function Dashboard() {
               <ArrowUp className='text-muted-foreground ' />
             </CardHeader>
             <CardContent>
-              <div className='text-2xl font-bold'>+ $ {totalRecargas}</div>
-              <p className='text-muted-foreground text-xs'>
-                +20.1% desde el mes pasado
-              </p>
+              {isLoadingRecargas ? (
+                <div className='space-y-2'>
+                  <div className='h-8 bg-muted rounded animate-pulse w-24' />
+                  <div className='h-3 bg-muted rounded animate-pulse w-32' />
+                </div>
+              ) : (
+                <>
+                  <div className='text-2xl font-bold'>+ $ {totalRecargas}</div>
+                  <p className='text-muted-foreground text-xs'>
+                    +20.1% desde el mes pasado
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
           <Card>
@@ -110,10 +141,19 @@ export default function Dashboard() {
               <ArrowDown className='text-muted-foreground ' />
             </CardHeader>
             <CardContent>
-              <div className='text-2xl font-bold'>- $ {totalCompras}</div>
-              <p className='text-muted-foreground text-xs'>
-                +20.1% desde el mes pasado
-              </p>
+              {isLoadingCompras ? (
+                <div className='space-y-2'>
+                  <div className='h-8 bg-muted rounded animate-pulse w-24' />
+                  <div className='h-3 bg-muted rounded animate-pulse w-32' />
+                </div>
+              ) : (
+                <>
+                  <div className='text-2xl font-bold'>- $ {totalCompras}</div>
+                  <p className='text-muted-foreground text-xs'>
+                    +20.1% desde el mes pasado
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -23,6 +23,8 @@ import {
 } from '@/components/ui/table'
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
+import { useAuth } from '@/stores/authStore'
+import { useComprasByVendedor } from '../queries'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -39,6 +41,8 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   )
+  const { user } = useAuth()
+  const { isLoading } = useComprasByVendedor(user?.id as string)
   const [sorting, setSorting] = React.useState<SortingState>([])
 
   const table = useReactTable({
@@ -87,7 +91,17 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={`loading-${i}`}>
+                  {columns.map((_, colIndex) => (
+                    <TableCell key={`loading-cell-${i}-${colIndex}`}>
+                      <div className="h-4 bg-muted rounded animate-pulse w-full" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -109,7 +123,7 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className='h-24 text-center'
                 >
-                  Sin resultados.
+                  No hay resultados.
                 </TableCell>
               </TableRow>
             )}

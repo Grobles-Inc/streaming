@@ -1,6 +1,7 @@
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { Search } from '@/components/search'
+import { ProfileDropdown } from '@/components/profile-dropdown'
+import { ThemeSwitch } from '@/components/theme-switch'
 import { useAuth } from '@/stores/authStore'
 import { columns } from './components/columns'
 import { ComprasDialogs } from './components/compras-dialogs'
@@ -16,10 +17,13 @@ export default function Compras() {
   const comprasList = compras?.map(compra => compraSchema.parse(compra))
   return (
     <ComprasProvider>
-      <Header fixed>
-        <Search />
-
+      <Header>
+        <div className='ml-auto flex items-center space-x-4'>
+          <ThemeSwitch />
+          <ProfileDropdown />
+        </div>
       </Header>
+
 
       <Main>
         <div className='mb-2 flex flex-wrap items-center justify-between space-y-2 gap-x-4'>

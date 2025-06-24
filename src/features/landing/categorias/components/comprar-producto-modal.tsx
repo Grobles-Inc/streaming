@@ -9,8 +9,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { Producto } from '../../services'
 import { useCreateCompra } from '../../queries/compra'
+import { Producto } from '../../services'
 import { PhoneInput } from './phone-input'
 
 const formSchema = z.object({
@@ -75,16 +75,17 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md w-full">
         <DialogHeader className='flex flex-col gap-3'>
-          <DialogTitle>{producto.categorias.nombre.toUpperCase()}</DialogTitle>
+          <DialogTitle className='flex items-center gap-4'>
+
+            {producto.usuarios.nombres}
+          </DialogTitle>
           <DialogDescription>{producto.descripcion}</DialogDescription>
 
         </DialogHeader>
-        <div className='flex justify-between'>
-          <span className=" text-gray-500 font-semibold mb-1">Proveedor: {producto.usuarios.nombres}</span>
+        <div className='flex justify-end'>
           <span className="font-bold text-2xl">${producto.precio_publico.toFixed(2)}</span>
         </div>
 
-        {/* Accordion for Product Information */}
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="detalles">
             <AccordionTrigger>Detalles del producto</AccordionTrigger>
@@ -113,44 +114,28 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
           <div className="font-semibold mb-1">Tiempo de compra</div>
           <div className="flex gap-4">
             <label
-              className={`flex-1 border rounded-lg p-4 cursor-not-allowed transition-colors ${producto.tiempo_uso === 30 ? 'border-primary bg-secondary' : 'border-muted bg-transparent'} flex items-start gap-3`}
+              className="flex-1 border rounded-lg p-4 cursor-not-allowed transition-colors border-primary bg-secondary flex items-start gap-3"
             >
               <input
                 type="radio"
                 name="plan"
-                value="30"
-                checked={producto.tiempo_uso === 30}
+                value={producto.tiempo_uso}
+                checked={!!producto.tiempo_uso}
                 disabled
                 className="accent-primary mt-1"
               />
               <div>
-                <span className="font-semibold text-base">30 días</span>
-                <div className="text-xs text-muted-foreground">Acceso por 30 días.</div>
+                <span className="font-semibold text-base">{producto.tiempo_uso} días</span>
+                <div className="text-xs text-muted-foreground">Acceso por {producto.tiempo_uso} días.</div>
               </div>
             </label>
-            <label
-              className={`flex-1 border rounded-lg p-4 cursor-not-allowed transition-colors ${producto.tiempo_uso === 1 ? 'border-primary bg-muted/30' : 'border-muted bg-transparent'} flex items-start gap-3`}
-            >
-              <input
-                type="radio"
-                name="plan"
-                value="1"
-                checked={producto.tiempo_uso === 1}
-                disabled
-                className="accent-primary mt-1"
-              />
-              <div>
-                <span className="font-semibold text-base">1 día</span>
-                <div className="text-xs text-muted-foreground">Acceso por 1 día.</div>
-              </div>
-            </label>
+
           </div>
         </div>
 
         {/* Form Section */}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <h3 className="font-semibold">Información de compra</h3>
             <div className="space-y-3">
               <FormField
                 control={form.control}

@@ -113,7 +113,7 @@ export function Balance() {
             </div>
             Recargar Saldo
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleOperacionClick('retirar')}>
+          <DropdownMenuItem onClick={() => handleOperacionClick('retirar')} hidden={user?.rol === 'seller'}>
             <div className='flex size-6 items-center justify-center rounded-sm border'>
               <Minus className="w-4 h-4" />
             </div>

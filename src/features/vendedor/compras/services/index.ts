@@ -24,10 +24,11 @@ export const createCompra = async (compra: CompraInsert): Promise<Compra | null>
 }
 
 // Get latest 5 compras
-export const getLatestCompras = async (): Promise<Compra[]> => {
+export const getLatestCompras = async (usuarioId: string): Promise<Compra[]> => {
   const { data, error } = await supabase
     .from('compras')
     .select('*, productos:producto_id (nombre, url_cuenta, precio_publico)')
+    .eq('vendedor_id', usuarioId)
     .order('created_at', { ascending: false })
     .limit(5)
 

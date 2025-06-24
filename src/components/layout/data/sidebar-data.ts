@@ -1,25 +1,13 @@
 import {
-  IconBarrierBlock,
-  IconBrowserCheck,
-  IconBug,
   IconChartBar,
   IconClipboardList,
   IconCreditCard,
-  IconError404,
-  IconHelp,
   IconHome,
   IconLayoutDashboard,
-  IconLock,
-  IconLockAccess,
-  IconNotification,
   IconPackage,
-  IconPalette,
-  IconServerOff,
   IconSettings,
   IconShoppingCart,
-  IconTool,
   IconUserCog,
-  IconUserOff,
   IconUsers,
   IconWallet
 } from '@tabler/icons-react'
@@ -188,130 +176,130 @@ const baseNavGroups = [
       },
     ],
   },
-  {
-    title: 'Pages',
-    roles: ['admin', 'seller', 'provider'],
-    items: [
-      {
-        title: 'Auth',
-        icon: IconLockAccess,
-        roles: ['admin', 'seller', 'provider'],
-        items: [
-          {
-            title: 'Sign In',
-            url: '/sign-in',
-            roles: ['admin', 'seller', 'provider'],
-          },
-          {
-            title: 'Sign In (2 Col)',
-            url: '/sign-in-2',
-            roles: ['admin', 'seller', 'provider'],
-          },
-          {
-            title: 'Sign Up',
-            url: '/sign-up',
-            roles: ['admin', 'seller', 'provider'],
-          },
-          {
-            title: 'Forgot Password',
-            url: '/forgot-password',
-            roles: ['admin', 'seller', 'provider'],
-          },
-          {
-            title: 'OTP',
-            url: '/otp',
-            roles: ['admin', 'seller', 'provider'],
-          },
-        ],
-      },
-      {
-        title: 'Errors',
-        icon: IconBug,
-        roles: ['admin', 'seller', 'provider'],
-        items: [
-          {
-            title: 'Unauthorized',
-            url: '/401',
-            icon: IconLock,
-            roles: ['admin', 'seller', 'provider'],
-          },
-          {
-            title: 'Forbidden',
-            url: '/403',
-            icon: IconUserOff,
-            roles: ['admin', 'seller', 'provider'],
-          },
-          {
-            title: 'Not Found',
-            url: '/404',
-            icon: IconError404,
-            roles: ['admin', 'seller', 'provider'],
-          },
-          {
-            title: 'Internal Server Error',
-            url: '/500',
-            icon: IconServerOff,
-            roles: ['admin', 'seller', 'provider'],
-          },
-          {
-            title: 'Maintenance Error',
-            url: '/503',
-            icon: IconBarrierBlock,
-            roles: ['admin', 'seller', 'provider'],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    title: 'Otros',
-    roles: ['admin', 'seller', 'provider'],
-    items: [
-      {
-        title: 'Configuración',
-        icon: IconSettings,
-        roles: ['admin', 'seller', 'provider'],
-        items: [
-          {
-            title: 'Perfil',
-            url: '/settings',
-            icon: IconUserCog,
-            roles: ['admin', 'seller', 'provider'],
-          },
-          {
-            title: 'Cuenta',
-            url: '/settings/account',
-            icon: IconTool,
-            roles: ['admin', 'seller', 'provider'],
-          },
-          {
-            title: 'Apariencia',
-            url: '/settings/appearance',
-            icon: IconPalette,
-            roles: ['admin', 'seller', 'provider'],
-          },
-          {
-            title: 'Notificaciones',
-            url: '/settings/notifications',
-            icon: IconNotification,
-            roles: ['admin', 'seller', 'provider'],
-          },
-          {
-            title: 'Pantalla',
-            url: '/settings/display',
-            icon: IconBrowserCheck,
-            roles: ['admin', 'seller', 'provider'],
-          },
-        ],
-      },
-      {
-        title: 'Centro de Ayuda',
-        url: '/help-center',
-        icon: IconHelp,
-        roles: ['admin', 'seller', 'provider'],
-      },
-    ],
-  },
+  // {
+  //   title: 'Pages',
+  //   roles: ['admin', 'seller', 'provider'],
+  //   items: [
+  //     {
+  //       title: 'Auth',
+  //       icon: IconLockAccess,
+  //       roles: ['admin', 'seller', 'provider'],
+  //       items: [
+  //         {
+  //           title: 'Sign In',
+  //           url: '/sign-in',
+  //           roles: ['admin', 'seller', 'provider'],
+  //         },
+  //         {
+  //           title: 'Sign In (2 Col)',
+  //           url: '/sign-in-2',
+  //           roles: ['admin', 'seller', 'provider'],
+  //         },
+  //         {
+  //           title: 'Sign Up',
+  //           url: '/sign-up',
+  //           roles: ['admin', 'seller', 'provider'],
+  //         },
+  //         {
+  //           title: 'Forgot Password',
+  //           url: '/forgot-password',
+  //           roles: ['admin', 'seller', 'provider'],
+  //         },
+  //         {
+  //           title: 'OTP',
+  //           url: '/otp',
+  //           roles: ['admin', 'seller', 'provider'],
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       title: 'Errors',
+  //       icon: IconBug,
+  //       roles: ['admin', 'seller', 'provider'],
+  //       items: [
+  //         {
+  //           title: 'Unauthorized',
+  //           url: '/401',
+  //           icon: IconLock,
+  //           roles: ['admin', 'seller', 'provider'],
+  //         },
+  //         {
+  //           title: 'Forbidden',
+  //           url: '/403',
+  //           icon: IconUserOff,
+  //           roles: ['admin', 'seller', 'provider'],
+  //         },
+  //         {
+  //           title: 'Not Found',
+  //           url: '/404',
+  //           icon: IconError404,
+  //           roles: ['admin', 'seller', 'provider'],
+  //         },
+  //         {
+  //           title: 'Internal Server Error',
+  //           url: '/500',
+  //           icon: IconServerOff,
+  //           roles: ['admin', 'seller', 'provider'],
+  //         },
+  //         {
+  //           title: 'Maintenance Error',
+  //           url: '/503',
+  //           icon: IconBarrierBlock,
+  //           roles: ['admin', 'seller', 'provider'],
+  //         },
+  //       ],
+  //     },
+  //   ],
+  // },
+  // {
+  //   title: 'Otros',
+  //   roles: ['admin', 'seller', 'provider'],
+  //   items: [
+  //     {
+  //       title: 'Configuración',
+  //       icon: IconSettings,
+  //       roles: ['admin', 'seller', 'provider'],
+  //       items: [
+  //         {
+  //           title: 'Perfil',
+  //           url: '/settings',
+  //           icon: IconUserCog,
+  //           roles: ['admin', 'seller', 'provider'],
+  //         },
+  //         {
+  //           title: 'Cuenta',
+  //           url: '/settings/account',
+  //           icon: IconTool,
+  //           roles: ['admin', 'seller', 'provider'],
+  //         },
+  //         {
+  //           title: 'Apariencia',
+  //           url: '/settings/appearance',
+  //           icon: IconPalette,
+  //           roles: ['admin', 'seller', 'provider'],
+  //         },
+  //         {
+  //           title: 'Notificaciones',
+  //           url: '/settings/notifications',
+  //           icon: IconNotification,
+  //           roles: ['admin', 'seller', 'provider'],
+  //         },
+  //         {
+  //           title: 'Pantalla',
+  //           url: '/settings/display',
+  //           icon: IconBrowserCheck,
+  //           roles: ['admin', 'seller', 'provider'],
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       title: 'Centro de Ayuda',
+  //       url: '/help-center',
+  //       icon: IconHelp,
+  //       roles: ['admin', 'seller', 'provider'],
+  //     },
+  //   ],
+  // },
 ]
 
 // Function to get sidebar data based on user role and user data

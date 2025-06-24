@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Producto } from '../../services'
 
 interface ProductoInfoModalProps {
@@ -20,9 +20,11 @@ export default function ProductoInfoModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh]">
-        <div className="space-y-4">
-          <h3 className="text-md font-semibold text-primary">{title}</h3>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
 
+        </DialogHeader>
+        <div className="space-y-4">
 
           <div className="space-y-3">
             {content ? (

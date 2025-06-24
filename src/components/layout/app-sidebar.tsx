@@ -1,15 +1,13 @@
+import { Balance } from '@/components/layout/balance'
+import { NavGroup } from '@/components/layout/nav-group'
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
-  SidebarRail,
+  SidebarRail
 } from '@/components/ui/sidebar'
-import { NavGroup } from '@/components/layout/nav-group'
-import { NavUser } from '@/components/layout/nav-user'
-import { Balance } from '@/components/layout/balance'
-import { getSidebarData } from './data/sidebar-data'
 import { useAuthStore } from '@/stores/authStore'
+import { getSidebarData } from './data/sidebar-data'
 import { type UserRole } from './types'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -31,9 +29,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <NavGroup key={props.title} {...props} />
         ))}
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={sidebarData.user} />
-      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )

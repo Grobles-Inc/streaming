@@ -4,15 +4,15 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
-import { CompraMessage } from '@/lib/whatsapp'
+import { CompraMessage, SoporteMessage } from '@/lib/whatsapp'
+import { IconHeadphones, IconLoader2, IconPackage, IconRefresh } from '@tabler/icons-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { useState } from 'react'
+import { useCompras } from '../context/compras-context'
 import { estadosMap, productoOpciones } from '../data/data'
-import { DataTableColumnHeader } from './data-table-column-header'
-import { DataTableRowActions } from './data-table-row-actions'
-import { Compra, CompraEstado } from '../data/schema'
+import { Compra, CompraEstado, compraSchema } from '../data/schema'
 import { useRenovarCompra } from '../queries'
-import { IconLoader2 } from '@tabler/icons-react'
+import { DataTableColumnHeader } from './data-table-column-header'
 
 const DiasRestantesCell = ({ fecha_termino }: { fecha_termino: string }) => {
   const { isPending } = useRenovarCompra()
@@ -75,13 +75,75 @@ const CompraMessageCell = ({ row }: { row: Compra }) => {
     }, '51914019629', isMobile ? 'mobile' : 'web')
   }
   return (
-    <Button variant="ghost" className='flex items-center gap-1' onClick={handleClick}>
+    <Button variant="ghost" className='flex flex-col items-center gap-0 ' onClick={handleClick}>
       <img src="https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000" className='size-6' />
-      <span className='text-green-500'>
-        {row.telefono_cliente.slice(2)}
+      <span className='text-green-500 text-[9px]'>
+        {row.telefono_cliente}
       </span>
     </Button>
   )
+}
+
+const SoporteCell = ({ row }: { row: Compra }) => {
+  const { setOpen, setCurrentRow } = useCompras()
+  const isMobile = useIsMobile()
+  return (
+    <div className='flex justify-center'>
+      {
+        row.estado === 'soporte' ? (
+          <Button variant='ghost' size='icon' className='flex flex-col items-center gap-0' onClick={() => {
+            SoporteMessage({
+              nombre_cliente: row.nombre_cliente,
+              asunto: 'Soporte',
+              mensaje: 'Necesito soporte con el siguiente producto:',
+              id_cliente: row.id || '',
+              id_producto: row.producto_id,
+            }, row.usuarios?.telefono || '', isMobile ? 'mobile' : 'web')
+          }}>
+            <img src="https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000" className='size-6' />
+            <span className='text-green-500 text-[9px]'>
+              {row.usuarios?.telefono}
+            </span>
+          </Button>
+        ) : (
+          <Button variant='outline' size='icon' onClick={() => {
+            setOpen('soporte')
+            setCurrentRow(row)
+          }}>
+            <IconHeadphones color='purple' />
+          </Button>
+        )
+      }
+    </div>
+  )
+}
+
+const RenovacionCell = ({ row }: { row: Compra }) => {
+  const { setOpen, setCurrentRow } = useCompras()
+  const handleClick = () => {
+    setOpen('renovar')
+    setCurrentRow(row)
+  }
+  return (
+    <div className='flex justify-center'>
+      <Button variant="secondary" size='icon' onClick={handleClick}>
+        <IconRefresh />
+      </Button>
+    </div>
+  )
+}
+
+const ProductoCell = ({ row }: { row: Compra }) => {
+  const { setOpen, setCurrentRow } = useCompras()
+  const handleClick = () => {
+    setOpen('ver_producto')
+    setCurrentRow(compraSchema.parse(row))
+  }
+  return <div className='flex justify-center'>
+    <Button variant="secondary" size='icon' onClick={handleClick}>
+      <IconPackage color='purple' />
+    </Button>
+  </div>
 }
 
 export const columns: ColumnDef<Compra>[] = [
@@ -228,7 +290,17 @@ export const columns: ColumnDef<Compra>[] = [
       const { stock_productos } = row.original
       return <div className='flex justify-center'>{stock_productos?.pin}</div>
     },
-  }, {
+  },
+  {
+    id: 'ver_producto',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Producto' />
+    ),
+    cell: ({ row }) => {
+      return <ProductoCell row={row.original} />
+    },
+  },
+  {
     accessorKey: 'nombre_cliente',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Cliente' />
@@ -281,12 +353,23 @@ export const columns: ColumnDef<Compra>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: 'opciones',
+    id: 'comunicacion_proveedor',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Opciones' />
+      <DataTableColumnHeader column={column} title='Proveedor' />
     ),
-    cell: ({ row }) => <DataTableRowActions row={row} />,
-    enableSorting: false,
-    enableHiding: false,
+    cell: ({ row }) => {
+      return (
+        <SoporteCell row={row.original} />
+      )
+    },
   },
+  {
+    id: 'renovar',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Renovar' />
+    ),
+    cell: ({ row }) => {
+      return <RenovacionCell row={row.original} />
+    },
+  }
 ]

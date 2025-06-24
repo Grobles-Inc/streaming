@@ -5,7 +5,6 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { useAuth } from '@/stores/authStore'
 import { columns } from './components/columns'
 import { ComprasDialogs } from './components/compras-dialogs'
-import { ComprasPrimaryButtons } from './components/compras-primary-buttons'
 import { DataTable } from './components/data-table'
 import ComprasProvider from './context/compras-context'
 import { compraSchema } from './data/schema'
@@ -33,7 +32,6 @@ export default function Compras() {
               Aquí puedes ver la lista de tus compras.
             </p>
           </div>
-          <ComprasPrimaryButtons />
         </div>
         <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
           <DataTable

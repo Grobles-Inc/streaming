@@ -1,8 +1,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { useProductoById } from '../queries'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Loader2 } from 'lucide-react'
+import { useProductoById } from '../queries'
 
 type ComprasProductoDialogProps = {
   open: boolean
@@ -58,50 +57,24 @@ export default function ComprasProductoDialog({ open, onOpenChange, id }: Compra
             <div className="font-semibold mb-1">Tiempo de compra</div>
             <div className="flex gap-4">
               <label
-                className={`flex-1 border rounded-lg p-4 cursor-not-allowed transition-colors ${producto?.tiempo_uso === 30 ? 'border-primary bg-secondary' : 'border-muted bg-transparent'} flex items-start gap-3`}
+                className="flex-1 border rounded-lg p-4 cursor-not-allowed transition-colors border-primary bg-secondary flex items-start gap-3"
               >
                 <input
                   type="radio"
                   name="plan"
-                  value="30"
-                  checked={producto?.tiempo_uso === 30}
+                  value={producto?.tiempo_uso}
+                  checked={!!producto?.tiempo_uso}
                   disabled
                   className="accent-primary mt-1"
                 />
                 <div>
-                  <span className="font-semibold text-base">30 días</span>
-                  <div className="text-xs text-muted-foreground">Acceso por 30 días.</div>
+                  <span className="font-semibold text-base">{producto?.tiempo_uso} días</span>
+                  <div className="text-xs text-muted-foreground">Acceso por {producto?.tiempo_uso} días.</div>
                 </div>
               </label>
-              <label
-                className={`flex-1 border rounded-lg p-4 cursor-not-allowed transition-colors ${producto?.tiempo_uso === 1 ? 'border-primary bg-muted/30' : 'border-muted bg-transparent'} flex items-start gap-3`}
-              >
-                <input
-                  type="radio"
-                  name="plan"
-                  value="1"
-                  checked={producto?.tiempo_uso === 1}
-                  disabled
-                  className="accent-primary mt-1"
-                />
-                <div>
-                  <span className="font-semibold text-base">1 día</span>
-                  <div className="text-xs text-muted-foreground">Acceso por 1 día.</div>
-                </div>
-              </label>
+
             </div>
           </div>
-
-
-
-          <DialogFooter>
-            <Button
-              className="w-full"
-              onClick={() => onOpenChange(false)}
-            >
-              Cerrar
-            </Button>
-          </DialogFooter>
         </DialogContent>
       }
     </Dialog>

@@ -267,6 +267,8 @@ export interface Database {
           stock_producto_id?: number
           nombre_cliente?: string
           telefono_cliente?: string
+          fecha_inicio: string
+          fecha_termino: string
           precio: number
           estado?: string
           created_at?: string

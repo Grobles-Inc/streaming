@@ -119,15 +119,16 @@ const SoporteCell = ({ row }: { row: Compra }) => {
 }
 
 const RenovacionCell = ({ row }: { row: Compra }) => {
-  const { setOpen, setCurrentRow } = useCompras()
+  const { mutate: renovarCompra, isPending } = useRenovarCompra()
   const handleClick = () => {
-    setOpen('renovar')
-    setCurrentRow(row)
+    if (row.id) {
+      renovarCompra({ id: row.id, tiempo_uso: row.productos?.tiempo_uso || 0, fecha_termino: row.fecha_termino })
+    }
   }
   return (
     <div className='flex justify-center'>
-      <Button variant="secondary" size='icon' onClick={handleClick}>
-        <IconRefresh />
+      <Button variant="secondary" size='icon' onClick={handleClick} disabled={isPending}>
+        <IconRefresh className={`${isPending ? 'animate-spin' : ''}`} />
       </Button>
     </div>
   )

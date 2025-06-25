@@ -89,9 +89,9 @@ export const useProductoById = (id: string) => {
 
 export const useRenovarCompra = () => {
   const queryClient = useQueryClient()
-
   return useMutation({
-    mutationFn: (id: string) => comprasService.renovarCompra(id),
+    mutationFn: (params: { id: string, tiempo_uso: number, fecha_termino: string }) => 
+      comprasService.renovarCompra(params.id, params.tiempo_uso, params.fecha_termino),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['compras'] })
       toast.success('Compra renovada correctamente')

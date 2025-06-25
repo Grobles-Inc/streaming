@@ -1,6 +1,6 @@
 import { useBilleteraByUsuario } from '@/queries'
 import { useAuth } from '@/stores/authStore'
-import { IconLogout, IconMenu, IconShoppingBag, IconUser, IconWallet } from '@tabler/icons-react'
+import { IconChartBar, IconLayoutDashboard, IconLogout, IconMenu, IconShoppingBag, IconUser, IconWallet } from '@tabler/icons-react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -17,6 +17,7 @@ export default function LandingHeader() {
   const [isOpen, setIsOpen] = useState(false)
   const { data: categorias } = useCategorias()
   const [activeTab, setActiveTab] = useState<string | null>(null)
+  const redirectRoute = user?.rol === 'admin' ? '/admin/apps' : user?.rol === 'provider' ? '/proveedor/reportes' : '/dashboard'
   return (
     <nav className="flex flex-col md:flex-row md:items-center md:justify-between md:px-6 px-4 py-4 gap-4 bg-base-100 shadow">
       <div className='flex flex-row justify-between items-center w-full'>
@@ -37,18 +38,33 @@ export default function LandingHeader() {
         <div className="md:flex items-center gap-4 hidden ">
           {user && !isMobile ? (
             <div className='flex items-center gap-2'>
-              <Button onClick={() => navigate({ to: '/dashboard' })} size="lg">
-                <IconWallet />
-                $ {billetera?.saldo} </Button>
-              <Button variant="secondary" onClick={() => navigate({ to: '/compras' })} className='flex items-center gap-2'>
-                <IconShoppingBag />
-                Mis Compras</Button>
-              <Button variant="outline" onClick={() => navigate({ to: '/recargas' })} className='flex items-center gap-2'>
-                <IconWallet />
-                Mis Recargas</Button>
+              {
+                user?.rol === 'admin' ? (
+                  <Button onClick={() => navigate({ to: '/admin/apps' })} size="lg">
+                    <IconLayoutDashboard />
+                    Dashboard </Button>
+                ) : user?.rol === 'provider' ? (
+                  <Button onClick={() => navigate({ to: '/proveedor/reportes' })} size="lg">
+                    <IconChartBar />
+                    Reportes </Button>
+                ) : (
+
+                  <div className='flex items-center gap-2'>
+                    <Button variant="ghost" className='text-black font-bold text-xl' onClick={() => navigate({ to: '/dashboard' })} size="lg">
+                      $ {billetera?.saldo} </Button>
+                    <Button variant="secondary" onClick={() => navigate({ to: '/compras' })} className='flex items-center gap-2'>
+                      <IconShoppingBag />
+                      Compras</Button>
+                    <Button variant="secondary" onClick={() => navigate({ to: '/recargas' })} className='flex items-center gap-2'>
+                      <IconWallet />
+                      Recargas</Button>
+                  </div>
+                )
+              }
+
               <Button variant="destructive" onClick={() => signOut()} className='flex items-center gap-2'>
                 <IconLogout />
-                Cerrar Sesión</Button>
+                Salir</Button>
             </div>
           ) : (
             <Button onClick={() => navigate({ to: '/sign-in' })}>Iniciar Sesión</Button>
@@ -56,9 +72,17 @@ export default function LandingHeader() {
         </div>
         {isMobile && (
           <div className='flex items-center gap-2'>
-            <Button variant="outline" onClick={() => navigate({ to: '/sign-in' })}>
-              <IconUser />
-            </Button>
+            {
+              user ? (
+                <Button variant="outline" onClick={() => navigate({ to: redirectRoute })}>
+                  <IconUser />
+                </Button>
+              ) : (
+                <Button variant="outline" onClick={() => navigate({ to: '/sign-in' })}>
+                  <IconUser />
+                </Button>
+              )
+            }
             <div className="sm:hidden">
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger asChild>

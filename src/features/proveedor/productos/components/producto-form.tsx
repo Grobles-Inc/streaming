@@ -22,9 +22,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { useCategorias } from '../queries'
+import { useCategorias, useCreateProducto, useUpdateProducto } from '../queries'
 import { productoSchema, type ProductoFormData } from '../data/schema'
-import { useCreateProducto } from '../queries'
 import { Categoria } from '../services'
 import { useAuth } from '@/stores/authStore'
 
@@ -33,6 +32,9 @@ interface ProductoFormDialogProps {
   defaultValues?: Partial<ProductoFormData>
   title?: string
   description?: string
+  productId?: string // Para edición
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 export function ProductoFormDialog({
@@ -40,11 +42,22 @@ export function ProductoFormDialog({
   defaultValues,
   title = 'Nuevo Producto',
   description = 'Completa la información para agregar un nuevo producto.',
+  productId,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: ProductoFormDialogProps) {
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  
+  // Usar estado controlado si se proporciona, sino usar estado interno
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen
+  const setOpen = controlledOnOpenChange || setInternalOpen
   const { data: categorias = [], isLoading: loadingCategorias } = useCategorias()
-  const { mutate: createProducto, isPending } = useCreateProducto()
+  const { mutate: createProducto, isPending: isCreating } = useCreateProducto()
+  const { mutate: updateProducto, isPending: isUpdating } = useUpdateProducto()
   const { user } = useAuth()
+  
+  const isPending = isCreating || isUpdating
+  const isEditing = !!productId
   
   const form = useForm<ProductoFormData>({
     resolver: zodResolver(productoSchema),
@@ -77,13 +90,28 @@ export function ProductoFormDialog({
 
 
   const handleSubmit = async (data: ProductoFormData) => {
-    createProducto({
-      ...data,
-      proveedor_id: user?.id ?? '',
-      stock_de_productos: []
-    })
-    form.reset()
-    setOpen(false)
+    if (isEditing) {
+      updateProducto({
+        id: productId,
+        updates: data
+      }, {
+        onSuccess: () => {
+          form.reset()
+          setOpen(false)
+        }
+      })
+    } else {
+      createProducto({
+        ...data,
+        proveedor_id: user?.id ?? '',
+        stock_de_productos: []
+      }, {
+        onSuccess: () => {
+          form.reset()
+          setOpen(false)
+        }
+      })
+    }
   }
 
   return (
@@ -418,7 +446,10 @@ export function ProductoFormDialog({
               </div>
               <div className="md:col-span-2">
                 <Button type="submit" disabled={isPending} className="w-full">
-                  {isPending ? 'Agregando...' : 'Agregar producto'}
+                  {isPending 
+                    ? (isEditing ? 'Actualizando...' : 'Agregando...') 
+                    : (isEditing ? 'Actualizar producto' : 'Agregar producto')
+                  }
                 </Button>
               </div>
             </form>

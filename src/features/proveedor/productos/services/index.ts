@@ -58,12 +58,6 @@ export const getProductoById = async (id: string): Promise<Producto | null> => {
         nombre,
         descripcion,
         imagen_url
-      ),
-      usuarios (
-        id,
-        nombre,
-        apellido,
-        email
       )
     `)
     .eq('id', id)
@@ -90,12 +84,6 @@ export const updateProducto = async (id: string, updates: ProductoUpdate): Promi
         nombre,
         descripcion,
         imagen_url
-      ),
-      usuarios (
-        id,
-        nombre,
-        apellido,
-        email
       )
     `)
     .single()
@@ -141,12 +129,6 @@ export const getProductosPaginated = async (
         nombre,
         descripcion,
         imagen_url
-      ),
-      usuarios (
-        id,
-        nombre,
-        apellido,
-        email
       )
     `, { count: 'exact' })
     .eq('proveedor_id', proveedorId)

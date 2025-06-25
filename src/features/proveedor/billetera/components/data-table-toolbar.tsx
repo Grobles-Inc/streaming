@@ -26,26 +26,18 @@ const estados = [
   },
 ]
 
-const tipos = [
+const metodosPago = [
   {
-    value: 'recarga',
-    label: 'Recarga',
+    value: 'transferencia',
+    label: 'Transferencia',
   },
   {
-    value: 'retiro',
-    label: 'Retiro',
+    value: 'efectivo',
+    label: 'Efectivo',
   },
   {
-    value: 'compra',
-    label: 'Compra',
-  },
-  {
-    value: 'venta',
-    label: 'Venta',
-  },
-  {
-    value: 'comision',
-    label: 'Comisión',
+    value: 'pse',
+    label: 'PSE',
   },
 ]
 
@@ -64,10 +56,10 @@ export function DataTableToolbar<TData>({
       <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
         <div className='flex flex-1 items-center space-x-2'>
           <Input
-            placeholder='Buscar transacciones...'
-            value={(table.getColumn('id')?.getFilterValue() as string) ?? ''}
+            placeholder='Buscar recargas...'
+            value={(table.getColumn('monto')?.getFilterValue() as string) ?? ''}
             onChange={(event) =>
-              table.getColumn('id')?.setFilterValue(event.target.value)
+              table.getColumn('monto')?.setFilterValue(event.target.value)
             }
             className='h-8 w-full sm:w-[150px] lg:w-[250px]'
           />
@@ -87,11 +79,11 @@ export function DataTableToolbar<TData>({
               options={estados}
             />
           )}
-          {table.getColumn('tipo') && (
+          {table.getColumn('metodo_pago') && (
             <DataTableFacetedFilter
-              column={table.getColumn('tipo')}
-              title='Tipo'
-              options={tipos}
+              column={table.getColumn('metodo_pago')}
+              title='Método de Pago'
+              options={metodosPago}
             />
           )}
         </div>

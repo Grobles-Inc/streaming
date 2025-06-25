@@ -20,16 +20,23 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { agregarFondosSchema, type AgregarFondos } from '../data/schema'
+import { useAuth } from '@/stores/authStore'
+
+// Importar servicio directo para crear recargas
+import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 
 interface AgregarFondosModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (data: AgregarFondos) => void
+  onSubmit: () => void
 }
 
 export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFondosModalProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const { user } = useAuth()
 
   const form = useForm<AgregarFondos>({
     resolver: zodResolver(agregarFondosSchema),
@@ -40,13 +47,36 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
   })
 
   const handleSubmit = async (data: AgregarFondos) => {
+    if (!user) {
+      toast.error('Debe estar autenticado para agregar fondos')
+      return
+    }
+
     setIsLoading(true)
     try {
-      await onSubmit(data)
+      // Crear una nueva recarga en la base de datos
+      const { error } = await supabase
+        .from('recargas')
+        .insert({
+          usuario_id: user.id,
+          monto: data.cantidad,
+          metodo_pago: data.metodo_pago,
+          estado: 'pendiente' // Las recargas empiezan como pendientes hasta ser aprobadas
+        })
+
+      if (error) {
+        console.error('Error creating recarga:', error)
+        toast.error('Error al procesar la recarga')
+        return
+      }
+
+      toast.success('Recarga creada correctamente. Será procesada en breve.')
       form.reset()
       onOpenChange(false)
+      onSubmit() // Esto disparará la refetch de los datos
     } catch (error) {
-      // Error al agregar fondos
+      console.error('Error:', error)
+      toast.error('Error al agregar fondos')
     } finally {
       setIsLoading(false)
     }
@@ -64,24 +94,49 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="cantidad"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Cantidad a agregar</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Ingresa la cantidad"
-                      {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="cantidad"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cantidad a agregar</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="Ingresa la cantidad"
+                        {...field}
+                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="metodo_pago"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Método de pago</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona el método" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="transferencia">Transferencia</SelectItem>
+                        <SelectItem value="efectivo">Efectivo</SelectItem>
+                        <SelectItem value="pse">PSE</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Primer bloque - Pasos para recargar */}
@@ -144,7 +199,7 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
                 disabled={isLoading}
                 className="w-full sm:w-auto"
               >
-                {isLoading ? 'Procesando...' : 'Agregar Fondos'}
+                {isLoading ? 'Procesando...' : 'Solicitar Recarga'}
               </Button>
             </DialogFooter>
           </form>

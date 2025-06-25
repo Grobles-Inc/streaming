@@ -12,11 +12,10 @@ export const getComprasByProveedorId = async (proveedorId: string): Promise<Comp
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, precio, stock),
-      usuarios:vendedor_id (nombre, apellido, telefono)
+      productos:producto_id (nombre, precio_publico, stock)
     `)
     .eq('proveedor_id', proveedorId)
-    .order('created_at', { ascending: false })
+    .order('fecha_inicio', { ascending: false })
 
   if (error) {
     console.error('Error fetching compras by proveedor:', error)
@@ -32,8 +31,7 @@ export const getCompraById = async (id: string): Promise<Compra | null> => {
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, precio, stock),
-      usuarios:vendedor_id (nombre, apellido, telefono)
+      productos:producto_id (nombre, precio_publico, stock)
     `)
     .eq('id', id)
     .single()
@@ -69,11 +67,10 @@ export const getLatestComprasByProveedor = async (proveedorId: string): Promise<
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, precio),
-      usuarios:vendedor_id (nombre, apellido)
+      productos:producto_id (nombre, precio_publico)
     `)
     .eq('proveedor_id', proveedorId)
-    .order('created_at', { ascending: false })
+    .order('fecha_inicio', { ascending: false })
     .limit(5)
 
   if (error) {
@@ -97,12 +94,11 @@ export const getComprasPaginatedByProveedor = async (
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, precio, stock),
-      usuarios:vendedor_id (nombre, apellido, telefono)
+      productos:producto_id (nombre, precio_publico, stock)
     `, { count: 'exact' })
     .eq('proveedor_id', proveedorId)
     .range(from, to)
-    .order('created_at', { ascending: false })
+    .order('fecha_inicio', { ascending: false })
 
   if (error) {
     console.error('Error fetching paginated compras:', error)

@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-import { Producto } from '../data/schema'
+import type { Producto } from '../services'
 
 interface DataTableRowActionsProps {
   row: Row<Producto>

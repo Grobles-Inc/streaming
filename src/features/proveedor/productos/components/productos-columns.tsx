@@ -1,15 +1,49 @@
-import { ColumnDef } from '@tanstack/react-table'
+import { ColumnDef, Row } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import LongText from '@/components/long-text'
-import { IconCheck, IconX } from '@tabler/icons-react'
-import { categorias, estadosBool } from '../data/data'
-import { Producto } from '../data/schema'
+import { IconCheck, IconX, IconPackage, IconClock, IconShoppingCart } from '@tabler/icons-react'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
+import type { Producto } from '../data/schema'
+import type { Producto as ProductoService } from '../services'
+
+// Estados para badges
+const disponibilidadColors = {
+  'en_stock': 'text-green-600 bg-green-50 border-green-200',
+  'a_pedido': 'text-yellow-600 bg-yellow-50 border-yellow-200',
+  'activacion': 'text-blue-600 bg-blue-50 border-blue-200',
+}
+
+const disponibilidadIcons = {
+  'en_stock': IconPackage,
+  'a_pedido': IconClock,
+  'activacion': IconShoppingCart,
+}
+
+const disponibilidadLabels = {
+  'en_stock': 'En Stock',
+  'a_pedido': 'A Pedido',
+  'activacion': 'Activación',
+}
 
 export const columns: ColumnDef<Producto>[] = [
+  // Columna oculta para evitar errores de tabla
+  {
+    accessorKey: 'destacado',
+    header: 'Destacado',
+    enableHiding: true,
+    meta: { className: 'hidden' },
+    cell: () => null,
+  },
+  {
+    accessorKey: 'mas_vendido',
+    header: 'Más vendido',
+    enableHiding: true,
+    meta: { className: 'hidden' },
+    cell: () => null,
+  },
   {
     id: 'select',
     header: ({ table }) => (
@@ -46,7 +80,7 @@ export const columns: ColumnDef<Producto>[] = [
       <DataTableColumnHeader column={column} title='ID' />
     ),
     cell: ({ row }) => (
-      <div className='w-12 font-mono text-sm'>{row.getValue('id')}</div>
+      <div className='w-12 font-mono text-sm'>{(row.getValue('id') as string)?.slice(0, 8)}</div>
     ),
     meta: {
       className: cn(
@@ -62,80 +96,66 @@ export const columns: ColumnDef<Producto>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Nombre' />
     ),
-    cell: ({ row }) => (
-      <LongText className='max-w-48 font-medium'>{row.getValue('nombre')}</LongText>
-    ),
+    cell: ({ row }) => {
+      const producto = row.original
+      return (
+        <div className='flex items-center space-x-2'>
+          <LongText className='max-w-48 font-medium'>{row.getValue('nombre')}</LongText>
+          <div className='flex space-x-1'>
+            {producto.nuevo && (
+              <Badge variant='secondary' className='text-xs'>
+                Nuevo
+              </Badge>
+            )}
+          </div>
+        </div>
+      )
+    },
     meta: { className: 'w-48' },
-  },
-  {
-    accessorKey: 'proveedor',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Proveedor' />
-    ),
-    cell: ({ row }) => (
-      <LongText className='max-w-36'>{row.getValue('proveedor')}</LongText>
-    ),
-    meta: { className: 'w-36' },
   },
   {
     accessorKey: 'categorias',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Categorías' />
+      <DataTableColumnHeader column={column} title='Categoría' />
     ),
     cell: ({ row }) => {
-      const categoriasList = row.getValue('categorias') as string[]
+      const producto = row.original
+      const categoria = producto.categorias
+      if (!categoria) return <span className='text-gray-400'>Sin categoría</span>
       
       return (
-        <div className='flex flex-wrap gap-1 max-w-48'>
-          {categoriasList.map((cat) => {
-            const categoria = categorias.find(c => c.value === cat)
-            if (!categoria) return null
-            
-            return (
-              <Badge 
-                key={cat} 
-                variant='outline' 
-                className={cn('text-xs', categoria.color)}
-              >
-                <categoria.icon size={12} className='mr-1' />
-                {categoria.label}
-              </Badge>
-            )
-          })}
-        </div>
+        <Badge variant='outline' className='text-xs'>
+          {categoria.nombre}
+        </Badge>
       )
     },
-    filterFn: (row, id, value) => {
-      const categoriasList = row.getValue(id) as string[]
-      return value.some((val: string) => categoriasList.includes(val))
-    },
-    enableSorting: false,
+    meta: { className: 'w-32' },
   },
   {
-    accessorKey: 'precio',
+    accessorKey: 'precio_vendedor',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Precio' />
+      <DataTableColumnHeader column={column} title='Precio Vendedor' />
     ),
     cell: ({ row }) => {
-      const precio = row.getValue('precio') as number
+      const precio = row.getValue('precio_vendedor') as number
       return (
-        <div className='font-medium'>
+        <div className='font-medium text-blue-600'>
           ${precio.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
         </div>
       )
     },
-    meta: { className: 'w-24' },
+    meta: { className: 'w-32' },
   },
   {
-    accessorKey: 'precioPublico',
+    accessorKey: 'precio_publico',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Precio Público' />
     ),
     cell: ({ row }) => {
-      const precioPublico = row.getValue('precioPublico') as number
+      const precio = row.getValue('precio_publico') as number
       return (
         <div className='font-medium text-green-600'>
-          ${precioPublico.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+          ${precio.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
         </div>
       )
     },
@@ -148,46 +168,54 @@ export const columns: ColumnDef<Producto>[] = [
     ),
     cell: ({ row }) => {
       const stock = row.getValue('stock') as number
+      
       return (
-        <div className={cn(
-          'font-medium',
-          stock > 20 ? 'text-green-600' : stock > 5 ? 'text-yellow-600' : 'text-red-600'
-        )}>
-          {stock}
+        <div className='text-center'>
+          <span className={`font-bold text-sm ${stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {stock}
+          </span>
         </div>
       )
     },
     meta: { className: 'w-20' },
   },
   {
-    accessorKey: 'fechaInicio',
+    accessorKey: 'disponibilidad',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Fecha Inicio' />
+      <DataTableColumnHeader column={column} title='Disponibilidad' />
     ),
     cell: ({ row }) => {
-      const fecha = row.getValue('fechaInicio') as Date
+      const disponibilidad = row.getValue('disponibilidad') as keyof typeof disponibilidadColors
+      const Icon = disponibilidadIcons[disponibilidad]
+      const color = disponibilidadColors[disponibilidad]
+      const label = disponibilidadLabels[disponibilidad]
+      
       return (
-        <div className='text-sm'>
-          {fecha.toLocaleDateString('es-ES')}
-        </div>
+        <Badge variant='outline' className={cn('text-xs', color)}>
+          <Icon size={12} className='mr-1' />
+          {label}
+        </Badge>
       )
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id))
     },
     meta: { className: 'w-32' },
   },
   {
-    accessorKey: 'fechaFinalizacion',
+    accessorKey: 'tiempo_uso',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Fecha Fin' />
+      <DataTableColumnHeader column={column} title='Tiempo (días)' />
     ),
     cell: ({ row }) => {
-      const fecha = row.getValue('fechaFinalizacion') as Date
+      const tiempo = row.getValue('tiempo_uso') as number
       return (
-        <div className='text-sm'>
-          {fecha.toLocaleDateString('es-ES')}
+        <div className='text-sm font-medium'>
+          {tiempo} {tiempo === 1 ? 'día' : 'días'}
         </div>
       )
     },
-    meta: { className: 'w-32' },
+    meta: { className: 'w-24' },
   },
   {
     accessorKey: 'renovable',
@@ -196,10 +224,12 @@ export const columns: ColumnDef<Producto>[] = [
     ),
     cell: ({ row }) => {
       const renovable = row.getValue('renovable') as boolean
-      const badgeColor = estadosBool.get(renovable)
       
       return (
-        <Badge variant='outline' className={cn('text-xs', badgeColor)}>
+        <Badge variant='outline' className={cn(
+          'text-xs',
+          renovable ? 'text-green-600 bg-green-50 border-green-200' : 'text-red-600 bg-red-50 border-red-200'
+        )}>
           {renovable ? (
             <><IconCheck size={12} className='mr-1' />Sí</>
           ) : (
@@ -211,20 +241,21 @@ export const columns: ColumnDef<Producto>[] = [
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id))
     },
-    enableSorting: false,
     meta: { className: 'w-24' },
   },
   {
-    accessorKey: 'aPedido',
+    accessorKey: 'a_pedido',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='A Pedido' />
     ),
     cell: ({ row }) => {
-      const aPedido = row.getValue('aPedido') as boolean
-      const badgeColor = estadosBool.get(aPedido)
+      const aPedido = row.getValue('a_pedido') as boolean
       
       return (
-        <Badge variant='outline' className={cn('text-xs', badgeColor)}>
+        <Badge variant='outline' className={cn(
+          'text-xs',
+          aPedido ? 'text-orange-600 bg-orange-50 border-orange-200' : 'text-gray-600 bg-gray-50 border-gray-200'
+        )}>
           {aPedido ? (
             <><IconCheck size={12} className='mr-1' />Sí</>
           ) : (
@@ -236,21 +267,71 @@ export const columns: ColumnDef<Producto>[] = [
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id))
     },
-    enableSorting: false,
     meta: { className: 'w-24' },
   },
   {
-    accessorKey: 'publicado',
+    accessorKey: 'created_at',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Publicado' />
+      <DataTableColumnHeader column={column} title='Creado' />
     ),
     cell: ({ row }) => {
-      const publicado = row.getValue('publicado') as boolean
-      const badgeColor = estadosBool.get(publicado)
+      const fecha = new Date(row.getValue('created_at') as string)
+      return (
+        <div className='text-sm'>
+          {fecha.toLocaleDateString('es-ES')}
+        </div>
+      )
+    },
+    meta: { className: 'w-28' },
+  },
+  {
+    accessorKey: 'precio_renovacion',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Precio Renovación' />
+    ),
+    cell: ({ row }) => {
+      const precio = row.getValue('precio_renovacion') as number | null
+      return (
+        <div className='font-medium text-orange-600'>
+          {precio ? `$${precio.toLocaleString('es-ES', { minimumFractionDigits: 2 })}` : 'N/A'}
+        </div>
+      )
+    },
+    meta: { className: 'w-32' },
+  },
+  {
+    accessorKey: 'url_cuenta',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='URL Cuenta' />
+    ),
+    cell: ({ row }) => {
+      const url = row.getValue('url_cuenta') as string | null
+      return (
+        <div className='text-sm'>
+          {url ? (
+            <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+              Ver cuenta
+            </a>
+          ) : 'N/A'}
+        </div>
+      )
+    },
+    meta: { className: 'w-24' },
+  },
+  {
+    accessorKey: 'nuevo',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Nuevo' />
+    ),
+    cell: ({ row }) => {
+      const nuevo = row.getValue('nuevo') as boolean
       
       return (
-        <Badge variant='outline' className={cn('text-xs', badgeColor)}>
-          {publicado ? (
+        <Badge variant='outline' className={cn(
+          'text-xs',
+          nuevo ? 'text-blue-600 bg-blue-50 border-blue-200' : 'text-gray-600 bg-gray-50 border-gray-200'
+        )}>
+          {nuevo ? (
             <><IconCheck size={12} className='mr-1' />Sí</>
           ) : (
             <><IconX size={12} className='mr-1' />No</>
@@ -261,12 +342,102 @@ export const columns: ColumnDef<Producto>[] = [
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id))
     },
-    enableSorting: false,
+    meta: { className: 'w-24' },
+  },
+  {
+    accessorKey: 'descripcion_completa',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Descripción Completa' />
+    ),
+    cell: ({ row }) => {
+      const descripcionCompleta = row.getValue('descripcion_completa') as string | null
+      return (
+        <div className='text-sm max-w-48'>
+          {descripcionCompleta ? (
+            <LongText>{descripcionCompleta}</LongText>
+          ) : 'N/A'}
+        </div>
+      )
+    },
+    meta: { className: 'w-48' },
+  },
+  {
+    accessorKey: 'solicitud',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Solicitud' />
+    ),
+    cell: ({ row }) => {
+      const solicitud = row.getValue('solicitud') as string | null
+      return (
+        <div className='text-sm max-w-32'>
+          {solicitud ? (
+            <LongText>{solicitud}</LongText>
+          ) : 'N/A'}
+        </div>
+      )
+    },
+    meta: { className: 'w-32' },
+  },
+  {
+    accessorKey: 'muestra_disponibilidad_stock',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Muestra Stock' />
+    ),
+    cell: ({ row }) => {
+      const muestraStock = row.getValue('muestra_disponibilidad_stock') as boolean
+      
+      return (
+        <Badge variant='outline' className={cn(
+          'text-xs',
+          muestraStock ? 'text-green-600 bg-green-50 border-green-200' : 'text-gray-600 bg-gray-50 border-gray-200'
+        )}>
+          {muestraStock ? (
+            <><IconCheck size={12} className='mr-1' />Sí</>
+          ) : (
+            <><IconX size={12} className='mr-1' />No</>
+          )}
+        </Badge>
+      )
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id))
+    },
+    meta: { className: 'w-24' },
+  },
+  {
+    accessorKey: 'deshabilitar_boton_comprar',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Botón Deshabilitado' />
+    ),
+    cell: ({ row }) => {
+      const deshabilitado = row.getValue('deshabilitar_boton_comprar') as boolean
+      
+      return (
+        <Badge variant='outline' className={cn(
+          'text-xs',
+          deshabilitado ? 'text-red-600 bg-red-50 border-red-200' : 'text-green-600 bg-green-50 border-green-200'
+        )}>
+          {deshabilitado ? (
+            <><IconX size={12} className='mr-1' />Sí</>
+          ) : (
+            <><IconCheck size={12} className='mr-1' />No</>
+          )}
+        </Badge>
+      )
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id))
+    },
     meta: { className: 'w-24' },
   },
   {
     id: 'actions',
-    cell: DataTableRowActions,
-    meta: { className: 'w-12' },
+    enableHiding: false,
+    cell: ({ row }) => <DataTableRowActions row={row as Row<ProductoService>} />,
+    meta: {
+      className: cn(
+        'sticky right-0 bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted'
+      ),
+    },
   },
 ] 

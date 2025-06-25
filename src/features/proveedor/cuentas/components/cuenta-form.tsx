@@ -28,10 +28,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
 
 import { cuentaFormSchema, CuentaForm, Tipo } from '../data/schema'
 import { tipos } from '../data/data'
-import { productosData } from '../../productos/data/data'
+import { useProductosByProveedor } from '../../productos/queries'
+
+// TODO: Reemplazar con el contexto de autenticación real
+const MOCK_PROVEEDOR_ID = 'e5b63d58-eab6-4628-a427-d86ee703d304'
 
 interface CuentaFormProps {
   trigger?: React.ReactNode
@@ -50,6 +54,9 @@ export function CuentaFormDialog({
 }: CuentaFormProps) {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+  // Obtener productos del proveedor actual
+  const { data: productos, isLoading: isLoadingProductos } = useProductosByProveedor(MOCK_PROVEEDOR_ID)
 
   const form = useForm<CuentaForm>({
     resolver: zodResolver(cuentaFormSchema),
@@ -72,7 +79,7 @@ export function CuentaFormDialog({
       setOpen(false)
       form.reset()
     } catch (error) {
-      console.error('Error al guardar cuenta:', error)
+      // Error será manejado por el hook mutation que lo llame
     } finally {
       setIsLoading(false)
     }
@@ -106,11 +113,23 @@ export function CuentaFormDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {productosData.map((producto) => (
-                          <SelectItem key={producto.id} value={producto.id}>
-                            {producto.nombre}
-                          </SelectItem>
-                        ))}
+                        {isLoadingProductos ? (
+                          <div className='p-2'>
+                            <Skeleton className='h-4 w-full mb-2' />
+                            <Skeleton className='h-4 w-full mb-2' />
+                            <Skeleton className='h-4 w-full' />
+                          </div>
+                        ) : productos && productos.length > 0 ? (
+                          productos.map((producto) => (
+                            <SelectItem key={producto.id} value={producto.id}>
+                              {producto.nombre}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <div className='p-2 text-sm text-muted-foreground'>
+                            No hay productos disponibles
+                          </div>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />

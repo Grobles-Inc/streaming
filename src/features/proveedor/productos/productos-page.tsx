@@ -2,11 +2,41 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/layout/header'
 import { Search } from '@/components/search'
 import { Main } from '@/components/layout/main'
-import { productosData } from './data/data'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { AlertTriangle } from 'lucide-react'
 import { columns } from './components/productos-columns'
 import { ProductosTable } from './components/productos-table'
+import { useProductosByProveedor, useProductosStatsByProveedor } from './queries'
+import { useAuth } from '@/stores/authStore'
+import type { Producto } from './data/schema'
 
 export function ProductosPage() {
+  const { user } = useAuth()
+  const { data: productos, isLoading, error } = useProductosByProveedor(user?.id ?? '')
+
+  const { data: stats } = useProductosStatsByProveedor(user?.id ?? '')
+
+  if (error) {
+    return (
+      <>
+        <Header>
+          <div className='ml-auto flex items-center space-x-4'>
+            <Search />
+          </div>
+        </Header>
+        <Main>
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              Error al cargar los productos. Por favor, intenta nuevamente.
+            </AlertDescription>
+          </Alert>
+        </Main>
+      </>
+    )
+  }
+
   return (
     <>
       <Header>
@@ -25,12 +55,67 @@ export function ProductosPage() {
             </div>
           </div>
 
+          {/* Estadísticas rápidas */}
+          {stats && (
+            <div className='grid gap-4 md:grid-cols-4'>
+              <Card>
+                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                  <CardTitle className='text-sm font-medium'>Total Productos</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className='text-2xl font-bold'>{stats.total}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                  <CardTitle className='text-sm font-medium'>En Stock</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className='text-2xl font-bold text-green-600'>{stats.enStock}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                  <CardTitle className='text-sm font-medium'>Destacados</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className='text-2xl font-bold text-yellow-600'>{stats.destacados}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                  <CardTitle className='text-sm font-medium'>Stock Total</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className='text-2xl font-bold'>{stats.stockTotal}</div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           <Card>
             <CardHeader>
               <CardTitle>Lista de Productos</CardTitle>
             </CardHeader>
             <CardContent>
-              <ProductosTable columns={columns} data={productosData} />
+              {isLoading ? (
+                <div className='space-y-4'>
+                  <Skeleton className='h-10 w-full' />
+                  <Skeleton className='h-10 w-full' />
+                  <Skeleton className='h-10 w-full' />
+                  <Skeleton className='h-10 w-full' />
+                  <Skeleton className='h-10 w-full' />
+                </div>
+              ) : productos && productos.length > 0 ? (
+                <ProductosTable columns={columns} data={productos as Producto[]} />
+              ) : (
+                <div className='text-center py-12'>
+                  <p className='text-muted-foreground mb-4'>No tienes productos registrados</p>
+                  <p className='text-sm text-muted-foreground'>
+                    Comienza agregando tu primer producto para comenzar a vender
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -1,13 +1,14 @@
 import { Cross2Icon } from '@radix-ui/react-icons'
 import { Table } from '@tanstack/react-table'
-import { IconPlus } from '@tabler/icons-react'
+import { IconPlus, IconPackage, IconClock, IconShoppingCart } from '@tabler/icons-react'
+import { ProductoFormDialog } from './producto-form'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-import { categorias } from '../data/data'
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
 import { DataTableViewOptions } from './data-table-view-options'
+import { useCategorias } from '../queries'
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -17,6 +18,33 @@ export function DataTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0
+  const { data: categorias } = useCategorias()
+
+  // Convertir categorías de la BD al formato esperado por el filtro
+  const categoriasOptions = Array.isArray(categorias) ? categorias.map(categoria => ({
+    label: categoria.nombre,
+    value: categoria.id,
+    icon: IconPackage, // Usar un icono genérico por ahora
+  })) : []
+
+  // Opciones para disponibilidad
+  const disponibilidadOptions = [
+    {
+      label: 'En Stock',
+      value: 'en_stock',
+      icon: IconPackage,
+    },
+    {
+      label: 'A Pedido',
+      value: 'a_pedido',
+      icon: IconClock,
+    },
+    {
+      label: 'Activación',
+      value: 'activacion',
+      icon: IconShoppingCart,
+    },
+  ]
 
   return (
     <div className='space-y-4'>
@@ -33,11 +61,16 @@ export function DataTableToolbar<TData>({
           />
         </div>
         <div className='flex items-center space-x-2'>
-          <Button size='sm' className='h-8 w-full sm:w-auto'>
-            <IconPlus className='mr-2 h-4 w-4' />
-            <span className='hidden sm:inline'>Nuevo Producto</span>
-            <span className='sm:hidden'>Nuevo</span>
-          </Button>
+
+          <ProductoFormDialog
+            trigger={
+              <Button size='sm' className='h-8 w-full sm:w-auto'>
+                <IconPlus className='mr-2 h-4 w-4' />
+                <span className='hidden sm:inline'>Nuevo Producto</span>
+                <span className='sm:hidden'>Nuevo</span>
+              </Button>
+            }
+          />
           <div className='hidden sm:block'>
             <DataTableViewOptions table={table} />
           </div>
@@ -51,17 +84,14 @@ export function DataTableToolbar<TData>({
             <DataTableFacetedFilter
               column={table.getColumn('categorias')}
               title='Categorías'
-              options={categorias}
+              options={categoriasOptions}
             />
           )}
-          {table.getColumn('publicado') && (
+          {table.getColumn('disponibilidad') && (
             <DataTableFacetedFilter
-              column={table.getColumn('publicado')}
-              title='Estado'
-              options={[
-                { label: 'Publicado', value: true },
-                { label: 'No Publicado', value: false },
-              ]}
+              column={table.getColumn('disponibilidad')}
+              title='Disponibilidad'
+              options={disponibilidadOptions}
             />
           )}
           {table.getColumn('renovable') && (
@@ -74,13 +104,33 @@ export function DataTableToolbar<TData>({
               ]}
             />
           )}
-          {table.getColumn('aPedido') && (
+          {table.getColumn('a_pedido') && (
             <DataTableFacetedFilter
-              column={table.getColumn('aPedido')}
+              column={table.getColumn('a_pedido')}
               title='A Pedido'
               options={[
                 { label: 'A Pedido', value: true },
-                { label: 'En Stock', value: false },
+                { label: 'No A Pedido', value: false },
+              ]}
+            />
+          )}
+          {table.getColumn('destacado') && (
+            <DataTableFacetedFilter
+              column={table.getColumn('destacado')}
+              title='Destacado'
+              options={[
+                { label: 'Destacado', value: true },
+                { label: 'No Destacado', value: false },
+              ]}
+            />
+          )}
+          {table.getColumn('mas_vendido') && (
+            <DataTableFacetedFilter
+              column={table.getColumn('mas_vendido')}
+              title='Más Vendido'
+              options={[
+                { label: 'Más Vendido', value: true },
+                { label: 'Normal', value: false },
               ]}
             />
           )}

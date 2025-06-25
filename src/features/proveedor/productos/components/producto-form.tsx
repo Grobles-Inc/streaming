@@ -90,25 +90,46 @@ export function ProductoFormDialog({
 
 
   const handleSubmit = async (data: ProductoFormData) => {
+    if (!user) {
+      console.error('❌ ProductoForm: No hay usuario autenticado')
+      return
+    }
+
+    console.log('🚀 ProductoForm - Datos del formulario:', data)
+    console.log('🚀 ProductoForm - Usuario ID:', user.id)
+    console.log('🚀 ProductoForm - Modo edición:', isEditing)
+
     if (isEditing) {
+      console.log('✏️ ProductoForm - Actualizando producto:', productId)
       updateProducto({
         id: productId,
         updates: data
       }, {
-        onSuccess: () => {
+        onSuccess: (result) => {
+          console.log('ProductoForm - Producto actualizado exitosamente:', result)
           form.reset()
           setOpen(false)
+        },
+        onError: (error) => {
+          console.error('ProductoForm - Error al actualizar:', error)
         }
       })
     } else {
-      createProducto({
+      const productoData = {
         ...data,
-        proveedor_id: user?.id ?? '',
+        proveedor_id: user.id,
         stock_de_productos: []
-      }, {
-        onSuccess: () => {
+      }
+      console.log('ProductoForm - Creando producto con datos:', productoData)
+      
+      createProducto(productoData, {
+        onSuccess: (result) => {
+          console.log('✅ ProductoForm - Producto creado exitosamente:', result)
           form.reset()
           setOpen(false)
+        },
+        onError: (error) => {
+          console.error('❌ ProductoForm - Error al crear:', error)
         }
       })
     }

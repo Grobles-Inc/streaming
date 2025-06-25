@@ -58,13 +58,18 @@ export const columns: ColumnDef<Cuenta>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'productoNombre',
+    accessorKey: 'productos.nombre',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Producto' />
     ),
-    cell: ({ row }) => (
-      <LongText className='max-w-48 font-medium'>{row.getValue('productoNombre')}</LongText>
-    ),
+    cell: ({ row }) => {
+      const producto = row.original.productos
+      return (
+        <LongText className='max-w-48 font-medium'>
+          {producto?.nombre || 'Sin producto'}
+        </LongText>
+      )
+    },
     meta: { className: 'w-48' },
   },
   {
@@ -91,39 +96,46 @@ export const columns: ColumnDef<Cuenta>[] = [
     meta: { className: 'w-28' },
   },
   {
-    accessorKey: 'cuentaEmail',
+    accessorKey: 'email',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Email' />
     ),
-    cell: ({ row }) => (
-      <LongText className='max-w-48 font-mono text-sm'>{row.getValue('cuentaEmail')}</LongText>
-    ),
+    cell: ({ row }) => {
+      const email = row.getValue('email') as string
+      return email ? (
+        <LongText className='max-w-48 font-mono text-sm'>{email}</LongText>
+      ) : (
+        <span className='text-muted-foreground text-sm'>—</span>
+      )
+    },
     meta: { className: 'w-48' },
   },
   {
-    accessorKey: 'cuentaClave',
+    accessorKey: 'clave',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Clave' />
     ),
-    cell: ({ row: _row }) => {
-      // const clave = row.getValue('cuentaClave') as string
-      return (
+    cell: ({ row }) => {
+      const clave = row.getValue('clave') as string
+      return clave ? (
         <div className='flex items-center space-x-2'>
           <span className='font-mono text-sm'>{'*'.repeat(8)}</span>
           <IconEyeOff size={14} className='text-muted-foreground' />
         </div>
+      ) : (
+        <span className='text-muted-foreground text-sm'>—</span>
       )
     },
     meta: { className: 'w-32' },
     enableSorting: false,
   },
   {
-    accessorKey: 'cuentaUrl',
+    accessorKey: 'url',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='URL' />
     ),
     cell: ({ row }) => {
-      const url = row.getValue('cuentaUrl') as string
+      const url = row.getValue('url') as string
       return url ? (
         <LongText className='max-w-32 text-blue-600'>
           <a href={url} target='_blank' rel='noopener noreferrer' className='hover:underline'>
@@ -169,15 +181,16 @@ export const columns: ColumnDef<Cuenta>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: 'creado',
+    accessorKey: 'created_at',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Creado' />
     ),
     cell: ({ row }) => {
-      const fecha = row.getValue('creado') as Date
+      const fecha = row.getValue('created_at') as string
+      const date = new Date(fecha)
       return (
         <div className='text-sm'>
-          {fecha.toLocaleDateString('es-ES')}
+          {date.toLocaleDateString('es-ES')}
         </div>
       )
     },

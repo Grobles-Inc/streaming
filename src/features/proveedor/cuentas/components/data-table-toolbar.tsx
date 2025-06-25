@@ -8,14 +8,15 @@ import { Input } from '@/components/ui/input'
 import { tipos, estados } from '../data/data'
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
 import { DataTableViewOptions } from './data-table-view-options'
-import { CuentaFormDialog } from './cuenta-form'
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
+  onAddCuenta?: () => void
 }
 
 export function DataTableToolbar<TData>({
   table,
+  onAddCuenta,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0
   const hasSelectedRows = table.getFilteredSelectedRowModel().rows.length > 0
@@ -27,27 +28,23 @@ export function DataTableToolbar<TData>({
         <div className='flex flex-1 items-center space-x-2'>
           <Input
             placeholder='Buscar cuentas...'
-            value={(table.getColumn('cuentaEmail')?.getFilterValue() as string) ?? ''}
+            value={(table.getColumn('email')?.getFilterValue() as string) ?? ''}
             onChange={(event) =>
-              table.getColumn('cuentaEmail')?.setFilterValue(event.target.value)
+              table.getColumn('email')?.setFilterValue(event.target.value)
             }
             className='h-8 w-full sm:w-[150px] lg:w-[250px]'
           />
         </div>
         <div className='flex flex-col sm:flex-row items-center gap-2 sm:space-x-2 w-full sm:w-auto'>
-          <CuentaFormDialog
-            trigger={
-              <Button size='sm' className='h-8 w-full sm:w-auto'>
-                <IconPlus className='mr-2 h-4 w-4' />
-                <span className='hidden sm:inline'>Nueva Cuenta</span>
-                <span className='sm:hidden'>Nueva</span>
-              </Button>
-            }
-            onSubmit={(data) => {
-              console.log('Nueva cuenta:', data)
-              // Aquí integrarías con tu API/estado
-            }}
-          />
+          <Button 
+            size='sm' 
+            className='h-8 w-full sm:w-auto'
+            onClick={onAddCuenta}
+          >
+            <IconPlus className='mr-2 h-4 w-4' />
+            <span className='hidden sm:inline'>Nueva Cuenta</span>
+            <span className='sm:hidden'>Nueva</span>
+          </Button>
           <Button size='sm' variant='outline' className='h-8 w-full sm:w-auto'>
             <IconUpload className='mr-2 h-4 w-4' />
             <span className='hidden sm:inline'>Importar Cuentas</span>

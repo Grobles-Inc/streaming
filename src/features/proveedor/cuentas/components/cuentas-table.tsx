@@ -36,9 +36,10 @@ declare module '@tanstack/react-table' {
 interface CuentasTableProps {
   columns: ColumnDef<Cuenta>[]
   data: Cuenta[]
+  onAddCuenta?: () => void
 }
 
-export function CuentasTable({ columns, data }: CuentasTableProps) {
+export function CuentasTable({ columns, data, onAddCuenta }: CuentasTableProps) {
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -68,7 +69,7 @@ export function CuentasTable({ columns, data }: CuentasTableProps) {
 
   return (
     <div className='space-y-4'>
-      <DataTableToolbar table={table} />
+      <DataTableToolbar table={table} onAddCuenta={onAddCuenta} />
       <div className='rounded-md border'>
         <Table>
           <TableHeader>

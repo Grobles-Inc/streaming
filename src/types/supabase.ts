@@ -192,27 +192,42 @@ export interface Database {
       stock_productos: {
         Row: {
           id: number
-          producto_id: string
           email: string | null
-          perfil: string | null
-          pin: string | null
           clave: string | null
+          pin: string | null
+          perfil: string | null
+          producto_id: string
+          tipo: 'cuenta' | 'perfiles' | 'combo'
+          url: string | null
+          created_at: string
+          estado: 'disponible' | 'vendido'
+          publicado: boolean
         }
         Insert: {
           id?: number
+          email?: string | null
+          clave?: string | null
+          pin?: string | null
+          perfil?: string | null
           producto_id: string
-          email: string | null
-          perfil: string | null
-          pin: string | null
-          clave: string | null
+          tipo: 'cuenta' | 'perfiles' | 'combo'
+          url?: string | null
+          created_at?: string
+          estado?: 'disponible' | 'vendido'
+          publicado?: boolean
         }
         Update: {
           id?: number
-          producto_id?: string
           email?: string | null
-          perfil?: string | null
-          pin?: string | null
           clave?: string | null
+          pin?: string | null
+          perfil?: string | null
+          producto_id?: string
+          tipo?: 'cuenta' | 'perfiles' | 'combo'
+          url?: string | null
+          created_at?: string
+          estado?: 'disponible' | 'vendido'
+          publicado?: boolean
         }
         Relationships: [
           {

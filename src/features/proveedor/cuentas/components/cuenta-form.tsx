@@ -8,9 +8,9 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import {
   Form,
@@ -28,72 +28,122 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
 
-import { cuentaFormSchema, CuentaForm, Tipo } from '../data/schema'
-import { tipos } from '../data/data'
+import { cuentaFormSchema, tipos, type CuentaForm } from '../data'
 import { useProductosByProveedor } from '../../productos/queries'
+import { useCreateCuenta, useUpdateCuenta } from '../queries'
+import { useAuthStore } from '@/stores/authStore'
+import { Cuenta } from '../data/schema'
 
-// TODO: Reemplazar con el contexto de autenticación real
-const MOCK_PROVEEDOR_ID = 'e5b63d58-eab6-4628-a427-d86ee703d304'
-
-interface CuentaFormProps {
-  trigger?: React.ReactNode
-  defaultValues?: Partial<CuentaForm>
-  onSubmit?: (data: CuentaForm) => void | Promise<void>
-  title?: string
-  description?: string
+interface CuentaFormComponentProps {
+  cuentaToEdit?: Cuenta
+  onClose: () => void
+  onSuccess: () => void
 }
 
-export function CuentaFormDialog({
-  trigger,
-  defaultValues,
-  onSubmit,
-  title = 'Nueva Cuenta',
-  description = 'Completa la información para agregar una nueva cuenta.',
-}: CuentaFormProps) {
-  const [open, setOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-
+export function CuentaForm({ cuentaToEdit, onClose, onSuccess }: CuentaFormComponentProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { user } = useAuthStore()
+  const isEditing = !!cuentaToEdit
+  
+  
   // Obtener productos del proveedor actual
-  const { data: productos, isLoading: isLoadingProductos } = useProductosByProveedor(MOCK_PROVEEDOR_ID)
+  const { data: productos, isLoading: isLoadingProductos, error: productosError } = useProductosByProveedor(user?.id || '')
+  const createCuentaMutation = useCreateCuenta()
+  const updateCuentaMutation = useUpdateCuenta()
+
 
   const form = useForm<CuentaForm>({
     resolver: zodResolver(cuentaFormSchema),
     defaultValues: {
-      productoId: '',
-      tipo: 'cuenta' as Tipo,
-      cuentaEmail: '',
-      cuentaClave: '',
-      cuentaUrl: '',
-      perfil: '',
-      pin: '',
-      ...defaultValues,
+      producto_id: cuentaToEdit?.producto_id || '',
+      tipo: cuentaToEdit?.tipo || 'cuenta',
+      email: cuentaToEdit?.email || '',
+      clave: cuentaToEdit?.clave || '',
+      url: cuentaToEdit?.url || '',
+      perfil: cuentaToEdit?.perfil || '',
+      pin: cuentaToEdit?.pin || '',
+      publicado: cuentaToEdit?.publicado ?? true,
     },
   })
 
   const handleSubmit = async (data: CuentaForm) => {
-    setIsLoading(true)
+    if (!user) {
+      console.error('❌ No hay usuario autenticado')
+      return
+    }
+    
+    console.log('🚀 Enviando datos de cuenta:', data)
+    
+    setIsSubmitting(true)
     try {
-      await onSubmit?.(data)
-      setOpen(false)
-      form.reset()
+      if (isEditing && cuentaToEdit) {
+        await updateCuentaMutation.mutateAsync({
+          id: cuentaToEdit.id,
+          updates: {
+            producto_id: data.producto_id,
+            tipo: data.tipo,
+            email: data.email || null,
+            clave: data.clave || null,
+            url: data.url || null,
+            perfil: data.perfil || null,
+            pin: data.pin || null,
+            publicado: data.publicado,
+          }
+        })
+      } else {
+        await createCuentaMutation.mutateAsync({
+          producto_id: data.producto_id,
+          tipo: data.tipo,
+          email: data.email || null,
+          clave: data.clave || null,
+          url: data.url || null,
+          perfil: data.perfil || null,
+          pin: data.pin || null,
+          publicado: data.publicado,
+        })
+      }
+      onSuccess()
     } catch (error) {
-      // Error será manejado por el hook mutation que lo llame
+      console.error('❌ Error al procesar cuenta:', error)
     } finally {
-      setIsLoading(false)
+      setIsSubmitting(false)
     }
   }
 
+  // Mostrar estado de carga si no hay usuario
+  if (!user) {
+    return (
+      <Dialog open={true} onOpenChange={onClose}>
+        <DialogContent className='sm:max-w-[600px]'>
+          <DialogHeader>
+            <DialogTitle>Cargando...</DialogTitle>
+            <DialogDescription>
+              Obteniendo información del usuario...
+            </DialogDescription>
+          </DialogHeader>
+          <div className='flex justify-center p-8'>
+            <IconLoader2 className='h-8 w-8 animate-spin' />
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
-      <DialogContent className='sm:max-w-[600px]'>
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className='sm:max-w-[600px] max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle>
+            {isEditing ? 'Editar Cuenta' : 'Nueva Cuenta'}
+          </DialogTitle>
+          <DialogDescription>
+            {isEditing 
+              ? 'Modifica la información de la cuenta existente.'
+              : 'Completa la información para agregar una nueva cuenta a tu inventario.'
+            }
+          </DialogDescription>
         </DialogHeader>
         
         <Form {...form}>
@@ -102,11 +152,11 @@ export function CuentaFormDialog({
               {/* Producto */}
               <FormField
                 control={form.control}
-                name='productoId'
+                name='producto_id'
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Producto *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder='Selecciona un producto' />
@@ -115,9 +165,14 @@ export function CuentaFormDialog({
                       <SelectContent>
                         {isLoadingProductos ? (
                           <div className='p-2'>
-                            <Skeleton className='h-4 w-full mb-2' />
-                            <Skeleton className='h-4 w-full mb-2' />
-                            <Skeleton className='h-4 w-full' />
+                            <div className='flex items-center space-x-2'>
+                              <IconLoader2 className='h-4 w-4 animate-spin' />
+                              <span className='text-sm'>Cargando productos...</span>
+                            </div>
+                          </div>
+                        ) : productosError ? (
+                          <div className='p-2 text-sm text-red-600'>
+                            Error al cargar productos: {productosError.message}
                           </div>
                         ) : productos && productos.length > 0 ? (
                           productos.map((producto) => (
@@ -127,7 +182,7 @@ export function CuentaFormDialog({
                           ))
                         ) : (
                           <div className='p-2 text-sm text-muted-foreground'>
-                            No hay productos disponibles
+                            No hay productos disponibles. Primero debes crear productos.
                           </div>
                         )}
                       </SelectContent>
@@ -144,7 +199,7 @@ export function CuentaFormDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tipo *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder='Selecciona el tipo' />
@@ -171,10 +226,10 @@ export function CuentaFormDialog({
               {/* Email */}
               <FormField
                 control={form.control}
-                name='cuentaEmail'
+                name='email'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email de la cuenta *</FormLabel>
+                    <FormLabel>Email de la cuenta</FormLabel>
                     <FormControl>
                       <Input 
                         type='email' 
@@ -190,10 +245,10 @@ export function CuentaFormDialog({
               {/* Clave */}
               <FormField
                 control={form.control}
-                name='cuentaClave'
+                name='clave'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Clave de la cuenta *</FormLabel>
+                    <FormLabel>Clave de la cuenta</FormLabel>
                     <FormControl>
                       <Input 
                         type='password' 
@@ -207,36 +262,18 @@ export function CuentaFormDialog({
               />
             </div>
 
-            {/* URL */}
-            <FormField
-              control={form.control}
-              name='cuentaUrl'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>URL de acceso (opcional)</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type='url' 
-                      placeholder='https://ejemplo.com' 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              {/* Perfil */}
+              {/* URL */}
               <FormField
                 control={form.control}
-                name='perfil'
+                name='url'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Perfil (opcional)</FormLabel>
+                    <FormLabel>URL del servicio</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder='Nombre del perfil' 
+                        type='url' 
+                        placeholder='https://servicio.com' 
                         {...field} 
                       />
                     </FormControl>
@@ -254,9 +291,9 @@ export function CuentaFormDialog({
                     <FormLabel>PIN (opcional)</FormLabel>
                     <FormControl>
                       <Input 
-                        type='password' 
-                        placeholder='PIN de seguridad' 
-                        maxLength={6}
+                        type='text' 
+                        placeholder='1234' 
+                        maxLength={8}
                         {...field} 
                       />
                     </FormControl>
@@ -266,22 +303,65 @@ export function CuentaFormDialog({
               />
             </div>
 
-            <div className='flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2'>
+            {/* Perfil */}
+            <FormField
+              control={form.control}
+              name='perfil'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Perfil (opcional)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder='Nombre del perfil o información adicional' 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Publicado */}
+            <FormField
+              control={form.control}
+              name='publicado'
+              render={({ field }) => (
+                <FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
+                  <div className='space-y-0.5'>
+                    <FormLabel className='text-base'>
+                      Publicar cuenta
+                    </FormLabel>
+                    <div className='text-sm text-muted-foreground'>
+                      La cuenta estará disponible para venta inmediatamente.
+                    </div>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter>
               <Button
                 type='button'
                 variant='outline'
-                onClick={() => setOpen(false)}
-                disabled={isLoading}
+                onClick={onClose}
+                disabled={isSubmitting}
               >
                 Cancelar
               </Button>
-              <Button type='submit' disabled={isLoading}>
-                {isLoading && (
-                  <IconLoader2 className='mr-2 h-4 w-4 animate-spin' />
-                )}
-                Guardar cuenta
+              <Button 
+                type='submit' 
+                disabled={isSubmitting}
+              >
+                {isSubmitting && <IconLoader2 className='mr-2 h-4 w-4 animate-spin' />}
+                {isEditing ? 'Actualizar Cuenta' : 'Crear Cuenta'}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

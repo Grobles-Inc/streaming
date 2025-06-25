@@ -1,3 +1,6 @@
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -7,26 +10,64 @@ import { Main } from '@/components/layout/main'
 import { Search } from '@/components/search'
 import { IconUsers, IconPackage, IconWallet } from '@tabler/icons-react'
 
-
-const usuarios = [
-    { id: 1, nombre: 'Juan Pérez', email: 'juan@gmail.com', rol: 'vendedor', estado: 'activo' },
-    { id: 2, nombre: 'Ana Gómez', email: 'ana@gmail.com', rol: 'proveedor', estado: 'borrado' },
-    // ...
-]
-
-const productos = [
-    { id: 1, nombre: 'Netflix Premium', estado: 'activo' },
-    { id: 2, nombre: 'Spotify Family', estado: 'borrador' },
-    // ...
-]
-
-const recargas = [
-    { id: 1, proveedor: 'Ana Gómez', monto: 100, estado: 'pendiente' },
-    { id: 2, proveedor: 'Carlos Ruiz', monto: 200, estado: 'validado' },
-    // ...
-]
+type Recarga = {
+    id: number;
+    proveedor: string;
+    monto: number;
+    estado: 'pendiente' | 'validado' | 'rechazado';
+};
+type Usuario = {
+    id: number;
+    nombres: string;
+    apellidos: string;
+    email: string;
+    rol: 'admin' | 'usuario';
+    estado: 'activo' | 'inactivo';
+};
+type Producto = {
+    id: number;
+    nombre: string;
+    estado: 'activo' | 'inactivo';
+};
 
 export default function ReportesGlobalesPage() {
+    const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+    const [productos, setProductos] = useState<Producto[]>([]);
+    const [recargas, setRecargas] = useState<Recarga[]>([]);
+
+    useEffect(() => {
+        async function fetchUsuarios() {
+            const { data, error } = await supabase.from('usuarios').select('*');
+            if (error) {
+                console.error('Error fetching usuarios:', error);
+            } else {
+                setUsuarios(data || []);
+            }
+        }
+
+        async function fetchProductos() {
+            const { data, error } = await supabase.from('productos').select('*');
+            if (error) {
+                console.error('Error fetching productos:', error);
+            } else {
+                setProductos(data || []);
+            }
+        }
+
+        async function fetchRecargas() {
+            const { data, error } = await supabase.from('recargas').select('*');
+            if (error) {
+                console.error('Error fetching recargas:', error);
+            } else {
+                setRecargas(data || []);
+            }
+        }
+
+        fetchUsuarios();
+        fetchProductos();
+        fetchRecargas();
+    }, []);
+
     return (
         <>
             <Header>
@@ -47,7 +88,7 @@ export default function ReportesGlobalesPage() {
                             <IconWallet className="text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">$12,500</div>
+                            <div className="text-2xl font-bold">${recargas.reduce((acc, r) => acc + r.monto, 0)}</div>
                         </CardContent>
                     </Card>
                     <Card>
@@ -56,7 +97,7 @@ export default function ReportesGlobalesPage() {
                             <IconPackage className="text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">1,234</div>
+                            <div className="text-2xl font-bold">{productos.length}</div>
                         </CardContent>
                     </Card>
                     <Card>
@@ -65,7 +106,7 @@ export default function ReportesGlobalesPage() {
                             <IconUsers className="text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">320</div>
+                            <div className="text-2xl font-bold">{usuarios.length}</div>
                         </CardContent>
                     </Card>
                 </div>
@@ -98,10 +139,10 @@ export default function ReportesGlobalesPage() {
                                     <tbody>
                                         {usuarios.map((u) => (
                                             <tr key={u.id} className="border-b hover:bg-gray-50">
-                                                <td className="px-4 py-2">{u.nombre}</td>
-                                                <td className="px-4 py-2">{u.email}</td>
-                                                <td className="px-4 py-2">{u.rol}</td>
-                                                <td className="px-4 py-2">
+                                                <td className="px-4 py-2 border-r">{u.nombres} {u.apellidos}</td>
+                                                <td className="px-4 py-2 border-r">{u.email}</td>
+                                                <td className="px-4 py-2 border-r">{u.rol}</td>
+                                                <td className="px-4 py-2 border-r">
                                                     <Badge variant={u.estado === "activo" ? "default" : "secondary"}>
                                                         {u.estado}
                                                     </Badge>
@@ -137,8 +178,8 @@ export default function ReportesGlobalesPage() {
                                     <tbody>
                                         {productos.map((p) => (
                                             <tr key={p.id} className="border-b hover:bg-gray-50">
-                                                <td className="px-4 py-2">{p.nombre}</td>
-                                                <td className="px-4 py-2">
+                                                <td className="px-4 py-2 border-r">{p.nombre}</td>
+                                                <td className="px-4 py-2 border-r">
                                                     <Badge variant={p.estado === "activo" ? "default" : "secondary"}>
                                                         {p.estado}
                                                     </Badge>
@@ -174,16 +215,63 @@ export default function ReportesGlobalesPage() {
                                     <tbody>
                                         {recargas.map((r) => (
                                             <tr key={r.id} className="border-b hover:bg-gray-50">
-                                                <td className="px-4 py-2">{r.proveedor}</td>
-                                                <td className="px-4 py-2">${r.monto}</td>
-                                                <td className="px-4 py-2">
+                                                <td className="px-4 py-2 border-r">{r.proveedor}</td>
+                                                <td className="px-4 py-2 border-r">${r.monto}</td>
+                                                <td className="px-4 py-2 border-r">
                                                     <Badge variant={r.estado === "validado" ? "default" : "secondary"}>
                                                         {r.estado}
                                                     </Badge>
                                                 </td>
                                                 <td className="px-4 py-2">
                                                     {r.estado === "pendiente" && (
-                                                        <Button size="sm" variant="default">Validar</Button>
+                                                        <div className="flex space-x-2">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="default"
+                                                                onClick={async () => {
+                                                                    const { error } = await supabase
+                                                                        .from('recargas')
+                                                                        .update({ estado: 'validado' })
+                                                                        .eq('id', r.id);
+                                                                    if (error) {
+                                                                        console.error('Error updating recarga:', error);
+                                                                    } else {
+                                                                        setRecargas((prev) =>
+                                                                            prev.map((recarga) =>
+                                                                                recarga.id === r.id
+                                                                                    ? { ...recarga, estado: 'validado' }
+                                                                                    : recarga
+                                                                            )
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                Aprobar
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="destructive"
+                                                                onClick={async () => {
+                                                                    const { error } = await supabase
+                                                                        .from('recargas')
+                                                                        .update({ estado: 'rechazado' })
+                                                                        .eq('id', r.id);
+                                                                    if (error) {
+                                                                        console.error('Error updating recarga:', error);
+                                                                    } else {
+                                                                        setRecargas((prev) =>
+                                                                            prev.map((recarga) =>
+                                                                                recarga.id === r.id
+                                                                                    ? { ...recarga, estado: 'rechazado' }
+                                                                                    : recarga
+                                                                            )
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                Rechazar
+                                                            </Button>
+                                                        </div>
                                                     )}
                                                 </td>
                                             </tr>
@@ -195,6 +283,6 @@ export default function ReportesGlobalesPage() {
                     </TabsContent>
                 </Tabs>
             </Main>
-        </ >
+        </>
     );
 }

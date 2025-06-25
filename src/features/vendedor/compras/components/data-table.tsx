@@ -21,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Skeleton } from '@/components/ui/skeleton'
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
 import { useAuth } from '@/stores/authStore'
@@ -96,7 +97,7 @@ export function DataTable<TData, TValue>({
                 <TableRow key={`loading-${i}`}>
                   {columns.map((_, colIndex) => (
                     <TableCell key={`loading-cell-${i}-${colIndex}`}>
-                      <div className="h-4 bg-muted rounded animate-pulse w-full" />
+                      <Skeleton className="h-4 w-full" />
                     </TableCell>
                   ))}
                 </TableRow>

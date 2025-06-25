@@ -181,8 +181,7 @@ export const columns: ColumnDef<Compra>[] = [
     ),
     cell: ({ row }) => {
       const idValue = row.getValue('id');
-      // Ensure idValue is a string before calling slice
-      return <div className='w-[80px]'>{typeof idValue === 'string' ? idValue.slice(0, 4) : ''}</div>;
+      return <div className='w-[80px]'>C-{typeof idValue === 'string' ? idValue.slice(0, 4) : ''}</div>;
     },
     enableSorting: false,
     enableHiding: false,

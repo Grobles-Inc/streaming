@@ -50,7 +50,7 @@ export default function LandingHeader() {
                 ) : (
 
                   <div className='flex items-center gap-2'>
-                    <Button variant="ghost" className='text-black font-bold text-xl' onClick={() => navigate({ to: '/dashboard' })} size="lg">
+                    <Button variant="ghost" className=' font-bold text-xl' onClick={() => navigate({ to: '/dashboard' })} size="lg">
                       $ {billetera?.saldo} </Button>
                     <Button variant="secondary" onClick={() => navigate({ to: '/compras' })} className='flex items-center gap-2'>
                       <IconShoppingBag />

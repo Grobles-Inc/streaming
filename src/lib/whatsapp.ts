@@ -1,7 +1,6 @@
 interface RecargaMessage {
   nombre_cliente: string
   monto: number
-  metodo: string
   id_cliente: string
 }
 
@@ -83,7 +82,6 @@ export async function RecargaMessage(
 - *Cliente:* ${message.nombre_cliente}
 - *Monto:* S/. ${message.monto.toFixed(2)}
 - *Comisión:* S/. ${(message.monto * 0.03).toFixed(2)}
-- *Método:* ${message.metodo}
 - *ID Cliente:* ${message.id_cliente}`
 
   return EnviarWhatsAppMessage(formattedMessage, businessPhone, device)

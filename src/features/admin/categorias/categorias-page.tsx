@@ -39,7 +39,7 @@ type Producto = {
   proveedor?: {
     id: string
     nombre: string
-    apellido: string  
+    apellido: string
     descripcion: string | null
     imagen_url: string | null
   }
@@ -51,7 +51,7 @@ export default function CategoriasPage() {
   const [nombre, setNombre] = useState('')
   const [descripcion, setDescripcion] = useState('')
   const [imagenUrl, setImagenUrl] = useState('')
-  const [editMode, setEditMode] = useState(false)
+  const [_, setEditMode] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<Categoria | null>(null)
   const [categoriaPagina, setCategoriaPagina] = useState(0)
@@ -143,7 +143,7 @@ export default function CategoriasPage() {
 
   return (
     <Card>
-      <CardHeader>  
+      <CardHeader>
         <CardTitle>Categorías</CardTitle>
         <CardDescription>Gestiona las categorías de servicios.</CardDescription>
       </CardHeader>
@@ -312,7 +312,7 @@ export default function CategoriasPage() {
                               >
                                 <IconEye className="mr-2" /> Ver detalles
                               </DropdownMenuItem>
-                              
+
                               <DropdownMenuItem
                                 onClick={async () => {
                                   const { error } = await supabase.from('productos').delete().eq('id', prod.id)
@@ -357,180 +357,15 @@ export default function CategoriasPage() {
         {productoDetalles && (
           <Dialog open={!!productoDetalles} onOpenChange={() => setProductoDetalles(null)}>
             <DialogContent className="max-w-3xl">
-                <Card className="max-h-[80vh] overflow-y-auto">
-                  <CardHeader>
+              <Card className="max-h-[80vh] overflow-y-auto">
+                <CardHeader>
                   <CardTitle>Detalles del Producto</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <form
+                </CardHeader>
+                <CardContent>
+                  <form
                     className="space-y-6"
                     onSubmit={async e => {
                       e.preventDefault();
-                      const { error } = await supabase
-                      .from('productos')
-                      .update(productoDetalles)
-                      .eq('id', productoDetalles.id);
-                      if (error) {
-                      console.error('Error al actualizar producto:', error);
-                      } else {
-                      setProductos(
-                        productos.map(p =>
-                        p.id === productoDetalles.id ? { ...p, ...productoDetalles } : p
-                        )
-                      );
-                      setProductoDetalles(null);
-                      }
-                    }}
-                    >
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-                      <div className="col-span-1 md:col-span-2 lg:col-span-3">
-                      <label className="block text-sm font-medium mb-1">Nombre</label>
-                      <Input
-                        placeholder="Nombre"
-                        value={productoDetalles.nombre}
-                        onChange={e =>
-                        setProductoDetalles({ ...productoDetalles, nombre: e.target.value })
-                        }
-                        required
-                      />
-                      </div>
-                      <div className="col-span-1 md:col-span-2 lg:col-span-3">
-                      <label className="block text-sm font-medium mb-1">Descripción</label>
-                      <Input
-                        placeholder="Descripción"
-                        value={productoDetalles.descripcion || ''}
-                        onChange={e =>
-                        setProductoDetalles({ ...productoDetalles, descripcion: e.target.value })
-                        }
-                      />
-                      </div>
-                      <div className="col-span-1 md:col-span-2 lg:col-span-3">
-                      <label className="block text-sm font-medium mb-1">Condiciones</label>
-                      <Input
-                        placeholder="Condiciones"
-                        value={productoDetalles.condiciones || ''}
-                        onChange={e =>
-                        setProductoDetalles({ ...productoDetalles, condiciones: e.target.value })
-                        }
-                      />
-                      </div>
-                      <div>
-                      <label className="block text-sm font-medium mb-1">Precio Público</label>
-                      <Input
-                        placeholder="Precio Público"
-                        type="number"
-                        value={productoDetalles.precio_publico}
-                        onChange={e =>
-                        setProductoDetalles({
-                          ...productoDetalles,
-                          precio_publico: parseFloat(e.target.value),
-                        })
-                        }
-                        required
-                      />
-                      </div>
-                      <div>
-                      <label className="block text-sm font-medium mb-1">Precio Vendedor</label>
-                      <Input
-                        placeholder="Precio Vendedor"
-                        type="number"
-                        value={productoDetalles.precio_vendedor}
-                        onChange={e =>
-                        setProductoDetalles({
-                          ...productoDetalles,
-                          precio_vendedor: parseFloat(e.target.value),
-                        })
-                        }
-                      />
-                      </div>
-                      <div>
-                      <label className="block text-sm font-medium mb-1">Precio Renovación</label>
-                      <Input
-                        placeholder="Precio Renovación"
-                        type="number"
-                        value={productoDetalles.precio_renovacion}
-                        onChange={e =>
-                        setProductoDetalles({
-                          ...productoDetalles,
-                          precio_renovacion: parseFloat(e.target.value),
-                        })
-                        }
-                      />
-                      </div>
-                      <div>
-                      <label className="block text-sm font-medium mb-1">Stock</label>
-                      <Input
-                        placeholder="Stock"
-                        type="number"
-                        value={productoDetalles.stock}
-                        onChange={e =>
-                        setProductoDetalles({
-                          ...productoDetalles,
-                          stock: parseInt(e.target.value, 10),
-                        })
-                        }
-                        required
-                      />
-                      </div>
-                      <div>
-                      <label className="block text-sm font-medium mb-1">Tiempo de Uso</label>
-                      <Input
-                        placeholder="Tiempo de Uso"
-                        value={productoDetalles.tiempo_uso || ''}
-                        onChange={e =>
-                        setProductoDetalles({ ...productoDetalles, tiempo_uso: e.target.value })
-                        }
-                      />
-                      </div> 
-                      <div className="col-span-1 md:col-span-2 lg:col-span-3">
-                      <label className="block text-sm font-medium mb-1">URL Imagen</label>
-                      <Input
-                        placeholder="URL Imagen"
-                        value={productoDetalles.imagen_url || ''}
-                        onChange={e =>
-                        setProductoDetalles({ ...productoDetalles, imagen_url: e.target.value })
-                        }
-                      />
-                      </div>
-                      <div className="col-span-1 md:col-span-2 lg:col-span-3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-                      <select
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      value={productoDetalles.categoria_id || ''}
-                      onChange={e =>
-                      setProductoDetalles({ ...productoDetalles, categoria_id: e.target.value })
-                      }
-                      required
-                      >
-                      <option value="" disabled>
-                      Selecciona una categoría
-                      </option>
-                      {categorias.map(cat => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.nombre}
-                      </option>
-                      ))}
-                      </select>
-                      </div>
-                      <div className="col-span-1 md:col-span-2 lg:col-span-3">
-                      <label className="block text-sm font-medium mb-1">URL Cuenta</label>
-                      <Input
-                        placeholder="URL Cuenta"
-                        value={productoDetalles.url_cuenta || ''}
-                        onChange={e =>
-                        setProductoDetalles({ ...productoDetalles, url_cuenta: e.target.value })
-                        }
-                      />
-                      </div>
-                                   
-                      
-                      
-                    </div>
-                    <div className="flex gap-4 mt-6">
-                      <Button
-                      type="submit"
-                      onClick={async () => {
                       const { error } = await supabase
                         .from('productos')
                         .update(productoDetalles)
@@ -539,28 +374,193 @@ export default function CategoriasPage() {
                         console.error('Error al actualizar producto:', error);
                       } else {
                         setProductos(
-                        productos.map(p =>
-                        p.id === productoDetalles.id ? { ...p, ...productoDetalles } : p
-                        )
+                          productos.map(p =>
+                            p.id === productoDetalles.id ? { ...p, ...productoDetalles } : p
+                          )
                         );
                         setProductoDetalles(null);
                       }
-                      }}
+                    }}
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                      <div className="col-span-1 md:col-span-2 lg:col-span-3">
+                        <label className="block text-sm font-medium mb-1">Nombre</label>
+                        <Input
+                          placeholder="Nombre"
+                          value={productoDetalles.nombre}
+                          onChange={e =>
+                            setProductoDetalles({ ...productoDetalles, nombre: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="col-span-1 md:col-span-2 lg:col-span-3">
+                        <label className="block text-sm font-medium mb-1">Descripción</label>
+                        <Input
+                          placeholder="Descripción"
+                          value={productoDetalles.descripcion || ''}
+                          onChange={e =>
+                            setProductoDetalles({ ...productoDetalles, descripcion: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="col-span-1 md:col-span-2 lg:col-span-3">
+                        <label className="block text-sm font-medium mb-1">Condiciones</label>
+                        <Input
+                          placeholder="Condiciones"
+                          value={productoDetalles.condiciones || ''}
+                          onChange={e =>
+                            setProductoDetalles({ ...productoDetalles, condiciones: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Precio Público</label>
+                        <Input
+                          placeholder="Precio Público"
+                          type="number"
+                          value={productoDetalles.precio_publico}
+                          onChange={e =>
+                            setProductoDetalles({
+                              ...productoDetalles,
+                              precio_publico: parseFloat(e.target.value),
+                            })
+                          }
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Precio Vendedor</label>
+                        <Input
+                          placeholder="Precio Vendedor"
+                          type="number"
+                          value={productoDetalles.precio_vendedor}
+                          onChange={e =>
+                            setProductoDetalles({
+                              ...productoDetalles,
+                              precio_vendedor: parseFloat(e.target.value),
+                            })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Precio Renovación</label>
+                        <Input
+                          placeholder="Precio Renovación"
+                          type="number"
+                          value={productoDetalles.precio_renovacion}
+                          onChange={e =>
+                            setProductoDetalles({
+                              ...productoDetalles,
+                              precio_renovacion: parseFloat(e.target.value),
+                            })
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Stock</label>
+                        <Input
+                          placeholder="Stock"
+                          type="number"
+                          value={productoDetalles.stock}
+                          onChange={e =>
+                            setProductoDetalles({
+                              ...productoDetalles,
+                              stock: parseInt(e.target.value, 10),
+                            })
+                          }
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Tiempo de Uso</label>
+                        <Input
+                          placeholder="Tiempo de Uso"
+                          value={productoDetalles.tiempo_uso || ''}
+                          onChange={e =>
+                            setProductoDetalles({ ...productoDetalles, tiempo_uso: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="col-span-1 md:col-span-2 lg:col-span-3">
+                        <label className="block text-sm font-medium mb-1">URL Imagen</label>
+                        <Input
+                          placeholder="URL Imagen"
+                          value={productoDetalles.imagen_url || ''}
+                          onChange={e =>
+                            setProductoDetalles({ ...productoDetalles, imagen_url: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="col-span-1 md:col-span-2 lg:col-span-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                        <select
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          value={productoDetalles.categoria_id || ''}
+                          onChange={e =>
+                            setProductoDetalles({ ...productoDetalles, categoria_id: e.target.value })
+                          }
+                          required
+                        >
+                          <option value="" disabled>
+                            Selecciona una categoría
+                          </option>
+                          {categorias.map(cat => (
+                            <option key={cat.id} value={cat.id}>
+                              {cat.nombre}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="col-span-1 md:col-span-2 lg:col-span-3">
+                        <label className="block text-sm font-medium mb-1">URL Cuenta</label>
+                        <Input
+                          placeholder="URL Cuenta"
+                          value={productoDetalles.url_cuenta || ''}
+                          onChange={e =>
+                            setProductoDetalles({ ...productoDetalles, url_cuenta: e.target.value })
+                          }
+                        />
+                      </div>
+
+
+
+                    </div>
+                    <div className="flex gap-4 mt-6">
+                      <Button
+                        type="submit"
+                        onClick={async () => {
+                          const { error } = await supabase
+                            .from('productos')
+                            .update(productoDetalles)
+                            .eq('id', productoDetalles.id);
+                          if (error) {
+                            console.error('Error al actualizar producto:', error);
+                          } else {
+                            setProductos(
+                              productos.map(p =>
+                                p.id === productoDetalles.id ? { ...p, ...productoDetalles } : p
+                              )
+                            );
+                            setProductoDetalles(null);
+                          }
+                        }}
                       >
-                      Actualizar
+                        Actualizar
                       </Button>
                       <Button type="button" variant="outline" onClick={() => setProductoDetalles(null)}>
-                      Cancelar
+                        Cancelar
                       </Button>
-                      
+
                     </div>
-                    </form>
-                  </CardContent>
-                </Card>
-              </DialogContent>
-            </Dialog>
-          )}
-        </CardContent>
-      </Card>
+                  </form>
+                </CardContent>
+              </Card>
+            </DialogContent>
+          </Dialog>
+        )}
+      </CardContent>
+    </Card>
   )
 }

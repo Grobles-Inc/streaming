@@ -13,9 +13,7 @@ export const recargaSchema = z.object({
   id: z.string(),
   usuario_id: z.string(),
   monto: z.number(),
-  comision: z.number(),
   estado: recargaEstadoSchema,
-  metodo_pago: z.enum(['transferencia', 'yape']),
   created_at: z.string(),
 })
 

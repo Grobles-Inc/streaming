@@ -39,7 +39,7 @@ export function ComprasRecientes() {
                   {new Date(compra.fecha_inicio).toLocaleDateString('es-ES')}
                 </p>
               </div>
-              <div className='font-medium'>$ {compra.productos?.precio_publico.toFixed(2)}</div>
+              <div className='font-medium'>$ {compra.precio.toFixed(2)}</div>
             </div>
           </div>
         ))

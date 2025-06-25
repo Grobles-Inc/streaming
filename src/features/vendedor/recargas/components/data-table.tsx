@@ -25,6 +25,7 @@ import * as React from 'react'
 import { useRecargasByVendedor } from '../queries'
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -96,7 +97,7 @@ export function DataTable<TData, TValue>({
                 <TableRow key={`loading-${i}`}>
                   {columns.map((_, colIndex) => (
                     <TableCell key={`loading-cell-${i}-${colIndex}`}>
-                      <div className="h-4 bg-muted rounded animate-pulse w-full" />
+                      <Skeleton className="h-4 w-full" />
                     </TableCell>
                   ))}
                 </TableRow>

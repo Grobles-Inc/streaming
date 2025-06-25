@@ -28,7 +28,7 @@ export function DataTableFacetedFilter<TData, TValue>({
         return (
           <Button
             key={option.value}
-            variant={isSelected ? 'default' : 'outline'}
+            variant="default"
             size="sm"
             className={cn(
               `h-8  ${option.color}`,

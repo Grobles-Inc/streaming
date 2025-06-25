@@ -29,47 +29,7 @@ export const columns: ColumnDef<Recarga>[] = [
       />
     ),
     enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: 'id',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='ID' />
-    ),
-    cell: ({ row }) => {
-      const id = row.getValue('id') as string
-      return <div className='w-[80px]'>{id.slice(0, 6)}</div>
-    },
-    enableSorting: false,
-    enableHiding: false,
-  },
-
-  {
-    accessorKey: 'estado',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Estado' />
-    ),
-    cell: ({ row }) => {
-      const { estado } = row.original
-      const badgeColor = estadosMap.get(estado)
-      return (
-        <div className='flex space-x-2'>
-          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
-            {row.getValue('estado')}
-          </Badge>
-        </div>
-      )
-    },
-
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
-    },
-    enableSorting: false,
-    enableHiding: false,
-  },
-
-
-  {
+  }, {
     accessorKey: 'created_at',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Fecha' />
@@ -81,18 +41,49 @@ export const columns: ColumnDef<Recarga>[] = [
         </div>
       )
     },
-    enableHiding: false,
 
-  }, {
-    accessorKey: 'metodo_pago',
+  },
+  {
+    accessorKey: 'id',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Método de pago' />
+      <DataTableColumnHeader column={column} title='ID' />
     ),
     cell: ({ row }) => {
-      return <div className='flex items-center'>{row.getValue('metodo_pago')}</div>
+      const id = row.getValue('id') as string
+      return <div className='w-[80px]'>R-{id.slice(0, 6)}</div>
     },
     enableSorting: false,
-  }, {
+  },
+
+  {
+    accessorKey: 'estado',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Detalles' />
+    ),
+    cell: ({ row }) => {
+      const { estado } = row.original
+      const badgeColor = estadosMap.get(estado)
+      return (
+        <div className='flex items-center space-x-2'>
+          <p className='text-sm text-muted-foreground'>
+            {estado === 'aprobado' ? 'Tu recarga ha sido aprobada y acreditada en tu billetera.' : estado === 'pendiente' ? 'Procesando tu recarga. Esto puede tardar unos minutos.' : 'Tu recarga ha sido rechazada.'}
+          </p>
+          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
+            {row.getValue('estado')}
+          </Badge>
+        </div>
+      )
+    },
+
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id))
+    },
+    enableSorting: false,
+  },
+
+
+
+  {
     accessorKey: 'monto',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Monto' />
@@ -104,33 +95,6 @@ export const columns: ColumnDef<Recarga>[] = [
         </div>
       )
     },
-    enableHiding: false,
-  }, {
-    accessorKey: 'comision',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Comisión' />
-    ),
-    cell: ({ row }) => {
-      return (
-        <div className='flex items-center'>
-          <span >$ {row.getValue('comision')}</span>
-        </div>
-      )
-    },
     enableSorting: false,
   },
-  {
-    accessorKey: 'saldo',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Saldo" />
-    ),
-    cell: ({ row }) => {
-      const saldo = row.original.monto - row.original.comision
-      return <div className='flex items-center'>
-        <span className='font-bold'>$ {saldo}</span>
-      </div>
-    },
-    enableSorting: false,
-  }
-
 ]

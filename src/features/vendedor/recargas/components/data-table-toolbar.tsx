@@ -1,9 +1,10 @@
+import { Button } from '@/components/ui/button'
 import { Cross2Icon } from '@radix-ui/react-icons'
 import { Table } from '@tanstack/react-table'
-import { DataTableViewOptions } from './data-table-view-options'
 import { estados } from '../data/data'
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
-import { Button } from '@/components/ui/button'
+import { DataTableViewOptions } from './data-table-view-options'
+import { RecargarDialog } from './recargar-dialog'
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -38,6 +39,7 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
       </div>
+      <RecargarDialog />
       <DataTableViewOptions table={table} />
     </div>
   )

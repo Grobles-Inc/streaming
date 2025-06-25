@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useBilleteraByUsuario } from '@/queries'
 import { useAuthStore } from '@/stores/authStore'
@@ -97,8 +98,8 @@ export default function Dashboard() {
             <CardContent>
               {isLoadingBilletera ? (
                 <div className='space-y-2'>
-                  <div className='h-8 bg-muted rounded animate-pulse w-24' />
-                  <div className='h-3 bg-muted rounded animate-pulse w-32' />
+                  <Skeleton className='h-8 w-24' />
+                  <Skeleton className='h-3 w-32' />
                 </div>
               ) : (
                 <>
@@ -120,8 +121,8 @@ export default function Dashboard() {
             <CardContent>
               {isLoadingRecargas ? (
                 <div className='space-y-2'>
-                  <div className='h-8 bg-muted rounded animate-pulse w-24' />
-                  <div className='h-3 bg-muted rounded animate-pulse w-32' />
+                  <Skeleton className='h-8 w-24' />
+                  <Skeleton className='h-3 w-32' />
                 </div>
               ) : (
                 <>
@@ -143,8 +144,8 @@ export default function Dashboard() {
             <CardContent>
               {isLoadingCompras ? (
                 <div className='space-y-2'>
-                  <div className='h-8 bg-muted rounded animate-pulse w-24' />
-                  <div className='h-3 bg-muted rounded animate-pulse w-32' />
+                  <Skeleton className='h-8 w-24' />
+                  <Skeleton className='h-3 w-32' />
                 </div>
               ) : (
                 <>

@@ -324,8 +324,6 @@ export interface Database {
           id: string
           usuario_id: string
           monto: number
-          comision: number
-          metodo_pago: "transferencia" | "yape"
           estado: "aprobado" | "pendiente" | "rechazado"
           created_at: string
           updated_at: string
@@ -334,8 +332,6 @@ export interface Database {
           id?: string
           usuario_id: string
           monto: number
-          comision: number
-          metodo_pago: "transferencia" | "yape"
           estado?: "aprobado" | "pendiente" | "rechazado"
           created_at?: string
           updated_at?: string
@@ -343,9 +339,7 @@ export interface Database {
         Update: {
           id?: string
           usuario_id?: string
-          monto?: number
-          comision?: number
-          metodo_pago?: "transferencia" | "yape"
+          monto?: number  
           estado?: "aprobado" | "pendiente" | "rechazado"
           created_at?: string
           updated_at?: string

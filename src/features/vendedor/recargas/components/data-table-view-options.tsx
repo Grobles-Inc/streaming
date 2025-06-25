@@ -1,6 +1,3 @@
-import { DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu'
-import { MixerHorizontalIcon } from '@radix-ui/react-icons'
-import { Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -9,6 +6,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
+import { DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu'
+import { IconSettings } from '@tabler/icons-react'
+import { Table } from '@tanstack/react-table'
 
 interface DataTableViewOptionsProps<TData> {
   table: Table<TData>
@@ -21,12 +21,11 @@ export function DataTableViewOptions<TData>({
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
-          variant='outline'
-          size='sm'
+          variant='secondary'
+          size='icon'
           className='ml-auto hidden h-8 lg:flex'
         >
-          <MixerHorizontalIcon className='mr-2 h-4 w-4' />
-          Columnas
+          <IconSettings />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='w-[150px]'>

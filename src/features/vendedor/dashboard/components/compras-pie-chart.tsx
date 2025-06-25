@@ -95,7 +95,11 @@ export function ResumenComprasPieChart({ timeFilter }: ResumenComprasPieChartPro
   const chartData = Object.entries(comprasByStatus).map(([status, total]) => ({
     name: status,
     total,
-    fill: (chartConfig[status as keyof typeof chartConfig] as any)?.color || "var(--chart-1)"
+    fill: status === 'resuelto' ? '#22c55e' :
+      status === 'soporte' ? '#facc15' :
+        status === 'vencido' ? '#ef4444' :
+          status === 'pedido' ? '#3b82f6' :
+            status === 'entregado' ? '#6b7280' : '#94a3b8'
   }))
 
   // Calculate totals

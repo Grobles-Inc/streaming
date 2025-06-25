@@ -57,7 +57,6 @@ export const useUpdateBilleteraSaldo = () => {
       billeteraService.updateBilleteraSaldo(id, nuevoSaldo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['billeteras'] })
-      toast.success('Saldo actualizado correctamente')
     },
     onError: () => {
       toast.error('Error al actualizar el saldo')

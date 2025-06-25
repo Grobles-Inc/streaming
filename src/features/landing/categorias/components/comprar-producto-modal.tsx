@@ -60,14 +60,16 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       proveedor_id: producto.proveedor_id,
       producto_id: producto.id,
       vendedor_id: user.id,
+      fecha_termino: new Date(Date.now() + producto.tiempo_uso * 24 * 60 * 60 * 1000).toISOString(),
       nombre_cliente: data.nombre_cliente,
       precio: producto.precio_publico,
+      monto_reembolso: producto.precio_publico,
       telefono_cliente: data.telefono_cliente.replace(/\s/g, ''),
       stock_producto_id: stock_producto_id,
     })
 
     actualizarSaldo({ id: billetera?.id, nuevoSaldo: monto - producto?.precio_publico })
-    toast.success("Producto comprado correctamente", { duration: 3000 })
+
     onOpenChange(false)
     form.reset()
   }
@@ -83,7 +85,8 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
           <DialogDescription>{producto.descripcion}</DialogDescription>
 
         </DialogHeader>
-        <div className='flex justify-end'>
+        <div className='flex justify-between'>
+          <img src={producto.imagen_url || ''} alt={producto.nombre} className='size-14 rounded-lg' />
           <span className="font-bold text-2xl">${producto.precio_publico.toFixed(2)}</span>
         </div>
 

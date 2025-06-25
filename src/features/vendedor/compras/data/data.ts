@@ -11,7 +11,7 @@ import { CompraEstado } from './schema'
 export const estadosMap = new Map<CompraEstado, string>([
   ['resuelto', 'bg-green-500 text-white dark:text-white border-green-500'],
   ['soporte', 'bg-yellow-400 text-white dark:text-white border-yellow-500'],
-  ['vencidos', 'bg-red-500 text-white dark:text-white border-red-500'],
+  ['vencido', 'bg-red-500 text-white dark:text-white border-red-500'],
   ['pedido', 'bg-blue-500 text-white dark:text-white border-blue-500'],
   ['entregado', 'bg-gray-100/30 text-gray-900 dark:text-gray-200 border-gray-200'],
 ])

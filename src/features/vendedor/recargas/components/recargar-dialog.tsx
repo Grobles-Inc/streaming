@@ -1,15 +1,8 @@
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useIsMobile } from '@/hooks/use-mobile'
-import { RecargaMessage } from '@/lib/whatsapp'
-import { useBilleteraByUsuario, useUpdateBilleteraSaldo } from '@/queries'
-import { useAuthStore } from '@/stores/authStore'
-import { IconPlus } from '@tabler/icons-react'
-import * as React from 'react'
-import { useForm } from 'react-hook-form'
-import { toast } from 'sonner'
 import {
   Stepper,
   StepperDescription,
@@ -19,7 +12,15 @@ import {
   StepperTitle,
   StepperTrigger,
 } from '@/components/ui/stepper'
-import { Card, CardTitle, CardHeader, CardContent } from '@/components/ui/card'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { RecargaMessage } from '@/lib/whatsapp'
+import { useBilleteraByUsuario } from '@/queries'
+import { useAuth } from '@/stores/authStore'
+import { IconPlus } from '@tabler/icons-react'
+import { Loader2 } from 'lucide-react'
+import * as React from 'react'
+import { useForm } from 'react-hook-form'
+import { useCreateRecarga } from '../queries'
 
 const steps = [
   {
@@ -43,37 +44,37 @@ const steps = [
 export function RecargarDialog() {
   const isMobile = useIsMobile()
   const tasaConversion = 3.7
-  const { user } = useAuthStore()
+  const { user } = useAuth()
   const [dialogOpen, setDialogOpen] = React.useState(false)
   if (!user?.id) {
     return null
   }
   const { data: billetera } = useBilleteraByUsuario(user.id)
-  const { mutate: actualizarSaldo } = useUpdateBilleteraSaldo()
+  const { mutate: crearRecarga, isPending } = useCreateRecarga()
   const monto = billetera?.saldo || 0
 
   const form = useForm<{ amount: number }>({
     defaultValues: { amount: 0 },
   })
 
-  function onSubmit(data: { amount: number }) {
-    setDialogOpen(false)
-
-    const nuevoMonto = monto + data.amount
-
-    actualizarSaldo({ id: billetera?.id || '', nuevoSaldo: nuevoMonto })
-    RecargaMessage({
-      nombre_cliente: 'Juan Perez',
-      monto: data.amount,
-      id_cliente: '1234567890',
-    }, '51914019629', isMobile ? 'mobile' : 'web')
-
-    toast.success(
-      `Recarga exitosa: $${data.amount}`,
-      { duration: 2000 }
-    )
-
-    form.reset()
+  async function onSubmit(data: { amount: number }) {
+    try {
+      setDialogOpen(false)
+      await crearRecarga({
+        monto: data.amount,
+        usuario_id: user?.id as string,
+      })
+      form.reset()
+      setTimeout(() => {
+        RecargaMessage({
+          nombre_cliente: user?.nombres + ' ' + user?.apellidos || '',
+          monto: data.amount,
+          id_cliente: user?.id || '',
+        }, '51914019629', isMobile ? 'mobile' : 'web')
+      }, 3000)
+    } catch (error) {
+      console.error('Error:', error)
+    }
   }
   return (
     <>
@@ -131,7 +132,7 @@ export function RecargarDialog() {
               />
               <div className="space-y-4">
                 <div className="space-y-8 text-center">
-                  <Stepper defaultValue={2} orientation="vertical">
+                  <Stepper orientation="vertical">
                     {steps.map(({ step, title, description }) => (
                       <StepperItem
                         key={step}
@@ -196,8 +197,8 @@ export function RecargarDialog() {
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit" >
-                  Solicitar
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? <Loader2 className='size-4 animate-spin' /> : 'Solicitar'}
                 </Button>
               </DialogFooter>
             </form>

@@ -19,21 +19,17 @@ const chartConfig = {
   total: {
     label: "Total",
   },
-  Recargas: {
-    label: "Recargas",
+  Aprobados: {
+    label: "Aprobados",
     color: "var(--chart-1)",
   },
   Pendientes: {
     label: "Pendientes",
     color: "var(--chart-2)",
   },
-  Completadas: {
-    label: "Completadas",
+  Rechazados: {
+    label: "Rechazados",
     color: "var(--chart-3)",
-  },
-  Rechazadas: {
-    label: "Rechazadas",
-    color: "var(--chart-4)",
   },
 } satisfies ChartConfig
 
@@ -91,7 +87,9 @@ export function ResumenRecargasPieChart({ timeFilter }: ResumenRecargasPieChartP
   const chartData = Object.entries(recargasByStatus).map(([status, total]) => ({
     name: status,
     total,
-    fill: (chartConfig[status as keyof typeof chartConfig] as any)?.color || "var(--chart-1)"
+    fill: status === 'aprobado' ? '#22c55e' :
+      status === 'pendiente' ? '#facc15' :
+        status === 'rechazado' ? '#ef4444' : '#94a3b8'
   }))
 
   // Calculate totals

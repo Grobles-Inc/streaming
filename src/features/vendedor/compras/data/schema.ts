@@ -6,7 +6,7 @@ import { z } from 'zod'
 const compraEstadoSchema = z.union([
   z.literal('resuelto'),
   z.literal('soporte'),
-  z.literal('vencidos'),
+  z.literal('vencido'),
   z.literal('pedido'),
   z.literal('entregado'),
 ])

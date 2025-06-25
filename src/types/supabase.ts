@@ -274,6 +274,9 @@ export interface Database {
           vendedor_id: string
           stock_producto_id: number
           nombre_cliente: string
+          
+          fecha_termino: string
+          monto_reembolso: number
           telefono_cliente: string
           precio: number
           estado?: string

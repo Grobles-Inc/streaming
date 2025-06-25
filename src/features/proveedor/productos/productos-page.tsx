@@ -9,11 +9,12 @@ import { columns } from './components/productos-columns'
 import { ProductosTable } from './components/productos-table'
 import { useProductosByProveedor, useProductosStatsByProveedor } from './queries'
 import { useAuth } from '@/stores/authStore'
-import type { Producto } from './data/schema'
+import { Producto, productoCompleteSchema } from './data/schema'
 
 export function ProductosPage() {
   const { user } = useAuth()
   const { data: productos, isLoading, error } = useProductosByProveedor(user?.id ?? '')
+  const productList = productos?.map(producto => productoCompleteSchema.parse(producto))
 
   const { data: stats } = useProductosStatsByProveedor(user?.id ?? '')
 
@@ -107,7 +108,7 @@ export function ProductosPage() {
                   <Skeleton className='h-10 w-full' />
                 </div>
               ) : productos && productos.length > 0 ? (
-                <ProductosTable columns={columns} data={productos as Producto[]} />
+                <ProductosTable columns={columns} data={productList || [] as Producto[]} />
               ) : (
                 <div className='text-center py-12'>
                   <p className='text-muted-foreground mb-4'>No tienes productos registrados</p>

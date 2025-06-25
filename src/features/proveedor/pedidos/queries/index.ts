@@ -1,6 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as pedidosService from '../services'
 import { toast } from 'sonner'
+import type { Database } from '@/types/supabase'
+
+type CompraUpdate = Database['public']['Tables']['compras']['Update']
 
 export const usePedidosByProveedor = (proveedorId: string) => {
   return useQuery({
@@ -50,7 +53,7 @@ export const useUpdatePedidoStatus = () => {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: any }) => 
+    mutationFn: ({ id, updates }: { id: string; updates: CompraUpdate }) => 
       pedidosService.updateCompraStatus(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
@@ -67,7 +70,7 @@ export const useConfirmarPedido = () => {
   
   return useMutation({
     mutationFn: (id: string) => 
-      pedidosService.updateCompraStatus(id, { estado: 'confirmado' }),
+      pedidosService.updateCompraStatus(id, { estado: 'confirmado' } as CompraUpdate),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
       toast.success('Pedido confirmado correctamente')
@@ -83,7 +86,7 @@ export const useRechazarPedido = () => {
   
   return useMutation({
     mutationFn: (id: string) => 
-      pedidosService.updateCompraStatus(id, { estado: 'rechazado' }),
+      pedidosService.updateCompraStatus(id, { estado: 'rechazado' } as CompraUpdate),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
       toast.success('Pedido rechazado')

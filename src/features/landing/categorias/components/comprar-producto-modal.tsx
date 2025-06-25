@@ -27,7 +27,6 @@ type ComprarProductoModalProps = {
 }
 
 export default function ComprarProductoModal({ open, onOpenChange, producto }: ComprarProductoModalProps) {
-  if (!producto) return null
 
   const { user } = useAuthStore()
   const { mutate: createCompra } = useCreateCompra()
@@ -44,6 +43,8 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
     },
   })
 
+  if (!producto) return null
+
   function onSubmit(data: FormData) {
     if (!user?.id) {
       toast.error("Debes iniciar sesión para comprar un producto", { duration: 3000 })
@@ -56,7 +57,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
     }
 
     createCompra({
-      proveedor_id: producto.usuarios.id,
+      proveedor_id: producto.proveedor_id,
       producto_id: producto.id,
       vendedor_id: user.id,
       nombre_cliente: data.nombre_cliente,
@@ -77,7 +78,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
         <DialogHeader className='flex flex-col gap-3'>
           <DialogTitle className='flex items-center gap-4'>
 
-            {producto.usuarios.nombres}
+            {producto.nombre}
           </DialogTitle>
           <DialogDescription>{producto.descripcion}</DialogDescription>
 

@@ -83,6 +83,10 @@ export interface Database {
       productos: {
         Row: {
           id: string
+          usuarios: {
+            nombres: string
+            apellidos: string
+          }
           nombre: string
           descripcion: string | null
           informacion: string | null

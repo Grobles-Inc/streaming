@@ -1,4 +1,4 @@
-import { ColumnDef, Row } from '@tanstack/react-table'
+import { ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -7,7 +7,6 @@ import { IconCheck, IconX, IconPackage, IconClock, IconShoppingCart } from '@tab
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 import type { Producto } from '../data/schema'
-import type { Producto as ProductoService } from '../services'
 
 // Estados para badges
 const disponibilidadColors = {
@@ -433,7 +432,7 @@ export const columns: ColumnDef<Producto>[] = [
   {
     id: 'actions',
     enableHiding: false,
-    cell: ({ row }) => <DataTableRowActions row={row as Row<ProductoService>} />,
+    cell: ({ row }) => <DataTableRowActions row={row} />,
     meta: {
       className: cn(
         'sticky right-0 bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted'

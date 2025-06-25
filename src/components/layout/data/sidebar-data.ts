@@ -1,7 +1,10 @@
 import {
+  IconCash,
   IconChartBar,
   IconClipboardList,
+  IconCoins,
   IconCreditCard,
+  IconFlag,
   IconHome,
   IconLayoutDashboard,
   IconPackage,
@@ -161,7 +164,25 @@ const baseNavGroups = [
       {
         title: 'Gestión de Categorías',
         url: '/admin/categories',
+        icon: IconFlag,
+        roles: ['admin'],
+      },
+      {
+        title: 'Gestión de Productos',
+        url: '/admin/productos',
         icon: IconPackage,
+        roles: ['admin'],
+      },
+      {
+        title: 'Gestión de Recargas',
+        url: '/admin/recargas',
+        icon: IconCash,
+        roles: ['admin'],
+      },
+      {
+        title: 'Gestión de Retiros',
+        url: '/admin/retiros',
+        icon: IconCoins,
         roles: ['admin'],
       },
       {

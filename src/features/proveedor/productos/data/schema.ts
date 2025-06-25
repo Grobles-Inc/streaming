@@ -35,11 +35,33 @@ export const productoSchema = z.object({
 })
 
 // Schema completo que incluye todos los campos de la BD (para uso interno)
-export const productoCompleteSchema = productoSchema.extend({
+export const productoCompleteSchema = z.object({
   id: z.string(),
   proveedor_id: z.string(),
   created_at: z.string(),
   updated_at: z.string(),
+  nombre: z.string().min(1, "El nombre es requerido"),
+  precio_publico: z.coerce.number().min(0, "El precio público debe ser mayor o igual a 0"),
+  precio_vendedor: z.coerce.number().min(0, "El precio vendedor debe ser mayor o igual a 0"),
+  precio_renovacion: z.coerce.number().min(0, "El precio renovación debe ser mayor o igual a 0").optional().nullable(),
+  stock: z.coerce.number().int().min(0, "El stock debe ser un número entero mayor o igual a 0"),
+  categoria_id: z.string().min(1, "La categoría es requerida"),
+  tiempo_uso: z.coerce.number().int().min(0, "El tiempo de uso debe ser un número entero mayor o igual a 0"),
+  a_pedido: z.boolean().nullable().transform(val => val ?? false),
+  nuevo: z.boolean().nullable().transform(val => val ?? false),
+  disponibilidad: disponibilidadSchema,
+  renovable: z.boolean().nullable().transform(val => val ?? false),
+  descripcion: z.string().nullable().transform(val => val ?? '').optional(),
+  informacion: z.string().nullable().transform(val => val ?? '').optional(),
+  condiciones: z.string().nullable().transform(val => val ?? '').optional(),
+  imagen_url: z.string().nullable().transform(val => val ?? '').optional(),
+  url_cuenta: z.string().nullable().transform(val => val ?? '').optional(),
+  destacado: z.boolean().nullable().transform(val => val ?? false),
+  mas_vendido: z.boolean().nullable().transform(val => val ?? false),
+  descripcion_completa: z.string().nullable().transform(val => val ?? '').optional(),
+  solicitud: z.string().nullable().transform(val => val ?? '').optional(),
+  muestra_disponibilidad_stock: z.boolean().nullable().transform(val => val ?? false),
+  deshabilitar_boton_comprar: z.boolean().nullable().transform(val => val ?? false),
   stock_de_productos: z.any().optional(),
   categorias: z.object({
     nombre: z.string(),

@@ -11,14 +11,20 @@ import { useState } from 'react'
 import { useCompras } from '../context/compras-context'
 import { estadosMap, productoOpciones } from '../data/data'
 import { Compra, CompraEstado, compraSchema } from '../data/schema'
-import { useRenovarCompra } from '../queries'
+import { useRenovarCompra, useUpdateCompraStatus } from '../queries'
 import { DataTableColumnHeader } from './data-table-column-header'
 
-const DiasRestantesCell = ({ fecha_termino }: { fecha_termino: string }) => {
+const DiasRestantesCell = ({ fecha_termino, id }: { fecha_termino: string, id: string }) => {
   const { isPending } = useRenovarCompra()
+  const { mutate: updateCompraStatus } = useUpdateCompraStatus()
   const fecha_termino_date = new Date(fecha_termino)
   const fecha_actual = new Date()
   const dias_restantes = Math.ceil((fecha_termino_date.getTime() - fecha_actual.getTime()) / (1000 * 60 * 60 * 24))
+
+  if (dias_restantes === 0) {
+    updateCompraStatus({ id: id, status: 'vencido' })
+  }
+
   let badgeColor = ''
   if (dias_restantes < 5) {
     badgeColor = 'bg-red-500 text-white dark:text-white border-red-500'
@@ -146,6 +152,7 @@ const ProductoCell = ({ row }: { row: Compra }) => {
     </Button>
   </div>
 }
+
 
 export const columns: ColumnDef<Compra>[] = [
 
@@ -318,14 +325,14 @@ export const columns: ColumnDef<Compra>[] = [
   {
     accessorKey: 'monto_reembolso',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Monto de reembolso' />
+      <DataTableColumnHeader column={column} title='Reembolso' />
     ),
     enableSorting: false,
     cell: ({ row }) => {
       const { monto_reembolso } = row.original
       return (
         <div className='flex justify-center'>
-          <span>$ {monto_reembolso}</span>
+          <span>$ {(monto_reembolso as number).toFixed(2)}</span>
         </div>
       )
     },
@@ -348,7 +355,7 @@ export const columns: ColumnDef<Compra>[] = [
       <DataTableColumnHeader column={column} title='Días restantes' />
     ),
     cell: ({ row }) => {
-      return <DiasRestantesCell fecha_termino={row.original.fecha_termino as string} />
+      return <DiasRestantesCell fecha_termino={row.original.fecha_termino as string} id={row.original.id as string} />
     },
     enableSorting: false,
   },

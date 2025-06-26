@@ -9,6 +9,8 @@ import { DataTable } from './components/data-table'
 import ComprasProvider from './context/compras-context'
 import { compraSchema } from './data/schema'
 import { useComprasByVendedor } from './queries'
+import { IconRefresh } from '@tabler/icons-react'
+import { Button } from '@/components/ui/button'
 
 export default function Compras() {
   const { user } = useAuth()
@@ -18,6 +20,9 @@ export default function Compras() {
     <ComprasProvider>
       <Header>
         <div className='ml-auto flex items-center space-x-4'>
+          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()} >
+            <IconRefresh />
+          </Button>
           <ThemeSwitch />
           <ProfileDropdown />
         </div>

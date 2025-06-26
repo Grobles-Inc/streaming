@@ -56,33 +56,36 @@ export const columns: ColumnDef<Recarga>[] = [
   },
 
   {
-    accessorKey: 'estado',
+    accessorKey: 'detalle',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Detalles' />
     ),
     cell: ({ row }) => {
       const { estado } = row.original
-      const badgeColor = estadosMap.get(estado)
       return (
-        <div className='flex items-center space-x-2'>
-          <p className='text-sm text-muted-foreground'>
-            {estado === 'aprobado' ? 'Tu recarga ha sido aprobada y acreditada en tu billetera.' : estado === 'pendiente' ? 'Procesando tu recarga. Esto puede tardar unos minutos.' : 'Tu recarga ha sido rechazada.'}
-          </p>
-          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
-            {row.getValue('estado')}
-          </Badge>
-        </div>
+        <p className='text-sm text-muted-foreground'>
+          {estado === 'aprobado' ? 'Tu recarga ha sido aprobada y acreditada en tu billetera.' : estado === 'pendiente' ? 'Procesando tu recarga. Esto puede tardar unos minutos.' : 'Tu recarga ha sido rechazada.'}
+        </p>
       )
-    },
-
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
     },
     enableSorting: false,
   },
-
-
-
+  {
+    accessorKey: 'estado',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Estado' />
+    ),
+    cell: ({ row }) => {
+      const { estado } = row.original
+      const badgeColor = estadosMap.get(estado)
+      return (
+        <Badge variant='outline' className={cn('capitalize', badgeColor)}>
+          {row.getValue('estado')}
+        </Badge>
+      )
+    },
+    enableSorting: false,
+  },
   {
     accessorKey: 'monto',
     header: ({ column }) => (
@@ -91,7 +94,7 @@ export const columns: ColumnDef<Recarga>[] = [
     cell: ({ row }) => {
       return (
         <div className='flex items-center'>
-          <span >$ {row.getValue('monto')}</span>
+          <span>$ {(row.getValue('monto') as number).toFixed(2)}</span>
         </div>
       )
     },

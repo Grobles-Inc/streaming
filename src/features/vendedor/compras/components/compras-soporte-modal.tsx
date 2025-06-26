@@ -6,14 +6,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { SoporteMessage } from '@/lib/whatsapp'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Loader2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Compra } from '../data/schema'
+import { useUpdateCompraStatus } from '../queries'
 
 const subjectOptions = [
   { value: 'soporte', label: 'Soporte' },
-  { value: 'reembolso', label: 'Reembolso' },
-  { value: 'otro', label: 'Otro' },
   { value: 'vencido', label: 'Cuenta vencida' },
 ]
 
@@ -32,7 +32,7 @@ interface ComprasSoporteModalProps {
 
 export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasSoporteModalProps) {
   const isMobile = useIsMobile()
-
+  const { mutate: updateCompraStatus, isPending } = useUpdateCompraStatus()
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -41,16 +41,26 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
     },
   })
 
-  const onSubmit = (data: FormData) => {
-    onOpenChange(false)
-    SoporteMessage({
-      nombre_cliente: currentRow.nombre_cliente,
-      asunto: data.subject,
-      mensaje: data.message,
-      id_producto: currentRow.producto_id || '',
-      id_cliente: currentRow.vendedor_id || '',
-    }, currentRow.usuarios?.telefono || '', isMobile ? 'mobile' : 'web')
-    form.reset()
+  async function onSubmit(data: FormData) {
+    try {
+      onOpenChange(false)
+      await updateCompraStatus({
+        id: currentRow.id as string,
+        status: data.subject,
+      })
+      form.reset()
+      setTimeout(() => {
+        SoporteMessage({
+          nombre_cliente: currentRow.nombre_cliente,
+          asunto: data.subject,
+          mensaje: data.message,
+          id_producto: currentRow.producto_id || '',
+          id_cliente: currentRow.vendedor_id || '',
+        }, currentRow.usuarios?.telefono || '', isMobile ? 'mobile' : 'web')
+      }, 3000)
+    } catch (error) {
+      console.error('Error:', error)
+    }
   }
 
   const handleClose = () => {
@@ -75,7 +85,7 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
                     <RadioGroup
                       value={field.value}
                       onValueChange={field.onChange}
-                      className="grid grid-cols-3"
+                      className="grid grid-cols-2"
                     >
                       {subjectOptions.map((option) => (
                         <div key={option.value} className="flex items-center space-x-2">
@@ -109,11 +119,12 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
             />
 
             <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={handleClose}>
+              <Button type="button" variant="outline" onClick={handleClose} disabled={isPending}>
                 Cancelar
               </Button>
-              <Button type="submit">
-                Enviar
+              <Button type="submit" disabled={isPending}>
+                {isPending ? <Loader2 className='size-4 animate-spin' /> : 'Enviar'}
+
               </Button>
             </div>
           </form>

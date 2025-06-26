@@ -106,13 +106,19 @@ const baseNavGroups = [
         icon: IconShoppingCart,
         roles: ['seller'],
       },        
-      {
-        title: 'Recargas',
-        url: '/recargas',
-        badge: '1',
-        icon: IconCreditCard,
-        roles: ['seller'],
-      },
+        {
+          title: 'Recargas',
+          url: '/recargas',
+          badge: '1',
+          icon: IconCreditCard,
+          roles: ['seller'],
+        },
+        {
+          title: 'Referidos',
+          url: '/referidos',
+          icon: IconUsers,
+          roles: ['seller'],
+        },
     ],
   },
   {

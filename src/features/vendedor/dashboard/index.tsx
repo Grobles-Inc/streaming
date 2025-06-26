@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useBilleteraByUsuario } from '@/queries'
 import { useAuthStore } from '@/stores/authStore'
-import { IconWallet } from '@tabler/icons-react'
+import { IconRefresh, IconWallet } from '@tabler/icons-react'
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import { useState } from 'react'
 import { useComprasByVendedor } from '../compras/queries'
@@ -47,6 +47,9 @@ export default function Dashboard() {
 
       <Header>
         <div className='ml-auto flex items-center space-x-4'>
+          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()} >
+            <IconRefresh />
+          </Button>
           <ThemeSwitch />
           <ProfileDropdown />
         </div>
@@ -105,7 +108,7 @@ export default function Dashboard() {
                 <>
                   <div className='text-2xl font-bold'>$ {saldo}</div>
                   <p className='text-muted-foreground text-xs'>
-                    +20.1% desde el mes pasado
+                    Incluye recargas, compras y comisiones.
                   </p>
                 </>
               )}
@@ -126,9 +129,9 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <>
-                  <div className='text-2xl font-bold'>+ $ {totalRecargas}</div>
+                  <div className='text-2xl font-bold'>$ {totalRecargas}</div>
                   <p className='text-muted-foreground text-xs'>
-                    +20.1% desde el mes pasado
+                    Total de tus recargas realizadas.
                   </p>
                 </>
               )}
@@ -149,9 +152,9 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <>
-                  <div className='text-2xl font-bold'>- $ {totalCompras}</div>
+                  <div className='text-2xl font-bold'>$ {totalCompras}</div>
                   <p className='text-muted-foreground text-xs'>
-                    +20.1% desde el mes pasado
+                    Monto total de tus compras.
                   </p>
                 </>
               )}

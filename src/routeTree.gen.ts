@@ -23,6 +23,7 @@ import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
+import { Route as AuthenticatedReferidosIndexRouteImport } from './routes/_authenticated/referidos/index'
 import { Route as AuthenticatedRecargasIndexRouteImport } from './routes/_authenticated/recargas/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
@@ -115,6 +116,12 @@ const AuthenticatedSettingsIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedReferidosIndexRoute =
+  AuthenticatedReferidosIndexRouteImport.update({
+    id: '/referidos/',
+    path: '/referidos/',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedRecargasIndexRoute =
   AuthenticatedRecargasIndexRouteImport.update({
@@ -265,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/recargas': typeof AuthenticatedRecargasIndexRoute
+  '/referidos': typeof AuthenticatedReferidosIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/admin/apps': typeof AuthenticatedAdminAppsIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesIndexRoute
@@ -301,6 +309,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/recargas': typeof AuthenticatedRecargasIndexRoute
+  '/referidos': typeof AuthenticatedReferidosIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/admin/apps': typeof AuthenticatedAdminAppsIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesIndexRoute
@@ -339,6 +348,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/recargas/': typeof AuthenticatedRecargasIndexRoute
+  '/_authenticated/referidos/': typeof AuthenticatedReferidosIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/admin/apps/': typeof AuthenticatedAdminAppsIndexRoute
   '/_authenticated/admin/categories/': typeof AuthenticatedAdminCategoriesIndexRoute
@@ -378,6 +388,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/help-center'
     | '/recargas'
+    | '/referidos'
     | '/settings/'
     | '/admin/apps'
     | '/admin/categories'
@@ -414,6 +425,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/help-center'
     | '/recargas'
+    | '/referidos'
     | '/settings'
     | '/admin/apps'
     | '/admin/categories'
@@ -451,6 +463,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/'
     | '/_authenticated/help-center/'
     | '/_authenticated/recargas/'
+    | '/_authenticated/referidos/'
     | '/_authenticated/settings/'
     | '/_authenticated/admin/apps/'
     | '/_authenticated/admin/categories/'
@@ -581,6 +594,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/'
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/referidos/': {
+      id: '/_authenticated/referidos/'
+      path: '/referidos'
+      fullPath: '/referidos'
+      preLoaderRoute: typeof AuthenticatedReferidosIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/recargas/': {
       id: '/_authenticated/recargas/'
@@ -761,6 +781,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedRecargasIndexRoute: typeof AuthenticatedRecargasIndexRoute
+  AuthenticatedReferidosIndexRoute: typeof AuthenticatedReferidosIndexRoute
   AuthenticatedAdminAppsIndexRoute: typeof AuthenticatedAdminAppsIndexRoute
   AuthenticatedAdminCategoriesIndexRoute: typeof AuthenticatedAdminCategoriesIndexRoute
   AuthenticatedAdminChatsIndexRoute: typeof AuthenticatedAdminChatsIndexRoute
@@ -781,6 +802,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedRecargasIndexRoute: AuthenticatedRecargasIndexRoute,
+  AuthenticatedReferidosIndexRoute: AuthenticatedReferidosIndexRoute,
   AuthenticatedAdminAppsIndexRoute: AuthenticatedAdminAppsIndexRoute,
   AuthenticatedAdminCategoriesIndexRoute:
     AuthenticatedAdminCategoriesIndexRoute,

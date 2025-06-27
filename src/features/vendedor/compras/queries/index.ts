@@ -78,6 +78,16 @@ export const useUpdateCompraStatus = () => {
   })
 }
 
+export const useUpdateCompraStatusVencido = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => comprasService.updateCompraStatusVencido(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['compras'] })
+    },
+  })
+}
+
 export const useReciclarCompra = () => {
   const queryClient = useQueryClient()
   

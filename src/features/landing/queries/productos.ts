@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import * as productosService from '../services/productos'
+import * as stockProductosService from '../services/stock'
 
 export const useProductos = () => {
   return useQuery({
@@ -21,6 +22,25 @@ export const useProductosByCategoria = (categoriaId: string) => {
     queryKey: ['productos', categoriaId],
     queryFn: () => productosService.getProductosByCategoria(categoriaId),
     enabled: !!categoriaId,
+  })
+}
+
+export const useStockProductosIds = (productoId: string) => {
+  return useQuery({
+    queryKey: ['stock-productos-ids', productoId],
+    queryFn: () => stockProductosService.getStockProductosIds(productoId),
+  })
+}
+
+export const useRemoveIdFromStockProductos = () => {
+  return useMutation({
+    mutationFn: ({ productoId, stockProductoId }: { productoId: string, stockProductoId: number }) => stockProductosService.removeIdFromStockProductos(productoId, stockProductoId),
+  })
+}
+
+export const useUpdateStockProductoStatusVendido = () => {
+  return useMutation({
+    mutationFn: ({ stockProductoId }: { stockProductoId: number }) => stockProductosService.updateStockProductoStatusVendido(stockProductoId),
   })
 }
 

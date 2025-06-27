@@ -12,6 +12,7 @@ import { z } from 'zod'
 import { useCreateCompra } from '../../queries/compra'
 import { Producto } from '../../services'
 import { PhoneInput } from './phone-input'
+import { useRemoveIdFromStockProductos, useStockProductosIds, useUpdateStockProductoStatusVendido } from '../../queries/productos'
 
 const formSchema = z.object({
   nombre_cliente: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -32,8 +33,11 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
   const { mutate: createCompra } = useCreateCompra()
   const { data: billetera } = useBilleteraByUsuario(user?.id || '0')
   const { mutate: actualizarSaldo } = useUpdateBilleteraSaldo()
+  const { data: stockProductosIds } = useStockProductosIds(producto?.id || '')
+  const { mutate: removeIdFromStockProductos } = useRemoveIdFromStockProductos()
+  const { mutate: updateStockProductoStatusVendido } = useUpdateStockProductoStatusVendido()
   const monto = billetera?.saldo
-  const stock_producto_id = 1
+  const stock_producto_id = stockProductosIds?.[0]
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -65,11 +69,11 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       precio: producto.precio_publico,
       monto_reembolso: producto.precio_publico,
       telefono_cliente: data.telefono_cliente.replace(/\s/g, ''),
-      stock_producto_id: stock_producto_id,
+      stock_producto_id: stock_producto_id || 0,
     })
-
     actualizarSaldo({ id: billetera?.id, nuevoSaldo: monto - producto?.precio_publico })
-
+    removeIdFromStockProductos({ productoId: producto.id, stockProductoId: stock_producto_id || 0 })
+    updateStockProductoStatusVendido({ stockProductoId: stock_producto_id || 0 })
     onOpenChange(false)
     form.reset()
   }

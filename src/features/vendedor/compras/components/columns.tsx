@@ -7,23 +7,25 @@ import { cn } from '@/lib/utils'
 import { CompraMessage, SoporteMessage } from '@/lib/whatsapp'
 import { IconHeadphones, IconLoader2, IconPackage, IconRefresh } from '@tabler/icons-react'
 import { ColumnDef } from '@tanstack/react-table'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useCompras } from '../context/compras-context'
 import { estadosMap, productoOpciones } from '../data/data'
 import { Compra, CompraEstado, compraSchema } from '../data/schema'
-import { useRenovarCompra, useUpdateCompraStatus } from '../queries'
+import { useRenovarCompra, useUpdateCompraStatusVencido } from '../queries'
 import { DataTableColumnHeader } from './data-table-column-header'
 
 const DiasRestantesCell = ({ fecha_termino, id }: { fecha_termino: string, id: string }) => {
   const { isPending } = useRenovarCompra()
-  const { mutate: updateCompraStatus } = useUpdateCompraStatus()
+  const { mutate: updateCompraStatus } = useUpdateCompraStatusVencido()
   const fecha_termino_date = new Date(fecha_termino)
   const fecha_actual = new Date()
   const dias_restantes = Math.ceil((fecha_termino_date.getTime() - fecha_actual.getTime()) / (1000 * 60 * 60 * 24))
 
-  if (dias_restantes === 0) {
-    updateCompraStatus({ id: id, status: 'vencido' })
-  }
+  useEffect(() => {
+    if (dias_restantes === 0) {
+      updateCompraStatus(id)
+    }
+  }, [dias_restantes, id, updateCompraStatus])
 
   let badgeColor = ''
   if (dias_restantes < 5) {

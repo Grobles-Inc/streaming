@@ -87,6 +87,24 @@ export const updateCompraStatus = async (id: string, status: string): Promise<Co
 
   return data
 }
+
+
+export const updateCompraStatusVencido = async (id: string): Promise<Compra | null> => {
+  const { data, error } = await supabase
+    .from('compras')
+    .update({ estado: 'vencido' })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating compra status:', error)
+    return null
+  }
+  return data
+}
+
+
 export const renovarCompra = async (id: string, tiempo_uso: number, fecha_termino: string): Promise<Compra | null> => {
   const endDate = new Date(fecha_termino)
   const newDate = new Date(endDate.setDate(endDate.getDate() + tiempo_uso))

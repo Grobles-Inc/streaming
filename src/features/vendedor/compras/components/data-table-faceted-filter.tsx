@@ -22,7 +22,7 @@ export function DataTableFacetedFilter<TData, TValue>({
   const selectedValue = column?.getFilterValue() as string
 
   return (
-    <div className="grid grid-cols-2 gap-2 md:grid-cols-5 ">
+    <div className="grid grid-cols-3 gap-2 md:grid-cols-5 ">
       {options.map((option) => {
         const isSelected = selectedValue === option.value
         return (
@@ -42,9 +42,6 @@ export function DataTableFacetedFilter<TData, TValue>({
               }
             }}
           >
-            {option.icon && (
-              <option.icon className="mr-2 h-4 w-4" />
-            )}
             {option.label}
             {facets?.get(option.value) && (
               <span className={cn('ml-2 rounded flex h-4 w-4 items-center justify-center font-mono text-xs')}>

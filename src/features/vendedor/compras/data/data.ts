@@ -13,7 +13,7 @@ export const estadosMap = new Map<CompraEstado, string>([
   ['soporte', 'bg-yellow-400 text-white dark:text-white border-yellow-500'],
   ['vencido', 'bg-red-500 text-white dark:text-white border-red-500'],
   ['pedido', 'bg-blue-500 text-white dark:text-white border-blue-500'],
-  ['entregado', 'bg-gray-100/30 text-gray-900 dark:text-gray-200 border-gray-200'],
+  ['entregado', 'bg-gray-500/30 text-white dark:text-white border-gray-200'],
 ])
 
 
@@ -87,7 +87,7 @@ export const estados = [
     value: 'entregado',
     label: 'Entregado',
     icon: IconFlag,
-    color: 'bg-gray-100/30 text-gray-900 dark:text-gray-200 border-gray-200',
+    color: 'bg-gray-600/30 text-white dark:text-white border-gray-200',
   },
 ]
 

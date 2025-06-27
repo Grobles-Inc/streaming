@@ -25,13 +25,23 @@ export const useRecargaById = (id: string) => {
   })
 }
 
+export const useRecargasAprobadasByVendedor = (vendedorId: string) => {
+  return useQuery({
+    queryKey: ['recargas', 'vendedor', vendedorId, 'aprobadas'],
+    queryFn: () => recargasService.getRecargasAprobadasByVendedorId(vendedorId),
+    enabled: !!vendedorId,
+  })
+}
+
 export const useCreateRecarga = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: recargasService.createRecarga,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recargas'] })
-      toast.success('Recarga creada correctamente')
+      toast.success('Recarga solicitada', {
+        description: 'La comisión de la recarga será reducida de tu saldo una vez aprobada.',
+      })
     },
     onError: () => {
       toast.error('Error al crear la recarga')

@@ -98,18 +98,15 @@ const baseNavGroups = [
         icon: IconLayoutDashboard,
         roles: ['seller'],
       },        
-      //TODO: Los badges deben ser dinamicos representando el numero de compras y recargas con cierto estado.
       {
         title: 'Compras',
         url: '/compras',
-        badge: '3',
         icon: IconShoppingCart,
         roles: ['seller'],
       },        
         {
           title: 'Recargas',
           url: '/recargas',
-          badge: '1',
           icon: IconCreditCard,
           roles: ['seller'],
         },

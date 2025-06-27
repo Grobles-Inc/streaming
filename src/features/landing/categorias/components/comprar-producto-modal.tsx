@@ -28,7 +28,6 @@ type ComprarProductoModalProps = {
 }
 
 export default function ComprarProductoModal({ open, onOpenChange, producto }: ComprarProductoModalProps) {
-
   const { user } = useAuthStore()
   const { mutate: createCompra } = useCreateCompra()
   const { data: billetera } = useBilleteraByUsuario(user?.id || '0')

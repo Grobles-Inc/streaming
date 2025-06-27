@@ -18,7 +18,7 @@ import { IconRefresh, IconWallet } from '@tabler/icons-react'
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import { useState } from 'react'
 import { useComprasByVendedor } from '../compras/queries'
-import { useRecargasByVendedor } from '../recargas/queries'
+import { useRecargasAprobadasByVendedor } from '../recargas/queries'
 import { ResumenComprasPieChart } from './components/compras-pie-chart'
 import { ComprasRecientes } from './components/compras-recientes'
 import OperacionSaldoModal from './components/recargar-saldo-modal'
@@ -36,10 +36,9 @@ export default function Dashboard() {
     return null
   }
   const { data: billetera, isLoading: isLoadingBilletera } = useBilleteraByUsuario(user.id)
-  const { data: recargas, isLoading: isLoadingRecargas } = useRecargasByVendedor(user.id)
+  const { data: recargas, isLoading: isLoadingRecargas } = useRecargasAprobadasByVendedor(user.id)
   const { data: compras, isLoading: isLoadingCompras } = useComprasByVendedor(user.id)
   const saldo = billetera?.saldo || 0
-  const totalRecargas = recargas?.reduce((acc, recarga) => acc + recarga.monto, 0) || 0
   const totalCompras = compras?.reduce((acc, compra) => acc + compra.precio, 0) || 0
   return (
     <>
@@ -129,9 +128,9 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <>
-                  <div className='text-2xl font-bold'>$ {totalRecargas}</div>
+                  <div className='text-2xl font-bold'>$ {recargas?.toFixed(2)}</div>
                   <p className='text-muted-foreground text-xs'>
-                    Total de tus recargas realizadas.
+                    Total de tus recargas aprobadas.
                   </p>
                 </>
               )}
@@ -152,7 +151,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <>
-                  <div className='text-2xl font-bold'>$ {totalCompras}</div>
+                  <div className='text-2xl font-bold'>$ {totalCompras.toFixed(2)}</div>
                   <p className='text-muted-foreground text-xs'>
                     Monto total de tus compras.
                   </p>

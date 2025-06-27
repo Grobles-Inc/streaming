@@ -85,6 +85,21 @@ export const getRecargasByVendedorId = async (vendedorId: string): Promise<Recar
   return data || []
 }
 
+export const getRecargasAprobadasByVendedorId = async (vendedorId: string): Promise<number> => {
+  const { data, error } = await supabase
+    .from('recargas')
+    .select('monto')
+    .eq('usuario_id', vendedorId)
+    .eq('estado', 'aprobado')
+
+  if (error) {
+    console.error('Error fetching recargas aprobadas by vendedor:', error)
+    return 0
+  }
+
+  return data?.reduce((sum, recarga) => sum + (recarga.monto || 0), 0) || 0
+}
+
 // Get recargas with pagination
 export const getRecargasPaginated = async (
   page: number = 1,

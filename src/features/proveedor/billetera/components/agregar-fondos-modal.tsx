@@ -87,7 +87,7 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[1000px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>💰 Agregar Fondos</DialogTitle>
+          <DialogTitle>Agregar Fondos</DialogTitle>
           <DialogDescription>
             Ingresa la cantidad en soles para calcular automáticamente el valor en dólares
           </DialogDescription>

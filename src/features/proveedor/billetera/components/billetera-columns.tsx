@@ -7,7 +7,6 @@ export type Recarga = {
   id: string
   usuario_id: string
   monto: number
-  metodo_pago: string
   estado: string
   created_at: string
   updated_at: string
@@ -42,14 +41,18 @@ export const columns: ColumnDef<Recarga>[] = [
     ),
     cell: ({ row }) => {
       const monto = row.getValue('monto') as number
-      const formatted = new Intl.NumberFormat('es-CO', {
+      const tasaCambio = 3.7
+      const valorEnDolares = (monto / tasaCambio).toFixed(2)
+      
+      const formattedSoles = new Intl.NumberFormat('es-PE', {
         style: 'currency',
-        currency: 'COP',
-        minimumFractionDigits: 0,
+        currency: 'PEN',
+        minimumFractionDigits: 2,
       }).format(monto)
+      
       return (
         <div className="text-left font-medium text-green-600">
-          +{formatted}
+          +{formattedSoles} - (${valorEnDolares})
         </div>
       )
     },

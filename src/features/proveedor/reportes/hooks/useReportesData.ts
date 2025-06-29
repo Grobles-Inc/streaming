@@ -17,7 +17,6 @@ import {
   GananciasProducto,
   MetricaReporte
 } from '../types'
-import { DollarSign, Package, Users, Activity } from 'lucide-react'
 
 interface UseReportesDataReturn {
   estadisticas: EstadisticasGenerales | null

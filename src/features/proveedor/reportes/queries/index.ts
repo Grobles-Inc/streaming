@@ -1,10 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import { Database } from '@/types/supabase'
 import { VentasReporte, ProductoPopular, VentaReciente, InventarioReporte, GananciasProducto, EstadisticasGenerales } from '../types'
-
-type ComprasRow = Database['public']['Tables']['compras']['Row']
-type ProductosRow = Database['public']['Tables']['productos']['Row']
-type StockProductosRow = Database['public']['Tables']['stock_productos']['Row']
 
 // Query para obtener estadísticas generales del proveedor
 export async function getEstadisticasGenerales(proveedorId: string): Promise<EstadisticasGenerales | null> {
@@ -101,25 +96,36 @@ export async function getVentasPorMes(proveedorId: string, meses: number = 6): P
 // Query para obtener productos más populares
 export async function getProductosPopulares(proveedorId: string, limite: number = 10): Promise<ProductoPopular[]> {
   try {
-    const { data } = await supabase
+    // Primero obtenemos las compras
+    const { data: comprasData } = await supabase
       .from('compras')
-      .select(`
-        producto_id,
-        precio,
-        productos (
-          nombre
-        )
-      `)
+      .select('producto_id, precio')
       .eq('proveedor_id', proveedorId)
 
-    if (!data) return []
+    if (!comprasData) return []
+
+    // Obtenemos los IDs únicos de productos
+    const productosIds = [...new Set(comprasData.map(c => c.producto_id))]
+
+    // Obtenemos la información de los productos
+    const { data: productosData } = await supabase
+      .from('productos')
+      .select('id, nombre')
+      .in('id', productosIds)
+
+    if (!productosData) return []
 
     // Agrupar por producto
     const productosMap: { [key: string]: { nombre: string; ventas: number; ingresos: number } } = {}
 
-    data.forEach((compra) => {
+    // Crear mapa de nombres de productos
+    const nombresProductos = Object.fromEntries(
+      productosData.map(p => [p.id, p.nombre])
+    )
+
+    comprasData.forEach((compra) => {
       const productoId = compra.producto_id
-      const nombre = compra.productos?.nombre || 'Producto desconocido'
+      const nombre = nombresProductos[productoId] || 'Producto desconocido'
 
       if (!productosMap[productoId]) {
         productosMap[productoId] = { nombre, ventas: 0, ingresos: 0 }
@@ -150,27 +156,29 @@ export async function getProductosPopulares(proveedorId: string, limite: number 
 // Query para obtener ventas recientes
 export async function getVentasRecientes(proveedorId: string, limite: number = 10): Promise<VentaReciente[]> {
   try {
-    const { data } = await supabase
+    const { data: comprasData } = await supabase
       .from('compras')
-      .select(`
-        id,
-        precio,
-        estado,
-        nombre_cliente,
-        created_at,
-        productos (
-          nombre
-        )
-      `)
+      .select('id, precio, estado, nombre_cliente, created_at, producto_id')
       .eq('proveedor_id', proveedorId)
       .order('created_at', { ascending: false })
       .limit(limite)
 
-    if (!data) return []
+    if (!comprasData) return []
 
-    return data.map((compra) => ({
+    // Obtenemos los nombres de los productos
+    const productosIds = comprasData.map(c => c.producto_id)
+    const { data: productosData } = await supabase
+      .from('productos')
+      .select('id, nombre')
+      .in('id', productosIds)
+
+    const nombresProductos = Object.fromEntries(
+      (productosData || []).map(p => [p.id, p.nombre])
+    )
+
+    return comprasData.map((compra) => ({
       id: compra.id,
-      producto_nombre: compra.productos?.nombre || 'Producto desconocido',
+      producto_nombre: nombresProductos[compra.producto_id] || 'Producto desconocido',
       vendedor_nombre: '', // Campo no usado
       cliente_nombre: compra.nombre_cliente,
       precio: Number(compra.precio),
@@ -186,27 +194,36 @@ export async function getVentasRecientes(proveedorId: string, limite: number = 1
 // Query para obtener reporte de inventario
 export async function getInventarioReporte(proveedorId: string): Promise<InventarioReporte[]> {
   try {
-    const { data } = await supabase
+    const { data: productosData } = await supabase
       .from('productos')
-      .select(`
-        id,
-        nombre,
-        stock,
-        categorias (
-          nombre
-        ),
-        stock_productos (
-          estado
-        )
-      `)
+      .select('id, nombre, stock, categoria_id')
       .eq('proveedor_id', proveedorId)
 
-    if (!data) return []
+    if (!productosData) return []
 
-    return data.map((producto) => {
-      const stockDisponible = producto.stock_productos?.filter(s => s.estado === 'disponible').length || 0
-      const stockVendido = producto.stock_productos?.filter(s => s.estado === 'vendido').length || 0
-      const totalStock = producto.stock_productos?.length || 0
+    // Obtenemos los nombres de las categorías
+    const categoriasIds = productosData.map(p => p.categoria_id)
+    const { data: categoriasData } = await supabase
+      .from('categorias')
+      .select('id, nombre')
+      .in('id', categoriasIds)
+
+    const nombresCategorias = Object.fromEntries(
+      (categoriasData || []).map(c => [c.id, c.nombre])
+    )
+
+    // Obtenemos el stock de productos
+    const productosIds = productosData.map(p => p.id)
+    const { data: stockData } = await supabase
+      .from('stock_productos')
+      .select('producto_id, estado')
+      .in('producto_id', productosIds)
+
+    return productosData.map((producto) => {
+      const stockProducto = (stockData || []).filter(s => s.producto_id === producto.id)
+      const stockDisponible = stockProducto.filter(s => s.estado === 'disponible').length
+      const stockVendido = stockProducto.filter(s => s.estado === 'vendido').length
+      const totalStock = stockProducto.length
 
       return {
         producto_id: producto.id,
@@ -214,7 +231,7 @@ export async function getInventarioReporte(proveedorId: string): Promise<Inventa
         stock_disponible: stockDisponible,
         stock_vendido: stockVendido,
         total_stock: totalStock,
-        categoria: producto.categorias?.nombre || 'Sin categoría'
+        categoria: nombresCategorias[producto.categoria_id] || 'Sin categoría'
       }
     })
   } catch (error) {

@@ -23,15 +23,15 @@ type UserAuthFormProps = HTMLAttributes<HTMLFormElement>
 const formSchema = z.object({
   email: z
     .string()
-    .min(1, { message: 'Please enter your email' })
-    .email({ message: 'Invalid email address' }),
+    .min(1, { message: 'Por favor, ingrese su email' })
+    .email({ message: 'Dirección de email inválida' }),
   password: z
     .string()
     .min(1, {
-      message: 'Please enter your password',
+      message: 'Por favor, ingrese su contraseña',
     })
     .min(7, {
-      message: 'Password must be at least 7 characters long',
+      message: 'La contraseña debe tener al menos 7 caracteres',
     }),
 })
 
@@ -86,7 +86,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           name='email'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Correo electrónico</FormLabel>
               <FormControl>
                 <Input placeholder='name@example.com' {...field} />
               </FormControl>
@@ -99,7 +99,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           name='password'
           render={({ field }) => (
             <FormItem className='relative'>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Contraseña</FormLabel>
               <FormControl>
                 <PasswordInput placeholder='********' {...field} />
               </FormControl>
@@ -108,7 +108,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                 to='/forgot-password'
                 className='text-muted-foreground absolute -top-0.5 right-0 text-sm font-medium hover:opacity-75'
               >
-                Forgot password?
+                Olvidó su contraseña?
               </Link>
             </FormItem>
           )}

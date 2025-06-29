@@ -2,10 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { CalendarDays, Download, TrendingUp, TrendingDown, DollarSign, Package, Users, Activity } from 'lucide-react'
+import { CalendarDays, Download, TrendingUp, TrendingDown, DollarSign, Package, Users, Activity, AlertCircle } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { Search } from '@/components/search'
 import { Main } from '@/components/layout/main'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
   Bar, 
   BarChart, 
@@ -19,68 +20,45 @@ import {
   Cell,
   Tooltip
 } from 'recharts'
+import { useReportesData } from './hooks/useReportesData'
 
-// Datos de ejemplo para reportes
-const ventasData = [
-  { mes: 'Ene', ventas: 12500, productos: 87 },
-  { mes: 'Feb', ventas: 15800, productos: 102 },
-  { mes: 'Mar', ventas: 18300, productos: 125 },
-  { mes: 'Abr', ventas: 16700, productos: 113 },
-  { mes: 'May', ventas: 21400, productos: 143 },
-  { mes: 'Jun', ventas: 24600, productos: 168 },
-]
-
-const productosPopulares = [
-  { name: 'Netflix Premium', value: 35, color: '#0088FE' },
-  { name: 'Spotify Family', value: 28, color: '#00C49F' },
-  { name: 'Disney+', value: 20, color: '#FFBB28' },
-  { name: 'Amazon Prime', value: 17, color: '#FF8042' },
-]
-
-const ventasRecientes = [
-  { id: 1, producto: 'Netflix Premium', cliente: 'Juan Pérez', monto: 15.99, fecha: '2024-01-15', estado: 'Completada' },
-  { id: 2, producto: 'Spotify Family', cliente: 'María García', monto: 9.99, fecha: '2024-01-15', estado: 'Completada' },
-  { id: 3, producto: 'Disney+', cliente: 'Carlos López', monto: 8.99, fecha: '2024-01-14', estado: 'Pendiente' },
-  { id: 4, producto: 'Amazon Prime', cliente: 'Ana Rodríguez', monto: 12.99, fecha: '2024-01-14', estado: 'Completada' },
-  { id: 5, producto: 'HBO Max', cliente: 'Luis Martín', monto: 14.99, fecha: '2024-01-13', estado: 'Completada' },
-]
-
-const metricas = [
-  {
-    titulo: 'Ventas Totales',
-    valor: '$24,600',
-    cambio: '+12.3%',
-    tendencia: 'up',
-    icono: DollarSign,
-    descripcion: 'vs mes anterior'
-  },
-  {
-    titulo: 'Productos Vendidos',
-    valor: '168',
-    cambio: '+8.1%',
-    tendencia: 'up',
-    icono: Package,
-    descripcion: 'este mes'
-  },
-  {
-    titulo: 'Clientes Activos',
-    valor: '342',
-    cambio: '+5.4%',
-    tendencia: 'up',
-    icono: Users,
-    descripcion: 'usuarios únicos'
-  },
-  {
-    titulo: 'Conversión',
-    valor: '68.2%',
-    cambio: '-2.1%',
-    tendencia: 'down',
-    icono: Activity,
-    descripcion: 'tasa de éxito'
-  },
-]
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#ff7c7c']
 
 export function ReportesPage() {
+  const {
+    ventasPorMes,
+    productosPopulares,
+    ventasRecientes,
+    inventario,
+    gananciasProductos,
+    metricas,
+    error,
+    refreshData
+  } = useReportesData()
+
+
+
+  if (error) {
+    return (
+      <>
+        <Header>
+          <div className='ml-auto flex items-center space-x-4'>
+            <Search />
+            <Button variant="outline" size="sm" onClick={refreshData}>
+              Reintentar
+            </Button>
+          </div>
+        </Header>
+        <Main>
+          <Alert variant="destructive" className="max-w-md mx-auto mt-8">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </Main>
+      </>
+    )
+  }
+
   return (
     <>
       <Header>
@@ -106,13 +84,23 @@ export function ReportesPage() {
                 <CalendarDays className="h-4 w-4 mr-2" />
                 Últimos 30 días
               </Button>
+              <Button variant="outline" size="sm" onClick={refreshData}>
+                Actualizar
+              </Button>
             </div>
           </div>
 
           {/* Métricas principales */}
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
             {metricas.map((metrica, index) => {
-              const Icon = metrica.icono
+              const iconMap = {
+                'Ventas Totales': DollarSign,
+                'Productos Vendidos': Package,
+                'Clientes Únicos': Users,
+                'Tasa Conversión': Activity
+              }
+              const Icon = iconMap[metrica.titulo as keyof typeof iconMap] || Activity
+              
               return (
                 <Card key={index}>
                   <CardContent className='p-6'>
@@ -145,7 +133,8 @@ export function ReportesPage() {
             <TabsList>
               <TabsTrigger value="ventas">Ventas</TabsTrigger>
               <TabsTrigger value="productos">Productos</TabsTrigger>
-              <TabsTrigger value="clientes">Clientes</TabsTrigger>
+              <TabsTrigger value="inventario">Inventario</TabsTrigger>
+              <TabsTrigger value="ganancias">Ganancias</TabsTrigger>
             </TabsList>
 
             <TabsContent value="ventas" className="space-y-4">
@@ -155,39 +144,90 @@ export function ReportesPage() {
                     <CardTitle>Evolución de Ventas</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width='100%' height={300}>
-                      <LineChart data={ventasData}>
-                        <XAxis dataKey='mes' />
-                        <YAxis />
-                        <Tooltip />
-                        <Line 
-                          type='monotone' 
-                          dataKey='ventas' 
-                          stroke='#10b981' 
-                          strokeWidth={2}
-                          dot={{ fill: '#10b981' }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
+                    {ventasPorMes.length > 0 ? (
+                      <ResponsiveContainer width='100%' height={300}>
+                        <LineChart data={ventasPorMes}>
+                          <XAxis dataKey='mes' />
+                          <YAxis />
+                          <Tooltip 
+                            formatter={(value, name) => [
+                              name === 'ingresos' ? `$${Number(value).toLocaleString('es-ES')}` : value,
+                              name === 'ingresos' ? 'Ingresos' : 'Ventas'
+                            ]}
+                          />
+                          <Line 
+                            type='monotone' 
+                            dataKey='ingresos' 
+                            stroke='#10b981' 
+                            strokeWidth={2}
+                            dot={{ fill: '#10b981' }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className='flex items-center justify-center h-[300px] text-muted-foreground'>
+                        No hay datos de ventas disponibles
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Productos Vendidos</CardTitle>
+                    <CardTitle>Productos Vendidos por Mes</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width='100%' height={300}>
-                      <BarChart data={ventasData}>
-                        <XAxis dataKey='mes' />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey='productos' fill='#3b82f6' radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    {ventasPorMes.length > 0 ? (
+                      <ResponsiveContainer width='100%' height={300}>
+                        <BarChart data={ventasPorMes}>
+                          <XAxis dataKey='mes' />
+                          <YAxis />
+                          <Tooltip />
+                          <Bar dataKey='productos_vendidos' fill='#3b82f6' radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className='flex items-center justify-center h-[300px] text-muted-foreground'>
+                        No hay datos de productos vendidos disponibles
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Ventas Recientes */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Ventas Recientes</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {ventasRecientes.length > 0 ? (
+                    <div className='space-y-3'>
+                      {ventasRecientes.slice(0, 8).map((venta) => (
+                        <div key={venta.id} className='flex items-center justify-between p-3 border rounded-lg'>
+                          <div className='space-y-1'>
+                            <p className='text-sm font-medium'>{venta.producto_nombre}</p>
+                            <p className='text-xs text-muted-foreground'>
+                              Cliente: {venta.cliente_nombre}
+                            </p>
+                            <p className='text-xs text-muted-foreground'>{venta.fecha}</p>
+                          </div>
+                          <div className='text-right space-y-1'>
+                            <p className='text-sm font-medium'>${venta.precio.toFixed(2)}</p>
+                            <Badge variant={venta.estado === 'completada' ? 'default' : 'secondary'}>
+                              {venta.estado}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className='text-center py-8 text-muted-foreground'>
+                      No hay ventas recientes
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="productos" className="space-y-4">
@@ -197,73 +237,165 @@ export function ReportesPage() {
                     <CardTitle>Productos Más Populares</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width='100%' height={300}>
-                      <PieChart>
-                        <Pie
-                          data={productosPopulares}
-                          cx='50%'
-                          cy='50%'
-                          outerRadius={80}
-                          fill='#8884d8'
-                          dataKey='value'
-                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {productosPopulares.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
+                    {productosPopulares.length > 0 ? (
+                      <ResponsiveContainer width='100%' height={300}>
+                        <PieChart>
+                          <Pie
+                            data={productosPopulares}
+                            cx='50%'
+                            cy='50%'
+                            outerRadius={80}
+                            fill='#8884d8'
+                            dataKey='ventas'
+                            label={({ nombre, ventas }) => `${nombre}: ${ventas}`}
+                          >
+                            {productosPopulares.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value) => [`${value} ventas`, 'Cantidad']} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className='flex items-center justify-center h-[300px] text-muted-foreground'>
+                        No hay datos de productos disponibles
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Ventas Recientes</CardTitle>
+                    <CardTitle>Top Productos por Ventas</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className='space-y-3'>
-                      {ventasRecientes.slice(0, 5).map((venta) => (
-                        <div key={venta.id} className='flex items-center justify-between p-3 border rounded-lg'>
-                          <div className='space-y-1'>
-                            <p className='text-sm font-medium'>{venta.producto}</p>
-                            <p className='text-xs text-muted-foreground'>{venta.cliente}</p>
+                    {productosPopulares.length > 0 ? (
+                      <div className='space-y-3'>
+                        {productosPopulares.slice(0, 6).map((producto, index) => (
+                          <div key={producto.id} className='flex items-center justify-between p-3 border rounded-lg'>
+                            <div className='flex items-center space-x-3'>
+                              <div 
+                                className='w-4 h-4 rounded-full' 
+                                style={{ backgroundColor: producto.color || COLORS[index % COLORS.length] }}
+                              />
+                              <div>
+                                <p className='text-sm font-medium'>{producto.nombre}</p>
+                                <p className='text-xs text-muted-foreground'>{producto.ventas} ventas</p>
+                              </div>
+                            </div>
+                            <p className='text-sm font-medium'>${producto.ingresos.toFixed(2)}</p>
                           </div>
-                          <div className='text-right space-y-1'>
-                            <p className='text-sm font-medium'>${venta.monto}</p>
-                            <Badge variant={venta.estado === 'Completada' ? 'default' : 'secondary'}>
-                              {venta.estado}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className='text-center py-8 text-muted-foreground'>
+                        No hay productos para mostrar
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
             </TabsContent>
 
-            <TabsContent value="clientes" className="space-y-4">
+            <TabsContent value="inventario" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Análisis de Clientes</CardTitle>
+                  <CardTitle>Estado del Inventario</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                    <div className='text-center p-4 border rounded-lg'>
-                      <p className='text-2xl font-bold text-blue-600'>342</p>
-                      <p className='text-sm text-muted-foreground'>Clientes Totales</p>
+                  {inventario.length > 0 ? (
+                    <div className='space-y-4'>
+                      {inventario.map((item) => (
+                        <div key={item.producto_id} className='p-4 border rounded-lg'>
+                          <div className='flex items-center justify-between mb-2'>
+                            <h4 className='font-medium'>{item.producto_nombre}</h4>
+                            <Badge variant="outline">{item.categoria}</Badge>
+                          </div>
+                          <div className='grid grid-cols-3 gap-4 text-sm'>
+                            <div className='text-center'>
+                              <p className='text-2xl font-bold text-green-600'>{item.stock_disponible}</p>
+                              <p className='text-muted-foreground'>Disponible</p>
+                            </div>
+                            <div className='text-center'>
+                              <p className='text-2xl font-bold text-red-600'>{item.stock_vendido}</p>
+                              <p className='text-muted-foreground'>Vendido</p>
+                            </div>
+                            <div className='text-center'>
+                              <p className='text-2xl font-bold text-blue-600'>{item.total_stock}</p>
+                              <p className='text-muted-foreground'>Total</p>
+                            </div>
+                          </div>
+                          {item.total_stock > 0 && (
+                            <div className='mt-3'>
+                              <div className='flex justify-between text-xs mb-1'>
+                                <span>Stock vendido</span>
+                                <span>{((item.stock_vendido / item.total_stock) * 100).toFixed(1)}%</span>
+                              </div>
+                              <div className='w-full bg-gray-200 rounded-full h-2'>
+                                <div 
+                                  className='bg-blue-600 h-2 rounded-full' 
+                                  style={{ width: `${(item.stock_vendido / item.total_stock) * 100}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                    <div className='text-center p-4 border rounded-lg'>
-                      <p className='text-2xl font-bold text-green-600'>89</p>
-                      <p className='text-sm text-muted-foreground'>Nuevos este mes</p>
+                  ) : (
+                    <div className='text-center py-8 text-muted-foreground'>
+                      No hay productos en inventario
                     </div>
-                    <div className='text-center p-4 border rounded-lg'>
-                      <p className='text-2xl font-bold text-purple-600'>78%</p>
-                      <p className='text-sm text-muted-foreground'>Retención</p>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="ganancias" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Análisis de Ganancias por Producto</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {gananciasProductos.length > 0 ? (
+                    <div className='space-y-4'>
+                      {gananciasProductos.slice(0, 10).map((producto) => (
+                        <div key={producto.producto_id} className='p-4 border rounded-lg'>
+                          <div className='flex items-center justify-between mb-3'>
+                            <h4 className='font-medium'>{producto.producto_nombre}</h4>
+                            <div className='text-right'>
+                              <p className='text-lg font-bold text-green-600'>
+                                ${producto.ganancias_totales.toFixed(2)}
+                              </p>
+                              <p className='text-xs text-muted-foreground'>Ganancias totales</p>
+                            </div>
+                          </div>
+                          <div className='grid grid-cols-4 gap-4 text-sm'>
+                            <div>
+                              <p className='text-muted-foreground'>Precio Público</p>
+                              <p className='font-medium'>${producto.precio_publico.toFixed(2)}</p>
+                            </div>
+                            <div>
+                              <p className='text-muted-foreground'>Precio Vendedor</p>
+                              <p className='font-medium'>${producto.precio_vendedor.toFixed(2)}</p>
+                            </div>
+                            <div>
+                              <p className='text-muted-foreground'>Margen</p>
+                              <p className='font-medium text-green-600'>${producto.margen.toFixed(2)}</p>
+                            </div>
+                            <div>
+                              <p className='text-muted-foreground'>Ventas</p>
+                              <p className='font-medium'>{producto.ventas_cantidad}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  </div>
+                  ) : (
+                    <div className='text-center py-8 text-muted-foreground'>
+                      No hay datos de ganancias disponibles
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Minus, Wallet, TrendingUp, TrendingDown, DollarSign, Download, Search } from 'lucide-react'
+import { Plus, Minus, Wallet, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
 import { DataTable } from './components/billetera-table'
 import { columns } from './components/billetera-columns'
 import { AgregarFondosModal } from './components/agregar-fondos-modal'
@@ -11,14 +11,17 @@ import { Main } from '@/components/layout/main'
 import { useAuth } from '@/stores/authStore'
 import { useBilleteraByUsuario, useHistorialTransacciones, useBilleteraStats } from './queries'
 import { useQueryClient } from '@tanstack/react-query'
+import { IconRefresh } from '@tabler/icons-react'
+import { ThemeSwitch } from '@/components/theme-switch'
+import { ProfileDropdown } from '@/components/profile-dropdown'
 
 export default function BilleterasPage() {
   const [agregarModalOpen, setAgregarModalOpen] = useState(false)
   const [retirarModalOpen, setRetirarModalOpen] = useState(false)
-  
+
   const { user } = useAuth()
   const queryClient = useQueryClient()
-  
+
   // Obtener datos reales de la base de datos
   const { data: billetera } = useBilleteraByUsuario(user?.id || '')
   const { data: transacciones = [] } = useHistorialTransacciones(user?.id || '')
@@ -69,11 +72,11 @@ export default function BilleterasPage() {
     <>
       <Header>
         <div className='ml-auto flex items-center space-x-4'>
-          <Search />
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
+          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()} >
+            <IconRefresh />
           </Button>
+          <ThemeSwitch />
+          <ProfileDropdown />
         </div>
       </Header>
       <Main>
@@ -145,15 +148,15 @@ export default function BilleterasPage() {
 
           {/* Botones de Acción */}
           <div className="flex gap-4">
-            <Button 
+            <Button
               onClick={() => setAgregarModalOpen(true)}
               className="flex items-center gap-2"
             >
               <Plus className="h-4 w-4" />
               Agregar Fondos
             </Button>
-            
-            <Button 
+
+            <Button
               variant="outline"
               onClick={() => setRetirarModalOpen(true)}
               className="flex items-center gap-2"

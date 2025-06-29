@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/layout/header'
-import { Search } from '@/components/search'
 import { Main } from '@/components/layout/main'
 import { columns } from './components/cuentas-columns'
 import { CuentasTable } from './components/cuentas-table'
@@ -10,6 +9,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { useState } from 'react'
 import { CuentaForm } from './components/cuenta-form'
+import { Button } from '@/components/ui/button'
+import { IconRefresh } from '@tabler/icons-react'
+import { ThemeSwitch } from '@/components/theme-switch'
+import { ProfileDropdown } from '@/components/profile-dropdown'
 
 export function CuentasPage() {
   const [showForm, setShowForm] = useState(false)
@@ -20,7 +23,11 @@ export function CuentasPage() {
       <>
         <Header>
           <div className='ml-auto flex items-center space-x-4'>
-            <Search />
+            <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()} >
+              <IconRefresh />
+            </Button>
+            <ThemeSwitch />
+            <ProfileDropdown />
           </div>
         </Header>
         <Main>
@@ -55,7 +62,11 @@ export function CuentasPage() {
       <>
         <Header>
           <div className='ml-auto flex items-center space-x-4'>
-            <Search />
+            <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()} >
+              <IconRefresh />
+            </Button>
+            <ThemeSwitch />
+            <ProfileDropdown />
           </div>
         </Header>
         <Main>
@@ -85,7 +96,11 @@ export function CuentasPage() {
     <>
       <Header>
         <div className='ml-auto flex items-center space-x-4'>
-          <Search />
+          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()} >
+            <IconRefresh />
+          </Button>
+          <ThemeSwitch />
+          <ProfileDropdown />
         </div>
       </Header>
       <Main>

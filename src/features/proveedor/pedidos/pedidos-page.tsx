@@ -4,13 +4,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { 
-  Search, 
-  Filter, 
-  Download, 
-  Package, 
-  Clock, 
-  CheckCircle, 
+import {
+  Search,
+  Package,
+  Clock,
+  CheckCircle,
   XCircle,
   AlertCircle,
   Calendar,
@@ -30,6 +28,9 @@ import {
 import { useAuth } from '@/stores/authStore'
 import { usePedidosByProveedor } from './queries'
 import type { Compra } from './services'
+import { IconRefresh } from '@tabler/icons-react'
+import { ThemeSwitch } from '@/components/theme-switch'
+import { ProfileDropdown } from '@/components/profile-dropdown'
 // import type { Database } from '@/types/supabase'
 
 // type CompraUpdate = Database['public']['Tables']['compras']['Update']
@@ -77,7 +78,7 @@ const filtrarPorFecha = (pedidos: CompraConRelaciones[], filtro: string) => {
   const hoy = new Date()
   const ayer = new Date(hoy)
   ayer.setDate(hoy.getDate() - 1)
-  
+
   switch (filtro) {
     case 'hoy':
       return pedidos.filter(p => {
@@ -132,9 +133,9 @@ export function PedidosPage() {
   const [searchTerm, setSearchTerm] = useState('')
 
   // Queries para obtener datos del proveedor
-  const { 
-    data: pedidos = [], 
-    error: errorPedidos 
+  const {
+    data: pedidos = [],
+    error: errorPedidos
   } = usePedidosByProveedor(user?.id || '')
 
   // const updateStatusMutation = useUpdatePedidoStatus()
@@ -155,7 +156,7 @@ export function PedidosPage() {
       const productoNombre = pedido.productos?.nombre || ''
       const clienteNombre = pedido.nombre_cliente || ''
       const clienteTelefono = pedido.telefono_cliente || ''
-      
+
       return (
         pedidoId.toLowerCase().includes(searchLower) ||
         productoNombre.toLowerCase().includes(searchLower) ||
@@ -207,11 +208,12 @@ export function PedidosPage() {
     return (
       <>
         <Header>
-          <div className='ml-auto flex items-center space-x-2'>
-            <Button variant="outline" size="sm" disabled>
-              <Filter className="h-4 w-4 mr-2" />
-              Filtros
+          <div className='ml-auto flex items-center space-x-4'>
+            <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()} >
+              <IconRefresh />
             </Button>
+            <ThemeSwitch />
+            <ProfileDropdown />
           </div>
         </Header>
         <Main>
@@ -242,18 +244,12 @@ export function PedidosPage() {
   return (
     <>
       <Header>
-        <div className='ml-auto flex items-center space-x-2 overflow-x-auto'>
-          <div className='hidden sm:block'>
-            <SearchComponent />
-          </div>
-          <Button variant="outline" size="sm" className='whitespace-nowrap'>
-            <Filter className="h-4 w-4 mr-2" />
-            <span className='hidden sm:inline'>Filtros</span>
+        <div className='ml-auto flex items-center space-x-4'>
+          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()} >
+            <IconRefresh />
           </Button>
-          <Button variant="outline" size="sm" className='whitespace-nowrap'>
-            <Download className="h-4 w-4 mr-2" />
-            <span className='hidden sm:inline'>Exportar</span>
-          </Button>
+          <ThemeSwitch />
+          <ProfileDropdown />
         </div>
       </Header>
       <Main>
@@ -331,7 +327,7 @@ export function PedidosPage() {
             <CardHeader>
               <div className='space-y-4'>
                 <CardTitle className='text-lg sm:text-xl'>Lista de Pedidos</CardTitle>
-                
+
                 {/* Búsqueda móvil */}
                 <div className='sm:hidden'>
                   <SearchComponent />
@@ -354,7 +350,7 @@ export function PedidosPage() {
                           <SelectItem value="año">🗓️ Este año</SelectItem>
                         </SelectContent>
                       </Select>
-                      
+
                       <Select value={filtroEstado} onValueChange={setFiltroEstado}>
                         <SelectTrigger className="w-full sm:w-[150px]">
                           <SelectValue placeholder="Filtrar por estado" />
@@ -367,10 +363,10 @@ export function PedidosPage() {
                           <SelectItem value="rechazado">❌ Rechazados</SelectItem>
                         </SelectContent>
                       </Select>
-                      
+
                       {(filtroFecha !== 'todos' || filtroEstado !== 'todos') && (
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => {
                             setFiltroFecha('todos')
@@ -385,34 +381,34 @@ export function PedidosPage() {
 
                     <div className='relative'>
                       <Search className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
-                      <Input 
-                        placeholder='Buscar pedidos...' 
+                      <Input
+                        placeholder='Buscar pedidos...'
                         className='pl-8 w-full sm:w-[200px] lg:w-[250px]'
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                       />
                     </div>
                   </div>
-                  
+
                   {/* Indicador de filtros activos */}
                   {(filtroFecha !== 'todos' || filtroEstado !== 'todos' || searchTerm) && (
                     <div className='flex flex-wrap gap-2 text-sm text-muted-foreground'>
                       <span>Filtros activos:</span>
                       {filtroFecha !== 'todos' && (
                         <Badge variant="secondary" className="text-xs">
-                          📅 {filtroFecha === 'hoy' ? 'Hoy' : 
-                               filtroFecha === 'ayer' ? 'Ayer' :
-                               filtroFecha === '7dias' ? 'Últimos 7 días' :
-                               filtroFecha === '28dias' ? 'Últimos 28 días' :
-                               filtroFecha === 'año' ? 'Este año' : filtroFecha}
+                          📅 {filtroFecha === 'hoy' ? 'Hoy' :
+                            filtroFecha === 'ayer' ? 'Ayer' :
+                              filtroFecha === '7dias' ? 'Últimos 7 días' :
+                                filtroFecha === '28dias' ? 'Últimos 28 días' :
+                                  filtroFecha === 'año' ? 'Este año' : filtroFecha}
                         </Badge>
                       )}
                       {filtroEstado !== 'todos' && (
                         <Badge variant="secondary" className="text-xs">
                           {filtroEstado === 'pendiente' ? '🕒 Pendientes' :
-                           filtroEstado === 'confirmado' ? '⚡ Confirmados' :
-                           filtroEstado === 'completado' ? '✅ Completados' :
-                           filtroEstado === 'rechazado' ? '❌ Rechazados' : filtroEstado}
+                            filtroEstado === 'confirmado' ? '⚡ Confirmados' :
+                              filtroEstado === 'completado' ? '✅ Completados' :
+                                filtroEstado === 'rechazado' ? '❌ Rechazados' : filtroEstado}
                         </Badge>
                       )}
                       {searchTerm && (
@@ -448,7 +444,7 @@ export function PedidosPage() {
                         const estadoConfig = estadosConfig[pedido.estado as keyof typeof estadosConfig]
                         const IconoEstado = estadoConfig?.icon || AlertCircle
                         const pedidoId = pedido.id || 'Sin ID'
-                        
+
                         return (
                           <TableRow key={pedido.id || Math.random()}>
                             <TableCell className='font-medium'>
@@ -481,7 +477,7 @@ export function PedidosPage() {
                             </TableCell>
                             <TableCell>
                               {pedido.telefono_cliente ? (
-                                <div 
+                                <div
                                   className='flex items-center space-x-2 cursor-pointer hover:bg-green-50 p-2 rounded-md transition-colors'
                                   onClick={() => abrirWhatsApp(pedido.telefono_cliente)}
                                   title="Abrir en WhatsApp"
@@ -504,8 +500,8 @@ export function PedidosPage() {
                           <div className='flex flex-col items-center space-y-2'>
                             <Package className='h-8 w-8 text-muted-foreground' />
                             <p className='text-muted-foreground'>No se encontraron pedidos con los filtros aplicados</p>
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               onClick={() => {
                                 setFiltroFecha('todos')

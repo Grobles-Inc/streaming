@@ -2,17 +2,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { CalendarDays, Download, TrendingUp, TrendingDown, DollarSign, Package, Users, Activity, AlertCircle } from 'lucide-react'
+import {  TrendingUp, TrendingDown, DollarSign, Package, Users, Activity, AlertCircle } from 'lucide-react'
 import { Header } from '@/components/layout/header'
-import { Search } from '@/components/search'
 import { Main } from '@/components/layout/main'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { 
-  Bar, 
-  BarChart, 
-  ResponsiveContainer, 
-  XAxis, 
-  YAxis, 
+import {
+  Bar,
+  BarChart,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
   Line,
   LineChart,
   Pie,
@@ -21,6 +20,9 @@ import {
   Tooltip
 } from 'recharts'
 import { useReportesData } from './hooks/useReportesData'
+import { ThemeSwitch } from '@/components/theme-switch'
+import { ProfileDropdown } from '@/components/profile-dropdown'
+import { IconRefresh } from '@tabler/icons-react'
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#ff7c7c']
 
@@ -33,7 +35,6 @@ export function ReportesPage() {
     gananciasProductos,
     metricas,
     error,
-    refreshData
   } = useReportesData()
 
 
@@ -43,10 +44,11 @@ export function ReportesPage() {
       <>
         <Header>
           <div className='ml-auto flex items-center space-x-4'>
-            <Search />
-            <Button variant="outline" size="sm" onClick={refreshData}>
-              Reintentar
+            <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()} >
+              <IconRefresh />
             </Button>
+            <ThemeSwitch />
+            <ProfileDropdown />
           </div>
         </Header>
         <Main>
@@ -63,11 +65,11 @@ export function ReportesPage() {
     <>
       <Header>
         <div className='ml-auto flex items-center space-x-4'>
-          <Search />
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
+          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()} >
+            <IconRefresh />
           </Button>
+          <ThemeSwitch />
+          <ProfileDropdown />
         </div>
       </Header>
       <Main>
@@ -78,15 +80,6 @@ export function ReportesPage() {
               <p className='text-muted-foreground'>
                 Analiza el rendimiento de tus productos y ventas
               </p>
-            </div>
-            <div className='flex items-center space-x-2'>
-              <Button variant="outline" size="sm">
-                <CalendarDays className="h-4 w-4 mr-2" />
-                Últimos 30 días
-              </Button>
-              <Button variant="outline" size="sm" onClick={refreshData}>
-                Actualizar
-              </Button>
             </div>
           </div>
 
@@ -100,7 +93,7 @@ export function ReportesPage() {
                 'Tasa Conversión': Activity
               }
               const Icon = iconMap[metrica.titulo as keyof typeof iconMap] || Activity
-              
+
               return (
                 <Card key={index}>
                   <CardContent className='p-6'>
@@ -149,16 +142,16 @@ export function ReportesPage() {
                         <LineChart data={ventasPorMes}>
                           <XAxis dataKey='mes' />
                           <YAxis />
-                          <Tooltip 
+                          <Tooltip
                             formatter={(value, name) => [
                               name === 'ingresos' ? `$${Number(value).toLocaleString('es-ES')}` : value,
                               name === 'ingresos' ? 'Ingresos' : 'Ventas'
                             ]}
                           />
-                          <Line 
-                            type='monotone' 
-                            dataKey='ingresos' 
-                            stroke='#10b981' 
+                          <Line
+                            type='monotone'
+                            dataKey='ingresos'
+                            stroke='#10b981'
                             strokeWidth={2}
                             dot={{ fill: '#10b981' }}
                           />
@@ -274,8 +267,8 @@ export function ReportesPage() {
                         {productosPopulares.slice(0, 6).map((producto, index) => (
                           <div key={producto.id} className='flex items-center justify-between p-3 border rounded-lg'>
                             <div className='flex items-center space-x-3'>
-                              <div 
-                                className='w-4 h-4 rounded-full' 
+                              <div
+                                className='w-4 h-4 rounded-full'
                                 style={{ backgroundColor: producto.color || COLORS[index % COLORS.length] }}
                               />
                               <div>
@@ -332,8 +325,8 @@ export function ReportesPage() {
                                 <span>{((item.stock_vendido / item.total_stock) * 100).toFixed(1)}%</span>
                               </div>
                               <div className='w-full bg-gray-200 rounded-full h-2'>
-                                <div 
-                                  className='bg-blue-600 h-2 rounded-full' 
+                                <div
+                                  className='bg-blue-600 h-2 rounded-full'
                                   style={{ width: `${(item.stock_vendido / item.total_stock) * 100}%` }}
                                 />
                               </div>

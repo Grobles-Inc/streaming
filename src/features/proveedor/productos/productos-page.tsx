@@ -10,6 +10,10 @@ import { ProductosTable } from './components/productos-table'
 import { useProductosByProveedor, useProductosStatsByProveedor } from './queries'
 import { useAuth } from '@/stores/authStore'
 import { Producto, productoCompleteSchema } from './data/schema'
+import { Button } from '@/components/ui/button'
+import { IconRefresh } from '@tabler/icons-react'
+import { ThemeSwitch } from '@/components/theme-switch'
+import { ProfileDropdown } from '@/components/profile-dropdown'
 
 export function ProductosPage() {
   const { user } = useAuth()
@@ -42,7 +46,11 @@ export function ProductosPage() {
     <>
       <Header>
         <div className='ml-auto flex items-center space-x-4'>
-          <Search />
+          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()} >
+            <IconRefresh />
+          </Button>
+          <ThemeSwitch />
+          <ProfileDropdown />
         </div>
       </Header>
       <Main>

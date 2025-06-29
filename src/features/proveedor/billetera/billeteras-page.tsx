@@ -59,11 +59,13 @@ export default function BilleterasPage() {
   const handleAgregarFondos = async () => {
     // Refrescar los datos después de agregar fondos
     await queryClient.invalidateQueries({ queryKey: ['billetera'] })
+    await queryClient.invalidateQueries({ queryKey: ['recargas'] })
   }
 
   const handleRetirarFondos = async () => {
     // Refrescar los datos después de retirar fondos
     await queryClient.invalidateQueries({ queryKey: ['billetera'] })
+    await queryClient.invalidateQueries({ queryKey: ['recargas'] })
   }
 
 
@@ -84,7 +86,7 @@ export default function BilleterasPage() {
           {/* Header de Billetera */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">💼 Billetera</h1>
+              <h1 className="text-3xl font-bold tracking-tight">Billetera</h1>
               <p className="text-muted-foreground">
                 Gestiona tus fondos y transacciones
               </p>

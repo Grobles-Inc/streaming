@@ -14,7 +14,6 @@ export const transaccionSchema = z.object({
 
 export const agregarFondosSchema = z.object({
   cantidad: z.number().min(1, 'La cantidad debe ser mayor a 0'),
-  metodo_pago: z.enum(['transferencia', 'efectivo', 'pse']),
 })
 
 export const retirarFondosSchema = z.object({

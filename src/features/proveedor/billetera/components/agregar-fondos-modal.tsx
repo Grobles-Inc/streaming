@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
@@ -20,13 +20,12 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { agregarFondosSchema, type AgregarFondos } from '../data/schema'
 import { useAuth } from '@/stores/authStore'
-
-// Importar servicio directo para crear recargas
-import { supabase } from '@/lib/supabase'
-import { toast } from 'sonner'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { RecargaMessage } from '@/lib/whatsapp'
+import { useCreateRecarga } from '@/features/vendedor/recargas/queries'
+import { Loader2 } from 'lucide-react'
 
 interface AgregarFondosModalProps {
   open: boolean
@@ -34,51 +33,53 @@ interface AgregarFondosModalProps {
   onSubmit: () => void
 }
 
+// Tasa de cambio fija (puede ser configurable en el futuro)
+const TASA_CAMBIO = 3.7
+
 export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFondosModalProps) {
-  const [isLoading, setIsLoading] = useState(false)
+  const isMobile = useIsMobile()
   const { user } = useAuth()
+  const { mutate: crearRecarga, isPending } = useCreateRecarga()
 
   const form = useForm<AgregarFondos>({
     resolver: zodResolver(agregarFondosSchema),
     defaultValues: {
       cantidad: 0,
-      metodo_pago: 'transferencia',
     },
   })
 
+  // Observar el valor de cantidad para calcular USD
+  const cantidadValue = form.watch('cantidad')
+  const valorEnDolares = useMemo(() => {
+    if (!cantidadValue || cantidadValue <= 0) return 0
+    return parseFloat((cantidadValue / TASA_CAMBIO).toFixed(2))
+  }, [cantidadValue])
+
   const handleSubmit = async (data: AgregarFondos) => {
     if (!user) {
-      toast.error('Debe estar autenticado para agregar fondos')
       return
     }
 
-    setIsLoading(true)
     try {
-      // Crear una nueva recarga en la base de datos
-      const { error } = await supabase
-        .from('recargas')
-        .insert({
-          usuario_id: user.id,
-          monto: data.cantidad,
-          metodo_pago: data.metodo_pago,
-          estado: 'pendiente' // Las recargas empiezan como pendientes hasta ser aprobadas
-        })
-
-      if (error) {
-        console.error('Error creating recarga:', error)
-        toast.error('Error al procesar la recarga')
-        return
-      }
-
-      toast.success('Recarga creada correctamente. Será procesada en breve.')
+      await crearRecarga({
+        monto: data.cantidad,
+        usuario_id: user.id,
+        estado: 'pendiente'
+      })
       form.reset()
       onOpenChange(false)
       onSubmit() // Esto disparará la refetch de los datos
+      
+      // Enviar mensaje de WhatsApp después de un breve delay
+      setTimeout(() => {
+        RecargaMessage({
+          nombre_cliente: user?.nombres + ' ' + user?.apellidos || '',
+          monto: data.cantidad,
+          id_cliente: user?.id || '',
+        }, '51941442792', isMobile ? 'mobile' : 'web')
+      }, 3000)
     } catch (error) {
       console.error('Error:', error)
-      toast.error('Error al agregar fondos')
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -88,19 +89,19 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
         <DialogHeader>
           <DialogTitle>💰 Agregar Fondos</DialogTitle>
           <DialogDescription>
-            Selecciona la cantidad y el método de pago para agregar fondos a tu billetera
+            Ingresa la cantidad en soles para calcular automáticamente el valor en dólares
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField
                 control={form.control}
                 name="cantidad"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cantidad a agregar</FormLabel>
+                    <FormLabel>Cantidad a agregar (S/)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -114,28 +115,29 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="metodo_pago"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Método de pago</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona el método" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="transferencia">Transferencia</SelectItem>
-                        <SelectItem value="efectivo">Efectivo</SelectItem>
-                        <SelectItem value="pse">PSE</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormItem>
+                <FormLabel>Tasa de cambio</FormLabel>
+                <FormControl>
+                  <Input
+                    type="text"
+                    value={`S/ ${TASA_CAMBIO} = $1 USD`}
+                    disabled
+                    className="bg-gray-50"
+                  />
+                </FormControl>
+              </FormItem>
+
+              <FormItem>
+                <FormLabel>Valor en dólares</FormLabel>
+                <FormControl>
+                  <Input
+                    type="text"
+                    value={`$${valorEnDolares} USD`}
+                    disabled
+                    className="bg-blue-50 font-semibold text-blue-700"
+                  />
+                </FormControl>
+              </FormItem>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -159,13 +161,13 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <p className="text-xs md:text-sm font-semibold">** Plin **</p>
+                    <p className="text-xs md:text-sm font-semibold">** Yape **</p>
                     <p className="text-xs md:text-sm">+51 941 442 792</p>
                   </div>
                   <div>
                     <p className="text-xs md:text-sm font-semibold">** Binance **</p>
                     <p className="text-xs md:text-sm">ID: 1096171177</p>
-                    <p className="text-xs md:text-sm">Nombre: Melvy L</p>
+                    <p className="text-xs md:text-sm">Nombre: Maiky L.</p>
                     <p className="text-xs md:text-sm">1 USDT = 3.5 soles</p>
                   </div>
                 </CardContent>
@@ -174,11 +176,11 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
               {/* Tercer bloque - QR */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base md:text-lg">Código QR</CardTitle>
+                  <CardTitle className="text-base md:text-lg">Yape QR</CardTitle>
                 </CardHeader>
                 <CardContent className="flex justify-center">
                   <div className="w-24 h-24 md:w-32 md:h-32 bg-gray-200 border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center">
-                    <span className="text-xs text-gray-500">QR Code</span>
+                    <img src="/src/assets/YapeQR.jpg" alt="" />
                   </div>
                 </CardContent>
               </Card>
@@ -189,17 +191,24 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                disabled={isLoading}
+                disabled={isPending}
                 className="w-full sm:w-auto"
               >
                 Cancelar
               </Button>
               <Button 
                 type="submit" 
-                disabled={isLoading}
+                disabled={isPending}
                 className="w-full sm:w-auto"
               >
-                {isLoading ? 'Procesando...' : 'Solicitar Recarga'}
+                {isPending ? (
+                  <>
+                    <Loader2 className='size-4 animate-spin mr-2' />
+                    Procesando...
+                  </>
+                ) : (
+                  'Solicitar Recarga'
+                )}
               </Button>
             </DialogFooter>
           </form>

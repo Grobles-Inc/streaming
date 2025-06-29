@@ -357,7 +357,7 @@ export interface Database {
         Update: {
           id?: string
           usuario_id?: string
-          monto?: number  
+          monto?: number
           estado?: "aprobado" | "pendiente" | "rechazado"
           created_at?: string
           updated_at?: string

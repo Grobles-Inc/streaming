@@ -39,6 +39,7 @@ export const useCreateRecarga = () => {
     mutationFn: recargasService.createRecarga,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recargas'] })
+      queryClient.invalidateQueries({ queryKey: ['billetera'] })
       toast.success('Recarga solicitada', {
         description: 'La comisión de la recarga será reducida de tu saldo una vez aprobada.',
       })

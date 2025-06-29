@@ -26,20 +26,6 @@ const estados = [
   },
 ]
 
-const metodosPago = [
-  {
-    value: 'transferencia',
-    label: 'Transferencia',
-  },
-  {
-    value: 'efectivo',
-    label: 'Efectivo',
-  },
-  {
-    value: 'pse',
-    label: 'PSE',
-  },
-]
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -77,13 +63,6 @@ export function DataTableToolbar<TData>({
               column={table.getColumn('estado')}
               title='Estado'
               options={estados}
-            />
-          )}
-          {table.getColumn('metodo_pago') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('metodo_pago')}
-              title='Método de Pago'
-              options={metodosPago}
             />
           )}
         </div>

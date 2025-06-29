@@ -12,7 +12,7 @@ import { useCategorias } from '@/features/landing/queries'
 export default function LandingHeader() {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
-  const { data: billetera } = user ? useBilleteraByUsuario(user.id) : { data: null }
+  const { data: billetera } = useBilleteraByUsuario(user?.id || '')
   const isMobile = useIsMobile()
   const [isOpen, setIsOpen] = useState(false)
   const { data: categorias } = useCategorias()
@@ -51,7 +51,7 @@ export default function LandingHeader() {
 
                   <div className='flex items-center gap-2'>
                     <Button variant="ghost" className=' font-bold text-xl' onClick={() => navigate({ to: '/dashboard' })} size="lg">
-                      $ {billetera?.saldo} </Button>
+                      $ {billetera?.saldo || 0} </Button>
                     <Button variant="secondary" onClick={() => navigate({ to: '/compras' })} className='flex items-center gap-2'>
                       <IconShoppingBag />
                       Compras</Button>

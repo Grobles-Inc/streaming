@@ -48,30 +48,9 @@ export const columns: ColumnDef<Recarga>[] = [
         minimumFractionDigits: 0,
       }).format(monto)
       return (
-        <div className="text-right font-medium text-green-600">
+        <div className="text-left font-medium text-green-600">
           +{formatted}
         </div>
-      )
-    },
-  },
-  {
-    accessorKey: 'metodo_pago',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Método de Pago" />
-    ),
-    cell: ({ row }) => {
-      const metodo = row.getValue('metodo_pago') as string
-      const metodoMap = {
-        transferencia: { label: 'Transferencia', variant: 'default' as const },
-        efectivo: { label: 'Efectivo', variant: 'secondary' as const },
-        pse: { label: 'PSE', variant: 'outline' as const },
-      }
-      const metodoInfo = metodoMap[metodo as keyof typeof metodoMap] || { label: metodo, variant: 'outline' as const }
-      
-      return (
-        <Badge variant={metodoInfo.variant}>
-          {metodoInfo.label}
-        </Badge>
       )
     },
   },
@@ -83,15 +62,30 @@ export const columns: ColumnDef<Recarga>[] = [
     cell: ({ row }) => {
       const estado = row.getValue('estado') as string
       const estadoMap = {
-        completado: { label: 'Completado', variant: 'default' as const },
-        pendiente: { label: 'Pendiente', variant: 'secondary' as const },
-        fallido: { label: 'Fallido', variant: 'destructive' as const },
-        cancelado: { label: 'Cancelado', variant: 'outline' as const },
+        completado: { 
+          label: 'Aprobado', 
+          variant: 'default' as const,
+          className: 'bg-green-100 text-green-800 hover:bg-green-200 border-green-300'
+        },
+        pendiente: { 
+          label: 'Pendiente', 
+          variant: 'secondary' as const,
+          className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-yellow-300'
+        },
+        fallido: { 
+          label: 'Rechazado', 
+          variant: 'destructive' as const,
+          className: 'bg-red-100 text-red-800 hover:bg-red-200 border-red-300'
+        },
       }
-      const estadoInfo = estadoMap[estado as keyof typeof estadoMap] || { label: estado, variant: 'outline' as const }
+      const estadoInfo = estadoMap[estado as keyof typeof estadoMap] || { 
+        label: estado, 
+        variant: 'outline' as const,
+        className: 'bg-gray-100 text-gray-800 hover:bg-gray-200 border-gray-300'
+      }
       
       return (
-        <Badge variant={estadoInfo.variant}>
+        <Badge variant={estadoInfo.variant} className={estadoInfo.className}>
           {estadoInfo.label}
         </Badge>
       )

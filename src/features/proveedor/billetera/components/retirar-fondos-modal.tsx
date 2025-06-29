@@ -82,7 +82,7 @@ export function RetirarFondosModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>💸 Retirar Fondos</DialogTitle>
+          <DialogTitle>Retirar Fondos</DialogTitle>
           <DialogDescription>
             Retira fondos de tu billetera. El dinero será transferido a tu cuenta bancaria registrada.
           </DialogDescription>

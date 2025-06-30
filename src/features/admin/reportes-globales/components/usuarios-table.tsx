@@ -69,7 +69,7 @@ export function UsuariosTable({ usuarios, loading, onDeleteUsuario }: UsuariosTa
                 <th className="px-4 py-2 text-left">Rol</th>
                 <th className="px-4 py-2 text-left">Balance</th>
                 <th className="px-4 py-2 text-left">Fecha Registro</th>
-                <th className="px-4 py-2 text-left">Acciones</th>
+                {/* <th className="px-4 py-2 text-left">Acciones</th> */}
               </tr>
             </thead>
             <tbody>
@@ -89,7 +89,7 @@ export function UsuariosTable({ usuarios, loading, onDeleteUsuario }: UsuariosTa
                   <td className="px-4 py-2 border-r">
                     {usuario.created_at ? new Date(usuario.created_at).toLocaleDateString() : 'N/A'}
                   </td>
-                  <td className="px-4 py-2">
+                  {/* <td className="px-4 py-2">
                     <div className="flex space-x-2">
                       <Button
                         size="sm"
@@ -113,7 +113,7 @@ export function UsuariosTable({ usuarios, loading, onDeleteUsuario }: UsuariosTa
                         Eliminar
                       </Button>
                     </div>
-                  </td>
+                  </td> */}
                 </tr>
               ))}
             </tbody>

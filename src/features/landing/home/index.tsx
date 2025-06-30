@@ -7,10 +7,15 @@ import { useCategorias } from '../queries'
 import { useProductos } from '../queries/productos'
 import { Categoria } from '../services'
 import CategoriaCard from './categoria-card'
+import { useSearch } from '@/stores/searchStore'
 
 export default function Home() {
   const { data: categorias, isLoading: loadingCategorias } = useCategorias()
   const { data: productos, isLoading: loadingProductos } = useProductos()
+  const { searchInput } = useSearch()
+  const filteredProductos = productos?.data.filter((producto) =>
+    producto.nombre.toLowerCase().includes(searchInput.toLowerCase())
+  )
   const categoriasData = categorias?.data || []
   const productosData = productos?.data || []
   const productosDestacados = productosData.filter((producto) => producto.destacado)
@@ -19,8 +24,6 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-base-100">
       <LandingHeader />
-
-      {/* Scroll horizontal de categorías - Solo mostrar si hay datos */}
       {!loadingCategorias && categoriasData.length > 0 && (
         <ScrollArea className="m-4 rounded-md bg-white border whitespace-nowrap hidden md:block">
           <div className="flex h-24 gap-8 px-7 items-center rounded-lg ">
@@ -41,7 +44,23 @@ export default function Home() {
         </ScrollArea>
       )}
 
-      {/* Grid de categorías */}
+
+      {
+        searchInput && (
+          <div className="md:px-8 px-4 pt-12">
+            <h2 className="text-2xl font-bold mb-4">Resultados de la búsqueda</h2>
+            <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-5 md:gap-6 gap-4">
+              {filteredProductos?.map((producto) => (
+                <ProductoCard key={producto.id} producto={producto} />
+              ))}
+            </div>
+          </div>
+        )
+      }
+
+
+
+
       <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-7 gap-2 p-4">
         {loadingCategorias ? (
           // Skeleton loading para categorías
@@ -56,6 +75,7 @@ export default function Home() {
           ))
         )}
       </div>
+
 
       {/* Productos Destacados */}
       <div className="md:px-8 px-4 pt-12">

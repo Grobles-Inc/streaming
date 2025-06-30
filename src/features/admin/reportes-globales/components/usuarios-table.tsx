@@ -10,7 +10,7 @@ interface UsuariosTableProps {
   onDeleteUsuario: (id: string) => Promise<void>
 }
 
-export function UsuariosTable({ usuarios, loading, onUpdateUsuario, onDeleteUsuario }: UsuariosTableProps) {
+export function UsuariosTable({ usuarios, loading, onDeleteUsuario }: UsuariosTableProps) {
   if (loading) {
     return (
       <Card>

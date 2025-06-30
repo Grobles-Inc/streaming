@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { Usuario } from '../data/types'
 
@@ -10,7 +9,7 @@ interface UsuariosTableProps {
   onDeleteUsuario: (id: string) => Promise<void>
 }
 
-export function UsuariosTable({ usuarios, loading, onDeleteUsuario }: UsuariosTableProps) {
+export function UsuariosTable({ usuarios, loading }: UsuariosTableProps) {
   if (loading) {
     return (
       <Card>

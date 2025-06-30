@@ -7,17 +7,26 @@ import { columns } from './components/users-columns'
 import { UsersDialogs } from './components/users-dialogs'
 import { UsersPrimaryButtons } from './components/users-primary-buttons'
 import { UsersTable } from './components/users-table'
-import UsersProvider from './context/users-context'
-import { userListSchema } from './data/schema'
-import { users } from './data/users'
+import UsersProvider, { useUsersContext } from './context/users-context-new'
 
-export default function Users() {
-  // Parse user list
-  const userList = userListSchema.parse(users)
+function UsersContent() {
+  const { users, loading, error } = useUsersContext()
+
+  if (error) {
+    return (
+      <Main>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-red-600">Error al cargar usuarios</h3>
+            <p className="text-sm text-gray-600 mt-2">{error}</p>
+          </div>
+        </div>
+      </Main>
+    )
+  }
 
   return (
-
-    <UsersProvider>
+    <>
       <Header fixed>
         <Search />
         <div className='ml-auto flex items-center space-x-4'>
@@ -29,20 +38,36 @@ export default function Users() {
       <Main>
         <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
           <div>
-            <h2 className='text-2xl font-bold tracking-tight'>User List</h2>
+            <h2 className='text-2xl font-bold tracking-tight'>Usuarios</h2>
             <p className='text-muted-foreground'>
-              Manage your users and their roles here.
+              Gestiona los usuarios y sus roles desde Supabase.
             </p>
           </div>
           <UsersPrimaryButtons />
         </div>
         <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
-          <UsersTable data={userList} columns={columns} />
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+                <p className="mt-4 text-sm text-gray-600">Cargando usuarios...</p>
+              </div>
+            </div>
+          ) : (
+            <UsersTable data={users} columns={columns} />
+          )}
         </div>
       </Main>
 
       <UsersDialogs />
-    </UsersProvider>
+    </>
+  )
+}
 
+export default function Users() {
+  return (
+    <UsersProvider>
+      <UsersContent />
+    </UsersProvider>
   )
 }

@@ -41,7 +41,10 @@ import { Route as AuthenticatedProveedorBilleteraIndexRouteImport } from './rout
 import { Route as AuthenticatedAdminUsersIndexRouteImport } from './routes/_authenticated/admin/users/index'
 import { Route as AuthenticatedAdminTasksIndexRouteImport } from './routes/_authenticated/admin/tasks/index'
 import { Route as AuthenticatedAdminSettingsIndexRouteImport } from './routes/_authenticated/admin/settings/index'
+import { Route as AuthenticatedAdminRetirosIndexRouteImport } from './routes/_authenticated/admin/retiros/index'
 import { Route as AuthenticatedAdminReportesGlobalesIndexRouteImport } from './routes/_authenticated/admin/reportes-globales/index'
+import { Route as AuthenticatedAdminRecargasIndexRouteImport } from './routes/_authenticated/admin/recargas/index'
+import { Route as AuthenticatedAdminComprasIndexRouteImport } from './routes/_authenticated/admin/compras/index'
 import { Route as AuthenticatedAdminChatsIndexRouteImport } from './routes/_authenticated/admin/chats/index'
 import { Route as AuthenticatedAdminCategoriesIndexRouteImport } from './routes/_authenticated/admin/categories/index'
 import { Route as AuthenticatedAdminAppsIndexRouteImport } from './routes/_authenticated/admin/apps/index'
@@ -224,10 +227,28 @@ const AuthenticatedAdminSettingsIndexRoute =
     path: '/admin/settings/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminRetirosIndexRoute =
+  AuthenticatedAdminRetirosIndexRouteImport.update({
+    id: '/admin/retiros/',
+    path: '/admin/retiros/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminReportesGlobalesIndexRoute =
   AuthenticatedAdminReportesGlobalesIndexRouteImport.update({
     id: '/admin/reportes-globales/',
     path: '/admin/reportes-globales/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminRecargasIndexRoute =
+  AuthenticatedAdminRecargasIndexRouteImport.update({
+    id: '/admin/recargas/',
+    path: '/admin/recargas/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminComprasIndexRoute =
+  AuthenticatedAdminComprasIndexRouteImport.update({
+    id: '/admin/compras/',
+    path: '/admin/compras/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminChatsIndexRoute =
@@ -277,7 +298,10 @@ export interface FileRoutesByFullPath {
   '/admin/apps': typeof AuthenticatedAdminAppsIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesIndexRoute
   '/admin/chats': typeof AuthenticatedAdminChatsIndexRoute
+  '/admin/compras': typeof AuthenticatedAdminComprasIndexRoute
+  '/admin/recargas': typeof AuthenticatedAdminRecargasIndexRoute
   '/admin/reportes-globales': typeof AuthenticatedAdminReportesGlobalesIndexRoute
+  '/admin/retiros': typeof AuthenticatedAdminRetirosIndexRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsIndexRoute
   '/admin/tasks': typeof AuthenticatedAdminTasksIndexRoute
   '/admin/users': typeof AuthenticatedAdminUsersIndexRoute
@@ -314,7 +338,10 @@ export interface FileRoutesByTo {
   '/admin/apps': typeof AuthenticatedAdminAppsIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesIndexRoute
   '/admin/chats': typeof AuthenticatedAdminChatsIndexRoute
+  '/admin/compras': typeof AuthenticatedAdminComprasIndexRoute
+  '/admin/recargas': typeof AuthenticatedAdminRecargasIndexRoute
   '/admin/reportes-globales': typeof AuthenticatedAdminReportesGlobalesIndexRoute
+  '/admin/retiros': typeof AuthenticatedAdminRetirosIndexRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsIndexRoute
   '/admin/tasks': typeof AuthenticatedAdminTasksIndexRoute
   '/admin/users': typeof AuthenticatedAdminUsersIndexRoute
@@ -353,7 +380,10 @@ export interface FileRoutesById {
   '/_authenticated/admin/apps/': typeof AuthenticatedAdminAppsIndexRoute
   '/_authenticated/admin/categories/': typeof AuthenticatedAdminCategoriesIndexRoute
   '/_authenticated/admin/chats/': typeof AuthenticatedAdminChatsIndexRoute
+  '/_authenticated/admin/compras/': typeof AuthenticatedAdminComprasIndexRoute
+  '/_authenticated/admin/recargas/': typeof AuthenticatedAdminRecargasIndexRoute
   '/_authenticated/admin/reportes-globales/': typeof AuthenticatedAdminReportesGlobalesIndexRoute
+  '/_authenticated/admin/retiros/': typeof AuthenticatedAdminRetirosIndexRoute
   '/_authenticated/admin/settings/': typeof AuthenticatedAdminSettingsIndexRoute
   '/_authenticated/admin/tasks/': typeof AuthenticatedAdminTasksIndexRoute
   '/_authenticated/admin/users/': typeof AuthenticatedAdminUsersIndexRoute
@@ -393,7 +423,10 @@ export interface FileRouteTypes {
     | '/admin/apps'
     | '/admin/categories'
     | '/admin/chats'
+    | '/admin/compras'
+    | '/admin/recargas'
     | '/admin/reportes-globales'
+    | '/admin/retiros'
     | '/admin/settings'
     | '/admin/tasks'
     | '/admin/users'
@@ -430,7 +463,10 @@ export interface FileRouteTypes {
     | '/admin/apps'
     | '/admin/categories'
     | '/admin/chats'
+    | '/admin/compras'
+    | '/admin/recargas'
     | '/admin/reportes-globales'
+    | '/admin/retiros'
     | '/admin/settings'
     | '/admin/tasks'
     | '/admin/users'
@@ -468,7 +504,10 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/apps/'
     | '/_authenticated/admin/categories/'
     | '/_authenticated/admin/chats/'
+    | '/_authenticated/admin/compras/'
+    | '/_authenticated/admin/recargas/'
     | '/_authenticated/admin/reportes-globales/'
+    | '/_authenticated/admin/retiros/'
     | '/_authenticated/admin/settings/'
     | '/_authenticated/admin/tasks/'
     | '/_authenticated/admin/users/'
@@ -721,11 +760,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/retiros/': {
+      id: '/_authenticated/admin/retiros/'
+      path: '/admin/retiros'
+      fullPath: '/admin/retiros'
+      preLoaderRoute: typeof AuthenticatedAdminRetirosIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/reportes-globales/': {
       id: '/_authenticated/admin/reportes-globales/'
       path: '/admin/reportes-globales'
       fullPath: '/admin/reportes-globales'
       preLoaderRoute: typeof AuthenticatedAdminReportesGlobalesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/recargas/': {
+      id: '/_authenticated/admin/recargas/'
+      path: '/admin/recargas'
+      fullPath: '/admin/recargas'
+      preLoaderRoute: typeof AuthenticatedAdminRecargasIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/compras/': {
+      id: '/_authenticated/admin/compras/'
+      path: '/admin/compras'
+      fullPath: '/admin/compras'
+      preLoaderRoute: typeof AuthenticatedAdminComprasIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/chats/': {
@@ -785,7 +845,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminAppsIndexRoute: typeof AuthenticatedAdminAppsIndexRoute
   AuthenticatedAdminCategoriesIndexRoute: typeof AuthenticatedAdminCategoriesIndexRoute
   AuthenticatedAdminChatsIndexRoute: typeof AuthenticatedAdminChatsIndexRoute
+  AuthenticatedAdminComprasIndexRoute: typeof AuthenticatedAdminComprasIndexRoute
+  AuthenticatedAdminRecargasIndexRoute: typeof AuthenticatedAdminRecargasIndexRoute
   AuthenticatedAdminReportesGlobalesIndexRoute: typeof AuthenticatedAdminReportesGlobalesIndexRoute
+  AuthenticatedAdminRetirosIndexRoute: typeof AuthenticatedAdminRetirosIndexRoute
   AuthenticatedAdminSettingsIndexRoute: typeof AuthenticatedAdminSettingsIndexRoute
   AuthenticatedAdminTasksIndexRoute: typeof AuthenticatedAdminTasksIndexRoute
   AuthenticatedAdminUsersIndexRoute: typeof AuthenticatedAdminUsersIndexRoute
@@ -807,8 +870,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminCategoriesIndexRoute:
     AuthenticatedAdminCategoriesIndexRoute,
   AuthenticatedAdminChatsIndexRoute: AuthenticatedAdminChatsIndexRoute,
+  AuthenticatedAdminComprasIndexRoute: AuthenticatedAdminComprasIndexRoute,
+  AuthenticatedAdminRecargasIndexRoute: AuthenticatedAdminRecargasIndexRoute,
   AuthenticatedAdminReportesGlobalesIndexRoute:
     AuthenticatedAdminReportesGlobalesIndexRoute,
+  AuthenticatedAdminRetirosIndexRoute: AuthenticatedAdminRetirosIndexRoute,
   AuthenticatedAdminSettingsIndexRoute: AuthenticatedAdminSettingsIndexRoute,
   AuthenticatedAdminTasksIndexRoute: AuthenticatedAdminTasksIndexRoute,
   AuthenticatedAdminUsersIndexRoute: AuthenticatedAdminUsersIndexRoute,

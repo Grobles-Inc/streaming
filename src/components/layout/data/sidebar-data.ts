@@ -165,15 +165,15 @@ const baseNavGroups = [
         roles: ['admin'],
       },
       {
-        title: 'Gestión de Categorías',
+        title: 'Categorías y Productos',
         url: '/admin/categories',
         icon: IconFlag,
         roles: ['admin'],
       },
       {
-        title: 'Gestión de Productos',
-        url: '/admin/productos',
-        icon: IconPackage,
+        title: 'Gestión de Compras',
+        url: '/admin/compras',
+        icon: IconShoppingCart,
         roles: ['admin'],
       },
       {

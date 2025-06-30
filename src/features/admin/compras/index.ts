@@ -1,0 +1,5 @@
+export { ComprasPage } from './compras-page'
+export { useCompras } from './hooks/use-compras'
+export { ComprasService } from './services/compras.service'
+export * from './data/types'
+export { estadoCompraSchema, filtroCompraSchema, mapSupabaseCompraToComponent } from './data/schema'

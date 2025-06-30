@@ -1,0 +1,253 @@
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { 
+  IconUser, 
+  IconShoppingCart, 
+  IconClock, 
+  IconPhone,
+  IconMail,
+  IconKey,
+  IconId,
+  IconCurrencyDollar
+} from '@tabler/icons-react'
+import type { MappedCompra } from '../data/types'
+
+interface CompraDetailsModalProps {
+  compra: MappedCompra | null
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export function CompraDetailsModal({ 
+  compra, 
+  open, 
+  onOpenChange 
+}: CompraDetailsModalProps) {
+  if (!compra) return null
+
+  const getEstadoBadge = (estado: string) => {
+    switch (estado) {
+      case 'entregado':
+        return { variant: 'default' as const, label: 'Entregado', className: 'bg-green-50 text-green-700 border-green-200' }
+      case 'cancelado':
+        return { variant: 'destructive' as const, label: 'Cancelado', className: 'bg-red-50 text-red-700 border-red-200' }
+      case 'en_proceso':
+        return { variant: 'secondary' as const, label: 'En Proceso', className: 'bg-blue-50 text-blue-700 border-blue-200' }
+      case 'reembolsado':
+        return { variant: 'outline' as const, label: 'Reembolsado', className: 'bg-purple-50 text-purple-700 border-purple-200' }
+      case 'pendiente':
+        return { variant: 'secondary' as const, label: 'Pendiente', className: 'bg-yellow-50 text-yellow-700 border-yellow-200' }
+      default:
+        return { variant: 'outline' as const, label: estado, className: '' }
+    }
+  }
+
+  const badge = getEstadoBadge(compra.estado)
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-3">
+            <IconShoppingCart className="h-5 w-5" />
+            Detalles de Compra
+            <Badge variant={badge.variant} className={badge.className}>
+              {badge.label}
+            </Badge>
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* Información del Cliente */}
+          <div>
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+              <IconUser className="h-4 w-4" />
+              Cliente
+            </h3>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Nombre:</span>
+                <span className="font-medium">{compra.nombreCliente}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Teléfono:</span>
+                <div className="flex items-center gap-2">
+                  <IconPhone className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-mono">{compra.telefonoCliente}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Información del Producto */}
+          <div>
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+              <IconShoppingCart className="h-4 w-4" />
+              Producto
+            </h3>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Nombre:</span>
+                <span className="font-medium">{compra.productoNombre}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Precio:</span>
+                <span className="font-mono text-green-600 font-medium">{compra.precioFormateado}</span>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Información de Acceso */}
+          <div>
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+              <IconKey className="h-4 w-4" />
+              Credenciales de Acceso
+            </h3>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Email:</span>
+                <div className="flex items-center gap-2">
+                  <IconMail className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-mono">{compra.emailCuenta}</span>
+                </div>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Contraseña:</span>
+                <span className="font-mono bg-muted px-2 py-1 rounded text-sm">{compra.claveCuenta}</span>
+              </div>
+              {compra.pinCuenta && (
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">PIN:</span>
+                  <span className="font-mono bg-muted px-2 py-1 rounded text-sm">{compra.pinCuenta}</span>
+                </div>
+              )}
+              {compra.perfilUsuario && (
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Perfil:</span>
+                  <span className="font-medium">{compra.perfilUsuario}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Información de Usuarios */}
+          <div>
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+              <IconUser className="h-4 w-4" />
+              Usuarios Involucrados
+            </h3>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Proveedor:</span>
+                <span className="font-medium">{compra.proveedorNombre}</span>
+              </div>
+              {compra.vendedorNombre && compra.vendedorNombre !== 'Sin vendedor asignado' && (
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Vendedor:</span>
+                  <span className="font-medium">{compra.vendedorNombre}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <Separator />
+
+          {/* Información de Reembolso */}
+          {compra.montoReembolso > 0 && (
+            <>
+              <div>
+                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <IconCurrencyDollar className="h-4 w-4" />
+                  Reembolso
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Monto:</span>
+                    <span className="font-mono text-purple-600 font-medium">{compra.montoReembolsoFormateado}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Estado:</span>
+                    <Badge variant={compra.requiereReembolso ? 'destructive' : 'default'}>
+                      {compra.requiereReembolso ? 'Pendiente' : 'Procesado'}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
+
+          {/* Información de Fechas */}
+          <div>
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+              <IconClock className="h-4 w-4" />
+              Fechas
+            </h3>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Creada:</span>
+                <span className="text-sm">
+                  {compra.fechaCreacion.toLocaleDateString('es-PE', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Actualizada:</span>
+                <span className="text-sm">
+                  {compra.fechaActualizacion.toLocaleDateString('es-PE', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Tiempo transcurrido:</span>
+                <span className="text-sm font-medium">{compra.tiempoTranscurrido}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* IDs de Sistema */}
+          <div>
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+              <IconId className="h-4 w-4" />
+              IDs del Sistema
+            </h3>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">ID Compra:</span>
+                <span className="font-mono text-xs">{compra.id}</span>
+              </div>
+              {compra.stockProductoId && (
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">ID Stock:</span>
+                  <span className="font-mono text-xs">{compra.stockProductoId}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}

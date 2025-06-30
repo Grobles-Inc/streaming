@@ -268,33 +268,38 @@ export interface Database {
       }
       compras: {
         Row: {
-          id?: string
+          id: string
           proveedor_id: string
           producto_id: string
-          vendedor_id: string
-          stock_producto_id: number
-          perfil_usuario?: string
-          nombre_cliente: string         
+          vendedor_id: string | null
+          stock_producto_id: number | null
+          email_cuenta: string
+          clave_cuenta: string
+          pin_cuenta: string | null
+          perfil_usuario: string | null
+          nombre_cliente: string
           telefono_cliente: string
-          precio: number          
+          precio: number
           estado: string
-          fecha_inicio: string
-          fecha_termino: string
           monto_reembolso: number
+          created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
           proveedor_id: string
           producto_id: string
-          vendedor_id: string
-          stock_producto_id: number
+          vendedor_id?: string | null
+          stock_producto_id?: number | null
+          email_cuenta: string
+          clave_cuenta: string
+          pin_cuenta?: string | null
+          perfil_usuario?: string | null
           nombre_cliente: string
-          
-          fecha_termino: string
-          monto_reembolso: number
           telefono_cliente: string
           precio: number
           estado?: string
+          monto_reembolso?: number
           created_at?: string
           updated_at?: string
         }
@@ -302,14 +307,17 @@ export interface Database {
           id?: string
           proveedor_id?: string
           producto_id?: string
-          vendedor_id?: string
-          stock_producto_id?: number
+          vendedor_id?: string | null
+          stock_producto_id?: number | null
+          email_cuenta?: string
+          clave_cuenta?: string
+          pin_cuenta?: string | null
+          perfil_usuario?: string | null
           nombre_cliente?: string
           telefono_cliente?: string
-          fecha_inicio: string
-          fecha_termino: string
-          precio: number
+          precio?: number
           estado?: string
+          monto_reembolso?: number
           created_at?: string
           updated_at?: string
         }
@@ -372,12 +380,53 @@ export interface Database {
           }
         ]
       }
+      retiros: {
+        Row: {
+          id: string
+          usuario_id: string
+          monto: number
+          estado: "aprobado" | "pendiente" | "rechazado"
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          usuario_id: string
+          monto: number
+          estado?: "aprobado" | "pendiente" | "rechazado"
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          usuario_id?: string
+          monto?: number
+          estado?: "aprobado" | "pendiente" | "rechazado"
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retiros_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_user_balance: {
+        Args: {
+          user_id: string
+          amount: number
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

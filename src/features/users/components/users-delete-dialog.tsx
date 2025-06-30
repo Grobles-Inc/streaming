@@ -2,27 +2,40 @@
 
 import { useState } from 'react'
 import { IconAlertTriangle } from '@tabler/icons-react'
-import { showSubmittedData } from '@/utils/show-submitted-data'
+import { useUsersContext } from '../context/users-context-new'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ConfirmDialog } from '@/components/confirm-dialog'
-import { User } from '../data/schema'
+import { MappedUser } from '../data/schema'
+import { toast } from 'sonner'
 
 interface Props {
   open: boolean
   onOpenChange: (open: boolean) => void
-  currentRow: User
+  currentRow: MappedUser
 }
 
 export function UsersDeleteDialog({ open, onOpenChange, currentRow }: Props) {
   const [value, setValue] = useState('')
+  const { deleteUser } = useUsersContext()
 
-  const handleDelete = () => {
-    if (value.trim() !== currentRow.username) return
+  const handleDelete = async () => {
+    if (value.trim() !== `${currentRow.nombres} ${currentRow.apellidos}`) return
 
-    onOpenChange(false)
-    showSubmittedData(currentRow, 'The following user has been deleted:')
+    try {
+      const success = await deleteUser(currentRow.id)
+      if (success) {
+        toast.success('Usuario eliminado exitosamente')
+        onOpenChange(false)
+        setValue('')
+      } else {
+        toast.error('Error al eliminar usuario')
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      toast.error('Error al eliminar usuario')
+    }
   }
 
   return (
@@ -30,47 +43,47 @@ export function UsersDeleteDialog({ open, onOpenChange, currentRow }: Props) {
       open={open}
       onOpenChange={onOpenChange}
       handleConfirm={handleDelete}
-      disabled={value.trim() !== currentRow.username}
+      disabled={value.trim() !== `${currentRow.nombres} ${currentRow.apellidos}`}
       title={
         <span className='text-destructive'>
           <IconAlertTriangle
             className='stroke-destructive mr-1 inline-block'
             size={18}
           />{' '}
-          Delete User
+          Eliminar Usuario
         </span>
       }
       desc={
         <div className='space-y-4'>
           <p className='mb-2'>
-            Are you sure you want to delete{' '}
-            <span className='font-bold'>{currentRow.username}</span>?
+            ¿Estás seguro de que quieres eliminar a{' '}
+            <span className='font-bold'>{currentRow.nombres} {currentRow.apellidos}</span>?
             <br />
-            This action will permanently remove the user with the role of{' '}
+            Esta acción eliminará permanentemente al usuario con el rol de{' '}
             <span className='font-bold'>
-              {currentRow.role.toUpperCase()}
+              {currentRow.rol.toUpperCase()}
             </span>{' '}
-            from the system. This cannot be undone.
+            del sistema. Esto no se puede deshacer.
           </p>
 
           <Label className='my-2'>
-            Username:
+            Nombre completo:
             <Input
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder='Enter username to confirm deletion.'
+              placeholder='Ingresa el nombre completo para confirmar eliminación.'
             />
           </Label>
 
           <Alert variant='destructive'>
-            <AlertTitle>Warning!</AlertTitle>
+            <AlertTitle>¡Advertencia!</AlertTitle>
             <AlertDescription>
-              Please be carefull, this operation can not be rolled back.
+              Ten cuidado, esta operación no se puede revertir.
             </AlertDescription>
           </Alert>
         </div>
       }
-      confirmText='Delete'
+      confirmText='Eliminar'
       destructive
     />
   )

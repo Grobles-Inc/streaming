@@ -1,14 +1,13 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import LongText from '@/components/long-text'
-import { callTypes, userTypes } from '../data/data'
-import { User } from '../data/schema'
+import { userTypes } from '../data/data'
+import { MappedUser } from '../data/schema'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 
-export const columns: ColumnDef<User>[] = [
+export const columns: ColumnDef<MappedUser>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -18,7 +17,7 @@ export const columns: ColumnDef<User>[] = [
           (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label='Select all'
+        aria-label='Seleccionar todo'
         className='translate-y-[2px]'
       />
     ),
@@ -32,7 +31,7 @@ export const columns: ColumnDef<User>[] = [
       <Checkbox
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label='Select row'
+        aria-label='Seleccionar fila'
         className='translate-y-[2px]'
       />
     ),
@@ -40,13 +39,15 @@ export const columns: ColumnDef<User>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'username',
+    id: 'nombreCompleto',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Username' />
+      <DataTableColumnHeader column={column} title='Nombre Completo' />
     ),
-    cell: ({ row }) => (
-      <LongText className='max-w-36'>{row.getValue('username')}</LongText>
-    ),
+    cell: ({ row }) => {
+      const { nombres, apellidos } = row.original
+      const nombreCompleto = `${nombres} ${apellidos}`
+      return <LongText className='max-w-48'>{nombreCompleto}</LongText>
+    },
     meta: {
       className: cn(
         'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
@@ -57,64 +58,63 @@ export const columns: ColumnDef<User>[] = [
     enableHiding: false,
   },
   {
-    id: 'fullName',
+    accessorKey: 'telefono',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Name' />
+      <DataTableColumnHeader column={column} title='Teléfono' />
     ),
     cell: ({ row }) => {
-      const { firstName, lastName } = row.original
-      const fullName = `${firstName} ${lastName}`
-      return <LongText className='max-w-36'>{fullName}</LongText>
-    },
-    meta: { className: 'w-36' },
-  },
-  {
-    accessorKey: 'email',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Email' />
-    ),
-    cell: ({ row }) => (
-      <div className='w-fit text-nowrap'>{row.getValue('email')}</div>
-    ),
-  },
-  {
-    accessorKey: 'phoneNumber',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Phone Number' />
-    ),
-    cell: ({ row }) => <div>{row.getValue('phoneNumber')}</div>,
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'status',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Status' />
-    ),
-    cell: ({ row }) => {
-      const { status } = row.original
-      const badgeColor = callTypes.get(status)
+      const telefono = row.getValue('telefono') as string | null
       return (
-        <div className='flex space-x-2'>
-          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
-            {row.getValue('status')}
-          </Badge>
+        <div className='font-mono text-sm'>
+          {telefono || (
+            <span className='text-muted-foreground italic'>Sin teléfono</span>
+          )}
         </div>
       )
     },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
-    },
-    enableHiding: false,
     enableSorting: false,
   },
   {
-    accessorKey: 'role',
+    accessorKey: 'saldo',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Role' />
+      <DataTableColumnHeader column={column} title='Saldo' className='text-right' />
     ),
     cell: ({ row }) => {
-      const { role } = row.original
-      const userType = userTypes.find(({ value }) => value === role)
+      const saldo = row.getValue('saldo') as number
+      const safeSaldo = saldo || 0
+      const formatted = new Intl.NumberFormat('es-PE', {
+        style: 'currency',
+        currency: 'PEN',
+        minimumFractionDigits: 2,
+      }).format(safeSaldo)
+      
+      return (
+        <div className='text-left font-mono text-sm'>
+          <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+            safeSaldo > 0 
+              ? 'bg-green-50 text-green-700 border border-green-200' 
+              : safeSaldo < 0 
+                ? 'bg-red-50 text-red-700 border border-red-200'
+                : 'bg-gray-50 text-gray-700 border border-gray-200'
+          }`}>
+            {formatted}
+          </span>
+        </div>
+      )
+    },
+    enableSorting: true,
+    meta: {
+      className: 'text-left',
+    },
+  },
+  {
+    accessorKey: 'rol',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Rol' />
+    ),
+    cell: ({ row }) => {
+      const { rol } = row.original
+      const userType = userTypes.find(({ value }) => value === rol)
 
       if (!userType) {
         return null
@@ -125,7 +125,7 @@ export const columns: ColumnDef<User>[] = [
           {userType.icon && (
             <userType.icon size={16} className='text-muted-foreground' />
           )}
-          <span className='text-sm capitalize'>{row.getValue('role')}</span>
+          <span className='text-sm capitalize'>{userType.label}</span>
         </div>
       )
     },

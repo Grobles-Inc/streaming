@@ -1,2 +1,5 @@
-import CategoriasPage from './categorias-page'
-export { CategoriasPage }
+export { default as CategoriasPage } from './categorias-page'
+export * from './components'
+export * from './data/types'
+export * from './queries'
+export * from './services'

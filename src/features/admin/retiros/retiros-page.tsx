@@ -28,9 +28,6 @@ import { EstadisticasRetirosCard } from './components/estadisticas-retiros'
 import { RetiroDetailsModal } from './components/retiro-details-modal'
 import type { MappedRetiro, EstadoRetiro } from './data/types'
 
-// Import test function
-import { testSupabaseConnection } from './test-connection'
-
 export default function RetirosPage() {
   const [filtroEstado, setFiltroEstado] = useState<EstadoRetiro | 'todos'>('todos')
   const [selectedRetiro, setSelectedRetiro] = useState<MappedRetiro | null>(null)

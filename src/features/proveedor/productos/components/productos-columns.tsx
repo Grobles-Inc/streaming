@@ -139,7 +139,7 @@ export const columns: ColumnDef<Producto>[] = [
       const precio = row.getValue('precio_vendedor') as number
       return (
         <div className='font-medium text-blue-600'>
-          S/.{precio.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+          $. {precio.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
         </div>
       )
     },
@@ -154,7 +154,7 @@ export const columns: ColumnDef<Producto>[] = [
       const precio = row.getValue('precio_publico') as number
       return (
         <div className='font-medium text-green-600'>
-          S/.{precio.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+          $. {precio.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
         </div>
       )
     },
@@ -169,7 +169,7 @@ export const columns: ColumnDef<Producto>[] = [
       const precio = row.getValue('precio_renovacion') as number | null
       return (
         <div className='font-medium text-orange-600'>
-          {precio ? `S/.${precio.toLocaleString('es-ES', { minimumFractionDigits: 2 })}` : 'N/A'}
+          {precio ? `$.${precio.toLocaleString('es-ES', { minimumFractionDigits: 2 })}` : 'N/A'}
         </div>
       )
     },

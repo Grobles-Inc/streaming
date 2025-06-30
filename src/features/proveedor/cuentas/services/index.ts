@@ -100,20 +100,14 @@ export const getCuentasByProductoId = async (productoId:string) : Promise<Cuenta
 }
 
 // Obtener todas las cuentas de productos del proveedor autenticado
-export const getCuentasByProveedor = async () : Promise<Cuentas[]> => {
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) {
-    throw new Error('Usuario no autenticado')
-  }
-
+export const getCuentasByProveedor = async (proveedor_id: string) : Promise<Cuentas[]> => {
   const { data, error } = await supabase
     .from('stock_productos')
     .select(`
       *,
       productos!inner(*)
     `)
-    .eq('productos.proveedor_id', user.id)
+    .eq('productos.proveedor_id', proveedor_id)
     .order('created_at', { ascending: false })
 
     if (error) {

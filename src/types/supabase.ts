@@ -198,6 +198,7 @@ export interface Database {
       stock_productos: {
         Row: {
           id: number
+          proveedor_id: string
           email: string | null
           clave: string | null
           pin: string | null
@@ -211,6 +212,7 @@ export interface Database {
         }
         Insert: {
           id?: number
+          proveedor_id?: string
           email?: string | null
           clave?: string | null
           pin?: string | null
@@ -224,6 +226,7 @@ export interface Database {
         }
         Update: {
           id?: number
+          proveedor_id?: string
           email?: string | null
           clave?: string | null
           pin?: string | null
@@ -241,6 +244,13 @@ export interface Database {
             columns: ["producto_id"]
             isOneToOne: false
             referencedRelation: "productos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_productos_proveedor_id_fkey"
+            columns: ["proveedor_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
             referencedColumns: ["id"]
           }
         ]

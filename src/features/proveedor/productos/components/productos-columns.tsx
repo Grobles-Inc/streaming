@@ -139,7 +139,7 @@ export const columns: ColumnDef<Producto>[] = [
       const precio = row.getValue('precio_vendedor') as number
       return (
         <div className='font-medium text-blue-600'>
-          ${precio.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+          S/.{precio.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
         </div>
       )
     },
@@ -154,7 +154,22 @@ export const columns: ColumnDef<Producto>[] = [
       const precio = row.getValue('precio_publico') as number
       return (
         <div className='font-medium text-green-600'>
-          ${precio.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+          S/.{precio.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+        </div>
+      )
+    },
+    meta: { className: 'w-32' },
+  },
+  {
+    accessorKey: 'precio_renovacion',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Precio Renovación' />
+    ),
+    cell: ({ row }) => {
+      const precio = row.getValue('precio_renovacion') as number | null
+      return (
+        <div className='font-medium text-orange-600'>
+          {precio ? `S/.${precio.toLocaleString('es-ES', { minimumFractionDigits: 2 })}` : 'N/A'}
         </div>
       )
     },
@@ -282,21 +297,6 @@ export const columns: ColumnDef<Producto>[] = [
       )
     },
     meta: { className: 'w-28' },
-  },
-  {
-    accessorKey: 'precio_renovacion',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Precio Renovación' />
-    ),
-    cell: ({ row }) => {
-      const precio = row.getValue('precio_renovacion') as number | null
-      return (
-        <div className='font-medium text-orange-600'>
-          {precio ? `$${precio.toLocaleString('es-ES', { minimumFractionDigits: 2 })}` : 'N/A'}
-        </div>
-      )
-    },
-    meta: { className: 'w-32' },
   },
   {
     accessorKey: 'nuevo',

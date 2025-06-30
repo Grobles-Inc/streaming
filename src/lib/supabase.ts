@@ -10,3 +10,63 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: false,
   },
 })
+
+// Servicio para subir archivos a Supabase Storage
+export class SupabaseStorageService {
+  /**
+   * Sube una imagen al bucket de productos
+   */
+  static async uploadProductImage(file: File, userId: string): Promise<string> {
+    const fileExtension = file.name.split('.').pop()
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`
+    const filePath = `productos/${userId}/${fileName}`
+
+    const { data, error } = await supabase.storage
+      .from('productos-images')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      })
+
+    if (error) {
+      console.error('Error subiendo imagen:', error)
+      throw new Error(`Error al subir imagen: ${error.message}`)
+    }
+
+    // Obtener la URL pública
+    const { data: { publicUrl } } = supabase.storage
+      .from('productos-images')
+      .getPublicUrl(data.path)
+
+    return publicUrl
+  }
+
+  /**
+   * Elimina una imagen del storage
+   */
+  static async deleteProductImage(imageUrl: string): Promise<void> {
+    try {
+      // Extraer el path de la URL
+      const url = new URL(imageUrl)
+      const pathMatch = url.pathname.match(/\/storage\/v1\/object\/public\/productos-images\/(.+)/)
+      
+      if (!pathMatch) {
+        throw new Error('URL de imagen inválida')
+      }
+
+      const filePath = pathMatch[1]
+
+      const { error } = await supabase.storage
+        .from('productos-images')
+        .remove([filePath])
+
+      if (error) {
+        console.error('Error eliminando imagen:', error)
+        throw new Error(`Error al eliminar imagen: ${error.message}`)
+      }
+    } catch (error) {
+      console.error('Error procesando eliminación de imagen:', error)
+      // No lanzamos error para no bloquear operaciones si la eliminación falla
+    }
+  }
+}

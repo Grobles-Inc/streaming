@@ -162,7 +162,7 @@ export interface Database {
           proveedor_id?: string
           imagen_url?: string | null
           created_at?: string
-          updated_at?: string 
+          updated_at?: string
           tiempo_uso?: number
           a_pedido?: boolean
           nuevo?: boolean

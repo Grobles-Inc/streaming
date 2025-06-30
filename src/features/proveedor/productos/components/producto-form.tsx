@@ -26,6 +26,9 @@ import { useCategorias, useCreateProducto, useUpdateProducto } from '../queries'
 import { productoSchema, type ProductoFormData } from '../data/schema'
 import { Categoria } from '../services'
 import { useAuth } from '@/stores/authStore'
+import { AlertCircleIcon, ImageIcon, UploadIcon, XIcon, LoaderIcon } from "lucide-react"
+import { useFileUpload } from "@/hooks/use-file-upload"
+import { SupabaseStorageService } from '@/lib/supabase'
 
 interface ProductoFormDialogProps {
   trigger: React.ReactNode
@@ -47,6 +50,7 @@ export function ProductoFormDialog({
   onOpenChange: controlledOnOpenChange,
 }: ProductoFormDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
 
   // Usar estado controlado si se proporciona, sino usar estado interno
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen
@@ -58,6 +62,27 @@ export function ProductoFormDialog({
 
   const isPending = isCreating || isUpdating
   const isEditing = !!productId
+
+  const maxSizeMB = 2
+  const maxSize = maxSizeMB * 1024 * 1024 // 2MB default
+
+  const [
+    { files, isDragging, errors },
+    {
+      handleDragEnter,
+      handleDragLeave,
+      handleDragOver,
+      handleDrop,
+      openFileDialog,
+      removeFile,
+      getInputProps,
+      clearFiles,
+    },
+  ] = useFileUpload({
+    accept: "image/svg+xml,image/png,image/jpeg,image/jpg,image/gif",
+    maxSize,
+  })
+  const previewUrl = files[0]?.preview || null
 
   const form = useForm<ProductoFormData>({
     resolver: zodResolver(productoSchema),
@@ -87,26 +112,42 @@ export function ProductoFormDialog({
     },
   })
 
-
   const handleSubmit = async (data: ProductoFormData) => {
     if (!user) {
       console.error('❌ ProductoForm: No hay usuario autenticado')
       return
     }
 
-    console.log('🚀 ProductoForm - Datos del formulario:', data)
-    console.log('🚀 ProductoForm - Usuario ID:', user.id)
-    console.log('🚀 ProductoForm - Modo edición:', isEditing)
+    let imageUrl = data.imagen_url || ''
+
+    // Si hay un archivo seleccionado, subirlo a Supabase Storage
+    if (files[0]?.file instanceof File) {
+      setIsUploadingImage(true)
+      try {
+        imageUrl = await SupabaseStorageService.uploadProductImage(files[0].file, user.id)
+        console.log('✅ Imagen subida exitosamente:', imageUrl)
+      } catch (error) {
+        console.error('❌ Error al subir imagen:', error)
+        setIsUploadingImage(false)
+        return
+      }
+      setIsUploadingImage(false)
+    }
+
+    const productoData = {
+      ...data,
+      imagen_url: imageUrl,
+    }
 
     if (isEditing) {
-      console.log('✏️ ProductoForm - Actualizando producto:', productId)
       updateProducto({
         id: productId,
-        updates: data
+        updates: productoData
       }, {
         onSuccess: (result) => {
           console.log('ProductoForm - Producto actualizado exitosamente:', result)
           form.reset()
+          clearFiles()
           setOpen(false)
         },
         onError: (error) => {
@@ -114,17 +155,17 @@ export function ProductoFormDialog({
         }
       })
     } else {
-      const productoData = {
-        ...data,
+      const finalProductoData = {
+        ...productoData,
         proveedor_id: user.id,
-        stock_de_productos: []
+        stock_de_productos: [],
       }
-      console.log('ProductoForm - Creando producto con datos:', productoData)
 
-      createProducto(productoData, {
+      createProducto(finalProductoData, {
         onSuccess: (result) => {
           console.log('✅ ProductoForm - Producto creado exitosamente:', result)
           form.reset()
+          clearFiles()
           setOpen(false)
         },
         onError: (error) => {
@@ -165,9 +206,97 @@ export function ProductoFormDialog({
                   name="imagen_url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Imagen (URL)</FormLabel>
+                      <FormLabel>Imagen del Producto</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://..." {...field} />
+                        <div className="flex flex-col gap-2">
+                          <div className="relative">
+                            {/* Drop area */}
+                            <div
+                              onDragEnter={handleDragEnter}
+                              onDragLeave={handleDragLeave}
+                              onDragOver={handleDragOver}
+                              onDrop={handleDrop}
+                              data-dragging={isDragging || undefined}
+                              className="border-input data-[dragging=true]:bg-accent/50 has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 relative flex min-h-52 flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed p-4 transition-colors has-[input:focus]:ring-[3px]"
+                            >
+                              <input
+                                {...getInputProps()}
+                                className="sr-only"
+                                aria-label="Upload image file"
+                              />
+                              {previewUrl ? (
+                                <div className="absolute inset-0 flex items-center justify-center p-4">
+                                  <img
+                                    src={previewUrl}
+                                    alt={files[0]?.file?.name || "Uploaded image"}
+                                    className="mx-auto max-h-full rounded object-contain"
+                                  />
+                                </div>
+                              ) : field.value ? (
+                                <div className="absolute inset-0 flex items-center justify-center p-4">
+                                  <img
+                                    src={field.value}
+                                    alt="Imagen del producto"
+                                    className="mx-auto max-h-full rounded object-contain"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-center justify-center px-4 py-3 text-center">
+                                  <div
+                                    className="bg-background mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border"
+                                    aria-hidden="true"
+                                  >
+                                    <ImageIcon className="size-4 opacity-60" />
+                                  </div>
+                                  <p className="mb-1.5 text-sm font-medium">Arrastre su imagen aquí</p>
+                                  <p className="text-muted-foreground text-xs">
+                                    SVG, PNG, JPG o GIF (max. {maxSizeMB}MB)
+                                  </p>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="mt-4"
+                                    onClick={openFileDialog}
+                                  >
+                                    <UploadIcon
+                                      className="-ms-1 size-4 opacity-60"
+                                      aria-hidden="true"
+                                    />
+                                    Seleccionar imagen
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+
+                            {(previewUrl || field.value) && (
+                              <div className="absolute top-4 right-4">
+                                <button
+                                  type="button"
+                                  className="focus-visible:border-ring focus-visible:ring-ring/50 z-50 flex size-8 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition-[color,box-shadow] outline-none hover:bg-black/80 focus-visible:ring-[3px]"
+                                  onClick={() => {
+                                    if (files[0]?.id) {
+                                      removeFile(files[0].id)
+                                    }
+                                    field.onChange('')
+                                  }}
+                                  aria-label="Remove image"
+                                >
+                                  <XIcon className="size-4" aria-hidden="true" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          {errors.length > 0 && (
+                            <div
+                              className="text-destructive flex items-center gap-1 text-xs"
+                              role="alert"
+                            >
+                              <AlertCircleIcon className="size-3 shrink-0" />
+                              <span>{errors[0]}</span>
+                            </div>
+                          )}
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -283,6 +412,7 @@ export function ProductoFormDialog({
                   )}
                 />
               </div>
+
               {/* Columna 2 */}
               <div className="space-y-4">
                 <FormField
@@ -350,107 +480,127 @@ export function ProductoFormDialog({
                     </FormItem>
                   )}
                 />
-              </div>
-              {/* Switches y campos adicionales en varias filas */}
-              <div className="md:col-span-2 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="renovable"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>¿Es renovable?</FormLabel>
-                        <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="a_pedido"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>¿A pedido?</FormLabel>
-                        <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="nuevo"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>¿Es nuevo?</FormLabel>
-                        <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+
+                {/* Switches en la columna derecha para aprovechar el espacio */}
+                <div className="pt-4 space-y-4">
+                  <h4 className="text-sm font-medium text-foreground">Configuración del Producto</h4>
+                  <div className="grid grid-cols-1 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="renovable"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-sm font-medium">¿Es renovable?</FormLabel>
+                            <div className="text-xs text-muted-foreground">El producto puede ser renovado</div>
+                          </div>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="a_pedido"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-sm font-medium">¿A pedido?</FormLabel>
+                            <div className="text-xs text-muted-foreground">Producto disponible bajo pedido</div>
+                          </div>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="nuevo"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-sm font-medium">¿Es nuevo?</FormLabel>
+                            <div className="text-xs text-muted-foreground">Marcar como producto nuevo</div>
+                          </div>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="destacado"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-sm font-medium">¿Destacado?</FormLabel>
+                            <div className="text-xs text-muted-foreground">Mostrar en productos destacados</div>
+                          </div>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="mas_vendido"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-sm font-medium">¿Más vendido?</FormLabel>
+                            <div className="text-xs text-muted-foreground">Mostrar en más vendidos</div>
+                          </div>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="destacado"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>¿Destacado?</FormLabel>
-                        <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="mas_vendido"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>¿Más vendido?</FormLabel>
-                        <FormControl>
-                          <Switch checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+              </div>
+
+              {/* Campos adicionales que ocupan toda la fila */}
+              <div className="md:col-span-2 space-y-4">
+                <h4 className="text-sm font-medium text-foreground">Configuración Avanzada</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="deshabilitar_boton_comprar"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Deshabilitar botón comprar</FormLabel>
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-sm font-medium">Deshabilitar botón comprar</FormLabel>
+                          <div className="text-xs text-muted-foreground">El botón de compra estará deshabilitado</div>
+                        </div>
                         <FormControl>
                           <Switch checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="muestra_disponibilidad_stock"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Muestra disponibilidad stock</FormLabel>
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-sm font-medium">Muestra disponibilidad stock</FormLabel>
+                          <div className="text-xs text-muted-foreground">Mostrar información de stock público</div>
+                        </div>
                         <FormControl>
                           <Switch checked={field.value} onCheckedChange={field.onChange} />
                         </FormControl>
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
               </div>
+
               <div className="md:col-span-2">
                 <Button type="submit" disabled={isPending} className="w-full">
                   {isPending

@@ -1,6 +1,6 @@
 import { useBilleteraByUsuario } from '@/queries'
 import { useAuth } from '@/stores/authStore'
-import { IconChartBar, IconLayoutDashboard, IconLogout, IconMenu, IconShoppingBag, IconUser, IconWallet } from '@tabler/icons-react'
+import {  IconLayoutDashboard, IconLogout, IconMenu, IconUser, IconWallet } from '@tabler/icons-react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -15,95 +15,103 @@ export default function LandingHeader() {
   const { data: billetera } = useBilleteraByUsuario(user?.id || '')
   const isMobile = useIsMobile()
   const [isOpen, setIsOpen] = useState(false)
-  const { data: categorias } = useCategorias()
+  const { data: categorias, isLoading: loadingCategorias } = useCategorias()
   const [activeTab, setActiveTab] = useState<string | null>(null)
+  
+  // Validación adicional
+  const categoriasData = categorias?.data || []
+  
   const redirectRoute = user?.rol === 'admin' ? '/admin/apps' : user?.rol === 'provider' ? '/proveedor/reportes' : '/dashboard'
+
+  const handleLogout = () => {
+    signOut()
+    navigate({ to: '/sign-in' })
+  }
+
   return (
-    <nav className="flex flex-col md:flex-row md:items-center md:justify-between md:px-6 px-4 py-4 gap-4 bg-base-100 shadow">
-      <div className='flex flex-row justify-between items-center w-full'>
-
-        <Link to="/">
-          <div className="flex flex-col items-center ">
-            <span className="text-2xl font-bold ">Dark<span className="text-red-500 font-bold text-lg">+</span></span>
-
-            <span className="text-xs text-gray-500 ml-1">STREAMING</span>
+    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="mx-auto max-w-screen-2xl px-4">
+        <div className="flex h-14 items-center justify-between">
+          <div className="flex">
+            <Link
+              to="/"
+              className="mr-4 flex items-center space-x-2 lg:mr-6"
+            >
+              <img src="/images/streamingweb.png" alt="StreamingWeb" className="h-8 w-8" />
+              <span className="hidden font-bold lg:inline-block">
+                StreamingWeb
+              </span>
+            </Link>
           </div>
-        </Link>
-        <div className=" w-1/2 hidden md:block md:mx-8">
-          <Input
-            type="text"
-            placeholder="¿Qué estás buscando?"
-          />
-        </div>
-        <div className="md:flex items-center gap-4 hidden ">
-          {user && !isMobile ? (
-            <div className='flex items-center gap-2'>
-              {
-                user?.rol === 'admin' ? (
-                  <Button onClick={() => navigate({ to: '/admin/apps' })} size="lg">
-                    <IconLayoutDashboard />
-                    Dashboard </Button>
-                ) : user?.rol === 'provider' ? (
-                  <Button onClick={() => navigate({ to: '/proveedor/reportes' })} size="lg">
-                    <IconChartBar />
-                    Reportes </Button>
-                ) : (
 
-                  <div className='flex items-center gap-2'>
-                    <Button variant="ghost" className=' font-bold text-xl' onClick={() => navigate({ to: '/dashboard' })} size="lg">
-                      $ {billetera?.saldo || 0} </Button>
-                    <Button variant="secondary" onClick={() => navigate({ to: '/compras' })} className='flex items-center gap-2'>
-                      <IconShoppingBag />
-                      Compras</Button>
-                    <Button variant="secondary" onClick={() => navigate({ to: '/recargas' })} className='flex items-center gap-2'>
-                      <IconWallet />
-                      Recargas</Button>
-                  </div>
-                )
-              }
+          <div className="flex-1 hidden md:mx-8 md:block">
+            <Input
+              type="text"
+              placeholder="¿Qué estás buscando?"
+            />
+          </div>
 
-              <Button variant="destructive" onClick={() => signOut()} className='flex items-center gap-2'>
-                <IconLogout />
-                Salir</Button>
-            </div>
-          ) : (
-            <Button onClick={() => navigate({ to: '/sign-in' })}>Iniciar Sesión</Button>
-          )}
-        </div>
-        {isMobile && (
-          <div className='flex items-center gap-2'>
-            {
-              user ? (
-                <Button variant="outline" onClick={() => navigate({ to: redirectRoute })}>
-                  <IconUser />
+          <div className="flex items-center space-x-4">
+            {user ? (
+              <div className="flex items-center space-x-2">
+                <Button variant="outline" asChild>
+                  <Link to={redirectRoute}>
+                    <IconLayoutDashboard className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </Link>
                 </Button>
-              ) : (
-                <Button variant="outline" onClick={() => navigate({ to: '/sign-in' })}>
-                  <IconUser />
+                
+                <div className="flex items-center space-x-2">
+                  <IconWallet className="h-4 w-4" />
+                  <span className="text-sm font-medium">
+                    ${billetera?.saldo?.toFixed(2) || '0.00'}
+                  </span>
+                </div>
+
+                <Button variant="ghost" size="icon" onClick={handleLogout}>
+                  <IconLogout className="h-4 w-4" />
                 </Button>
-              )
-            }
-            <div className="sm:hidden">
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Button variant="ghost" asChild>
+                  <Link to="/sign-in">
+                    <IconUser className="h-4 w-4 mr-2" />
+                    Iniciar Sesión
+                  </Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/sign-up">Registrarse</Link>
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {isMobile && (
+            <div className="ml-4">
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" >
-                    <IconMenu />
+                  <Button variant="ghost" size="icon">
+                    <IconMenu className="h-4 w-4" />
                   </Button>
-
                 </SheetTrigger>
-                <SheetContent className='p-4' side="left">
+                <SheetContent side="left" className="w-80">
                   <SheetTitle>
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl font-bold text-black">Wolf</span>
-                      <span className="text-red-500 font-bold text-lg">+</span>
-                      <span className="text-xs text-gray-500 ml-1">STREAMING</span>
-                    </div>
+                    <Link
+                      to="/"
+                      className="flex items-center space-x-2"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <img src="/images/streamingweb.png" alt="StreamingWeb" className="h-8 w-8" />
+                      <span className="font-bold">StreamingWeb</span>
+                    </Link>
                   </SheetTitle>
-                  <SheetDescription>
-                    Selecciona una categoría para ver los productos disponibles.
+                  <SheetDescription className="sr-only">
+                    Menu de navegación
                   </SheetDescription>
+                  
                   <div className="flex flex-col gap-2 mt-8">
-                    {categorias?.data.map((categoria) => (
+                    {!loadingCategorias && categoriasData.map((categoria) => (
                       <Button
                         key={categoria.id}
                         variant={activeTab === categoria.id ? 'default' : 'ghost'}
@@ -121,16 +129,16 @@ export default function LandingHeader() {
                 </SheetContent>
               </Sheet>
             </div>
-
+          )}
+        </div>
+        {isMobile && (
+          <div className="flex-1 md:hidden md:mx-8">
+            <Input
+              type="text"
+              placeholder="¿Qué estás buscando?"
+            />
           </div>
         )}
-
-      </div>
-      <div className="flex-1 md:hidden md:mx-8">
-        <Input
-          type="text"
-          placeholder="¿Qué estás buscando?"
-        />
       </div>
     </nav>
   )

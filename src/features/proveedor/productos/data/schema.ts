@@ -53,7 +53,7 @@ export const productoCompleteSchema = z.object({
   descripcion: z.string().nullable().transform(val => val ?? '').optional(),
   informacion: z.string().nullable().transform(val => val ?? '').optional(),
   condiciones: z.string().nullable().transform(val => val ?? '').optional(),
-  imagen_url: z.string().nullable().transform(val => val ?? '').optional(),
+  imagen_url: z.string().optional(),
   destacado: z.boolean().nullable().transform(val => val ?? false),
   mas_vendido: z.boolean().nullable().transform(val => val ?? false),
   descripcion_completa: z.string().nullable().transform(val => val ?? '').optional(),

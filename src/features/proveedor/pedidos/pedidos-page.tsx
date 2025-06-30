@@ -82,27 +82,27 @@ const filtrarPorFecha = (pedidos: CompraConRelaciones[], filtro: string) => {
   switch (filtro) {
     case 'hoy':
       return pedidos.filter(p => {
-        const fechaPedido = new Date(p.fecha_inicio)
+        const fechaPedido = new Date(p.created_at)
         return fechaPedido.toDateString() === hoy.toDateString()
       })
     case 'ayer':
       return pedidos.filter(p => {
-        const fechaPedido = new Date(p.fecha_inicio)
+        const fechaPedido = new Date(p.created_at)
         return fechaPedido.toDateString() === ayer.toDateString()
       })
     case '7dias': {
       const hace7Dias = new Date(hoy)
       hace7Dias.setDate(hoy.getDate() - 7)
-      return pedidos.filter(p => new Date(p.fecha_inicio) >= hace7Dias)
+      return pedidos.filter(p => new Date(p.created_at) >= hace7Dias)
     }
     case '28dias': {
       const hace28Dias = new Date(hoy)
       hace28Dias.setDate(hoy.getDate() - 28)
-      return pedidos.filter(p => new Date(p.fecha_inicio) >= hace28Dias)
+      return pedidos.filter(p => new Date(p.created_at) >= hace28Dias)
     }
     case 'año': {
       const inicioAño = new Date(hoy.getFullYear(), 0, 1)
-      return pedidos.filter(p => new Date(p.fecha_inicio) >= inicioAño)
+      return pedidos.filter(p => new Date(p.created_at) >= inicioAño)
     }
     default:
       return pedidos
@@ -459,7 +459,7 @@ export function PedidosPage() {
                             <TableCell>
                               <div className='flex items-center space-x-1'>
                                 <Calendar className='h-3 w-3 text-muted-foreground' />
-                                <span className='text-sm'>{formatearFecha(pedido.fecha_inicio)}</span>
+                                <span className='text-sm'>{formatearFecha(pedido.created_at)}</span>
                               </div>
                             </TableCell>
                             <TableCell className='font-medium'>

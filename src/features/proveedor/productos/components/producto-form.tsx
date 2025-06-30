@@ -47,7 +47,7 @@ export function ProductoFormDialog({
   onOpenChange: controlledOnOpenChange,
 }: ProductoFormDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false)
-  
+
   // Usar estado controlado si se proporciona, sino usar estado interno
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen
   const setOpen = controlledOnOpenChange || setInternalOpen
@@ -55,10 +55,10 @@ export function ProductoFormDialog({
   const { mutate: createProducto, isPending: isCreating } = useCreateProducto()
   const { mutate: updateProducto, isPending: isUpdating } = useUpdateProducto()
   const { user } = useAuth()
-  
+
   const isPending = isCreating || isUpdating
   const isEditing = !!productId
-  
+
   const form = useForm<ProductoFormData>({
     resolver: zodResolver(productoSchema),
     defaultValues: {
@@ -78,7 +78,6 @@ export function ProductoFormDialog({
       stock: 0,
       deshabilitar_boton_comprar: false,
       muestra_disponibilidad_stock: false,
-      url_cuenta: '',
       tiempo_uso: 0,
       a_pedido: false,
       nuevo: false,
@@ -121,7 +120,7 @@ export function ProductoFormDialog({
         stock_de_productos: []
       }
       console.log('ProductoForm - Creando producto con datos:', productoData)
-      
+
       createProducto(productoData, {
         onSuccess: (result) => {
           console.log('✅ ProductoForm - Producto creado exitosamente:', result)
@@ -265,19 +264,6 @@ export function ProductoFormDialog({
                       <FormLabel>Stock</FormLabel>
                       <FormControl>
                         <Input type="number" min={0} placeholder="0" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="url_cuenta"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>URL de cuenta</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -467,8 +453,8 @@ export function ProductoFormDialog({
               </div>
               <div className="md:col-span-2">
                 <Button type="submit" disabled={isPending} className="w-full">
-                  {isPending 
-                    ? (isEditing ? 'Actualizando...' : 'Agregando...') 
+                  {isPending
+                    ? (isEditing ? 'Actualizando...' : 'Agregando...')
                     : (isEditing ? 'Actualizar producto' : 'Agregar producto')
                   }
                 </Button>

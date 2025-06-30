@@ -61,8 +61,8 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             Editar
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem 
-            className='text-red-600' 
+          <DropdownMenuItem
+            className='text-red-600'
             onClick={handleDelete}
           >
             <IconTrash className='mr-2 h-4 w-4' />
@@ -90,7 +90,6 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           informacion: producto.informacion ?? '',
           condiciones: producto.condiciones ?? '',
           imagen_url: producto.imagen_url ?? '',
-          url_cuenta: producto.url_cuenta ?? '',
           destacado: producto.destacado,
           mas_vendido: producto.mas_vendido,
           descripcion_completa: producto.descripcion_completa ?? '',

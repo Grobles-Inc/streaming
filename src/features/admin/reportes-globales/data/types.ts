@@ -25,7 +25,6 @@ export type Producto = {
   imagen_url: string | null
   created_at: string
   updated_at: string
-  url_cuenta: string | null
   tiempo_uso: number
   a_pedido: boolean
   nuevo: boolean

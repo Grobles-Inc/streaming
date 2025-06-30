@@ -63,7 +63,6 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       proveedor_id: producto.proveedor_id,
       producto_id: producto.id,
       vendedor_id: user.id,
-      fecha_termino: new Date(Date.now() + producto.tiempo_uso * 24 * 60 * 60 * 1000).toISOString(),
       nombre_cliente: data.nombre_cliente,
       precio: producto.precio_publico,
       monto_reembolso: producto.precio_publico,

@@ -7,85 +7,88 @@ type User = Database['public']['Tables']['usuarios']['Row']
 interface AuthState {
   user: User | null
   loading: boolean
-  signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string, userData: Partial<User>) => Promise<{ error: any }>
+  signIn: (usuario: string, password: string) => Promise<{ error: any }>
+  signUp: (userData: Omit<User, 'id' | 'created_at' | 'updated_at'>) => Promise<{ error: any }>
   signOut: () => Promise<void>
   refreshUser: () => Promise<void>
 }
+
+
 
 export const useAuthStore = create<AuthState>((set, _get) => ({
   user: null,
   loading: true,
 
-  signIn: async (email: string, password: string) => {
+  signIn: async (usuario: string, password: string) => {
     set({ loading: true })
     
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (error) {
-      set({ loading: false })
-      return { error }
-    }
-
-    if (data.user) {
-      // Fetch user data from our usuarios table
-      const { data: userData, error: userError } = await supabase
+    try {
+      // Find user by username
+      const { data: userData, error } = await supabase
         .from('usuarios')
         .select('*')
-        .eq('id', data.user.id)
+        .eq('usuario', usuario)
         .single()
 
-      if (userError) {
+      if (error || !userData) {
         set({ loading: false })
-        return { error: userError }
+        return { error: { message: 'Usuario no encontrado' } }
       }
 
-      set({ user: userData, loading: false })
-    }
+      // Verify password
+      if ( !userData.password || userData.password !== password) {
+        set({ loading: false })
+        return { error: { message: 'Contraseña incorrecta' } }
+      }
 
-    return { error: null }
+      // Store user session in localStorage
+      localStorage.setItem('currentUserId', userData.id)
+      
+      set({ user: userData, loading: false })
+      return { error: null }
+    } catch (err) {
+      set({ loading: false })
+      return { error: err }
+    }
   },
 
-  signUp: async (email: string, password: string, userData: Partial<User>) => {
+  signUp: async (userData: Omit<User, 'id' | 'created_at' | 'updated_at'>) => {
     set({ loading: true })
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    })
+    try {
+      // Check if user already exists
+      const { data: existingUser } = await supabase
+        .from('usuarios')
+        .select('id')
+        .or(`usuario.eq.${userData.usuario},email.eq.${userData.email}`)
+        .single()
 
-    if (error) {
-      set({ loading: false })
-      return { error }
-    }
+      if (existingUser) {
+        set({ loading: false })
+        return { error: { message: 'Usuario o email ya existe' } }
+      }
 
-    if (data.user) {
-      // Create user record in our usuarios table
-      const { error: insertError } = await supabase
+
+      // Create user record
+      const { data: newUser, error } = await supabase
         .from('usuarios')
         .insert({
-          id: data.user.id,
-          email: data.user.email!,
-          nombres: userData.nombres!,
-          apellidos: userData.apellidos!,
-          telefono: userData.telefono,
-          rol: userData.rol || 'seller',
-          balance: userData.balance || 0,
+          ...userData,
+          password: userData.password || '',
         })
+        .select()
+        .single()
 
-      if (insertError) {
+      if (error) {
         set({ loading: false })
-        return { error: insertError }
+        return { error }
       }
 
       // Create wallet for the user
       const { error: walletError } = await supabase
         .from('billeteras')
         .insert({
-          usuario_id: data.user.id,
+          usuario_id: newUser.id,
           saldo: 0,
         })
 
@@ -94,44 +97,43 @@ export const useAuthStore = create<AuthState>((set, _get) => ({
       }
 
       set({ loading: false })
+      return { error: null }
+    } catch (err) {
+      set({ loading: false })
+      return { error: err }
     }
-
-    return { error: null }
   },
 
   signOut: async () => {
     set({ loading: true })
     
-    const { error } = await supabase.auth.signOut()
-    
-    if (error) {
-      console.error('Error signing out:', error)
-    }
+    // Remove session from localStorage
+    localStorage.removeItem('currentUserId')
     
     set({ user: null, loading: false })
   },
-  
 
   refreshUser: async () => {
     set({ loading: true })
 
-    // Get current session
-    const { data: { session }, error } = await supabase.auth.getSession()
+    // Get current user ID from localStorage
+    const currentUserId = localStorage.getItem('currentUserId')
 
-    if (error || !session) {
+    if (!currentUserId) {
       set({ user: null, loading: false })
       return
     }
 
-    // Fetch user data from our usuarios table
+    // Fetch user data from usuarios table
     const { data: userData, error: userError } = await supabase
       .from('usuarios')
       .select('*')
-      .eq('id', session.user.id)
+      .eq('id', currentUserId)
       .single()
 
-    if (userError) {
+    if (userError || !userData) {
       console.error('Error fetching user data:', userError)
+      localStorage.removeItem('currentUserId')
       set({ user: null, loading: false })
       return
     }
@@ -144,17 +146,6 @@ export const useAuthStore = create<AuthState>((set, _get) => ({
 export const initializeAuth = async () => {
   const { refreshUser } = useAuthStore.getState()
   await refreshUser()
-
-  // Listen for auth changes
-  supabase.auth.onAuthStateChange(async (event, _session) => {
-    const { refreshUser } = useAuthStore.getState()
-    
-    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-      await refreshUser()
-    } else if (event === 'SIGNED_OUT') {
-      useAuthStore.setState({ user: null, loading: false })
-    }
-  })
 }
 
 // Custom hook for easier usage

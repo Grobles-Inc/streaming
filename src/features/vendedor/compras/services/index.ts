@@ -27,7 +27,7 @@ export const createCompra = async (compra: CompraInsert): Promise<Compra | null>
 export const getLatestCompras = async (usuarioId: string): Promise<Compra[]> => {
   const { data, error } = await supabase
     .from('compras')
-    .select('*, productos:producto_id (nombre, url_cuenta, precio_publico)')
+    .select('*, productos:producto_id (nombre, precio_publico)')
     .eq('vendedor_id', usuarioId)
     .order('created_at', { ascending: false })
     .limit(5)
@@ -145,7 +145,7 @@ export const getComprasByVendedorId = async (vendedorId: string): Promise<Compra
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, url_cuenta, precio_publico, tiempo_uso),
+      productos:producto_id (nombre, precio_publico, tiempo_uso),
       usuarios:proveedor_id (nombres, apellidos, telefono),
       stock_productos:stock_producto_id (email, perfil, pin, clave)
     `)
@@ -172,7 +172,7 @@ export const getComprasPaginated = async (
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, url_cuenta, precio_publico),
+      productos:producto_id (nombre, precio_publico),
       usuarios:proveedor_id (nombres, apellidos),
       stock_productos:stock_producto_id (email, perfil, pin, clave)
     `, { count: 'exact' })

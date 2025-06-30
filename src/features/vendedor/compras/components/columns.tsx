@@ -74,7 +74,6 @@ const CompraMessageCell = ({ row }: { row: Compra }) => {
       producto_precio: row.monto_reembolso,
       email_cuenta: row.stock_productos?.email || '',
       clave_cuenta: row.stock_productos?.clave || '',
-      url_cuenta: row.productos?.url_cuenta || '',
       perfil: row.stock_productos?.perfil || '',
       pin: row.stock_productos?.pin || '',
       fecha_inicio: row.fecha_inicio,
@@ -243,18 +242,6 @@ export const columns: ColumnDef<Compra>[] = [
       return <PasswordCell value={stock_productos?.clave || ''} />
     },
     enableSorting: false,
-  },
-
-  {
-    id: 'url',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='URL' />
-    ),
-    enableSorting: false,
-    cell: ({ row }) => {
-      const { productos } = row.original
-      return <div className='flex justify-center'>{productos?.url_cuenta}</div>
-    },
   },
   {
     accessorKey: 'estado',

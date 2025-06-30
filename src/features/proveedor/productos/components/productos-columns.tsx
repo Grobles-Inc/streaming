@@ -121,7 +121,7 @@ export const columns: ColumnDef<Producto>[] = [
       const producto = row.original
       const categoria = producto.categorias
       if (!categoria) return <span className='text-gray-400'>Sin categoría</span>
-      
+
       return (
         <Badge variant='outline' className='text-xs'>
           {categoria.nombre}
@@ -167,7 +167,7 @@ export const columns: ColumnDef<Producto>[] = [
     ),
     cell: ({ row }) => {
       const stock = row.getValue('stock') as number
-      
+
       return (
         <div className='text-center'>
           <span className={`font-bold text-sm ${stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -188,7 +188,7 @@ export const columns: ColumnDef<Producto>[] = [
       const Icon = disponibilidadIcons[disponibilidad]
       const color = disponibilidadColors[disponibilidad]
       const label = disponibilidadLabels[disponibilidad]
-      
+
       return (
         <Badge variant='outline' className={cn('text-xs', color)}>
           <Icon size={12} className='mr-1' />
@@ -223,7 +223,7 @@ export const columns: ColumnDef<Producto>[] = [
     ),
     cell: ({ row }) => {
       const renovable = row.getValue('renovable') as boolean
-      
+
       return (
         <Badge variant='outline' className={cn(
           'text-xs',
@@ -249,7 +249,7 @@ export const columns: ColumnDef<Producto>[] = [
     ),
     cell: ({ row }) => {
       const aPedido = row.getValue('a_pedido') as boolean
-      
+
       return (
         <Badge variant='outline' className={cn(
           'text-xs',
@@ -299,32 +299,13 @@ export const columns: ColumnDef<Producto>[] = [
     meta: { className: 'w-32' },
   },
   {
-    accessorKey: 'url_cuenta',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='URL Cuenta' />
-    ),
-    cell: ({ row }) => {
-      const url = row.getValue('url_cuenta') as string | null
-      return (
-        <div className='text-sm'>
-          {url ? (
-            <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-              Ver cuenta
-            </a>
-          ) : 'N/A'}
-        </div>
-      )
-    },
-    meta: { className: 'w-24' },
-  },
-  {
     accessorKey: 'nuevo',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Nuevo' />
     ),
     cell: ({ row }) => {
       const nuevo = row.getValue('nuevo') as boolean
-      
+
       return (
         <Badge variant='outline' className={cn(
           'text-xs',
@@ -384,7 +365,7 @@ export const columns: ColumnDef<Producto>[] = [
     ),
     cell: ({ row }) => {
       const muestraStock = row.getValue('muestra_disponibilidad_stock') as boolean
-      
+
       return (
         <Badge variant='outline' className={cn(
           'text-xs',
@@ -410,7 +391,7 @@ export const columns: ColumnDef<Producto>[] = [
     ),
     cell: ({ row }) => {
       const deshabilitado = row.getValue('deshabilitar_boton_comprar') as boolean
-      
+
       return (
         <Badge variant='outline' className={cn(
           'text-xs',

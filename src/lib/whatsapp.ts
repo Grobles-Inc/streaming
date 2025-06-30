@@ -17,7 +17,6 @@ interface CompraMessage {
   producto_precio: number
   email_cuenta: string
   clave_cuenta: string
-  url_cuenta: string
   perfil?: string
   pin?: string
   fecha_inicio: string
@@ -151,7 +150,6 @@ export async function CompraMessage(
 - *Precio:* S/. ${message.producto_precio.toFixed(2)}
 - *Email:* ${message.email_cuenta}
 - *Clave:* ${message.clave_cuenta}
-- *URL:* ${message.url_cuenta}
 - *Perfil:* ${message.perfil}
 - *PIN:* ${message.pin}
 - *Fecha de inicio:* ${message.fecha_inicio}

@@ -32,7 +32,7 @@ export function ProductoDetailsModal({ producto, onClose, onUpdate }: ProductoDe
     try {
       setIsSubmitting(true)
       const updatedProducto = await CategoriasService.updateProducto(
-        productoDetalles.id, 
+        productoDetalles.id,
         productoDetalles
       )
       onUpdate(updatedProducto)
@@ -222,18 +222,6 @@ export function ProductoDetailsModal({ producto, onClose, onUpdate }: ProductoDe
                       </option>
                     ))}
                   </select>
-                </div>
-
-                <div className="col-span-1 md:col-span-2 lg:col-span-3">
-                  <label className="block text-sm font-medium mb-1">URL Cuenta</label>
-                  <Input
-                    placeholder="URL Cuenta"
-                    value={productoDetalles.url_cuenta || ''}
-                    onChange={e =>
-                      setProductoDetalles({ ...productoDetalles, url_cuenta: e.target.value })
-                    }
-                    disabled={isSubmitting}
-                  />
                 </div>
               </div>
 

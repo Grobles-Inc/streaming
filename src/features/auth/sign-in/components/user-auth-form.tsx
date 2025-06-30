@@ -21,10 +21,9 @@ import { toast } from 'sonner'
 type UserAuthFormProps = HTMLAttributes<HTMLFormElement>
 
 const formSchema = z.object({
-  email: z
+  usuario: z
     .string()
-    .min(1, { message: 'Por favor, ingrese su email' })
-    .email({ message: 'Dirección de email inválida' }),
+    .min(1, { message: 'Por favor, ingrese su usuario o email' }),
   password: z
     .string()
     .min(1, {
@@ -43,14 +42,14 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
+      usuario: '',
       password: '',
     },
   })
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
-    const { error } = await signIn(data.email, data.password)
+    const { error } = await signIn(data.usuario, data.password)
     if (error) {
       toast.error(error.message)
     } else {
@@ -83,12 +82,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
       >
         <FormField
           control={form.control}
-          name='email'
+          name='usuario'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Correo electrónico</FormLabel>
+              <FormLabel>Usuario</FormLabel>
               <FormControl>
-                <Input placeholder='name@example.com' {...field} />
+                <Input placeholder='usuario' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

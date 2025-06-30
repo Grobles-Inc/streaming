@@ -15,10 +15,13 @@ export interface Database {
           email: string
           nombres: string
           avatar: string
+          usuario: string
+          password: string
+          billetera_id: string
+          codigo_referido: string
           apellidos: string
           telefono: string | null
           rol: 'provider' | 'admin' | 'seller'
-          balance: number
           created_at: string
           updated_at: string
         }
@@ -26,11 +29,14 @@ export interface Database {
           id?: string
           email: string
           nombres: string
+          usuario: string
           avatar: string
+          password: string
+          billetera_id: string
+          codigo_referido: string
           apellidos: string
           telefono?: string | null
           rol?: 'provider' | 'admin' | 'seller'
-          balance?: number
           created_at?: string
           updated_at?: string
         }
@@ -39,10 +45,13 @@ export interface Database {
           email?: string
           nombres?: string
           avatar?: string
+          usuario?: string
+          password?: string
+          billetera_id?: string
+          codigo_referido?: string
           apellidos?: string
           telefono?: string | null
           rol?: 'provider' | 'admin' | 'seller'
-          balance?: number
           created_at?: string
           updated_at?: string
         }
@@ -98,7 +107,6 @@ export interface Database {
           imagen_url: string | null
           created_at: string
           updated_at: string
-          url_cuenta: string | null
           tiempo_uso: number
           a_pedido: boolean
           nuevo: boolean
@@ -125,7 +133,6 @@ export interface Database {
           categoria_id: string
           proveedor_id: string
           imagen_url?: string | null
-          url_cuenta?: string | null
           tiempo_uso?: number
           a_pedido?: boolean
           nuevo?: boolean
@@ -155,8 +162,7 @@ export interface Database {
           proveedor_id?: string
           imagen_url?: string | null
           created_at?: string
-          updated_at?: string
-          url_cuenta?: string | null
+          updated_at?: string 
           tiempo_uso?: number
           a_pedido?: boolean
           nuevo?: boolean
@@ -291,10 +297,6 @@ export interface Database {
           producto_id: string
           vendedor_id?: string | null
           stock_producto_id?: number | null
-          email_cuenta: string
-          clave_cuenta: string
-          pin_cuenta?: string | null
-          perfil_usuario?: string | null
           nombre_cliente: string
           telefono_cliente: string
           precio: number
@@ -309,10 +311,6 @@ export interface Database {
           producto_id?: string
           vendedor_id?: string | null
           stock_producto_id?: number | null
-          email_cuenta?: string
-          clave_cuenta?: string
-          pin_cuenta?: string | null
-          perfil_usuario?: string | null
           nombre_cliente?: string
           telefono_cliente?: string
           precio?: number

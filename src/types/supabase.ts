@@ -420,6 +420,32 @@ export interface Database {
           }
         ]
       }
+      configuracion:{
+        Row:{
+          id: string
+          mantenimiento: boolean
+          updated_at: string
+          comision: number 
+          email_soporte: string | null
+          conversion: number
+        }
+        Insert: {
+          id?: string
+          mantenimiento?: boolean
+          updated_at?: string
+          comision?: number 
+          email_soporte?: string | null
+          conversion?: number
+        }
+        Update: {
+          id?: string
+          mantenimiento?: boolean
+          updated_at?: string
+          comision?: number 
+          email_soporte?: string | null
+          conversion?: number
+        }
+      }
     }
     Views: {
       [_ in never]: never

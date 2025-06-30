@@ -11,8 +11,6 @@ import CategoriaCard from './categoria-card'
 export default function Home() {
   const { data: categorias, isLoading: loadingCategorias } = useCategorias()
   const { data: productos, isLoading: loadingProductos } = useProductos()
-
-  // Validaciones adicionales
   const categoriasData = categorias?.data || []
   const productosData = productos?.data || []
   const productosDestacados = productosData.filter((producto) => producto.destacado)
@@ -21,7 +19,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-base-100">
       <LandingHeader />
-      
+
       {/* Scroll horizontal de categorías - Solo mostrar si hay datos */}
       {!loadingCategorias && categoriasData.length > 0 && (
         <ScrollArea className="m-4 rounded-md bg-white border whitespace-nowrap hidden md:block">

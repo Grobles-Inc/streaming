@@ -224,7 +224,12 @@ export function ProductoFormDialog({
                                 className="sr-only"
                                 aria-label="Upload image file"
                               />
-                              {previewUrl ? (
+                              {isUploadingImage ? (
+                                <div className="flex flex-col items-center justify-center">
+                                  <LoaderIcon className="size-8 animate-spin" />
+                                  <p className="mt-2 text-sm">Subiendo imagen...</p>
+                                </div>
+                              ) : previewUrl ? (
                                 <div className="absolute inset-0 flex items-center justify-center p-4">
                                   <img
                                     src={previewUrl}

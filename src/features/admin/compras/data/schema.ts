@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { EstadoCompra } from './types'
 
 // Esquema para estado de compra
 const estadoCompraSchema = z.union([

@@ -1,4 +1,3 @@
-import { Database } from '@/types/supabase'
 
 // Estados de compra
 export type EstadoCompra = 'resuelto' | 'vencido' | 'soporte' | 'reembolsado'

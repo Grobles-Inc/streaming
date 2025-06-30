@@ -32,12 +32,9 @@ export default function Dashboard() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogOpenRetirar, setDialogOpenRetirar] = useState(false)
   const { user } = useAuthStore()
-  if (!user?.id) {
-    return null
-  }
-  const { data: billetera, isLoading: isLoadingBilletera } = useBilleteraByUsuario(user.id)
-  const { data: recargas, isLoading: isLoadingRecargas } = useRecargasAprobadasByVendedor(user.id)
-  const { data: compras, isLoading: isLoadingCompras } = useComprasByVendedor(user.id)
+  const { data: billetera, isLoading: isLoadingBilletera } = useBilleteraByUsuario(user?.id || '')
+  const { data: recargas, isLoading: isLoadingRecargas } = useRecargasAprobadasByVendedor(user?.id || '')
+  const { data: compras, isLoading: isLoadingCompras } = useComprasByVendedor(user?.id || '')
   const saldo = billetera?.saldo || 0
   const totalCompras = compras?.reduce((acc, compra) => acc + compra.precio, 0) || 0
   return (

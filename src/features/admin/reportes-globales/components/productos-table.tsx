@@ -9,7 +9,7 @@ interface ProductosTableProps {
   onUpdateProducto: (id: string, updates: Partial<Producto>) => Promise<Producto>
 }
 
-export function ProductosTable({ productos, loading, onUpdateProducto }: ProductosTableProps) {
+export function ProductosTable({ productos, loading }: ProductosTableProps) {
   if (loading) {
     return (
       <Card>

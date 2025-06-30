@@ -26,7 +26,7 @@ import { useCategorias, useCreateProducto, useUpdateProducto } from '../queries'
 import { productoSchema, type ProductoFormData } from '../data/schema'
 import { Categoria } from '../services'
 import { useAuth } from '@/stores/authStore'
-import { AlertCircleIcon, ImageIcon, UploadIcon, XIcon } from "lucide-react"
+import { AlertCircleIcon, ImageIcon, LoaderIcon, UploadIcon, XIcon } from "lucide-react"
 import { useFileUpload } from "@/hooks/use-file-upload"
 import { SupabaseStorageService } from '@/lib/supabase'
 
@@ -50,7 +50,7 @@ export function ProductoFormDialog({
   onOpenChange: controlledOnOpenChange,
 }: ProductoFormDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false)
-  const [_isUploadingImage, setIsUploadingImage] = useState(false)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
 
   // Usar estado controlado si se proporciona, sino usar estado interno
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen

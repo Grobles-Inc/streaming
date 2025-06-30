@@ -25,7 +25,9 @@ import {
   IconCheck,
   IconX,
   IconEdit,
-  IconPhone
+  IconPhone,
+  IconWallet,
+  IconAlertTriangle
 } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import type { MappedRetiro, EstadoRetiro } from '../data/types'
@@ -169,6 +171,46 @@ export function RetiroDetailsModal({
             </CardContent>
           </Card>
 
+          {/* Información de la billetera */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <IconWallet className="h-5 w-5" />
+                Información de la Billetera
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between">
+                <span className="font-medium">Saldo actual:</span>
+                <span className={`text-lg font-bold ${
+                  retiro.saldoBilletera >= retiro.monto 
+                    ? 'text-green-600' 
+                    : 'text-red-600'
+                }`}>
+                  {retiro.saldoFormateado}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="font-medium">ID de billetera:</span>
+                <span className="text-sm font-mono text-muted-foreground">
+                  {retiro.billeteraId || 'N/A'}
+                </span>
+              </div>
+              {!retiro.puedeAprobar && (
+                <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <IconAlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm">
+                    <p className="font-medium text-red-800">Saldo insuficiente</p>
+                    <p className="text-red-700">
+                      El usuario no tiene saldo suficiente para procesar este retiro. 
+                      Saldo disponible: <strong>{retiro.saldoFormateado}</strong>, Monto solicitado: <strong>{retiro.montoFormateado}</strong>
+                    </p>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Información del retiro */}
           <Card>
             <CardHeader className="pb-3">
@@ -254,13 +296,22 @@ export function RetiroDetailsModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pendiente">Pendiente</SelectItem>
-                    <SelectItem value="aprobado">Aprobado</SelectItem>
+                    <SelectItem 
+                      value="aprobado" 
+                      disabled={!retiro.puedeAprobar}
+                    >
+                      Aprobado {!retiro.puedeAprobar && '(Saldo insuficiente)'}
+                    </SelectItem>
                     <SelectItem value="rechazado">Rechazado</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button 
                   onClick={handleUpdateEstado}
-                  disabled={actualizando || nuevoEstado === retiro.estado}
+                  disabled={
+                    actualizando || 
+                    nuevoEstado === retiro.estado ||
+                    (nuevoEstado === 'aprobado' && !retiro.puedeAprobar)
+                  }
                   className="min-w-[120px]"
                 >
                   {actualizando ? 'Actualizando...' : 'Actualizar'}
@@ -270,6 +321,17 @@ export function RetiroDetailsModal({
                 <p className="text-sm text-muted-foreground">
                   El estado seleccionado es el mismo que el actual
                 </p>
+              )}
+              {nuevoEstado === 'aprobado' && !retiro.puedeAprobar && (
+                <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <IconAlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm">
+                    <p className="font-medium text-yellow-800">No se puede aprobar</p>
+                    <p className="text-yellow-700">
+                      El usuario no tiene saldo suficiente en su billetera para procesar este retiro.
+                    </p>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>

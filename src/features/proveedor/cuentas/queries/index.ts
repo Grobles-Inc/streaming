@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as cuentasService from '../services'
 import { toast } from 'sonner'
+import { CuentasUpdate } from '../services'
 
 // Query para obtener todas las cuentas del proveedor autenticado
 export const useCuentas = () => {
@@ -11,10 +12,10 @@ export const useCuentas = () => {
 }
 
 // Query para obtener cuentas del proveedor sin paginación
-export const useCuentasByProveedor = () => {
+export const useCuentasByProveedor = (proveedor_id: string) => {
   return useQuery({
-    queryKey: ['cuentas', 'proveedor'],
-    queryFn: () => cuentasService.getCuentasByProveedor(),
+    queryKey: ['cuentas', 'proveedor', proveedor_id],
+    queryFn: () => cuentasService.getCuentasByProveedor(proveedor_id),
   })
 }
 
@@ -52,7 +53,7 @@ export const useUpdateCuenta = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, updates }: { id: number; updates: any }) => 
+    mutationFn: ({ id, updates }: { id: number; updates: CuentasUpdate }) => 
       cuentasService.updateCuenta(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cuentas'] })

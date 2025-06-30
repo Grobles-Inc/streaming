@@ -58,6 +58,40 @@ export const columns: ColumnDef<MappedUser>[] = [
     enableHiding: false,
   },
   {
+    accessorKey: 'email',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Email' />
+    ),
+    cell: ({ row }) => {
+      const email = row.getValue('email') as string
+      return (
+        <div className='font-mono text-sm max-w-48 truncate'>
+          {email || (
+            <span className='text-muted-foreground italic'>Sin email</span>
+          )}
+        </div>
+      )
+    },
+    enableSorting: true,
+  },
+  {
+    accessorKey: 'usuario',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Usuario' />
+    ),
+    cell: ({ row }) => {
+      const usuario = row.getValue('usuario') as string
+      return (
+        <div className='font-mono text-sm'>
+          {usuario || (
+            <span className='text-muted-foreground italic'>Sin usuario</span>
+          )}
+        </div>
+      )
+    },
+    enableSorting: true,
+  },
+  {
     accessorKey: 'telefono',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Teléfono' />
@@ -73,6 +107,27 @@ export const columns: ColumnDef<MappedUser>[] = [
       )
     },
     enableSorting: false,
+  },
+  {
+    accessorKey: 'codigo_referido',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Código Referido' />
+    ),
+    cell: ({ row }) => {
+      const codigoReferido = row.getValue('codigo_referido') as string
+      return (
+        <div className='font-mono text-sm'>
+          {codigoReferido ? (
+            <span className='inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200'>
+              {codigoReferido}
+            </span>
+          ) : (
+            <span className='text-muted-foreground italic'>Sin código</span>
+          )}
+        </div>
+      )
+    },
+    enableSorting: true,
   },
   {
     accessorKey: 'saldo',

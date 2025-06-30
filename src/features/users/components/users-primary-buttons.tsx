@@ -6,15 +6,15 @@ export function UsersPrimaryButtons() {
   const { setOpen } = useUsersContext()
   return (
     <div className='flex gap-2'>
-      <Button
+      {/* <Button
         variant='outline'
         className='space-x-1'
         onClick={() => setOpen('invite')}
       >
         <span>Invite User</span> <IconMailPlus size={18} />
-      </Button>
+      </Button> */}
       <Button className='space-x-1' onClick={() => setOpen('add')}>
-        <span>Add User</span> <IconUserPlus size={18} />
+        <span>Añadir Usuario</span> <IconUserPlus size={18} />
       </Button>
     </div>
   )

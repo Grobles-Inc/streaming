@@ -14,10 +14,9 @@ export interface Database {
           id: string
           email: string
           nombres: string
-          avatar: string
           usuario: string
           password: string
-          billetera_id: string
+          billetera_id: string | null
           codigo_referido: string
           apellidos: string
           telefono: string | null
@@ -30,10 +29,9 @@ export interface Database {
           email: string
           nombres: string
           usuario: string
-          avatar: string
-          password: string
-          billetera_id: string
-          codigo_referido: string
+          password?: string
+          billetera_id?: string | null
+          codigo_referido?: string
           apellidos: string
           telefono?: string | null
           rol?: 'provider' | 'admin' | 'seller'
@@ -44,10 +42,9 @@ export interface Database {
           id?: string
           email?: string
           nombres?: string
-          avatar?: string
           usuario?: string
           password?: string
-          billetera_id?: string
+          billetera_id?: string | null
           codigo_referido?: string
           apellidos?: string
           telefono?: string | null
@@ -198,6 +195,7 @@ export interface Database {
       stock_productos: {
         Row: {
           id: number
+          proveedor_id: string
           email: string | null
           clave: string | null
           pin: string | null
@@ -211,6 +209,7 @@ export interface Database {
         }
         Insert: {
           id?: number
+          proveedor_id?: string
           email?: string | null
           clave?: string | null
           pin?: string | null
@@ -224,6 +223,7 @@ export interface Database {
         }
         Update: {
           id?: number
+          proveedor_id?: string
           email?: string | null
           clave?: string | null
           pin?: string | null
@@ -241,6 +241,13 @@ export interface Database {
             columns: ["producto_id"]
             isOneToOne: false
             referencedRelation: "productos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_productos_proveedor_id_fkey"
+            columns: ["proveedor_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
             referencedColumns: ["id"]
           }
         ]

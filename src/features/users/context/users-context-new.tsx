@@ -4,7 +4,7 @@ import { MappedUser } from '../data/schema'
 import { useUsers as useSupabaseUsers } from '../hooks/use-users'
 import { CreateUserData, UpdateUserData } from '../services/users.service'
 
-type UsersDialogType = 'invite' | 'add' | 'edit' | 'delete'
+type UsersDialogType = 'invite' | 'add' | 'edit' | 'delete' | 'view'
 
 interface UsersContextType {
   open: UsersDialogType | null

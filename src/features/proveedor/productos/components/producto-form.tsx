@@ -26,7 +26,7 @@ import { useCategorias, useCreateProducto, useUpdateProducto } from '../queries'
 import { productoSchema, type ProductoFormData } from '../data/schema'
 import { Categoria } from '../services'
 import { useAuth } from '@/stores/authStore'
-import { AlertCircleIcon, ImageIcon, UploadIcon, XIcon, LoaderIcon } from "lucide-react"
+import { AlertCircleIcon, ImageIcon, LoaderIcon, UploadIcon, XIcon } from "lucide-react"
 import { useFileUpload } from "@/hooks/use-file-upload"
 import { SupabaseStorageService } from '@/lib/supabase'
 

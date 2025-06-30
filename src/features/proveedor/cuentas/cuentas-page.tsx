@@ -13,10 +13,12 @@ import { Button } from '@/components/ui/button'
 import { IconRefresh } from '@tabler/icons-react'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { ProfileDropdown } from '@/components/profile-dropdown'
+import { useAuth } from '@/stores/authStore'
 
 export function CuentasPage() {
   const [showForm, setShowForm] = useState(false)
-  const { data: cuentas, isLoading, error } = useCuentasByProveedor()
+  const { user } = useAuth()
+  const { data: cuentas, isLoading, error } = useCuentasByProveedor(user?.id || '')
 
   if (isLoading) {
     return (

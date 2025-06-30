@@ -90,7 +90,6 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           informacion: producto.informacion ?? '',
           condiciones: producto.condiciones ?? '',
           imagen_url: producto.imagen_url ?? '',
-          url_cuenta: producto.url_cuenta ?? '',
           destacado: producto.destacado,
           mas_vendido: producto.mas_vendido,
           descripcion_completa: producto.descripcion_completa ?? '',

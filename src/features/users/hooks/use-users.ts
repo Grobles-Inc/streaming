@@ -39,8 +39,10 @@ export function useUsers() {
       }
       return null
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al crear usuario')
+      const errorMessage = err instanceof Error ? err.message : 'Error al crear usuario'
       console.error('Error creating user:', err)
+      console.error('User data sent:', userData)
+      setError(errorMessage)
       return null
     }
   }

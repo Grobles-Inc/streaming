@@ -1,6 +1,7 @@
 import { useUsersContext } from '../context/users-context-new'
 import { UsersActionDialog } from './users-action-dialog'
 import { UsersDeleteDialog } from './users-delete-dialog'
+import { UsersDetailsDialog } from './users-details-dialog'
 import { UsersInviteDialog } from './users-invite-dialog'
 
 export function UsersDialogs() {
@@ -21,6 +22,18 @@ export function UsersDialogs() {
 
       {currentRow && (
         <>
+          <UsersDetailsDialog
+            key={`user-view-${currentRow.id}`}
+            open={open === 'view'}
+            onOpenChange={() => {
+              setOpen('view')
+              setTimeout(() => {
+                setCurrentRow(null)
+              }, 500)
+            }}
+            currentRow={currentRow}
+          />
+
           <UsersActionDialog
             key={`user-edit-${currentRow.id}`}
             open={open === 'edit'}

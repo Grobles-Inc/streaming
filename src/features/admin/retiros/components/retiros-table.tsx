@@ -82,10 +82,12 @@ export function RetirosTable({
   const selectedRows = table.getFilteredSelectedRowModel().rows
   const selectedRetiros = selectedRows.map(row => row.original)
   const selectedPendientes = selectedRetiros.filter(r => r.estado === 'pendiente')
+  const selectedAprobables = selectedPendientes.filter(r => r.puedeAprobar)
+  const selectedNoAprobables = selectedPendientes.filter(r => !r.puedeAprobar)
 
   const handleAprobarSeleccionados = async () => {
-    if (selectedPendientes.length > 0 && onAprobarSeleccionados) {
-      await onAprobarSeleccionados(selectedPendientes.map(r => r.id))
+    if (selectedAprobables.length > 0 && onAprobarSeleccionados) {
+      await onAprobarSeleccionados(selectedAprobables.map(r => r.id))
       setRowSelection({})
     }
   }
@@ -155,17 +157,26 @@ export function RetirosTable({
         {/* Acciones masivas */}
         {selectedPendientes.length > 0 && (
           <div className="flex items-center space-x-2">
-            <Badge variant="secondary">
-              {selectedPendientes.length} pendiente(s) seleccionado(s)
-            </Badge>
+            <div className="flex flex-col space-y-1">
+              <Badge variant="secondary">
+                {selectedPendientes.length} pendiente(s) seleccionado(s)
+              </Badge>
+              {selectedNoAprobables.length > 0 && (
+                <Badge variant="destructive" className="text-xs">
+                  {selectedNoAprobables.length} con saldo insuficiente
+                </Badge>
+              )}
+            </div>
             <Button
               size="sm"
               variant="default"
               onClick={handleAprobarSeleccionados}
-              className="bg-green-600 hover:bg-green-700"
+              disabled={selectedAprobables.length === 0}
+              className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400"
+              title={selectedAprobables.length === 0 ? "Ningún retiro seleccionado tiene saldo suficiente" : `Aprobar ${selectedAprobables.length} retiro(s)`}
             >
               <IconCheck className="mr-2 h-4 w-4" />
-              Aprobar
+              Aprobar ({selectedAprobables.length})
             </Button>
             <Button
               size="sm"
@@ -173,7 +184,7 @@ export function RetirosTable({
               onClick={handleRechazarSeleccionados}
             >
               <IconX className="mr-2 h-4 w-4" />
-              Rechazar
+              Rechazar ({selectedPendientes.length})
             </Button>
           </div>
         )}

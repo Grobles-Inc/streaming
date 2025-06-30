@@ -5,10 +5,12 @@ export type SupabaseUser = {
   email: string
   nombres: string
   apellidos: string
-  avatar: string
+  usuario: string
+  password: string
   telefono: string | null
+  codigo_referido: string
+  billetera_id: string | null
   rol: 'provider' | 'admin' | 'seller'
-  balance: number
   created_at: string
   updated_at: string
 }
@@ -22,10 +24,11 @@ export type CreateUserData = {
   email: string
   nombres: string
   apellidos: string
-  avatar?: string
+  usuario: string
+  password?: string
   telefono?: string | null
+  codigo_referido?: string
   rol?: 'provider' | 'admin' | 'seller'
-  balance?: number
 }
 
 export type UpdateUserData = Partial<Omit<SupabaseUser, 'id' | 'created_at' | 'updated_at'>>
@@ -88,23 +91,85 @@ export class UsersService {
 
   // Crear nuevo usuario
   static async createUser(userData: CreateUserData): Promise<SupabaseUser> {
-    const { data, error } = await supabase
-      .from('usuarios')
-      .insert({
-        ...userData,
-        avatar: userData.avatar || '',
-        rol: userData.rol || 'seller',
-        balance: userData.balance || 0
-      })
-      .select('*')
-      .single()
-    
-    if (error) {
-      console.error('Error creating user:', error)
+    try {
+      console.log('Creating user with data:', userData)
+      
+      // PASO 1: Crear el usuario SIN billetera_id
+      const { data: userData_inserted, error: userError } = await supabase
+        .from('usuarios')
+        .insert({
+          email: userData.email,
+          nombres: userData.nombres,
+          apellidos: userData.apellidos,
+          usuario: userData.usuario,
+          password: userData.password || '',
+          telefono: userData.telefono || null,
+          rol: userData.rol || 'seller',
+          codigo_referido: userData.codigo_referido || '',
+          // No enviar billetera_id inicialmente
+        })
+        .select('*')
+        .single()
+      
+      if (userError) {
+        console.error('Error creating user:', userError)
+        console.error('Error details:', JSON.stringify(userError, null, 2))
+        console.error('User data:', JSON.stringify(userData, null, 2))
+        throw userError
+      }
+      
+      console.log('User created successfully:', userData_inserted)
+      
+      // PASO 2: Crear la billetera
+      const { data: billetera_inserted, error: walletError } = await supabase
+        .from('billeteras')
+        .insert({
+          usuario_id: userData_inserted.id, // ID real del usuario
+          saldo: 0
+        })
+        .select('*')
+        .single()
+      
+      if (walletError) {
+        // Si falla la creación de la billetera, eliminar el usuario creado
+        await supabase
+          .from('usuarios')
+          .delete()
+          .eq('id', userData_inserted.id)
+          
+        console.error('Error creating wallet:', walletError)
+        throw new Error('Error al crear la billetera: ' + walletError.message)
+      }
+      
+      console.log('Wallet created successfully:', billetera_inserted)
+      
+      // PASO 3: Actualizar el usuario con el ID de la billetera
+      const { data: updated_user, error: updateError } = await supabase
+        .from('usuarios')
+        .update({
+          billetera_id: billetera_inserted.id
+        })
+        .eq('id', userData_inserted.id)
+        .select('*')
+        .single()
+      
+      if (updateError) {
+        // Si falla la actualización, limpiar usuario y billetera
+        await supabase.from('billeteras').delete().eq('id', billetera_inserted.id)
+        await supabase.from('usuarios').delete().eq('id', userData_inserted.id)
+        
+        console.error('Error updating user with wallet ID:', updateError)
+        throw new Error('Error al vincular la billetera: ' + updateError.message)
+      }
+      
+      console.log('User updated with wallet ID:', updated_user)
+      
+      return updated_user
+      
+    } catch (error) {
+      console.error('Error in user creation process:', error)
       throw error
     }
-    
-    return data
   }
 
   // Actualizar usuario

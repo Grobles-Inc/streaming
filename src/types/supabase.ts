@@ -14,10 +14,9 @@ export interface Database {
           id: string
           email: string
           nombres: string
-          avatar: string
           usuario: string
           password: string
-          billetera_id: string
+          billetera_id: string | null
           codigo_referido: string
           apellidos: string
           telefono: string | null
@@ -30,10 +29,9 @@ export interface Database {
           email: string
           nombres: string
           usuario: string
-          avatar: string
-          password: string
-          billetera_id: string
-          codigo_referido: string
+          password?: string
+          billetera_id?: string | null
+          codigo_referido?: string
           apellidos: string
           telefono?: string | null
           rol?: 'provider' | 'admin' | 'seller'
@@ -44,10 +42,9 @@ export interface Database {
           id?: string
           email?: string
           nombres?: string
-          avatar?: string
           usuario?: string
           password?: string
-          billetera_id?: string
+          billetera_id?: string | null
           codigo_referido?: string
           apellidos?: string
           telefono?: string | null

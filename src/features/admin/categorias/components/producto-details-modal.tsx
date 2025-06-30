@@ -127,7 +127,7 @@ export function ProductoDetailsModal({ producto, onClose, onUpdate }: ProductoDe
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Precio Renovación</label>
+                  <label className="block text-sm font-medium mb-1">Precio Renovar</label>
                   <Input
                     placeholder="Precio Renovar"
                     type="number"

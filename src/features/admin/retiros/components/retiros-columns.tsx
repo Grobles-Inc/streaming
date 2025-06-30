@@ -9,7 +9,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { IconDots, IconCheck, IconX, IconEye } from '@tabler/icons-react'
+import { IconDots, IconCheck, IconX, IconEye, IconAlertTriangle, IconWallet } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import type { MappedRetiro } from '../data/types'
 
@@ -54,6 +54,7 @@ interface RetirosTableActionsProps {
 // Componente de acciones
 function RetirosTableActions({ retiro, onAprobar, onRechazar, onVer }: RetirosTableActionsProps) {
   const puedeModificar = retiro.estado === 'pendiente'
+  const puedeAprobar = retiro.puedeAprobar
 
   return (
     <DropdownMenu>
@@ -73,10 +74,18 @@ function RetirosTableActions({ retiro, onAprobar, onRechazar, onVer }: RetirosTa
           <>
             <DropdownMenuItem 
               onClick={() => onAprobar(retiro.id)}
-              className="text-green-600 focus:text-green-600"
+              disabled={!puedeAprobar}
+              className={cn(
+                puedeAprobar 
+                  ? "text-green-600 focus:text-green-600" 
+                  : "text-gray-400 cursor-not-allowed"
+              )}
             >
               <IconCheck className="mr-2 h-4 w-4" />
               Aprobar
+              {!puedeAprobar && (
+                <IconAlertTriangle className="ml-2 h-4 w-4 text-orange-500" />
+              )}
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => onRechazar(retiro.id)}
@@ -155,6 +164,39 @@ export function createRetirosColumns(
             )}>
               {montoFormateado}
             </span>
+          </div>
+        )
+      },
+      meta: {
+        className: 'text-right',
+      },
+    },
+    {
+      accessorKey: 'saldoFormateado',
+      header: 'Saldo Billetera',
+      cell: ({ row }) => {
+        const saldoFormateado = row.getValue('saldoFormateado') as string
+        const puedeAprobar = row.original.puedeAprobar
+        
+        return (
+          <div className="text-right font-mono">
+            <div className="flex items-center justify-end gap-2">
+              <IconWallet className="h-4 w-4 text-muted-foreground" />
+              <span className={cn(
+                'inline-flex items-center px-2 py-1 rounded-md text-sm font-medium',
+                puedeAprobar 
+                  ? 'bg-green-50 text-green-700 border border-green-200' 
+                  : 'bg-red-50 text-red-700 border border-red-200'
+              )}>
+                {saldoFormateado}
+              </span>
+            </div>
+            {!puedeAprobar && (
+              <div className="text-xs text-red-600 mt-1 flex items-center justify-end gap-1">
+                <IconAlertTriangle className="h-3 w-3" />
+                Insuficiente
+              </div>
+            )}
           </div>
         )
       },

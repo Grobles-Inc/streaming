@@ -189,9 +189,7 @@ export default function RetirosPage() {
               Actualizar
             </Button>
             
-            <Button variant="outline" onClick={testSupabaseConnection}>
-              🔍 Test DB
-            </Button>
+            
             
             <Button variant="outline" disabled>
               <IconDownload className="mr-2 h-4 w-4" />

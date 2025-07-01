@@ -13,11 +13,12 @@ import { Compra } from '../data/schema'
 import { useUpdateCompraStatus } from '../queries'
 
 const subjectOptions = [
-  { value: 'soporte', label: 'Soporte' },
-  { value: 'renovacion', label: 'Renovación ' },
-  { value: 'credenciales', label: 'Credenciales' },
-  { value: 'reembolso', label: 'Reembolso' },
-  { value: 'otro', label: 'Otro' },
+  { value: 'correo', label: 'Correo' },
+  { value: 'clave', label: 'Clave' },
+  { value: 'pago', label: 'Pago' },
+  { value: 'geo', label: 'Geo' },
+  { value: 'codigo', label: 'Código' },
+  { value: 'otros', label: 'Otros' },
 ]
 
 const formSchema = z.object({
@@ -75,7 +76,7 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Comunicate con el proveedor</DialogTitle>
+          <DialogTitle>Solicitar Soporte</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">

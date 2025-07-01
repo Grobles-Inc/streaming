@@ -24,7 +24,6 @@ import { toast } from 'sonner'
 import { useRetiros } from './hooks/use-retiros'
 import { createRetirosColumns } from './components/retiros-columns'
 import { RetirosTable } from './components/retiros-table'
-import { EstadisticasRetirosCard } from './components/estadisticas-retiros'
 import { RetiroDetailsModal } from './components/retiro-details-modal'
 import type { MappedRetiro, EstadoRetiro } from './data/types'
 
@@ -193,14 +192,6 @@ export default function RetirosPage() {
               Exportar
             </Button>
           </div>
-        </div>
-
-        {/* Estadísticas */}
-        <div className="mb-6">
-          <EstadisticasRetirosCard 
-            estadisticas={estadisticas} 
-            loading={loading} 
-          />
         </div>
 
         {/* Tabla de retiros */}

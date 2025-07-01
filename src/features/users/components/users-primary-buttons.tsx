@@ -11,10 +11,10 @@ export function UsersPrimaryButtons() {
         className='space-x-1'
         onClick={() => setOpen('invite')}
       >
-        <span>Invite User</span> <IconMailPlus size={18} />
+        <span>Invitar usuario</span> <IconMailPlus size={18} />
       </Button>
       <Button className='space-x-1' onClick={() => setOpen('add')}>
-        <span>Añadir Usuario</span> <IconUserPlus size={18} />
+        <span>Añadir usuario</span> <IconUserPlus size={18} />
       </Button>
     </div>
   )

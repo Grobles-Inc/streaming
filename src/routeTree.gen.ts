@@ -19,6 +19,7 @@ import { Route as errors401RouteImport } from './routes/(errors)/401'
 import { Route as authSignUpRouteImport } from './routes/(auth)/sign-up'
 import { Route as authSignIn2RouteImport } from './routes/(auth)/sign-in-2'
 import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
+import { Route as authRegisterRouteImport } from './routes/(auth)/register'
 import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
@@ -92,6 +93,11 @@ const authSignIn2Route = authSignIn2RouteImport.update({
 const authSignInRoute = authSignInRouteImport.update({
   id: '/(auth)/sign-in',
   path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authRegisterRoute = authRegisterRouteImport.update({
+  id: '/(auth)/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const authOtpRoute = authOtpRouteImport.update({
@@ -246,6 +252,7 @@ export interface FileRoutesByFullPath {
   '': typeof AuthenticatedRouteRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
+  '/register': typeof authRegisterRoute
   '/sign-in': typeof authSignInRoute
   '/sign-in-2': typeof authSignIn2Route
   '/sign-up': typeof authSignUpRoute
@@ -283,6 +290,7 @@ export interface FileRoutesByTo {
   '': typeof AuthenticatedRouteRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
+  '/register': typeof authRegisterRoute
   '/sign-in': typeof authSignInRoute
   '/sign-in-2': typeof authSignIn2Route
   '/sign-up': typeof authSignUpRoute
@@ -321,6 +329,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/otp': typeof authOtpRoute
+  '/(auth)/register': typeof authRegisterRoute
   '/(auth)/sign-in': typeof authSignInRoute
   '/(auth)/sign-in-2': typeof authSignIn2Route
   '/(auth)/sign-up': typeof authSignUpRoute
@@ -360,6 +369,7 @@ export interface FileRouteTypes {
     | ''
     | '/forgot-password'
     | '/otp'
+    | '/register'
     | '/sign-in'
     | '/sign-in-2'
     | '/sign-up'
@@ -397,6 +407,7 @@ export interface FileRouteTypes {
     | ''
     | '/forgot-password'
     | '/otp'
+    | '/register'
     | '/sign-in'
     | '/sign-in-2'
     | '/sign-up'
@@ -434,6 +445,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/(auth)/forgot-password'
     | '/(auth)/otp'
+    | '/(auth)/register'
     | '/(auth)/sign-in'
     | '/(auth)/sign-in-2'
     | '/(auth)/sign-up'
@@ -472,6 +484,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   authForgotPasswordRoute: typeof authForgotPasswordRoute
   authOtpRoute: typeof authOtpRoute
+  authRegisterRoute: typeof authRegisterRoute
   authSignInRoute: typeof authSignInRoute
   authSignIn2Route: typeof authSignIn2Route
   authSignUpRoute: typeof authSignUpRoute
@@ -554,6 +567,13 @@ declare module '@tanstack/react-router' {
       path: '/sign-in'
       fullPath: '/sign-in'
       preLoaderRoute: typeof authSignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)/register': {
+      id: '/(auth)/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof authRegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(auth)/otp': {
@@ -799,6 +819,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   authForgotPasswordRoute: authForgotPasswordRoute,
   authOtpRoute: authOtpRoute,
+  authRegisterRoute: authRegisterRoute,
   authSignInRoute: authSignInRoute,
   authSignIn2Route: authSignIn2Route,
   authSignUpRoute: authSignUpRoute,

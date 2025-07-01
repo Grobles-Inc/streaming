@@ -122,8 +122,11 @@ export default function ConfiguracionSistemaPage() {
           </div>
         </Header>
         <Main>
-          <div className='mb-2 flex items-center justify-between space-y-2'>
-            <Skeleton className="h-8 w-64" />
+          <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
+            <div>
+              <Skeleton className="h-8 w-64" />
+              <Skeleton className="h-4 w-96 mt-2" />
+            </div>
           </div>
           <div className='grid gap-6 md:grid-cols-2'>
             {Array.from({ length: 3 }).map((_, i) => (
@@ -165,70 +168,19 @@ export default function ConfiguracionSistemaPage() {
         </div>
       </Header>
       <Main>
-        <div className='mb-2 flex items-center justify-between space-y-2'>
+        <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
           <div>
-            <h1 className='text-2xl font-bold tracking-tight'>Configuración del Sistema</h1>
+            <h2 className='text-2xl font-bold tracking-tight'>Gestión de Configuración del Sistema</h2>
+            <p className='text-muted-foreground'>
+              Administra la configuración general del sistema y comisiones.
+            </p>
             {error && (
               <p className="text-sm text-destructive mt-1">{error}</p>
             )}
           </div>
         </div>
 
-        <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-2'>
-          {/* Modo mantenimiento */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Modo Mantenimiento
-                {configuracion?.mantenimiento && (
-                  <Badge variant="destructive">Activo</Badge>
-                )}
-              </CardTitle>
-              <CardDescription>
-                Activa el modo mantenimiento para mostrar un mensaje a todos los usuarios.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className='flex items-center gap-4'>
-                <Switch 
-                  checked={mantenimiento} 
-                  onCheckedChange={handleMantenimientoChange}
-                  disabled={saving}
-                />
-                <span>{mantenimiento ? 'Activado' : 'Desactivado'}</span>
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                Los cambios en el modo mantenimiento se guardan automáticamente.
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Información de la configuración actual */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Información del Sistema</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm">
-                <div>
-                  <span className="font-medium">Última actualización:</span>{' '}
-                  {configuracion?.updatedAt ? 
-                    new Intl.DateTimeFormat('es-ES', {
-                      dateStyle: 'short',
-                      timeStyle: 'short'
-                    }).format(configuracion.updatedAt) 
-                    : 'No disponible'
-                  }
-                </div>
-                <div>
-                  <span className="font-medium">Estado del sistema:</span>{' '}
-                  <Badge variant={configuracion?.mantenimiento ? 'destructive' : 'secondary'}>
-                    {configuracion?.mantenimiento ? 'En mantenimiento' : 'Operativo'}
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-2 pt-10'>
 
           {/* Email de soporte */}
           <Card>

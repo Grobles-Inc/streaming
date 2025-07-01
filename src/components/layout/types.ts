@@ -1,7 +1,7 @@
 import { LinkProps } from '@tanstack/react-router'
 
 // Define the available roles (matching database schema)
-type UserRole = 'seller' | 'provider' | 'admin'
+type UserRole = 'registrado' | 'seller' | 'provider' | 'admin'
 
 interface User {
   id: string

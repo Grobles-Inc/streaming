@@ -297,7 +297,7 @@ export interface Database {
           nombre_cliente: string
           telefono_cliente: string
           precio: number
-          estado: string
+          estado: 'resuelto' | 'vencido' | 'soporte' | 'reembolsado' | 'pedido_entregado'
           monto_reembolso: number
           created_at: string
           updated_at: string
@@ -312,7 +312,7 @@ export interface Database {
           nombre_cliente: string
           telefono_cliente: string
           precio: number
-          estado?: string
+          estado?: 'resuelto' | 'vencido' | 'soporte' | 'reembolsado' | 'pedido_entregado'
           monto_reembolso?: number
           created_at?: string
           updated_at?: string
@@ -327,7 +327,7 @@ export interface Database {
           nombre_cliente?: string
           telefono_cliente?: string
           precio?: number
-          estado?: string
+          estado?: 'resuelto' | 'vencido' | 'soporte' | 'reembolsado' | 'pedido_entregado'
           monto_reembolso?: number
           created_at?: string
           updated_at?: string

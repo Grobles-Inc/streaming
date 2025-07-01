@@ -4,7 +4,7 @@ import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { IconWallet, IconUsers, IconCreditCard } from '@tabler/icons-react'
@@ -99,16 +99,15 @@ export default function BilleterasPage() {
         </div>
       </Header>
       <Main>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <IconWallet className="h-6 w-6" />
-              Gestión de Billeteras
-            </CardTitle>
-            <CardDescription>
+        <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
+          <div>
+            <h2 className='text-2xl font-bold tracking-tight'>Gestión de Billeteras</h2>
+            <p className='text-muted-foreground'>
               Administra las billeteras de todos los usuarios y tu propia billetera de administrador.
-            </CardDescription>
-          </CardHeader>
+            </p>
+          </div>
+        </div>
+        <Card>
           <CardContent>
             {/* Estadísticas generales */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

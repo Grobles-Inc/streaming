@@ -6,6 +6,7 @@ const estadoCompraSchema = z.union([
   z.literal('vencido'),
   z.literal('soporte'),
   z.literal('reembolsado'),
+  z.literal('pedido_entregado'),
 ])
 
 // Esquema para compra base
@@ -158,7 +159,7 @@ export function mapSupabaseCompraToComponent(compra: CompraWithRelations): Mappe
     montoReembolsoFormateado,
     fechaCreacion,
     fechaActualizacion,
-    puedeModificar: ['soporte', 'vencido'].includes(compra.estado),
+    puedeModificar: ['soporte', 'vencido', 'pedido_entregado'].includes(compra.estado),
     requiereReembolso: compra.estado === 'reembolsado' && compra.monto_reembolso > 0,
     tiempoTranscurrido,
   }

@@ -3,9 +3,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { IconEye, IconTrash, IconMenu2 } from '@tabler/icons-react'
+import { IconEye, IconTrash, IconMenu2, IconEdit } from '@tabler/icons-react'
 import { CategoriasService } from '../services'
 import { ProductoDetailsModal } from './producto-details-modal'
+import { ProductoEditModal } from './producto-edit-modal'
+import { ProductoFilters } from './producto-filters'
 import type { Categoria, Producto } from '../data/types'
 
 interface ProductosPorCategoriaProps {
@@ -23,12 +25,17 @@ export function ProductosPorCategoria({
 }: ProductosPorCategoriaProps) {
   const [currentPage, setCurrentPage] = useState(0)
   const [productoDetalles, setProductoDetalles] = useState<Producto | null>(null)
+  const [productoEditando, setProductoEditando] = useState<Producto | null>(null)
+  const [productosFiltrados, setProductosFiltrados] = useState<Producto[]>([])
   const itemsPerPage = 10
+
+  // Productos a mostrar (filtrados o todos)
+  const productosAMostrar = productosFiltrados.length > 0 || productos.length === 0 ? productosFiltrados : productos
 
   const startIndex = currentPage * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const paginatedProductos = productos.slice(startIndex, endIndex)
-  const totalPages = Math.ceil(productos.length / itemsPerPage)
+  const paginatedProductos = productosAMostrar.slice(startIndex, endIndex)
+  const totalPages = Math.ceil(productosAMostrar.length / itemsPerPage)
 
   const handleEliminarProducto = async (id: string) => {
     try {
@@ -39,12 +46,25 @@ export function ProductosPorCategoria({
     }
   }
 
+  // Función para manejar el filtrado de productos
+  const handleProductoFilter = (filteredProductos: Producto[]) => {
+    setProductosFiltrados(filteredProductos)
+    setCurrentPage(0) // Reset page when filters change
+  }
+
   return (
     <Card className="mt-4">
       <CardHeader>
         <CardTitle>Productos de {categoria.nombre}</CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Filtros de productos */}
+        <ProductoFilters
+          productos={productos}
+          onFilter={handleProductoFilter}
+          className="mb-6"
+        />
+
         <table className="w-full text-sm text-left">
           <thead>
             <tr>
@@ -109,6 +129,11 @@ export function ProductosPorCategoria({
                         <IconEye className="mr-2" /> Ver detalles
                       </DropdownMenuItem>
                       <DropdownMenuItem
+                        onClick={() => setProductoEditando(producto)}
+                      >
+                        <IconEdit className="mr-2" /> Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
                         onClick={() => handleEliminarProducto(producto.id)}
                         className="text-red-600"
                       >
@@ -132,7 +157,7 @@ export function ProductosPorCategoria({
             Anterior
           </Button>
           <span className="text-sm text-gray-600">
-            Página {currentPage + 1} de {totalPages || 1}
+            Página {currentPage + 1} de {totalPages || 1} - Mostrando {productosAMostrar.length} de {productos.length} productos
           </span>
           <Button
             variant="outline"
@@ -147,6 +172,14 @@ export function ProductosPorCategoria({
         <ProductoDetailsModal
           producto={productoDetalles}
           onClose={() => setProductoDetalles(null)}
+          onUpdate={onProductoUpdate}
+        />
+
+        {/* Modal de edición del producto */}
+        <ProductoEditModal
+          producto={productoEditando}
+          open={!!productoEditando}
+          onClose={() => setProductoEditando(null)}
           onUpdate={onProductoUpdate}
         />
       </CardContent>

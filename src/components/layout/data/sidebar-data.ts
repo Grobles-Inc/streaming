@@ -177,6 +177,18 @@ const baseNavGroups = [
         roles: ['admin'],
       },
       {
+        title: 'Billeteras',
+        url: '/admin/billeteras',
+        icon: IconWallet,
+        roles: ['admin'],
+      },
+      {
+        title: 'Gestión de Billeteras',
+        url: '/admin/billeteras',
+        icon: IconWallet,
+        roles: ['admin'],
+      },
+      {
         title: 'Gestión de Recargas',
         url: '/admin/recargas',
         icon: IconCash,

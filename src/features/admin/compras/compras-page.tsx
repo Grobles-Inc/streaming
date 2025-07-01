@@ -1,4 +1,9 @@
 import { useState } from 'react'
+import { Header } from '@/components/layout/header'
+import { Main } from '@/components/layout/main'
+import { ProfileDropdown } from '@/components/profile-dropdown'
+import { Search } from '@/components/search'
+import { ThemeSwitch } from '@/components/theme-switch'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -148,7 +153,16 @@ export function ComprasPage() {
   )
 
   return (
-    <div className="space-y-6">
+    <>
+      <Header fixed>
+        <Search />
+        <div className='ml-auto flex items-center space-x-4'>
+          <ThemeSwitch />
+          <ProfileDropdown />
+        </div>
+      </Header>
+      <Main>
+        <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -247,6 +261,8 @@ export function ComprasPage() {
         open={showDetailsModal}
         onOpenChange={setShowDetailsModal}
       />
-    </div>
+        </div>
+      </Main>
+    </>
   )
 }

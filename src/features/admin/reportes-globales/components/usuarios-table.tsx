@@ -6,7 +6,6 @@ interface UsuariosTableProps {
   usuarios: Usuario[]
   loading: boolean
   onUpdateUsuario: (id: string, updates: Partial<Usuario>) => Promise<Usuario>
-  onDeleteUsuario: (id: string) => Promise<void>
 }
 
 export function UsuariosTable({ usuarios, loading }: UsuariosTableProps) {

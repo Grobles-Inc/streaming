@@ -1,13 +1,20 @@
 import { useState } from 'react'
+import { Header } from '@/components/layout/header'
+import { Main } from '@/components/layout/main'
+import { ProfileDropdown } from '@/components/profile-dropdown'
+import { Search } from '@/components/search'
+import { ThemeSwitch } from '@/components/theme-switch'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useCategorias, useProductosByCategoria } from './queries'
 import { CategoriaForm, CategoriasTable, ProductosPorCategoria } from './components'
+import { CategoriaFilters } from './components/categoria-filters'
 import type { Categoria, Producto } from './data/types'
 
 export default function CategoriasPage() {
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<Categoria | null>(null)
   const [categoriaPagina, setCategoriaPagina] = useState(0)
   const [editandoCategoria, setEditandoCategoria] = useState<Categoria | null>(null)
+  const [categoriasFiltradas, setCategoriasFiltradas] = useState<Categoria[]>([])
 
   const {
     categorias,
@@ -79,6 +86,14 @@ export default function CategoriasPage() {
     deleteProducto(id)
   }
 
+  // Función para manejar el filtrado de categorías
+  const handleCategoriaFilter = (filteredCategorias: Categoria[]) => {
+    setCategoriasFiltradas(filteredCategorias)
+  }
+
+  // Categorías a mostrar (filtradas o todas)
+  const categoriasAMostrar = categoriasFiltradas.length > 0 || categorias.length === 0 ? categoriasFiltradas : categorias
+
   if (loadingCategorias) {
     return (
       <Card>
@@ -100,12 +115,28 @@ export default function CategoriasPage() {
   }
 
   return (
-    <Card>
+    <>
+      <Header fixed>
+        <Search />
+        <div className='ml-auto flex items-center space-x-4'>
+          <ThemeSwitch />
+          <ProfileDropdown />
+        </div>
+      </Header>
+      <Main>
+        <Card>
       <CardHeader>
         <CardTitle>Categorías</CardTitle>
         <CardDescription>Gestiona las categorías de servicios.</CardDescription>
       </CardHeader>
       <CardContent>
+        {/* Filtros de categorías */}
+        <CategoriaFilters
+          categorias={categorias}
+          onFilter={handleCategoriaFilter}
+          className="mb-6"
+        />
+
         {/* Formulario de categorías */}
         <CategoriaForm
           categoria={editandoCategoria}
@@ -116,7 +147,7 @@ export default function CategoriasPage() {
 
         {/* Tabla de categorías */}
         <CategoriasTable
-          categorias={categorias}
+          categorias={categoriasAMostrar}
           currentPage={categoriaPagina}
           onEdit={handleEditCategoria}
           onDelete={handleDeleteCategoria}
@@ -147,5 +178,7 @@ export default function CategoriasPage() {
         )}
       </CardContent>
     </Card>
+      </Main>
+    </>
   )
 }

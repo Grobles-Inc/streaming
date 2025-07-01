@@ -42,6 +42,7 @@ import { Route as AuthenticatedAdminRecargasIndexRouteImport } from './routes/_a
 import { Route as AuthenticatedAdminComprasIndexRouteImport } from './routes/_authenticated/admin/compras/index'
 import { Route as AuthenticatedAdminChatsIndexRouteImport } from './routes/_authenticated/admin/chats/index'
 import { Route as AuthenticatedAdminCategoriesIndexRouteImport } from './routes/_authenticated/admin/categories/index'
+import { Route as AuthenticatedAdminBilleterasIndexRouteImport } from './routes/_authenticated/admin/billeteras/index'
 import { Route as AuthenticatedAdminAppsIndexRouteImport } from './routes/_authenticated/admin/apps/index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -228,6 +229,12 @@ const AuthenticatedAdminCategoriesIndexRoute =
     path: '/admin/categories/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminBilleterasIndexRoute =
+  AuthenticatedAdminBilleterasIndexRouteImport.update({
+    id: '/admin/billeteras/',
+    path: '/admin/billeteras/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminAppsIndexRoute =
   AuthenticatedAdminAppsIndexRouteImport.update({
     id: '/admin/apps/',
@@ -256,6 +263,7 @@ export interface FileRoutesByFullPath {
   '/referidos': typeof AuthenticatedReferidosIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/admin/apps': typeof AuthenticatedAdminAppsIndexRoute
+  '/admin/billeteras': typeof AuthenticatedAdminBilleterasIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesIndexRoute
   '/admin/chats': typeof AuthenticatedAdminChatsIndexRoute
   '/admin/compras': typeof AuthenticatedAdminComprasIndexRoute
@@ -292,6 +300,7 @@ export interface FileRoutesByTo {
   '/referidos': typeof AuthenticatedReferidosIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/admin/apps': typeof AuthenticatedAdminAppsIndexRoute
+  '/admin/billeteras': typeof AuthenticatedAdminBilleterasIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesIndexRoute
   '/admin/chats': typeof AuthenticatedAdminChatsIndexRoute
   '/admin/compras': typeof AuthenticatedAdminComprasIndexRoute
@@ -329,6 +338,7 @@ export interface FileRoutesById {
   '/_authenticated/referidos/': typeof AuthenticatedReferidosIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/admin/apps/': typeof AuthenticatedAdminAppsIndexRoute
+  '/_authenticated/admin/billeteras/': typeof AuthenticatedAdminBilleterasIndexRoute
   '/_authenticated/admin/categories/': typeof AuthenticatedAdminCategoriesIndexRoute
   '/_authenticated/admin/chats/': typeof AuthenticatedAdminChatsIndexRoute
   '/_authenticated/admin/compras/': typeof AuthenticatedAdminComprasIndexRoute
@@ -367,6 +377,7 @@ export interface FileRouteTypes {
     | '/referidos'
     | '/settings'
     | '/admin/apps'
+    | '/admin/billeteras'
     | '/admin/categories'
     | '/admin/chats'
     | '/admin/compras'
@@ -403,6 +414,7 @@ export interface FileRouteTypes {
     | '/referidos'
     | '/settings'
     | '/admin/apps'
+    | '/admin/billeteras'
     | '/admin/categories'
     | '/admin/chats'
     | '/admin/compras'
@@ -439,6 +451,7 @@ export interface FileRouteTypes {
     | '/_authenticated/referidos/'
     | '/_authenticated/settings/'
     | '/_authenticated/admin/apps/'
+    | '/_authenticated/admin/billeteras/'
     | '/_authenticated/admin/categories/'
     | '/_authenticated/admin/chats/'
     | '/_authenticated/admin/compras/'
@@ -704,6 +717,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCategoriesIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/billeteras/': {
+      id: '/_authenticated/admin/billeteras/'
+      path: '/admin/billeteras'
+      fullPath: '/admin/billeteras'
+      preLoaderRoute: typeof AuthenticatedAdminBilleterasIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/apps/': {
       id: '/_authenticated/admin/apps/'
       path: '/admin/apps'
@@ -722,6 +742,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReferidosIndexRoute: typeof AuthenticatedReferidosIndexRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
   AuthenticatedAdminAppsIndexRoute: typeof AuthenticatedAdminAppsIndexRoute
+  AuthenticatedAdminBilleterasIndexRoute: typeof AuthenticatedAdminBilleterasIndexRoute
   AuthenticatedAdminCategoriesIndexRoute: typeof AuthenticatedAdminCategoriesIndexRoute
   AuthenticatedAdminChatsIndexRoute: typeof AuthenticatedAdminChatsIndexRoute
   AuthenticatedAdminComprasIndexRoute: typeof AuthenticatedAdminComprasIndexRoute
@@ -746,6 +767,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReferidosIndexRoute: AuthenticatedReferidosIndexRoute,
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   AuthenticatedAdminAppsIndexRoute: AuthenticatedAdminAppsIndexRoute,
+  AuthenticatedAdminBilleterasIndexRoute:
+    AuthenticatedAdminBilleterasIndexRoute,
   AuthenticatedAdminCategoriesIndexRoute:
     AuthenticatedAdminCategoriesIndexRoute,
   AuthenticatedAdminChatsIndexRoute: AuthenticatedAdminChatsIndexRoute,

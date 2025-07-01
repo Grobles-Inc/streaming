@@ -1,21 +1,25 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
+import { ThemeSwitch } from '@/components/theme-switch'
 import { useUsuarios, useProductos, useRecargas, useMetricasGlobales } from './queries'
 import { MetricasCard, UsuariosTable, ProductosTable, RecargasTable } from './components'
 
 export default function ReportesGlobalesPage() {
-  const { usuarios, loading: usuariosLoading, updateUsuario, deleteUsuario } = useUsuarios()
+  const { usuarios, loading: usuariosLoading, updateUsuario } = useUsuarios()
   const { productos, loading: productosLoading, updateProducto } = useProductos()
   const { recargas, loading: recargasLoading, updateRecarga } = useRecargas()
   const { metricas, loading: metricasLoading } = useMetricasGlobales()
 
   return (
     <>
-      <Header>
-        <div className="ml-auto flex items-center space-x-4">
-          <Search />
+      <Header fixed>
+        <Search />
+        <div className='ml-auto flex items-center space-x-4'>
+          <ThemeSwitch />
+          <ProfileDropdown />
         </div>
       </Header>
       <Main>
@@ -39,7 +43,6 @@ export default function ReportesGlobalesPage() {
               usuarios={usuarios}
               loading={usuariosLoading}
               onUpdateUsuario={updateUsuario}
-              onDeleteUsuario={deleteUsuario}
             />
           </TabsContent>
 

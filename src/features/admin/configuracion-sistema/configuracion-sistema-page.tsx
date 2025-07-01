@@ -6,6 +6,9 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
+import { ProfileDropdown } from '@/components/profile-dropdown'
+import { Search } from '@/components/search'
+import { ThemeSwitch } from '@/components/theme-switch'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { useConfiguracion } from './hooks/use-configuracion'
@@ -107,9 +110,11 @@ export default function ConfiguracionSistemaPage() {
   if (loading) {
     return (
       <>
-        <Header>
+        <Header fixed>
+          <Search />
           <div className='ml-auto flex items-center space-x-4'>
-            <Skeleton className="h-9 w-32" />
+            <ThemeSwitch />
+            <ProfileDropdown />
           </div>
         </Header>
         <Main>
@@ -137,8 +142,11 @@ export default function ConfiguracionSistemaPage() {
 
   return (
     <>
-      <Header>
+      <Header fixed>
+        <Search />
         <div className='ml-auto flex items-center space-x-4'>
+          <ThemeSwitch />
+          <ProfileDropdown />
           <Button
             variant="outline"
             onClick={() => setShowHistorial(!showHistorial)}

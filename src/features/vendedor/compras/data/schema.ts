@@ -38,7 +38,7 @@ export const compraSchema = z.object({
   nombre_cliente: z.string().min(1, 'Nombre del cliente es requerido.'),
   telefono_cliente: z.string().min(1, 'Teléfono del cliente es requerido.'),
   fecha_inicio: z.string().min(1, 'Fecha de inicio es requerida.'),
-  fecha_termino: z.string().min(1, 'Fecha de término es requerida.'),
+  fecha_expiracion: z.string().min(1, 'Fecha de término es requerida.'),
   monto_reembolso: z.number(),
   estado: compraEstadoSchema,
 })

@@ -13,16 +13,27 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
   const [open, setOpen] = useState(false)
   const [infoModalOpen, setInfoModalOpen] = useState(false)
   const [infoModalType, setInfoModalType] = useState<'informacion' | 'descripcion' | 'condiciones'>('informacion')
+  const isAgotado = producto?.stock_de_productos?.length === 0
   const tasaDeConversion = 3.7
   return (
     <>
-      <Card className='relative overflow-hidden pb-4 pt-0 md:pb-6 w-full max-w-sm gap-4 md:gap-6'>
-        <CardHeader className="relative z-0 px-0 ">
-          <img src={producto.imagen_url || ''} alt={producto.nombre} className='w-full' />
-          {!producto.nuevo && (
-            <Badge className='ml-4 mt-2'>Nuevo</Badge>
-          )}
-          <div className="absolute  flex-col right-2 top-2 flex gap-1">
+      <Card className='relative overflow-hidden max-w-sm gap-4 flex flex-col h-full'>
+        <CardHeader className="relative z-0  ">
+          <img src={producto.imagen_url || ''} alt={producto.nombre} className='w-full h-44   object-contain' />
+          <div className='flex items-center gap-1  mt-2'>
+
+            {producto.nuevo && (
+              <Badge className='bg-green-500' >Nuevo</Badge>
+            )}
+            {/* //TODO: These badges should be synced with the db */}
+            {producto.nuevo && (
+              <Badge className='bg-red-500' >- 15%</Badge>
+            )}
+            {producto.nuevo && (
+              <Badge className='bg-gray-500 text-white' >Oferta</Badge>
+            )}
+          </div>
+          <div className="absolute  flex-col right-2 -top-4 flex gap-1">
             <Button size="icon" variant="secondary" title="Información del Producto" onClick={() => {
               setInfoModalType('informacion')
               setInfoModalOpen(true)
@@ -53,6 +64,22 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
             </Button>
           </div>
         </CardHeader>
+        {producto.stock > 0 && (
+          <div className="absolute top-0 left-0 z-50">
+            <div
+              className="bg-blue-600  text-white px-10 py-2 text-sm font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"
+              style={{
+                transform: 'rotate(-45deg)',
+                transformOrigin: 'center',
+                position: 'relative',
+                left: '-35px',
+                top: '18px'
+              }}
+            >
+              En Stock
+            </div>
+          </div>
+        )}
 
         {producto.a_pedido && (
           <div className="absolute top-0 left-0 z-50">
@@ -70,27 +97,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
             </div>
           </div>
         )}
-        {producto.stock && (
-          <div className="absolute top-0 left-0 z-50">
-            <div
-              className="bg-blue-600  text-white px-10 py-2 text-sm font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"
-              style={{
-                transform: 'rotate(-45deg)',
-                transformOrigin: 'center',
-                position: 'relative',
-                left: '-35px',
-                top: '18px'
-              }}
-            >
-              En Stock
-            </div>
-          </div>
-        )}
-
-
-
-        <CardContent className='flex flex-col px-4  '>
-
+        <CardContent className='flex flex-col px-4 flex-grow'>
           <span className="text-xs text-gray-500 font-semibold  mb-1">{producto.usuarios.nombres.toUpperCase()}</span>
           <span className="font-bold md:text-lg mb-1 hidden md:block  leading-tight">{producto.nombre}</span>
           <span className="font-bold md:text-lg text-sm mb-1 md:hidden truncate  leading-tight">{producto.nombre}</span>
@@ -110,8 +117,8 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
 
         </CardContent>
         <CardFooter className='px-4'>
-          <Button variant={producto.stock === 0 ? "destructive" : "default"} className="w-full" onClick={() => setOpen(true)} disabled={producto.stock === 0}>
-            {producto.stock === 0 ? "Agotado" : "COMPRAR"}
+          <Button variant={isAgotado ? "destructive" : "default"} className="w-full" onClick={() => setOpen(true)} disabled={isAgotado}>
+            {isAgotado ? "Agotado" : "COMPRAR"}
           </Button>
         </CardFooter>
       </Card>

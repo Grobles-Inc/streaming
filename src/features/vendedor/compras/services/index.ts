@@ -105,13 +105,13 @@ export const updateCompraStatusVencido = async (id: string): Promise<Compra | nu
 }
 
 
-export const renovarCompra = async (id: string, tiempo_uso: number, fecha_termino: string): Promise<Compra | null> => {
-  const endDate = new Date(fecha_termino)
+export const renovarCompra = async (id: string, tiempo_uso: number, fecha_expiracion: string): Promise<Compra | null> => {
+  const endDate = new Date(fecha_expiracion)
   const newDate = new Date(endDate.setDate(endDate.getDate() + tiempo_uso))
 
   const { data, error } = await supabase
     .from('compras')
-    .update({ fecha_termino: newDate.toISOString() })
+    .update({ fecha_expiracion: newDate.toISOString() })
     .eq('id', id)
     .select()
     .single()

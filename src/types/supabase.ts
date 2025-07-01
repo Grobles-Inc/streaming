@@ -117,7 +117,9 @@ export interface Database {
           deshabilitar_boton_comprar: boolean
           precio_vendedor: number
           precio_renovacion: number | null
-          stock_de_productos: Json | null
+          stock_de_productos: {
+            id: number
+          }[]
         }
         Insert: {
           id?: string
@@ -173,7 +175,9 @@ export interface Database {
           deshabilitar_boton_comprar?: boolean
           precio_vendedor?: number
           precio_renovacion?: number | null
-          stock_de_productos?: Json | null
+          stock_de_productos?: {
+            id: number
+          }[]
         }
         Relationships: [
           {
@@ -286,10 +290,7 @@ export interface Database {
           producto_id: string
           vendedor_id: string | null
           stock_producto_id: number | null
-          email_cuenta: string
-          clave_cuenta: string
-          pin_cuenta: string | null
-          perfil_usuario: string | null
+          fecha_expiracion: string | null
           nombre_cliente: string
           telefono_cliente: string
           precio: number
@@ -304,6 +305,7 @@ export interface Database {
           producto_id: string
           vendedor_id?: string | null
           stock_producto_id?: number | null
+          fecha_expiracion?: string | null
           nombre_cliente: string
           telefono_cliente: string
           precio: number
@@ -318,6 +320,7 @@ export interface Database {
           producto_id?: string
           vendedor_id?: string | null
           stock_producto_id?: number | null
+          fecha_expiracion?: string | null
           nombre_cliente?: string
           telefono_cliente?: string
           precio?: number

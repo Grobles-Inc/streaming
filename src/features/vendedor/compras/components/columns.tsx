@@ -14,12 +14,12 @@ import { Compra, CompraEstado, compraSchema } from '../data/schema'
 import { useRenovarCompra, useUpdateCompraStatusVencido } from '../queries'
 import { DataTableColumnHeader } from './data-table-column-header'
 
-const DiasRestantesCell = ({ fecha_termino, id }: { fecha_termino: string, id: string }) => {
+const DiasRestantesCell = ({ fecha_expiracion, id }: { fecha_expiracion: string, id: string }) => {
   const { isPending } = useRenovarCompra()
   const { mutate: updateCompraStatus } = useUpdateCompraStatusVencido()
-  const fecha_termino_date = new Date(fecha_termino)
+  const fecha_expiracion_date = new Date(fecha_expiracion)
   const fecha_actual = new Date()
-  const dias_restantes = Math.ceil((fecha_termino_date.getTime() - fecha_actual.getTime()) / (1000 * 60 * 60 * 24))
+  const dias_restantes = Math.ceil((fecha_expiracion_date.getTime() - fecha_actual.getTime()) / (1000 * 60 * 60 * 24))
 
   useEffect(() => {
     if (dias_restantes === 0) {
@@ -77,7 +77,7 @@ const CompraMessageCell = ({ row }: { row: Compra }) => {
       perfil: row.stock_productos?.perfil || '',
       pin: row.stock_productos?.pin || '',
       fecha_inicio: row.fecha_inicio,
-      fecha_termino: row.fecha_termino,
+      fecha_expiracion: row.fecha_expiracion,
       ciclo_facturacion: '30 días',
     }, '51914019629', isMobile ? 'mobile' : 'web')
   }
@@ -129,7 +129,7 @@ const RenovacionCell = ({ row }: { row: Compra }) => {
   const { mutate: renovarCompra, isPending } = useRenovarCompra()
   const handleClick = () => {
     if (row.id) {
-      renovarCompra({ id: row.id, tiempo_uso: row.productos?.tiempo_uso || 0, fecha_termino: row.fecha_termino })
+      renovarCompra({ id: row.id, tiempo_uso: row.productos?.tiempo_uso || 0, fecha_expiracion: row.fecha_expiracion })
     }
   }
   return (
@@ -339,12 +339,12 @@ export const columns: ColumnDef<Compra>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: 'fecha_termino',
+    accessorKey: 'fecha_expiracion',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Días restantes' />
     ),
     cell: ({ row }) => {
-      return <DiasRestantesCell fecha_termino={row.original.fecha_termino as string} id={row.original.id as string} />
+      return <DiasRestantesCell fecha_expiracion={row.original.fecha_expiracion as string} id={row.original.id as string} />
     },
     enableSorting: false,
   },

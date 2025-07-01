@@ -20,7 +20,7 @@ interface CompraMessage {
   perfil?: string
   pin?: string
   fecha_inicio: string
-  fecha_termino: string
+  fecha_expiracion: string
   ciclo_facturacion: string
 }
 
@@ -153,7 +153,7 @@ export async function CompraMessage(
 - *Perfil:* ${message.perfil}
 - *PIN:* ${message.pin}
 - *Fecha de inicio:* ${message.fecha_inicio}
-- *Fecha de término:* ${message.fecha_termino}
+- *Fecha de término:* ${message.fecha_expiracion}
 - *Ciclo de facturación:* ${message.ciclo_facturacion}`
 
   return EnviarWhatsAppMessage(formattedMessage, businessPhone, device)

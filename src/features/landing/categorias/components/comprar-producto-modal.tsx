@@ -47,6 +47,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
   })
 
   if (!producto) return null
+  const fecha_expiracion = new Date(Date.now() + producto.tiempo_uso * 24 * 60 * 60 * 1000).toISOString()
 
   function onSubmit(data: FormData) {
     if (!user?.id) {
@@ -68,6 +69,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       monto_reembolso: producto.precio_publico,
       telefono_cliente: data.telefono_cliente.replace(/\s/g, ''),
       stock_producto_id: stock_producto_id || 0,
+      fecha_expiracion: fecha_expiracion,
     })
     actualizarSaldo({ id: billetera?.id, nuevoSaldo: monto - producto?.precio_publico })
     removeIdFromStockProductos({ productoId: producto.id, stockProductoId: stock_producto_id || 0 })

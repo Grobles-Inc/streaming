@@ -14,7 +14,10 @@ import { useUpdateCompraStatus } from '../queries'
 
 const subjectOptions = [
   { value: 'soporte', label: 'Soporte' },
-  { value: 'vencido', label: 'Cuenta vencida' },
+  { value: 'renovacion', label: 'Renovación ' },
+  { value: 'credenciales', label: 'Credenciales' },
+  { value: 'reembolso', label: 'Reembolso' },
+  { value: 'otro', label: 'Otro' },
 ]
 
 const formSchema = z.object({
@@ -46,7 +49,7 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
       onOpenChange(false)
       await updateCompraStatus({
         id: currentRow.id as string,
-        status: data.subject,
+        status: "soporte",
       })
       form.reset()
       setTimeout(() => {
@@ -81,11 +84,12 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
               name="subject"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel className='mb-2 text-muted-foreground'>Asunto</FormLabel>
                   <FormControl>
                     <RadioGroup
                       value={field.value}
                       onValueChange={field.onChange}
-                      className="grid grid-cols-2"
+                      className="grid grid-cols-3"
                     >
                       {subjectOptions.map((option) => (
                         <div key={option.value} className="flex items-center space-x-2">
@@ -105,10 +109,9 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
               name="message"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mensaje</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Describe tu problema..."
+                      placeholder="Describe tu problema para que el proveedor pueda ayudarte..."
                       className="min-h-[100px]"
                       {...field}
                     />

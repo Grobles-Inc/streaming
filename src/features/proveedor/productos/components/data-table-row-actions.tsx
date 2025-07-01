@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { Row } from '@tanstack/react-table'
-import { IconEdit, IconTrash } from '@tabler/icons-react'
+import { IconEdit, IconTrash, IconEye } from '@tabler/icons-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -15,7 +15,8 @@ import { ConfirmDialog } from '@/components/confirm-dialog'
 import { ProductoFormDialog } from './producto-form'
 
 import type { Producto } from '../data/schema'
-import { useDeleteProducto } from '../queries'
+import { useDeleteProducto, usePublicarProductoWithCommission } from '../queries'
+import { useAuth } from '@/stores/authStore'
 
 interface DataTableRowActionsProps {
   row: Row<Producto>
@@ -24,8 +25,14 @@ interface DataTableRowActionsProps {
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
+  const [showPublishDialog, setShowPublishDialog] = useState(false)
+  
   const deleteProducto = useDeleteProducto()
+  const publicarProducto = usePublicarProductoWithCommission()
+  const { user } = useAuth()
+  
   const producto = row.original
+  const esBorrador = producto.estado === 'borrador'
 
   const handleEdit = () => {
     setShowEditDialog(true)
@@ -35,12 +42,29 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
     setShowDeleteDialog(true)
   }
 
+  const handlePublish = () => {
+    setShowPublishDialog(true)
+  }
+
   const confirmDelete = () => {
     deleteProducto.mutate(producto.id, {
       onSuccess: () => {
         setShowDeleteDialog(false)
       }
     })
+  }
+
+  const confirmPublish = () => {
+    if (!user?.id) return
+    
+    publicarProducto.mutate(
+      { productoId: producto.id, proveedorId: user.id },
+      {
+        onSuccess: () => {
+          setShowPublishDialog(false)
+        }
+      }
+    )
   }
 
   return (
@@ -55,7 +79,16 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             <span className='sr-only'>Abrir menú</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end' className='w-[160px]'>
+        <DropdownMenuContent align='end' className='w-[180px]'>
+          {esBorrador && (
+            <>
+              <DropdownMenuItem onClick={handlePublish}>
+                <IconEye className='mr-2 h-4 w-4' />
+                Publicar producto
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
           <DropdownMenuItem onClick={handleEdit}>
             <IconEdit className='mr-2 h-4 w-4' />
             Editar
@@ -102,6 +135,17 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         productId={producto.id}
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
+      />
+
+      {/* Modal de confirmación de publicación */}
+      <ConfirmDialog
+        open={showPublishDialog}
+        onOpenChange={setShowPublishDialog}
+        title="¿Publicar producto?"
+        desc="Se cobrará la comisión de publicación de tu billetera. Una vez publicado, el producto estará disponible para la venta."
+        confirmText="Publicar y cobrar comisión"
+        handleConfirm={confirmPublish}
+        isLoading={publicarProducto.isPending}
       />
 
       {/* Modal de confirmación de eliminación */}

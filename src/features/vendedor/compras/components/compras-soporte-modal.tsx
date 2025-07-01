@@ -13,8 +13,12 @@ import { Compra } from '../data/schema'
 import { useUpdateCompraStatus } from '../queries'
 
 const subjectOptions = [
-  { value: 'soporte', label: 'Soporte' },
-  { value: 'vencido', label: 'Cuenta vencida' },
+  { value: 'correo', label: 'Correo' },
+  { value: 'clave', label: 'Clave' },
+  { value: 'pago', label: 'Pago' },
+  { value: 'geo', label: 'Geo' },
+  { value: 'codigo', label: 'Código' },
+  { value: 'otros', label: 'Otros' },
 ]
 
 const formSchema = z.object({
@@ -46,7 +50,7 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
       onOpenChange(false)
       await updateCompraStatus({
         id: currentRow.id as string,
-        status: data.subject,
+        status: "soporte",
       })
       form.reset()
       setTimeout(() => {
@@ -72,7 +76,7 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Comunicate con el proveedor</DialogTitle>
+          <DialogTitle>Solicitar Soporte</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
@@ -81,11 +85,12 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
               name="subject"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel className='mb-2 text-muted-foreground'>Asunto</FormLabel>
                   <FormControl>
                     <RadioGroup
                       value={field.value}
                       onValueChange={field.onChange}
-                      className="grid grid-cols-2"
+                      className="grid grid-cols-3"
                     >
                       {subjectOptions.map((option) => (
                         <div key={option.value} className="flex items-center space-x-2">
@@ -105,10 +110,9 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
               name="message"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mensaje</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Describe tu problema..."
+                      placeholder="Describe tu problema para que el proveedor pueda ayudarte..."
                       className="min-h-[100px]"
                       {...field}
                     />

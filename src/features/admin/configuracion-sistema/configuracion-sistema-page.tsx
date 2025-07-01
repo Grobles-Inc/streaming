@@ -32,6 +32,7 @@ export default function ConfiguracionSistemaPage() {
   const [emailSoporte, setEmailSoporte] = useState('')
   const [comision, setComision] = useState(10)
   const [conversion, setConversion] = useState(1)
+  const [comisionPublicacion, setComisionPublicacion] = useState(1.35)
 
   // Estado para el modal de confirmación
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
@@ -47,6 +48,7 @@ export default function ConfiguracionSistemaPage() {
       setEmailSoporte(configuracion.email_soporte || '')
       setComision(configuracion.comision)
       setConversion(configuracion.conversion)
+      setComisionPublicacion(configuracion.comision_publicacion_producto)
     }
   }, [configuracion])
 
@@ -78,7 +80,8 @@ export default function ConfiguracionSistemaPage() {
       mantenimiento: mantenimiento,
       email_soporte: emailSoporte,
       comision: comision,
-      conversion: conversion
+      conversion: conversion,
+      comision_publicacion_producto: comisionPublicacion
     })
 
     if (success) {
@@ -104,7 +107,8 @@ export default function ConfiguracionSistemaPage() {
     mantenimiento !== configuracion.mantenimiento ||
     emailSoporte !== (configuracion.email_soporte || '') ||
     comision !== configuracion.comision ||
-    conversion !== configuracion.conversion
+    conversion !== configuracion.conversion ||
+    comisionPublicacion !== configuracion.comision_publicacion_producto
   )
 
   if (loading) {
@@ -287,7 +291,7 @@ export default function ConfiguracionSistemaPage() {
           </Card>
         </div>
 
-        {/* Fila adicional para conversión */}
+        {/* Fila adicional para conversión y comisión publicación */}
         <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 mt-6">
           {/* Tasa de conversión */}
           <Card>
@@ -321,8 +325,42 @@ export default function ConfiguracionSistemaPage() {
             </CardContent>
           </Card>
 
-          {/* Botón para guardar todos los cambios */}
-          {hasChanges && (
+          {/* Comisión de publicación */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Comisión Publicación Producto</CardTitle>
+              <CardDescription>
+                Costo que se cobra a los proveedores por publicar un producto.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <Input
+                  type='number'
+                  value={comisionPublicacion}
+                  min={0}
+                  step={0.01}
+                  onChange={e => setComisionPublicacion(Number(e.target.value))}
+                  className='w-32'
+                  disabled={saving}
+                />
+                <span className="text-sm text-muted-foreground">COP</span>
+              </div>
+              <Button 
+                className='mt-4' 
+                onClick={handleSaveAll}
+                disabled={saving || !hasChanges}
+                size="sm"
+              >
+                {saving ? 'Guardando...' : 'Guardar'}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Botón para guardar todos los cambios */}
+        {hasChanges && (
+          <div className="grid gap-6 md:grid-cols-1 mt-6">
             <Card className="border-orange-200 bg-orange-50/50">
               <CardHeader>
                 <CardTitle className="text-orange-800">Cambios Pendientes</CardTitle>
@@ -340,8 +378,10 @@ export default function ConfiguracionSistemaPage() {
                 </Button>
               </CardContent>
             </Card>
-          )}
-        </div>
+          </div>
+        )}
+
+
 
         {/* Historial de configuraciones */}
         {showHistorial && (

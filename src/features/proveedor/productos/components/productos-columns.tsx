@@ -217,6 +217,33 @@ export const columns: ColumnDef<Producto>[] = [
     meta: { className: 'w-32' },
   },
   {
+    accessorKey: 'estado',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Estado' />
+    ),
+    cell: ({ row }) => {
+      const estado = row.getValue('estado') as 'borrador' | 'publicado'
+
+      return (
+        <Badge 
+          variant='outline' 
+          className={cn(
+            'text-xs',
+            estado === 'publicado' 
+              ? 'text-green-600 bg-green-50 border-green-200' 
+              : 'text-orange-600 bg-orange-50 border-orange-200'
+          )}
+        >
+          {estado === 'publicado' ? 'Publicado' : 'Borrador'}
+        </Badge>
+      )
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id))
+    },
+    meta: { className: 'w-24' },
+  },
+  {
     accessorKey: 'tiempo_uso',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Tiempo (días)' />

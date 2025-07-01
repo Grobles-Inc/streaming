@@ -40,17 +40,17 @@ function ProductsContent({ categoriaId }: { categoriaId: string }) {
   }
 
   if (productos?.length === 0) {
-    return <div className="flex flex-col items-center justify-center h-full">
-      <IconDatabaseOff className="text-4xl mb-4" />
-      <h3 className="text-lg font-semibold mb-2">No hay productos</h3>
+    return <div className="flex flex-col items-center justify-center mt-36 h-full">
+      <IconDatabaseOff className="text-muted-foreground " size={40} />
+      <h3 className="text-lg font-semibold ">No hay productos</h3>
       <p className="text-muted-foreground">
-        No se encontraron productos en esta categoría.
+        No hay productos en stock para esta categoría.
       </p>
     </div>
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 md:gap-6 gap-2 pt-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 md:gap-4 gap-2 pt-4">
       {productos?.map((producto) => (
         <ProductoCard key={producto.id} producto={producto} />
       ))}

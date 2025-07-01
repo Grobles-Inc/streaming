@@ -16,6 +16,7 @@ export type MappedConfiguracion = {
   comision: number
   email_soporte: string | null
   conversion: number
+  comision_publicacion_producto: number
   createdAt: Date
   updatedAt: Date
 }

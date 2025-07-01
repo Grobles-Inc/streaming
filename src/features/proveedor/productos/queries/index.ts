@@ -48,21 +48,77 @@ export const useCategorias = () => {
   })
 }
 
+// Hook para obtener configuración del sistema (comisión)
+export const useConfiguracionSistema = () => {
+  return useQuery({
+    queryKey: ['configuracion-sistema'],
+    queryFn: () => productosService.getConfiguracionActual(),
+    staleTime: 1000 * 60 * 5, // 5 minutos
+  })
+}
+
+// Hook para verificar saldo suficiente
+export const useVerificarSaldoSuficiente = (proveedorId: string) => {
+  return useQuery({
+    queryKey: ['verificar-saldo', proveedorId],
+    queryFn: () => productosService.verificarSaldoSuficiente(proveedorId),
+    enabled: !!proveedorId,
+    refetchInterval: 30000, // Refrescar cada 30 segundos
+  })
+}
+
+// Hook original para crear producto sin comisión (para casos especiales)
 export const useCreateProducto = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (data: ProductoInsert) => {
-      console.log('🔄 useCreateProducto: Iniciando mutación con datos:', data)
       return productosService.createProducto(data)
     },
-    onSuccess: (result) => {
-      console.log('✅ useCreateProducto: Mutación exitosa, resultado:', result)
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['productos'] })
+      queryClient.invalidateQueries({ queryKey: ['verificar-saldo'] })
       toast.success('Producto creado correctamente')
     },
     onError: (error: Error) => {
-      console.error('❌ useCreateProducto: Error en mutación:', error)
       toast.error(error.message || 'Error al crear el producto')
+    },
+  })
+}
+
+// Hook para crear producto con comisión
+export const useCreateProductoWithCommission = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: productosService.createProductoWithCommission,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['productos'] })
+      queryClient.invalidateQueries({ queryKey: ['billetera'] })
+      queryClient.invalidateQueries({ queryKey: ['saldo-suficiente'] })
+      toast.success('Producto creado y comisión cobrada exitosamente')
+    },
+    onError: (error: Error) => {
+      console.error('❌ Error al crear producto con comisión:', error)
+      toast.error(error.message || 'Error al crear producto')
+    },
+  })
+}
+
+export const usePublicarProductoWithCommission = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: ({ productoId, proveedorId }: { productoId: string, proveedorId: string }) => 
+      productosService.publicarProductoWithCommission({ productoId, proveedorId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['productos'] })
+      queryClient.invalidateQueries({ queryKey: ['billetera'] })
+      queryClient.invalidateQueries({ queryKey: ['saldo-suficiente'] })
+      toast.success('Producto publicado y comisión cobrada exitosamente')
+    },
+    onError: (error: Error) => {
+      console.error('❌ Error al publicar producto con comisión:', error)
+      toast.error(error.message || 'Error al publicar producto')
     },
   })
 }

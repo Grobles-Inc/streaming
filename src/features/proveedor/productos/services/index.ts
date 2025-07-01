@@ -6,6 +6,8 @@ export type Usuario = Database['public']['Tables']['usuarios']['Row']
 export type Categoria = Database['public']['Tables']['categorias']['Row']
 export type ProductoInsert = Database['public']['Tables']['productos']['Insert']
 export type ProductoUpdate = Database['public']['Tables']['productos']['Update']
+export type ConfiguracionRow = Database['public']['Tables']['configuracion']['Row']
+export type Billetera = Database['public']['Tables']['billeteras']['Row']
 
 
 // Create a new producto
@@ -21,6 +23,56 @@ export const createProducto = async (producto: ProductoInsert): Promise<Producto
   }
   return data
 
+}
+
+// Create producto with comision
+export const createProductoWithCommission = async (
+  { producto, proveedorId }: { producto: Omit<Database['public']['Tables']['productos']['Insert'], 'id' | 'created_at' | 'updated_at'>, proveedorId: string }
+): Promise<Producto> => {
+  console.log('🔄 Iniciando creación de producto con comisión...')
+  
+  try {
+    // 1. Verificar saldo suficiente
+    const saldoInfo = await verificarSaldoSuficiente(proveedorId)
+    if (!saldoInfo.suficiente) {
+      const comisionFormateada = new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0,
+      }).format(saldoInfo.comisionRequerida)
+      
+      throw new Error(`Saldo insuficiente. Necesitas ${comisionFormateada} para publicar un producto`)
+    }
+
+    // 2. Crear el producto
+    const { data: nuevoProducto, error: errorProducto } = await supabase
+      .from('productos')
+      .insert([producto])
+      .select(`
+        *,
+        categorias:categoria_id(nombre, descripcion),
+        usuarios:proveedor_id(nombres, apellidos)
+      `)
+      .single()
+
+    if (errorProducto) {
+      console.error('❌ Error al crear producto:', errorProducto)
+      throw new Error('Error al crear el producto')
+    }
+
+    console.log('✅ Producto creado:', nuevoProducto.id)
+
+    // 3. Procesar comisión de publicación
+    await procesarComisionPublicacion(proveedorId)
+
+    console.log('✅ Comisión procesada correctamente')
+
+    // 4. Retornar el producto creado
+    return nuevoProducto as Producto
+  } catch (error) {
+    console.error('❌ Error en createProductoWithCommission:', error)
+    throw error
+  }
 }
 
 // Get productos by proveedor ID
@@ -186,3 +238,286 @@ export const getProductosStatsByProveedor = async (proveedorId: string) => {
 
   return stats
 } 
+
+// funciones de comision
+export const getConfiguracionActual = async (): Promise<ConfiguracionRow | null> => {
+  const { data, error } = await supabase
+    .from('configuracion')
+    .select('*')
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (error) {
+    console.error('Error obteniendo configuración:', error)
+    return null
+  }
+
+  return data
+}
+
+/**
+ * Obtiene el primer usuario administrador del sistema
+ */
+export const getAdministrador = async (): Promise<Usuario | null> => {
+  const { data, error } = await supabase
+    .from('usuarios')
+    .select('*')
+    .eq('rol', 'admin')
+    .limit(1)
+    .single()
+
+  if (error) {
+    console.error('Error obteniendo administrador:', error)
+    return null
+  }
+
+  return data
+}
+
+/**
+ * Obtiene la billetera de un usuario
+ */
+export const getBilleteraByUsuarioId = async (usuarioId: string): Promise<Billetera | null> => {
+  const { data, error } = await supabase
+    .from('billeteras')
+    .select('*')
+    .eq('usuario_id', usuarioId)
+    .single()
+
+  if (error) {
+    console.error('Error obteniendo billetera:', error)
+    return null
+  }
+
+  return data
+}
+
+/**
+ * Transfiere fondos de una billetera a otra usando función RPC
+ */
+export const transferirFondos = async (
+  origenUsuarioId: string,
+  destinoUsuarioId: string,
+  monto: number
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    // Verificar billeteras primero
+    const billeteraOrigen = await getBilleteraByUsuarioId(origenUsuarioId)
+    const billeteraDestino = await getBilleteraByUsuarioId(destinoUsuarioId)
+
+    if (!billeteraOrigen || !billeteraDestino) {
+      return { success: false, error: 'No se encontraron las billeteras' }
+    }
+
+    if (billeteraOrigen.saldo < monto) {
+      return { success: false, error: 'Saldo insuficiente' }
+    }
+
+    // Realizar transferencia directa (sin RPC por simplicidad)
+    const { error: errorOrigen } = await supabase
+      .from('billeteras')
+      .update({ 
+        saldo: billeteraOrigen.saldo - monto, 
+        updated_at: new Date().toISOString() 
+      })
+      .eq('usuario_id', origenUsuarioId)
+
+    if (errorOrigen) {
+      console.error('Error actualizando billetera origen:', errorOrigen)
+      return { success: false, error: 'Error al descontar fondos' }
+    }
+
+    const { error: errorDestino } = await supabase
+      .from('billeteras')
+      .update({ 
+        saldo: billeteraDestino.saldo + monto, 
+        updated_at: new Date().toISOString() 
+      })
+      .eq('usuario_id', destinoUsuarioId)
+
+    if (errorDestino) {
+      console.error('Error actualizando billetera destino:', errorDestino)
+      // Revertir cambio en billetera origen
+      await supabase
+        .from('billeteras')
+        .update({ 
+          saldo: billeteraOrigen.saldo, 
+          updated_at: new Date().toISOString() 
+        })
+        .eq('usuario_id', origenUsuarioId)
+      
+      return { success: false, error: 'Error al transferir fondos' }
+    }
+
+    return { success: true }
+
+  } catch (error) {
+    console.error('Error en transferirFondos:', error)
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Error desconocido' 
+    }
+  }
+}
+
+/**
+ * Procesa la comisión por publicación de producto
+ */
+export const procesarComisionPublicacion = async (
+  proveedorId: string
+): Promise<{ success: boolean; error?: string; comisionCobrada?: number }> => {
+  try {
+    // 1. Obtener configuración actual
+    const configuracion = await getConfiguracionActual()
+    if (!configuracion) {
+      return { success: false, error: 'No se pudo obtener la configuración del sistema' }
+    }
+
+    const comisionMonto = configuracion.comision_publicacion_producto || 1.35
+
+    // 2. Obtener administrador
+    const administrador = await getAdministrador()
+    if (!administrador) {
+      return { success: false, error: 'No se encontró un administrador en el sistema' }
+    }
+
+    // 3. Verificar saldo del proveedor
+    const billeteraProveedor = await getBilleteraByUsuarioId(proveedorId)
+    if (!billeteraProveedor) {
+      return { success: false, error: 'No se encontró la billetera del proveedor' }
+    }
+
+    if (billeteraProveedor.saldo < comisionMonto) {
+      const comisionFormateada = new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0,
+      }).format(comisionMonto)
+      
+      return { 
+        success: false, 
+        error: `Saldo insuficiente. Necesitas al menos ${comisionFormateada} para publicar un producto` 
+      }
+    }
+
+    // 4. Realizar transferencia
+    const resultadoTransferencia = await transferirFondos(
+      proveedorId,
+      administrador.id,
+      comisionMonto
+    )
+
+    if (!resultadoTransferencia.success) {
+      return { 
+        success: false, 
+        error: resultadoTransferencia.error || 'Error en la transferencia de fondos' 
+      }
+    }
+
+    return { 
+      success: true, 
+      comisionCobrada: comisionMonto 
+    }
+
+  } catch (error) {
+    console.error('Error procesando comisión de publicación:', error)
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Error desconocido al procesar comisión' 
+    }
+  }
+}
+
+/**
+ * Verifica si el proveedor tiene saldo suficiente para publicar
+ */
+export const verificarSaldoSuficiente = async (
+  proveedorId: string
+): Promise<{ suficiente: boolean; saldoActual: number; comisionRequerida: number }> => {
+  try {
+    const configuracion = await getConfiguracionActual()
+    const comisionRequerida = configuracion?.comision_publicacion_producto || 1.35
+    
+    const billetera = await getBilleteraByUsuarioId(proveedorId)
+    const saldoActual = billetera?.saldo || 0
+    
+    return {
+      suficiente: saldoActual >= comisionRequerida,
+      saldoActual,
+      comisionRequerida
+    }
+  } catch (error) {
+    console.error('Error verificando saldo:', error)
+    return {
+      suficiente: false,
+      saldoActual: 0,
+      comisionRequerida: 1.35
+    }
+  }
+}
+
+// Nueva función para publicar productos existentes cobrando comisión
+export const publicarProductoWithCommission = async (
+  { productoId, proveedorId }: { productoId: string, proveedorId: string }
+): Promise<Producto> => {
+  console.log('🔄 Iniciando publicación de producto con comisión...', { productoId, proveedorId })
+  
+  try {
+    // 1. Verificar que el producto existe y está en borrador
+    const { data: producto, error: errorProducto } = await supabase
+      .from('productos')
+      .select('*')
+      .eq('id', productoId)
+      .eq('proveedor_id', proveedorId)
+      .eq('estado', 'borrador')
+      .single()
+
+    if (errorProducto || !producto) {
+      console.error('❌ Error al obtener producto:', errorProducto)
+      throw new Error('Producto no encontrado o ya está publicado')
+    }
+
+    // 2. Verificar saldo suficiente
+    const saldoInfo = await verificarSaldoSuficiente(proveedorId)
+    if (!saldoInfo.suficiente) {
+      const comisionFormateada = new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0,
+      }).format(saldoInfo.comisionRequerida)
+      
+      throw new Error(`Saldo insuficiente. Necesitas ${comisionFormateada} para publicar este producto`)
+    }
+
+    // 3. Procesar comisión de publicación
+    await procesarComisionPublicacion(proveedorId)
+
+    console.log('✅ Comisión procesada correctamente')
+
+    // 4. Actualizar estado del producto a publicado
+    const { data: productoPublicado, error: errorActualizacion } = await supabase
+      .from('productos')
+      .update({ estado: 'publicado', updated_at: new Date().toISOString() })
+      .eq('id', productoId)
+      .select(`
+        *,
+        categorias:categoria_id(nombre, descripcion),
+        usuarios:proveedor_id(nombres, apellidos)
+      `)
+      .single()
+
+    if (errorActualizacion) {
+      console.error('❌ Error al actualizar producto:', errorActualizacion)
+      throw new Error('Error al publicar el producto')
+    }
+
+    console.log('✅ Producto publicado correctamente:', productoPublicado.id)
+
+    // 5. Retornar el producto publicado
+    return productoPublicado as Producto
+  } catch (error) {
+    console.error('❌ Error en publicarProductoWithCommission:', error)
+    throw error
+  }
+}

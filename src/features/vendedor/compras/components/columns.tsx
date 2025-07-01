@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { PhoneInput } from '@/features/landing/categorias/components/phone-input'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
-import { CompraMessage, SoporteMessage } from '@/lib/whatsapp'
+import { CompraMessage } from '@/lib/whatsapp'
 import { IconEdit, IconHeadphones, IconLoader2, IconPackage, IconRefresh } from '@tabler/icons-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { useEffect, useState } from 'react'
@@ -156,34 +156,14 @@ const CompraMessageCell = ({ row }: { row: Compra }) => {
 
 const SoporteCell = ({ row }: { row: Compra }) => {
   const { setOpen, setCurrentRow } = useCompras()
-  const isMobile = useIsMobile()
   return (
     <div className='flex justify-center'>
-      {
-        row.estado === 'soporte' ? (
-          <Button variant='ghost' size='icon' className='flex flex-col items-center gap-0' onClick={() => {
-            SoporteMessage({
-              nombre_cliente: row.nombre_cliente,
-              asunto: 'Soporte',
-              mensaje: 'Necesito soporte con el siguiente producto:',
-              id_cliente: row.id || '',
-              id_producto: row.producto_id,
-            }, row.usuarios?.telefono || '', isMobile ? 'mobile' : 'web')
-          }}>
-            <img src="https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000" className='size-6' />
-            <span className='text-green-500 text-[9px]'>
-              {row.usuarios?.telefono}
-            </span>
-          </Button>
-        ) : (
-          <Button variant='outline' size='icon' onClick={() => {
-            setOpen('soporte')
-            setCurrentRow(row)
-          }}>
-            <IconHeadphones color='purple' />
-          </Button>
-        )
-      }
+      <Button variant='outline' size='icon' onClick={() => {
+        setOpen('soporte')
+        setCurrentRow(row)
+      }}>
+        <IconHeadphones color='purple' />
+      </Button>
     </div>
   )
 }

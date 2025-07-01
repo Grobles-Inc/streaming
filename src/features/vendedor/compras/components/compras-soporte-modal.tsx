@@ -1,11 +1,12 @@
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Textarea } from '@/components/ui/textarea'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { SoporteMessage } from '@/lib/whatsapp'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { IconCheck } from '@tabler/icons-react'
 import { Loader2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -41,16 +42,17 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      subject: '',
-      message: '',
+      subject: currentRow.soporte_asunto || '',
+      message: currentRow.soporte_mensaje || '',
     },
   })
+
 
   async function onSubmit(data: FormData) {
     try {
       onOpenChange(false)
       await updateCompraStatus({
-        id: currentRow.stock_producto_id,
+        id: currentRow.id || '',
         status: "soporte",
         message: data.message,
         subject: data.subject,
@@ -70,6 +72,16 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
     }
   }
 
+  const handleValidarSoporte = () => {
+    updateCompraStatus({
+      id: currentRow.id || '',
+      status: "resuelto",
+      message: '',
+      subject: '',
+    })
+    onOpenChange(false)
+    form.reset()
+  }
   const handleClose = () => {
     onOpenChange(false)
     form.reset()
@@ -79,7 +91,18 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Solicitar Soporte</DialogTitle>
+          <DialogTitle>{
+            currentRow.soporte_asunto ? 'Detalles del Soporte' : 'Solicitar Soporte'
+          }</DialogTitle>
+          <DialogDescription>
+            <a href={`https://wa.me/${currentRow.usuarios?.telefono}?text=`} className='font-bold  flex items-center gap-2' target="_blank">
+              <strong className='text-muted-foreground font-normal'>Proveedor:</strong>
+              <img src="https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000" className='size-6' />
+              <span className='text-green-500'>
+                {currentRow.usuarios?.telefono}
+              </span>
+            </a>
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
@@ -97,7 +120,7 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
                     >
                       {subjectOptions.map((option) => (
                         <div key={option.value} className="flex items-center space-x-2">
-                          <RadioGroupItem value={option.value} id={option.value} />
+                          <RadioGroupItem disabled={!!currentRow.soporte_asunto} value={option.value} id={option.value} />
                           <FormLabel htmlFor={option.value}>{option.label}</FormLabel>
                         </div>
                       ))}
@@ -115,6 +138,7 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
                 <FormItem>
                   <FormControl>
                     <Textarea
+                      disabled={!!currentRow.soporte_mensaje}
                       placeholder="Describe tu problema para que el proveedor pueda ayudarte..."
                       className="min-h-[100px]"
                       {...field}
@@ -126,13 +150,17 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
             />
 
             <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={handleClose} disabled={isPending}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? <Loader2 className='size-4 animate-spin' /> : 'Enviar'}
 
-              </Button>
+              {
+                currentRow.soporte_asunto ? (
+                  <Button type="button" className='bg-green-500 text-white' onClick={handleValidarSoporte} >
+                    Validar Soporte
+                    <IconCheck className='size-4' />
+                  </Button>
+                ) : <Button type="submit" disabled={isPending}>
+                  {isPending ? <Loader2 className='size-4 animate-spin' /> : 'Enviar'}
+                </Button>
+              }
             </div>
           </form>
         </Form>

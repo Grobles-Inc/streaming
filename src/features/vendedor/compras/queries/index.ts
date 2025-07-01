@@ -67,7 +67,7 @@ export const useUpdateCompra = () => {
 export const useUpdateCompraStatus = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) => comprasService.updateCompraStatus(id, status),
+    mutationFn: ({ id, status, message, subject }: { id: string; status: string, message : string, subject: string }) => comprasService.updateCompraStatus(id, status, message, subject),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['compras'] })
       toast.success('Estado de la compra actualizado correctamente')

@@ -5,6 +5,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { useIsMobile } from '@/hooks/use-mobile'
+import Logo from '@/assets/logo.png'
 import { useState } from 'react'
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '../ui/sheet'
 import { useCategorias } from '@/features/landing/queries'
@@ -25,9 +26,8 @@ export default function LandingHeader() {
       <div className='flex flex-row justify-between items-center w-full'>
 
         <Link to="/">
-          <div className="flex items-center gap-2 ">
-            <img src="https://img.icons8.com/?size=100&id=C1DUEYn7PMsS&format=png&color=000000" alt="ML+" className="h-8 w-8" />
-            <h3 className='font-bold'>ML Streaming</h3>
+          <div className="flex items-center gap-2  ">
+            <img src={Logo} alt="ML+" className='size-24 md:size-full' />
           </div>
         </Link>
         <div className=" w-1/2 hidden md:block md:mx-8">
@@ -101,8 +101,7 @@ export default function LandingHeader() {
                   <SheetTitle>
                     <Link to="/">
                       <div className="flex items-center gap-2 ">
-                        <img src="https://img.icons8.com/?size=100&id=C1DUEYn7PMsS&format=png&color=000000" alt="ML+" className="h-8 w-8" />
-                        <h3 className='font-bold'>ML Streaming</h3>
+                        <img src={Logo} alt="ML+" className='size-20' />
                       </div>
                     </Link>
                   </SheetTitle>

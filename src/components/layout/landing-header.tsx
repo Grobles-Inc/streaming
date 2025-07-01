@@ -19,7 +19,7 @@ export default function LandingHeader() {
   const [isOpen, setIsOpen] = useState(false)
   const { data: categorias } = useCategorias()
   const [activeTab, setActiveTab] = useState<string | null>(null)
-  const redirectRoute = user?.rol === 'admin' ? '/admin/apps' : user?.rol === 'provider' ? '/proveedor/reportes' : '/dashboard'
+  const redirectRoute = user?.rol === 'admin' ? '/admin/reportes-globales' : user?.rol === 'provider' ? '/proveedor/reportes' : '/dashboard'
   return (
     <nav className="flex flex-col md:flex-row md:items-center md:justify-between md:px-6 px-4 py-4 gap-4 bg-base-100 shadow">
       <div className='flex flex-row justify-between items-center w-full'>

@@ -298,6 +298,8 @@ export interface Database {
           telefono_cliente: string
           precio: number
           estado: string
+          soporte_mensaje: string | null
+          soporte_asunto: string | null
           monto_reembolso: number
           created_at: string
           updated_at: string
@@ -313,6 +315,8 @@ export interface Database {
           telefono_cliente: string
           precio: number
           estado?: string
+          soporte_mensaje?: string | null
+          soporte_asunto?: string | null
           monto_reembolso?: number
           created_at?: string
           updated_at?: string
@@ -328,6 +332,8 @@ export interface Database {
           telefono_cliente?: string
           precio?: number
           estado?: string
+          soporte_mensaje?: string | null
+          soporte_asunto?: string | null
           monto_reembolso?: number
           created_at?: string
           updated_at?: string

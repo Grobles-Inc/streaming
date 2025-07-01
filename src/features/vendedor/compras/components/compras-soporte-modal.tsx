@@ -16,6 +16,7 @@ const subjectOptions = [
   { value: 'correo', label: 'Correo' },
   { value: 'clave', label: 'Clave' },
   { value: 'pago', label: 'Pago' },
+  { value: 'reembolso', label: 'Reembolso' },
   { value: 'geo', label: 'Geo' },
   { value: 'codigo', label: 'Código' },
   { value: 'otros', label: 'Otros' },
@@ -49,8 +50,10 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
     try {
       onOpenChange(false)
       await updateCompraStatus({
-        id: currentRow.id as string,
+        id: currentRow.stock_producto_id,
         status: "soporte",
+        message: data.message,
+        subject: data.subject,
       })
       form.reset()
       setTimeout(() => {

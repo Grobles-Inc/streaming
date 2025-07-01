@@ -51,7 +51,8 @@ export class ConfiguracionService {
         mantenimiento: config.mantenimiento,
         email_soporte: config.email_soporte,
         comision: config.comision,
-        conversion: config.conversion
+        conversion: config.conversion,
+        comision_publicacion_producto: config.comision_publicacion_producto
       })
       .select()
       .single()
@@ -96,7 +97,8 @@ export class ConfiguracionService {
       mantenimiento: configAnterior.mantenimiento,
       email_soporte: configAnterior.email_soporte,
       comision: configAnterior.comision,
-      conversion: configAnterior.conversion
+      conversion: configAnterior.conversion,
+      comision_publicacion_producto: configAnterior.comision_publicacion_producto
     })
   }
 
@@ -110,6 +112,7 @@ export class ConfiguracionService {
       email_soporte: row.email_soporte,
       comision: row.comision,
       conversion: row.conversion,
+      comision_publicacion_producto: row.comision_publicacion_producto,
       createdAt: new Date(row.updated_at), // Usamos updated_at como fecha de creación
       updatedAt: new Date(row.updated_at)
     }
@@ -125,6 +128,7 @@ export class ConfiguracionService {
       email_soporte: 'soporte@streaming.com',
       comision: 10,
       conversion: 1,
+      comision_publicacion_producto: 1.35,
       createdAt: new Date(),
       updatedAt: new Date()
     }

@@ -117,6 +117,7 @@ export interface Database {
           deshabilitar_boton_comprar: boolean
           precio_vendedor: number
           precio_renovacion: number | null
+          estado: 'borrador' | 'publicado'
           stock_de_productos: {
             id: number
           }[]
@@ -145,6 +146,7 @@ export interface Database {
           deshabilitar_boton_comprar?: boolean
           precio_vendedor: number
           precio_renovacion?: number | null
+          estado?: 'borrador' | 'publicado'
           stock_de_productos?: {
             id: number
           }[]
@@ -175,6 +177,7 @@ export interface Database {
           deshabilitar_boton_comprar?: boolean
           precio_vendedor?: number
           precio_renovacion?: number | null
+          estado?: 'borrador' | 'publicado'
           stock_de_productos?: {
             id: number
           }[]
@@ -431,6 +434,7 @@ export interface Database {
           comision: number 
           email_soporte: string | null
           conversion: number
+          comision_publicacion_producto: number
         }
         Insert: {
           id?: string
@@ -439,6 +443,7 @@ export interface Database {
           comision?: number 
           email_soporte?: string | null
           conversion?: number
+          comision_publicacion_producto?: number
         }
         Update: {
           id?: string
@@ -447,6 +452,7 @@ export interface Database {
           comision?: number 
           email_soporte?: string | null
           conversion?: number
+          comision_publicacion_producto?: number
         }
       }
     }

@@ -8,6 +8,13 @@ export const disponibilidadSchema = z.union([
 ])
 export type Disponibilidad = z.infer<typeof disponibilidadSchema>
 
+// Enum para estado del producto
+export const estadoProductoSchema = z.union([
+  z.literal('borrador'),
+  z.literal('publicado'),
+])
+export type EstadoProducto = z.infer<typeof estadoProductoSchema>
+
 // Schema para el formulario de productos (sin campos auto-generados)
 export const productoSchema = z.object({
   nombre: z.string().min(1, "El nombre es requerido"),
@@ -60,6 +67,7 @@ export const productoCompleteSchema = z.object({
   solicitud: z.string().nullable().transform(val => val ?? '').optional(),
   muestra_disponibilidad_stock: z.boolean().nullable().transform(val => val ?? false),
   deshabilitar_boton_comprar: z.boolean().nullable().transform(val => val ?? false),
+  estado: estadoProductoSchema,
   stock_de_productos: z.any().optional(),
   categorias: z.object({
     nombre: z.string(),

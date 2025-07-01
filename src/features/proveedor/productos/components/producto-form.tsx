@@ -22,7 +22,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { useCategorias, useCreateProducto, useUpdateProducto } from '../queries'
+import { useCategorias, useCreateProducto, useUpdateProducto, useConfiguracionSistema } from '../queries'
 import { productoSchema, type ProductoFormData } from '../data/schema'
 import { Categoria } from '../services'
 import { useAuth } from '@/stores/authStore'
@@ -31,7 +31,6 @@ import { useFileUpload } from "@/hooks/use-file-upload"
 import { SupabaseStorageService } from '@/lib/supabase'
 import { useBilleteraByUsuario } from '@/features/proveedor/billetera/queries'
 import { toast } from 'sonner'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface ProductoFormDialogProps {
   trigger: React.ReactNode
@@ -63,19 +62,26 @@ export function ProductoFormDialog({
   const { mutate: updateProducto, isPending: isUpdating } = useUpdateProducto()
   const { user } = useAuth()
 
-  // hook para obtener el saldo de la billetera del usuario
+  // Hooks para obtener información de comisión y saldo
+  const { data: configuracion, isLoading: loadingConfiguracion } = useConfiguracionSistema()
   const { data: billetera, isLoading: loadingBilletera } = useBilleteraByUsuario(user?.id ?? '')
-
-  // verificar si el usuario tiene saldo suficiente
-  const tieneSaldoSuficiente = billetera?.saldo ? billetera.saldo > 0 : false
-  const saldoFormateado = new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-  }).format(billetera?.saldo || 0)
 
   const isPending = isCreating || isUpdating
   const isEditing = !!productId
+
+  // Información de comisión
+  const comisionPublicacion = configuracion?.comision_publicacion_producto || 1.35
+  const saldoFormateado = new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+  }).format(billetera?.saldo || 0)
+
+  const comisionFormateada = new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+  }).format(comisionPublicacion)
 
   const maxSizeMB = 2
   const maxSize = maxSizeMB * 1024 * 1024 // 2MB default
@@ -128,24 +134,68 @@ export function ProductoFormDialog({
 
   const handleSubmit = async (data: ProductoFormData) => {
     if (!user) {
-      console.error('ProductoForm: No hay usuario autenticado')
+      console.error('❌ ProductoForm: No hay usuario autenticado')
       return
     }
 
-    // verificamos que el usuario tenga saldo suficiente
-    if (!isEditing && !tieneSaldoSuficiente) {
-      toast.error('No tienes saldo suficiente en tu billetera')
+    // Para edición, proceder normalmente sin cobrar comisión
+    if (isEditing) {
+      await procesarFormularioEdicion(data)
       return
     }
 
+    // Para creación, simplemente crear como borrador (sin comisión)
+    await procesarFormularioCreacion(data)
+  }
+
+  const procesarFormularioCreacion = async (data: ProductoFormData) => {
+    try {
+      // 1. Subir imagen si es necesario
+      let imageUrl = data.imagen_url || ''
+      if (files[0]?.file instanceof File) {
+        setIsUploadingImage(true)
+        try {
+          imageUrl = await SupabaseStorageService.uploadProductImage(files[0].file, user!.id)
+        } catch (error) {
+          console.error('❌ Error al subir imagen:', error)
+          toast.error('Error al subir imagen')
+          return
+        } finally {
+          setIsUploadingImage(false)
+        }
+      }
+
+      // 2. Preparar datos del producto (como borrador)
+      const productoData = {
+        ...data,
+        imagen_url: imageUrl,
+        proveedor_id: user!.id,
+        estado: 'borrador' as const, // Crear como borrador
+        stock_de_productos: [],
+      }
+
+      // 3. Crear producto sin comisión (usar el hook original)
+      createProducto(productoData, {
+        onSuccess: () => {
+          form.reset()
+          clearFiles()
+          setOpen(false)
+        }
+      })
+
+    } catch (error) {
+      console.error('❌ Error en procesarFormularioCreacion:', error)
+      toast.error('Error al procesar la solicitud')
+    }
+  }
+
+  const procesarFormularioEdicion = async (data: ProductoFormData) => {
     let imageUrl = data.imagen_url || ''
 
-    // Si hay un archivo seleccionado, subirlo a Supabase Storage
     if (files[0]?.file instanceof File) {
       setIsUploadingImage(true)
       try {
-        imageUrl = await SupabaseStorageService.uploadProductImage(files[0].file, user.id)
-        console.log('✅ Imagen subida exitosamente:', imageUrl)
+        imageUrl = await SupabaseStorageService.uploadProductImage(files[0].file, user!.id)
       } catch (error) {
         console.error('❌ Error al subir imagen:', error)
         setIsUploadingImage(false)
@@ -159,40 +209,16 @@ export function ProductoFormDialog({
       imagen_url: imageUrl,
     }
 
-    if (isEditing) {
-      updateProducto({
-        id: productId,
-        updates: productoData
-      }, {
-        onSuccess: (result) => {
-          console.log('ProductoForm - Producto actualizado exitosamente:', result)
-          form.reset()
-          clearFiles()
-          setOpen(false)
-        },
-        onError: (error) => {
-          console.error('ProductoForm - Error al actualizar:', error)
-        }
-      })
-    } else {
-      const finalProductoData = {
-        ...productoData,
-        proveedor_id: user.id,
-        stock_de_productos: [],
+    updateProducto({
+      id: productId!,
+      updates: productoData
+    }, {
+      onSuccess: () => {
+        form.reset()
+        clearFiles()
+        setOpen(false)
       }
-
-      createProducto(finalProductoData, {
-        onSuccess: (result) => {
-          console.log('✅ ProductoForm - Producto creado exitosamente:', result)
-          form.reset()
-          clearFiles()
-          setOpen(false)
-        },
-        onError: (error) => {
-          console.error('❌ ProductoForm - Error al crear:', error)
-        }
-      })
-    }
+    })
   }
 
   return (
@@ -204,39 +230,35 @@ export function ProductoFormDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="overflow-y-auto flex-1 pr-2">
-          {/* Alerta de saldo insuficiente */}
-          {
-            !isEditing && !loadingBilletera && !tieneSaldoSuficiente && (
-              <Alert className='mb-4 border-destructive'>
-                <WalletIcon className='h-4 w-4' />
-                <AlertDescription>
-                  <strong className='text-destructive'>Saldo insuficiente</strong>
-                  <p className='text-gray-900'>  
-                    Necesitas tener saldo en tu billetera para crear productos.
-                    <span className='text-destructive'>
-                      Tu saldo actual es de {saldoFormateado}.
-                    </span>
-                  </p> 
-                </AlertDescription>
-              </Alert>
-            )
-          }
-
-          {/* Información del saldo actual del usuario */}
-          {
-            !loadingBilletera && billetera && (
-              <div className='mb-4 p-3 bg-muted rounded-lg'>
-                <div className='flex items-center gap-2'>
-                  <WalletIcon className='h-4 w-4 text-muted-foreground'/>
-                  <span className="text-sm text-muted-foreground">
-                    Saldo actual: <span className={`font-semibold ${tieneSaldoSuficiente ? 'text-green-600' : 'text-destructive'}`}>
-                      {saldoFormateado}
-                    </span>
-                  </span>
-                </div>
+          {/* Información de borrador - Solo para creación */}
+          {!isEditing && !loadingConfiguracion && (
+            <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <WalletIcon className="h-4 w-4 text-orange-600" />
+                <span className="text-sm font-medium text-orange-800">
+                  Crear como borrador
+                </span>
               </div>
-            )
-          }
+              <div className="text-sm text-orange-700">
+                El producto se guardará como <span className="font-semibold">borrador</span> sin costo. 
+                Podrás publicarlo después desde la tabla de productos cobrando la comisión de {comisionFormateada}.
+              </div>
+            </div>
+          )}
+
+          {/* Información del saldo actual - Solo mostrar para referencia */}
+          {!loadingBilletera && billetera && (
+            <div className="mb-4 p-3 bg-muted rounded-lg">
+              <div className="flex items-center gap-2">
+                <WalletIcon className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  Saldo actual: <span className="font-semibold text-foreground">
+                    {saldoFormateado}
+                  </span>
+                </span>
+              </div>
+            </div>
+          )}
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4">
@@ -663,22 +685,21 @@ export function ProductoFormDialog({
               <div className="md:col-span-2">
                 <Button 
                   type="submit" 
-                  disabled={isPending || (!isEditing && !tieneSaldoSuficiente)} 
+                  disabled={isPending} 
                   className="w-full"
                 >
                   {isPending
-                    ? (isEditing ? 'Actualizando...' : 'Agregando...')
-                    : (isEditing ? 'Actualizar producto' : 'Agregar producto')
+                    ? (isEditing ? 'Actualizando...' : 'Guardando borrador...')
+                    : (isEditing ? 'Actualizar producto' : 'Guardar como borrador')
                   }
                 </Button>
-                {/* Mensaje adicional si no tiene saldo */}
-                {
-                  !isEditing && !loadingBilletera && !tieneSaldoSuficiente && (
-                    <p className='text-xs text-destructive text-center mt-2'>
-                      No tienes saldo suficiente para crear productos.
-                    </p>
-                  )
-                }
+                
+                {/* Mensaje adicional para creación */}
+                {!isEditing && (
+                  <p className="text-xs text-muted-foreground text-center mt-2">
+                    El producto se guardará sin costo. Podrás publicarlo después cobrando {comisionFormateada}
+                  </p>
+                )}
               </div>
             </form>
           </Form>

@@ -26,9 +26,12 @@ import { useCategorias, useCreateProducto, useUpdateProducto } from '../queries'
 import { productoSchema, type ProductoFormData } from '../data/schema'
 import { Categoria } from '../services'
 import { useAuth } from '@/stores/authStore'
-import { AlertCircleIcon, ImageIcon, LoaderIcon, UploadIcon, XIcon } from "lucide-react"
+import { AlertCircleIcon, ImageIcon, LoaderIcon, UploadIcon, WalletIcon, XIcon } from "lucide-react"
 import { useFileUpload } from "@/hooks/use-file-upload"
 import { SupabaseStorageService } from '@/lib/supabase'
+import { useBilleteraByUsuario } from '@/features/proveedor/billetera/queries'
+import { toast } from 'sonner'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface ProductoFormDialogProps {
   trigger: React.ReactNode
@@ -59,6 +62,17 @@ export function ProductoFormDialog({
   const { mutate: createProducto, isPending: isCreating } = useCreateProducto()
   const { mutate: updateProducto, isPending: isUpdating } = useUpdateProducto()
   const { user } = useAuth()
+
+  // hook para obtener el saldo de la billetera del usuario
+  const { data: billetera, isLoading: loadingBilletera } = useBilleteraByUsuario(user?.id ?? '')
+
+  // verificar si el usuario tiene saldo suficiente
+  const tieneSaldoSuficiente = billetera?.saldo ? billetera.saldo > 0 : false
+  const saldoFormateado = new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+  }).format(billetera?.saldo || 0)
 
   const isPending = isCreating || isUpdating
   const isEditing = !!productId
@@ -114,7 +128,13 @@ export function ProductoFormDialog({
 
   const handleSubmit = async (data: ProductoFormData) => {
     if (!user) {
-      console.error('❌ ProductoForm: No hay usuario autenticado')
+      console.error('ProductoForm: No hay usuario autenticado')
+      return
+    }
+
+    // verificamos que el usuario tenga saldo suficiente
+    if (!isEditing && !tieneSaldoSuficiente) {
+      toast.error('No tienes saldo suficiente en tu billetera')
       return
     }
 
@@ -184,6 +204,40 @@ export function ProductoFormDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className="overflow-y-auto flex-1 pr-2">
+          {/* Alerta de saldo insuficiente */}
+          {
+            !isEditing && !loadingBilletera && !tieneSaldoSuficiente && (
+              <Alert className='mb-4 border-destructive'>
+                <WalletIcon className='h-4 w-4' />
+                <AlertDescription>
+                  <strong className='text-destructive'>Saldo insuficiente</strong>
+                  <p className='text-gray-900'>  
+                    Necesitas tener saldo en tu billetera para crear productos.
+                    <span className='text-destructive'>
+                      Tu saldo actual es de {saldoFormateado}.
+                    </span>
+                  </p> 
+                </AlertDescription>
+              </Alert>
+            )
+          }
+
+          {/* Información del saldo actual del usuario */}
+          {
+            !loadingBilletera && billetera && (
+              <div className='mb-4 p-3 bg-muted rounded-lg'>
+                <div className='flex items-center gap-2'>
+                  <WalletIcon className='h-4 w-4 text-muted-foreground'/>
+                  <span className="text-sm text-muted-foreground">
+                    Saldo actual: <span className={`font-semibold ${tieneSaldoSuficiente ? 'text-green-600' : 'text-destructive'}`}>
+                      {saldoFormateado}
+                    </span>
+                  </span>
+                </div>
+              </div>
+            )
+          }
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4">
               {/* Columna 1 */}
@@ -607,12 +661,24 @@ export function ProductoFormDialog({
               </div>
 
               <div className="md:col-span-2">
-                <Button type="submit" disabled={isPending} className="w-full">
+                <Button 
+                  type="submit" 
+                  disabled={isPending || (!isEditing && !tieneSaldoSuficiente)} 
+                  className="w-full"
+                >
                   {isPending
                     ? (isEditing ? 'Actualizando...' : 'Agregando...')
                     : (isEditing ? 'Actualizar producto' : 'Agregar producto')
                   }
                 </Button>
+                {/* Mensaje adicional si no tiene saldo */}
+                {
+                  !isEditing && !loadingBilletera && !tieneSaldoSuficiente && (
+                    <p className='text-xs text-destructive text-center mt-2'>
+                      No tienes saldo suficiente para crear productos.
+                    </p>
+                  )
+                }
               </div>
             </form>
           </Form>

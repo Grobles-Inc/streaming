@@ -52,16 +52,13 @@ export const useCreateProducto = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (data: ProductoInsert) => {
-      console.log('🔄 useCreateProducto: Iniciando mutación con datos:', data)
       return productosService.createProducto(data)
     },
-    onSuccess: (result) => {
-      console.log('✅ useCreateProducto: Mutación exitosa, resultado:', result)
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['productos'] })
       toast.success('Producto creado correctamente')
     },
     onError: (error: Error) => {
-      console.error('❌ useCreateProducto: Error en mutación:', error)
       toast.error(error.message || 'Error al crear el producto')
     },
   })

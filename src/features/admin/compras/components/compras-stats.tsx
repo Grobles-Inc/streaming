@@ -4,7 +4,8 @@ import {
   IconCheck, 
   IconX, 
   IconClock, 
-  IconCurrencyDollar
+  IconCurrencyDollar,
+  IconPackage
 } from '@tabler/icons-react'
 import type { EstadisticasCompras } from '../data/types'
 
@@ -95,6 +96,14 @@ export function ComprasStats({ estadisticas, loading }: ComprasStatsProps) {
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
     },
+    {
+      title: 'Pedido Entregado',
+      value: estadisticas.pedidoEntregado.toLocaleString(),
+      description: `${((estadisticas.pedidoEntregado / estadisticas.total) * 100).toFixed(1)}% del total`,
+      icon: IconPackage,
+      color: 'text-emerald-600',
+      bgColor: 'bg-emerald-50',
+    },
   ]
 
   const ingresoStats = [
@@ -138,7 +147,7 @@ export function ComprasStats({ estadisticas, loading }: ComprasStatsProps) {
       {/* Estadísticas de Estado */}
       <div>
         <h3 className="text-lg font-semibold mb-4">Estado de Compras</h3>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {stats.map((stat) => {
             const Icon = stat.icon
             return (

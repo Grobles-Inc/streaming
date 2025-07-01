@@ -4,7 +4,7 @@ import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { useCategorias, useProductosByCategoria } from './queries'
 import { CategoriaForm, CategoriasTable, ProductosPorCategoria } from './components'
 import { CategoriaFilters } from './components/categoria-filters'
@@ -124,11 +124,15 @@ export default function CategoriasPage() {
         </div>
       </Header>
       <Main>
+        <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
+          <div>
+            <h2 className='text-2xl font-bold tracking-tight'>Gestión de Categorías y Productos</h2>
+            <p className='text-muted-foreground'>
+              Gestiona las categorías de servicios y sus productos asociados.
+            </p>
+          </div>
+        </div>
         <Card>
-      <CardHeader>
-        <CardTitle>Categorías</CardTitle>
-        <CardDescription>Gestiona las categorías de servicios.</CardDescription>
-      </CardHeader>
       <CardContent>
         {/* Filtros de categorías */}
         <CategoriaFilters

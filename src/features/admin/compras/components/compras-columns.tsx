@@ -24,24 +24,24 @@ import type { MappedCompra } from '../data/types'
 // Función para obtener el badge del estado
 function getEstadoBadge(estado: string) {
   switch (estado) {
-    case 'entregado':
+    case 'resuelto':
       return { 
         variant: 'default' as const, 
-        label: 'Entregado',
+        label: 'Resuelto',
         className: 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100',
         icon: IconCheck
       }
-    case 'cancelado':
+    case 'vencido':
       return { 
         variant: 'destructive' as const, 
-        label: 'Cancelado',
+        label: 'Vencido',
         className: 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100',
         icon: IconX
       }
-    case 'en_proceso':
+    case 'soporte':
       return { 
         variant: 'secondary' as const, 
-        label: 'En Proceso',
+        label: 'Soporte',
         className: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100',
         icon: IconClock
       }
@@ -52,12 +52,12 @@ function getEstadoBadge(estado: string) {
         className: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100',
         icon: IconCurrencyDollar
       }
-    case 'pendiente':
+    case 'pedido_entregado':
       return { 
         variant: 'secondary' as const, 
-        label: 'Pendiente',
-        className: 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100',
-        icon: IconClock
+        label: 'Pedido Entregado',
+        className: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100',
+        icon: IconCheck
       }
     default:
       return { 
@@ -72,24 +72,26 @@ function getEstadoBadge(estado: string) {
 // Props para las acciones
 interface ComprasTableActionsProps {
   compra: MappedCompra
-  onMarcarEntregado: (id: string) => Promise<void>
-  onMarcarCancelado: (id: string) => Promise<void>
-  onMarcarEnProceso: (id: string) => Promise<void>
+  onMarcarResuelto: (id: string) => Promise<void>
+  onMarcarVencido: (id: string) => Promise<void>
+  onEnviarASoporte: (id: string) => Promise<void>
   onProcesarReembolso: (id: string) => Promise<void>
+  onMarcarComoPedidoEntregado: (id: string) => Promise<void>
   onVer: (compra: MappedCompra) => void | Promise<void>
 }
 
 // Componente de acciones
 function ComprasTableActions({ 
   compra, 
-  onMarcarEntregado, 
-  onMarcarCancelado, 
-  onMarcarEnProceso, 
+  onMarcarResuelto, 
+  onMarcarVencido, 
+  onEnviarASoporte, 
   onProcesarReembolso, 
+  onMarcarComoPedidoEntregado,
   onVer 
 }: ComprasTableActionsProps) {
   const puedeModificar = compra.puedeModificar
-  const puedeReembolsar = compra.requiereReembolso || ['pendiente', 'en_proceso'].includes(compra.estado)
+  const puedeReembolsar = compra.requiereReembolso || ['soporte', 'vencido'].includes(compra.estado)
 
   return (
     <DropdownMenu>
@@ -110,25 +112,32 @@ function ComprasTableActions({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem 
-              onClick={() => onMarcarEntregado(compra.id)}
+              onClick={() => onMarcarResuelto(compra.id)}
               className="text-green-600 focus:text-green-600"
             >
               <IconCheck className="mr-2 h-4 w-4" />
-              Marcar como entregado
+              Marcar como resuelto
             </DropdownMenuItem>
             <DropdownMenuItem 
-              onClick={() => onMarcarCancelado(compra.id)}
+              onClick={() => onMarcarVencido(compra.id)}
               className="text-red-600 focus:text-red-600"
             >
               <IconX className="mr-2 h-4 w-4" />
-              Marcar como cancelado
+              Marcar como vencido
             </DropdownMenuItem>
             <DropdownMenuItem 
-              onClick={() => onMarcarEnProceso(compra.id)}
+              onClick={() => onEnviarASoporte(compra.id)}
               className="text-blue-600 focus:text-blue-600"
             >
               <IconClock className="mr-2 h-4 w-4" />
-              Marcar en proceso
+              Enviar a soporte
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => onMarcarComoPedidoEntregado(compra.id)}
+              className="text-emerald-600 focus:text-emerald-600"
+            >
+              <IconCheck className="mr-2 h-4 w-4" />
+              Marcar pedido entregado
             </DropdownMenuItem>
           </>
         )}
@@ -152,10 +161,11 @@ function ComprasTableActions({
 
 // Definir las columnas
 export function createComprasColumns(
-  onMarcarEntregado: (id: string) => Promise<void>,
-  onMarcarCancelado: (id: string) => Promise<void>,
-  onMarcarEnProceso: (id: string) => Promise<void>,
+  onMarcarResuelto: (id: string) => Promise<void>,
+  onMarcarVencido: (id: string) => Promise<void>,
+  onEnviarASoporte: (id: string) => Promise<void>,
   onProcesarReembolso: (id: string) => Promise<void>,
+  onMarcarComoPedidoEntregado: (id: string) => Promise<void>,
   onVer: (compra: MappedCompra) => void | Promise<void>
 ): ColumnDef<MappedCompra>[] {
   return [
@@ -310,10 +320,11 @@ export function createComprasColumns(
       cell: ({ row }) => (
         <ComprasTableActions
           compra={row.original}
-          onMarcarEntregado={onMarcarEntregado}
-          onMarcarCancelado={onMarcarCancelado}
-          onMarcarEnProceso={onMarcarEnProceso}
+          onMarcarResuelto={onMarcarResuelto}
+          onMarcarVencido={onMarcarVencido}
+          onEnviarASoporte={onEnviarASoporte}
           onProcesarReembolso={onProcesarReembolso}
+          onMarcarComoPedidoEntregado={onMarcarComoPedidoEntregado}
           onVer={onVer}
         />
       ),

@@ -64,11 +64,12 @@ export function UsersInviteDialog({ open, onOpenChange }: Props) {
       <DialogContent className='sm:max-w-md'>
         <DialogHeader className='text-left'>
           <DialogTitle className='flex items-center gap-2'>
-            <IconMailPlus /> Invite User
+            <IconMailPlus /> Invitar usuario
           </DialogTitle>
           <DialogDescription>
-            Invite new user to join your team by sending them an email
-            invitation. Assign a role to define their access level.
+            Invita a un nuevo usuario a unirse a tu equipo enviándole una
+            invitación por correo electrónico. Asigna un rol para definir su
+            nivel de acceso.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

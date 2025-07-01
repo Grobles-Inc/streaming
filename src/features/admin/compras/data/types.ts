@@ -1,6 +1,6 @@
 
 // Estados de compra
-export type EstadoCompra = 'resuelto' | 'vencido' | 'soporte' | 'reembolsado'
+export type EstadoCompra = 'resuelto' | 'vencido' | 'soporte' | 'reembolsado' | 'pedido_entregado'
 
 // Tipo base de compra desde Supabase (basado en el schema actualizado)
 export type SupabaseCompra = {
@@ -103,6 +103,7 @@ export type EstadisticasCompras = {
   vencidas: number
   soporte: number
   reembolsadas: number
+  pedidoEntregado: number
   ingresoTotal: number
   ingresoResuelto: number
   montoReembolsado: number

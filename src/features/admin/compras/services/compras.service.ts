@@ -244,6 +244,10 @@ export class ComprasService {
     return this.cambiarEstadoCompra(id, 'reembolsado')
   }
 
+  static async marcarComoPedidoEntregado(id: string) {
+    return this.cambiarEstadoCompra(id, 'pedido_entregado')
+  }
+
   // Obtener estadísticas de compras
   static async getEstadisticas(): Promise<EstadisticasCompras> {
     const { data, error } = await supabase
@@ -263,6 +267,7 @@ export class ComprasService {
       vencidas: compras.filter(c => c.estado === 'vencido').length,
       soporte: compras.filter(c => c.estado === 'soporte').length,
       reembolsadas: compras.filter(c => c.estado === 'reembolsado').length,
+      pedidoEntregado: compras.filter(c => c.estado === 'pedido_entregado').length,
       ingresoTotal: compras.reduce((sum, c) => sum + (c.precio || 0), 0),
       ingresoResuelto: compras.filter(c => c.estado === 'resuelto').reduce((sum, c) => sum + (c.precio || 0), 0),
       montoReembolsado: compras.filter(c => c.estado === 'reembolsado').reduce((sum, c) => sum + (c.monto_reembolso || 0), 0),

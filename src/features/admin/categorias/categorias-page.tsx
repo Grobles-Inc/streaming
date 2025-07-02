@@ -1,16 +1,16 @@
-import { useState } from 'react'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { IconPlus } from '@tabler/icons-react'
-import { useCategorias, useProductosByCategoria } from './queries'
+import { useState } from 'react'
 import { CategoriaModal, CategoriasTable, ProductosPorCategoria } from './components'
 import { CategoriaFilters } from './components/categoria-filters'
 import type { Categoria, Producto } from './data/types'
+import { useCategorias, useProductosByCategoria } from './queries'
 
 export default function CategoriasPage() {
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<Categoria | null>(null)
@@ -146,16 +146,12 @@ export default function CategoriasPage() {
             Nueva Categoría
           </Button>
         </div>
-        <Card>
-      <CardContent>
-        {/* Filtros de categorías */}
+
         <CategoriaFilters
           categorias={categorias}
           onFilter={handleCategoriaFilter}
           className="mb-6"
         />
-
-        {/* Tabla de categorías */}
         <CategoriasTable
           categorias={categoriasAMostrar}
           currentPage={categoriaPagina}
@@ -165,17 +161,17 @@ export default function CategoriasPage() {
           onPageChange={setCategoriaPagina}
         />
 
-        {/* Productos por categoría */}
+
         {categoriaSeleccionada && (
           <>
             {loadingProductos && (
               <div className="mt-4 p-4 text-center">Cargando productos...</div>
             )}
-            
+
             {errorProductos && (
               <div className="mt-4 p-4 text-center text-red-600">Error: {errorProductos}</div>
             )}
-            
+
             {!loadingProductos && !errorProductos && (
               <ProductosPorCategoria
                 categoria={categoriaSeleccionada}
@@ -186,17 +182,14 @@ export default function CategoriasPage() {
             )}
           </>
         )}
-      </CardContent>
-    </Card>
 
-    {/* Modal para crear/editar categoría */}
-    <CategoriaModal
-      open={modalOpen}
-      onOpenChange={setModalOpen}
-      categoria={editandoCategoria}
-      onSubmit={handleSubmitCategoria}
-      isEditing={isEditing}
-    />
+        <CategoriaModal
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+          categoria={editandoCategoria}
+          onSubmit={handleSubmitCategoria}
+          isEditing={isEditing}
+        />
       </Main>
     </>
   )

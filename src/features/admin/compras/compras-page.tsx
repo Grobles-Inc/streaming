@@ -1,39 +1,23 @@
-import { useState } from 'react'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select'
-import { 
-  IconSearch, 
-  IconFilter, 
-  IconRefresh,
-  IconTable,
-  IconCards
+import {
+  IconRefresh
 } from '@tabler/icons-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
-import { useCompras } from './hooks/use-compras'
-import { ComprasTable } from './components/compras-table'
 import { CompraDetailsModal } from './components/compra-details-modal'
-import { ComprasStatusCards } from './components/compras-status-cards'
 import { createComprasColumns } from './components/compras-columns'
-import type { MappedCompra, EstadoCompra } from './data/types'
+import { ComprasTable } from './components/compras-table'
+import type { EstadoCompra, MappedCompra } from './data/types'
+import { useCompras } from './hooks/use-compras'
 
 export function ComprasPage() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedStatus, setSelectedStatus] = useState<EstadoCompra | 'all'>('all')
+  const [searchTerm, _setSearchTerm] = useState('')
+  const [selectedStatus, _setSelectedStatus] = useState<EstadoCompra | 'all'>('all')
   const [selectedCompra, setSelectedCompra] = useState<MappedCompra | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
 
@@ -46,14 +30,12 @@ export function ComprasPage() {
     enviarASoporte,
     procesarReembolso,
     marcarComoPedidoEntregado,
-    cambiarEstadoCompra,
     refreshCompras,
-    hayCompras
   } = useCompras()
 
   // Filtrar compras
   const comprasFiltradas = compras.filter(compra => {
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch = searchTerm === '' ||
       compra.nombreCliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
       compra.productoNombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       compra.proveedorNombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -116,7 +98,7 @@ export function ComprasPage() {
       const result = await procesarReembolso(id)
       if (result.success) {
         toast.success('Reembolso procesado', {
-          description: result.reembolsoProcessed 
+          description: result.reembolsoProcessed
             ? `Se ha reembolsado $. ${result.reembolsoAmount?.toFixed(2)} al usuario.`
             : 'El estado de la compra ha sido actualizado correctamente.'
         })
@@ -143,14 +125,7 @@ export function ComprasPage() {
     }
   }
 
-  const handleCambiarEstadoCard = async (id: string, nuevoEstado: EstadoCompra) => {
-    try {
-      const result = await cambiarEstadoCompra(id, nuevoEstado)
-      return { success: result.success }
-    } catch (error) {
-      return { success: false }
-    }
-  }
+
 
   const handleVerDetalles = (compra: MappedCompra) => {
     setSelectedCompra(compra)
@@ -198,141 +173,43 @@ export function ComprasPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
+              size="icon"
               onClick={handleRefresh}
               disabled={loading}
             >
-              <IconRefresh className="h-4 w-4 mr-2" />
-              Actualizar
+              <IconRefresh className="h-4 w-4" />
             </Button>
           </div>
         </div>
         <div className="space-y-6">
 
-      {/* Contenido con tabs */}
-      <Tabs defaultValue="table" className="space-y-6">
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="table" className="flex items-center gap-2">
-              <IconTable className="h-4 w-4" />
-              Vista de Tabla
-            </TabsTrigger>
-            <TabsTrigger value="cards" className="flex items-center gap-2">
-              <IconCards className="h-4 w-4" />
-              Vista de Cards
-            </TabsTrigger>
-          </TabsList>
-          
-          {/* Filtros generales */}
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por cliente, producto..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 w-64"
-              />
+
+          {error ? (
+            <div className="text-center py-8">
+              <p className="text-red-600 mb-4">Error: {error}</p>
+              <Button onClick={handleRefresh} variant="outline">
+                <IconRefresh className="h-4 w-4 mr-2" />
+                Reintentar
+              </Button>
             </div>
-            <Select value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as EstadoCompra | 'all')}>
-              <SelectTrigger className="w-[200px]">
-                <IconFilter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Filtrar por estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="resuelto">Resuelto</SelectItem>
-                <SelectItem value="vencido">Vencido</SelectItem>
-                <SelectItem value="soporte">Soporte</SelectItem>
-                <SelectItem value="reembolsado">Reembolsado</SelectItem>
-                <SelectItem value="pedido_entregado">Pedido Entregado</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+          ) : (
+            <ComprasTable
+              data={comprasFiltradas}
+              columns={columns}
+              loading={loading}
+            />
+          )}
 
-        {/* Vista de tabla */}
-        <TabsContent value="table">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconTable className="h-5 w-5" />
-                Tabla de Compras
-                {hayCompras && (
-                  <Badge variant="secondary">
-                    {comprasFiltradas.length} de {compras.length}
-                  </Badge>
-                )}
-              </CardTitle>
-              <CardDescription>
-                Vista detallada en formato de tabla con acciones
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {error ? (
-                <div className="text-center py-8">
-                  <p className="text-red-600 mb-4">Error: {error}</p>
-                  <Button onClick={handleRefresh} variant="outline">
-                    <IconRefresh className="h-4 w-4 mr-2" />
-                    Reintentar
-                  </Button>
-                </div>
-              ) : (
-                <ComprasTable
-                  data={comprasFiltradas}
-                  columns={columns}
-                  loading={loading}
-                />
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        {/* Vista de cards */}
-        <TabsContent value="cards">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <IconCards className="h-5 w-5" />
-                Cards por Estado
-                {hayCompras && (
-                  <Badge variant="secondary">
-                    {comprasFiltradas.length} compras
-                  </Badge>
-                )}
-              </CardTitle>
-              <CardDescription>
-                Vista organizada por estados con opciones de cambio directo
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {error ? (
-                <div className="text-center py-8">
-                  <p className="text-red-600 mb-4">Error: {error}</p>
-                  <Button onClick={handleRefresh} variant="outline">
-                    <IconRefresh className="h-4 w-4 mr-2" />
-                    Reintentar
-                  </Button>
-                </div>
-              ) : (
-                <ComprasStatusCards
-                  compras={comprasFiltradas}
-                  onCambiarEstado={handleCambiarEstadoCard}
-                  loading={loading}
-                />
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
 
-      {/* Modal de detalles */}
-      <CompraDetailsModal
-        compra={selectedCompra}
-        open={showDetailsModal}
-        onOpenChange={setShowDetailsModal}
-      />
+          {/* Modal de detalles */}
+          <CompraDetailsModal
+            compra={selectedCompra}
+            open={showDetailsModal}
+            onOpenChange={setShowDetailsModal}
+          />
         </div>
       </Main>
     </>

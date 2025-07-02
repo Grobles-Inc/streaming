@@ -5,10 +5,10 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { Card, CardContent } from '@/components/ui/card'
-import { 
-  BilleteraFiltersComponent, 
-  BilleterasTable, 
-  MovimientosBilleteraModal 
+import {
+  BilleteraFiltersComponent,
+  BilleterasTable,
+  MovimientosBilleteraModal
 } from './components'
 import { useBilleteras, useRecargas, useRetiros } from './queries'
 import type { Billetera } from './data/types'
@@ -82,7 +82,7 @@ export default function BilleterasPage() {
           <ProfileDropdown />
         </div>
       </Header>
-      <Main>
+      <Main className='space-y-4'>
         <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
           <div>
             <h2 className='text-2xl font-bold tracking-tight'>Gestión de Billeteras de Usuarios</h2>
@@ -91,29 +91,28 @@ export default function BilleterasPage() {
             </p>
           </div>
         </div>
-        <Card>
-          <CardContent className="mt-6 space-y-6">
-            {/* Filtros */}
-            <BilleteraFiltersComponent
-              billeteras={billeteras}
-              onFilter={handleBilleteraFilter}
-            />
 
-            {/* Tabla de billeteras */}
-            <BilleterasTable
-              billeteras={billeterasAMostrar}
-              onViewMovimientos={handleViewMovimientos}
-            />
 
-            {/* Modal de movimientos */}
-            <MovimientosBilleteraModal
-              billetera={billeteraSeleccionada}
-              open={showMovimientosModal}
-              onClose={handleCloseMovimientosModal}
-              onUpdateEstado={handleUpdateEstado}
-            />
-          </CardContent>
-        </Card>
+        <BilleteraFiltersComponent
+          billeteras={billeteras}
+          onFilter={handleBilleteraFilter}
+        />
+
+        {/* Tabla de billeteras */}
+        <BilleterasTable
+          billeteras={billeterasAMostrar}
+          onViewMovimientos={handleViewMovimientos}
+        />
+
+
+        {/* Modal de movimientos */}
+        <MovimientosBilleteraModal
+          billetera={billeteraSeleccionada}
+          open={showMovimientosModal}
+          onClose={handleCloseMovimientosModal}
+          onUpdateEstado={handleUpdateEstado}
+        />
+
       </Main>
     </>
   )

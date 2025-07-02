@@ -1,43 +1,40 @@
-import { useState } from 'react'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { 
+import { Button } from '@/components/ui/button'
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { 
-  IconRefresh,
-  IconCash 
+import {
+  IconRefresh
 } from '@tabler/icons-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { useRetiros } from './hooks/use-retiros'
+import { RetiroDetailsModal } from './components/retiro-details-modal'
 import { createRetirosColumns } from './components/retiros-columns'
 import { RetirosTable } from './components/retiros-table'
-import { RetiroDetailsModal } from './components/retiro-details-modal'
-import type { MappedRetiro, EstadoRetiro } from './data/types'
+import type { EstadoRetiro, MappedRetiro } from './data/types'
+import { useRetiros } from './hooks/use-retiros'
 
 export default function RetirosPage() {
   const [filtroEstado, setFiltroEstado] = useState<EstadoRetiro | 'todos'>('todos')
   const [selectedRetiro, setSelectedRetiro] = useState<MappedRetiro | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
-  
+
   const {
     retiros,
     loading,
     error,
     aprobarRetiro,
     rechazarRetiro,
-    updateEstadoRetiro,
     aprobarRetiros,
     rechazarRetiros,
     aplicarFiltros,
@@ -92,10 +89,7 @@ export default function RetirosPage() {
     setModalOpen(true)
   }
 
-  // Actualizar estado desde el modal
-  const handleUpdateEstado = async (id: string, nuevoEstado: EstadoRetiro): Promise<boolean> => {
-    return await updateEstadoRetiro(id, nuevoEstado)
-  }
+
 
   // Aplicar filtro por estado
   const handleFiltroEstado = async (estado: EstadoRetiro | 'todos') => {
@@ -115,8 +109,8 @@ export default function RetirosPage() {
   )
 
   // Filtrar retiros según el estado seleccionado
-  const retirosFiltrados = filtroEstado === 'todos' 
-    ? retiros 
+  const retirosFiltrados = filtroEstado === 'todos'
+    ? retiros
     : retiros.filter(r => r.estado === filtroEstado)
 
   if (error) {
@@ -126,11 +120,11 @@ export default function RetirosPage() {
           <div className="text-center">
             <h3 className="text-lg font-semibold text-red-600">Error al cargar retiros</h3>
             <p className="text-sm text-gray-600 mt-2">{error}</p>
-            <Button 
+            <Button
               onClick={() => {
                 clearError()
                 refreshRetiros()
-              }} 
+              }}
               className="mt-4"
             >
               Intentar nuevamente
@@ -164,7 +158,7 @@ export default function RetirosPage() {
               )}
             </p>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Select value={filtroEstado} onValueChange={handleFiltroEstado}>
               <SelectTrigger className="w-[180px]">
@@ -177,14 +171,14 @@ export default function RetirosPage() {
                 <SelectItem value="rechazado">Rechazados</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <Button variant="outline" onClick={refreshRetiros} disabled={loading}>
               <IconRefresh className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               Actualizar
             </Button>
-            
-            
-            
+
+
+
             {/* <Button variant="outline" disabled>
               <IconDownload className="mr-2 h-4 w-4" />
               Exportar
@@ -192,32 +186,15 @@ export default function RetirosPage() {
           </div>
         </div>
 
-        {/* Tabla de retiros */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <IconCash className="h-5 w-5" />
-              Solicitudes de Retiro
-            </CardTitle>
-            <CardDescription>
-              Lista completa de todas las solicitudes de retiro con opciones de gestión.
-              {filtroEstado !== 'todos' && (
-                <span className="ml-2 font-medium">
-                  Mostrando: {filtroEstado}
-                </span>
-              )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <RetirosTable
-              data={retirosFiltrados}
-              columns={columns}
-              loading={loading}
-              onAprobarSeleccionados={handleAprobarSeleccionados}
-              onRechazarSeleccionados={handleRechazarSeleccionados}
-            />
-          </CardContent>
-        </Card>
+
+        <RetirosTable
+          data={retirosFiltrados}
+          columns={columns}
+          loading={loading}
+          onAprobarSeleccionados={handleAprobarSeleccionados}
+          onRechazarSeleccionados={handleRechazarSeleccionados}
+        />
+
       </Main>
 
       {/* Modal de detalles */}
@@ -225,7 +202,6 @@ export default function RetirosPage() {
         retiro={selectedRetiro}
         open={modalOpen}
         onOpenChange={setModalOpen}
-        onUpdateEstado={handleUpdateEstado}
       />
     </>
   )

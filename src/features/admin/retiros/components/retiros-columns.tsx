@@ -1,44 +1,44 @@
-import { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { IconDots, IconCheck, IconX, IconEye, IconAlertTriangle, IconWallet } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
+import { IconAlertTriangle, IconCheck, IconDots, IconEye, IconX } from '@tabler/icons-react'
+import { ColumnDef } from '@tanstack/react-table'
 import type { MappedRetiro } from '../data/types'
 
 // Función para obtener el badge del estado
 function getEstadoBadge(estado: string) {
   switch (estado) {
     case 'aprobado':
-      return { 
-        variant: 'default' as const, 
+      return {
+        variant: 'default' as const,
         label: 'Aprobado',
-        className: 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' 
+        className: 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
       }
     case 'pendiente':
-      return { 
-        variant: 'secondary' as const, 
+      return {
+        variant: 'secondary' as const,
         label: 'Pendiente',
-        className: 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100' 
+        className: 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100'
       }
     case 'rechazado':
-      return { 
-        variant: 'destructive' as const, 
+      return {
+        variant: 'destructive' as const,
         label: 'Rechazado',
-        className: 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100' 
+        className: 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
       }
     default:
-      return { 
-        variant: 'outline' as const, 
+      return {
+        variant: 'outline' as const,
         label: estado,
-        className: '' 
+        className: ''
       }
   }
 }
@@ -72,12 +72,12 @@ function RetirosTableActions({ retiro, onAprobar, onRechazar, onVer }: RetirosTa
         </DropdownMenuItem>
         {puedeModificar && (
           <>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={() => onAprobar(retiro.id)}
               disabled={!puedeAprobar}
               className={cn(
-                puedeAprobar 
-                  ? "text-green-600 focus:text-green-600" 
+                puedeAprobar
+                  ? "text-green-600 focus:text-green-600"
                   : "text-gray-400 cursor-not-allowed"
               )}
             >
@@ -87,7 +87,7 @@ function RetirosTableActions({ retiro, onAprobar, onRechazar, onVer }: RetirosTa
                 <IconAlertTriangle className="ml-2 h-4 w-4 text-orange-500" />
               )}
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={() => onRechazar(retiro.id)}
               className="text-red-600 focus:text-red-600"
             >
@@ -155,11 +155,11 @@ export function createRetirosColumns(
         const monto = row.original.monto
         const montoFormateado = row.getValue('montoFormateado') as string
         return (
-          <div className="text-right font-mono">
+          <div className="text-right">
             <span className={cn(
               'inline-flex items-center px-2 py-1 rounded-md text-sm font-medium',
-              monto > 0 
-                ? 'bg-red-50 text-red-700 border border-red-200' 
+              monto > 0
+                ? 'bg-red-50 text-red-700 border border-red-200'
                 : 'bg-gray-50 text-gray-700 border border-gray-200'
             )}>
               {montoFormateado}
@@ -169,55 +169,6 @@ export function createRetirosColumns(
       },
       meta: {
         className: 'text-right',
-      },
-    },
-    {
-      accessorKey: 'saldoFormateado',
-      header: 'Saldo Billetera',
-      cell: ({ row }) => {
-        const saldoFormateado = row.getValue('saldoFormateado') as string
-        const puedeAprobar = row.original.puedeAprobar
-        
-        return (
-          <div className="text-right font-mono">
-            <div className="flex items-center justify-end gap-2">
-              <IconWallet className="h-4 w-4 text-muted-foreground" />
-              <span className={cn(
-                'inline-flex items-center px-2 py-1 rounded-md text-sm font-medium',
-                puedeAprobar 
-                  ? 'bg-green-50 text-green-700 border border-green-200' 
-                  : 'bg-red-50 text-red-700 border border-red-200'
-              )}>
-                {saldoFormateado}
-              </span>
-            </div>
-            {!puedeAprobar && (
-              <div className="text-xs text-red-600 mt-1 flex items-center justify-end gap-1">
-                <IconAlertTriangle className="h-3 w-3" />
-                Insuficiente
-              </div>
-            )}
-          </div>
-        )
-      },
-      meta: {
-        className: 'text-right',
-      },
-    },
-    {
-      accessorKey: 'estado',
-      header: 'Estado',
-      cell: ({ row }) => {
-        const estado = row.getValue('estado') as string
-        const badge = getEstadoBadge(estado)
-        return (
-          <Badge variant={badge.variant} className={badge.className}>
-            {badge.label}
-          </Badge>
-        )
-      },
-      filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
       },
     },
     {
@@ -245,36 +196,22 @@ export function createRetirosColumns(
       },
     },
     {
-      accessorKey: 'fechaActualizacion',
-      header: 'Última Actualización',
+      accessorKey: 'estado',
+      header: 'Estado',
       cell: ({ row }) => {
-        const fecha = row.getValue('fechaActualizacion') as Date
-        const fechaCreacion = row.getValue('fechaCreacion') as Date
-        const esActualizada = fecha.getTime() !== fechaCreacion.getTime()
-        
-        if (!esActualizada) {
-          return <span className="text-sm text-muted-foreground">Sin cambios</span>
-        }
-        
+        const estado = row.getValue('estado') as string
+        const badge = getEstadoBadge(estado)
         return (
-          <div className="space-y-1">
-            <div className="text-sm">
-              {fecha.toLocaleDateString('es-PE', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-              })}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {fecha.toLocaleTimeString('es-PE', {
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </div>
-          </div>
+          <Badge variant={badge.variant} className={badge.className}>
+            {badge.label}
+          </Badge>
         )
       },
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
+      },
     },
+
     {
       id: 'actions',
       enableHiding: false,

@@ -36,7 +36,6 @@ export default function RecargasPage() {
     recargas,
     loading,
     error,
-    estadisticas,
     aprobarRecarga,
     rechazarRecarga,
     updateEstadoRecarga,

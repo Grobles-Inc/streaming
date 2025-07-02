@@ -41,7 +41,6 @@ export function ComprasPage() {
     compras,
     loading,
     error,
-    estadisticas,
     marcarComoResuelto,
     marcarComoVencido,
     enviarASoporte,

@@ -7,8 +7,8 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { IconCreditCard, IconUsers } from '@tabler/icons-react'
-import { useUsuarios, useProductos, useRecargas, useMetricasGlobales } from './queries'
-import { MetricasCard, UsuariosTable, ProductosTable, RecargasTable } from './components'
+import { useRecargas, useMetricasGlobales } from './queries'
+import { MetricasCard } from './components'
 
 // Hooks para obtener datos de otras features
 import { useBilleteras, useRecargas as useRecargasBilleteras, useRetiros } from '../billeteras/queries'
@@ -22,13 +22,11 @@ import { EstadisticasRecargasCard } from '../recargas/components/estadisticas-re
 import { EstadisticasRetirosCard } from '../retiros/components/estadisticas-retiros'
 
 export default function ReportesGlobalesPage() {
-  const { usuarios, loading: usuariosLoading, updateUsuario } = useUsuarios()
-  const { productos, loading: productosLoading, updateProducto } = useProductos()
-  const { recargas, loading: recargasLoading, updateRecarga } = useRecargas()
+  const { loading: recargasLoading } = useRecargas()
   const { metricas, loading: metricasLoading } = useMetricasGlobales()
 
   // Hooks para estadísticas de otras features
-  const { billeteras, loading: loadingBilleteras } = useBilleteras()
+  const { billeteras } = useBilleteras()
   const { recargas: recargasBilleteras } = useRecargasBilleteras()
   const { retiros } = useRetiros()
   const { estadisticas: estadisticasCompras, loading: loadingCompras } = useCompras()
@@ -69,43 +67,13 @@ export default function ReportesGlobalesPage() {
         {/* Métricas principales */}
         <MetricasCard metricas={metricas} loading={metricasLoading} />
 
-        <Tabs defaultValue="usuarios" className="space-y-6">
+        <Tabs defaultValue="compras" className="space-y-6">
           <TabsList className="mb-4">
-            <TabsTrigger value="usuarios">Usuarios</TabsTrigger>
-            <TabsTrigger value="productos">Productos</TabsTrigger>
-            <TabsTrigger value="recargas-tabla">Recargas/Validaciones</TabsTrigger>
-            <TabsTrigger value="billeteras">Billeteras</TabsTrigger>
             <TabsTrigger value="compras">Compras</TabsTrigger>
-            <TabsTrigger value="recargas">Estadísticas Recargas</TabsTrigger>
+            <TabsTrigger value="recargas">Recargas</TabsTrigger>
+            <TabsTrigger value="billeteras">Billeteras</TabsTrigger>
             <TabsTrigger value="retiros">Retiros</TabsTrigger>
           </TabsList>
-
-          {/* Usuarios */}
-          <TabsContent value="usuarios">
-            <UsuariosTable
-              usuarios={usuarios}
-              loading={usuariosLoading}
-              onUpdateUsuario={updateUsuario}
-            />
-          </TabsContent>
-
-          {/* Productos */}
-          <TabsContent value="productos">
-            <ProductosTable
-              productos={productos}
-              loading={productosLoading}
-              onUpdateProducto={updateProducto}
-            />
-          </TabsContent>
-
-          {/* Recargas y Validaciones - Tabla */}
-          <TabsContent value="recargas-tabla">
-            <RecargasTable
-              recargas={recargas}
-              loading={recargasLoading}
-              onUpdateRecarga={updateRecarga}
-            />
-          </TabsContent>
 
           {/* Estadísticas de Billeteras */}
           <TabsContent value="billeteras">

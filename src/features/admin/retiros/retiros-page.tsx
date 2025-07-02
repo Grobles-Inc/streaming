@@ -36,7 +36,6 @@ export default function RetirosPage() {
     retiros,
     loading,
     error,
-    estadisticas,
     aprobarRetiro,
     rechazarRetiro,
     updateEstadoRetiro,

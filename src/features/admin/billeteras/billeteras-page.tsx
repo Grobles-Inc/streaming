@@ -6,8 +6,7 @@ import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
-import { IconWallet, IconUsers, IconCreditCard } from '@tabler/icons-react'
+import { IconWallet, IconUsers} from '@tabler/icons-react'
 import { 
   BilleteraFiltersComponent, 
   BilleterasTable, 

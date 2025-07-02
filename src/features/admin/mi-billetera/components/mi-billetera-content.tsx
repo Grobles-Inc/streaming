@@ -8,15 +8,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { IconPlus, IconWallet, IconTrendingUp, IconTrendingDown, IconMenu2, IconCheck, IconX, IconLoader2 } from '@tabler/icons-react'
-import { BilleterasService } from '../services'
+import { BilleterasService } from '@/features/admin/billeteras/services'
 import { useAuthStore } from '@/stores/authStore'
-import type { Billetera, Recarga, Retiro } from '../data/types'
+import type { Billetera, Recarga, Retiro } from '@/features/admin/billeteras/data/types'
 
-interface AdminBilleteraProps {
+interface MiBilleteraContentProps {
   className?: string
 }
 
-export function AdminBilletera({ className }: AdminBilleteraProps) {
+export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
   const { user } = useAuthStore()
   const [billetera, setBilletera] = useState<Billetera | null>(null)
   const [recargas, setRecargas] = useState<Recarga[]>([])

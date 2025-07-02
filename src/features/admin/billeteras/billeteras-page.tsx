@@ -5,13 +5,10 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { Card, CardContent } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { IconWallet, IconUsers} from '@tabler/icons-react'
 import { 
   BilleteraFiltersComponent, 
   BilleterasTable, 
-  MovimientosBilleteraModal, 
-  AdminBilletera 
+  MovimientosBilleteraModal 
 } from './components'
 import { useBilleteras, useRecargas, useRetiros } from './queries'
 import type { Billetera } from './data/types'
@@ -88,44 +85,25 @@ export default function BilleterasPage() {
       <Main>
         <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
           <div>
-            <h2 className='text-2xl font-bold tracking-tight'>Gestión de Billeteras</h2>
+            <h2 className='text-2xl font-bold tracking-tight'>Gestión de Billeteras de Usuarios</h2>
             <p className='text-muted-foreground'>
-              Administra las billeteras de todos los usuarios y tu propia billetera de administrador.
+              Administra las billeteras de todos los usuarios del sistema.
             </p>
           </div>
         </div>
         <Card>
-          <CardContent>
-            <Tabs defaultValue="usuarios" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="usuarios" className="flex items-center gap-2">
-                  <IconUsers className="h-4 w-4" />
-                  Billeteras de Usuarios
-                </TabsTrigger>
-                <TabsTrigger value="admin" className="flex items-center gap-2">
-                  <IconWallet className="h-4 w-4" />
-                  Mi Billetera
-                </TabsTrigger>
-              </TabsList>
+          <CardContent className="mt-6 space-y-6">
+            {/* Filtros */}
+            <BilleteraFiltersComponent
+              billeteras={billeteras}
+              onFilter={handleBilleteraFilter}
+            />
 
-              <TabsContent value="usuarios" className="mt-6 space-y-6">
-                {/* Filtros */}
-                <BilleteraFiltersComponent
-                  billeteras={billeteras}
-                  onFilter={handleBilleteraFilter}
-                />
-
-                {/* Tabla de billeteras */}
-                <BilleterasTable
-                  billeteras={billeterasAMostrar}
-                  onViewMovimientos={handleViewMovimientos}
-                />
-              </TabsContent>
-
-              <TabsContent value="admin" className="mt-6">
-                <AdminBilletera />
-              </TabsContent>
-            </Tabs>
+            {/* Tabla de billeteras */}
+            <BilleterasTable
+              billeteras={billeterasAMostrar}
+              onViewMovimientos={handleViewMovimientos}
+            />
 
             {/* Modal de movimientos */}
             <MovimientosBilleteraModal

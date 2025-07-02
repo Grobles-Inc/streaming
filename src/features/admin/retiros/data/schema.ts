@@ -74,7 +74,7 @@ export function mapSupabaseRetiroToComponent(retiro: RetiroWithUser): MappedReti
   
   const montoFormateado = new Intl.NumberFormat('es-PE', {
     style: 'currency',
-    currency: 'PEN',
+    currency: 'USD',
     minimumFractionDigits: 2,
   }).format(retiro.monto)
 
@@ -84,7 +84,7 @@ export function mapSupabaseRetiroToComponent(retiro: RetiroWithUser): MappedReti
   
   const saldoFormateado = new Intl.NumberFormat('es-PE', {
     style: 'currency',
-    currency: 'PEN',
+    currency: 'USD',
     minimumFractionDigits: 2,
   }).format(saldoBilletera)
 

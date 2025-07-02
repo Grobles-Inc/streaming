@@ -116,13 +116,13 @@ export function mapSupabaseCompraToComponent(compra: CompraWithRelations): Mappe
 
   const precioFormateado = new Intl.NumberFormat('es-PE', {
     style: 'currency',
-    currency: 'PEN',
+    currency: 'USD',
     minimumFractionDigits: 2,
   }).format(compra.precio)
 
   const montoReembolsoFormateado = new Intl.NumberFormat('es-PE', {
     style: 'currency',
-    currency: 'PEN',
+    currency: 'USD',
     minimumFractionDigits: 2,
   }).format(compra.monto_reembolso)
 

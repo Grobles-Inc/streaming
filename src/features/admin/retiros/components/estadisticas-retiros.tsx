@@ -48,7 +48,7 @@ export function EstadisticasRetirosCard({ estadisticas, loading = false }: Estad
   const formatMonto = (monto: number) => {
     return new Intl.NumberFormat('es-PE', {
       style: 'currency',
-      currency: 'PEN',
+      currency: 'USD',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(monto)

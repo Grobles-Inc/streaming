@@ -117,7 +117,7 @@ export function ComprasPage() {
       if (result.success) {
         toast.success('Reembolso procesado', {
           description: result.reembolsoProcessed 
-            ? `Se ha reembolsado S/. ${result.reembolsoAmount?.toFixed(2)} al usuario.`
+            ? `Se ha reembolsado $. ${result.reembolsoAmount?.toFixed(2)} al usuario.`
             : 'El estado de la compra ha sido actualizado correctamente.'
         })
       }

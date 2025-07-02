@@ -66,7 +66,7 @@ export function mapSupabaseRecargaToComponent(recarga: RecargaWithUser): MappedR
   
   const montoFormateado = new Intl.NumberFormat('es-PE', {
     style: 'currency',
-    currency: 'PEN',
+    currency: 'USD',
     minimumFractionDigits: 2,
   }).format(recarga.monto)
 

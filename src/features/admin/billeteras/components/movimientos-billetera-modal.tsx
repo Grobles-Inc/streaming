@@ -5,8 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { IconMenu2, IconCheck, IconX, IconClock, IconTrendingUp, IconTrendingDown, IconCalendar, IconFilter } from '@tabler/icons-react'
+import {IconX, IconTrendingUp, IconTrendingDown, IconCalendar, IconFilter } from '@tabler/icons-react'
 import { BilleterasService } from '../services'
 import type { Billetera, Recarga, Retiro, MovimientoBilletera } from '../data/types'
 
@@ -17,7 +16,7 @@ interface MovimientosBilleteraModalProps {
   onUpdateEstado?: (tipo: 'recarga' | 'retiro', id: string, estado: 'aprobado' | 'pendiente' | 'rechazado') => void
 }
 
-export function MovimientosBilleteraModal({ billetera, open, onClose, onUpdateEstado }: MovimientosBilleteraModalProps) {
+export function MovimientosBilleteraModal({ billetera, open, onClose }: MovimientosBilleteraModalProps) {
   const [recargas, setRecargas] = useState<Recarga[]>([])
   const [retiros, setRetiros] = useState<Retiro[]>([])
   const [loading, setLoading] = useState(false)
@@ -118,7 +117,7 @@ export function MovimientosBilleteraModal({ billetera, open, onClose, onUpdateEs
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-PE', {
       style: 'currency',
-      currency: 'PEN'
+      currency: 'USD'
     }).format(amount)
   }
 
@@ -160,12 +159,6 @@ export function MovimientosBilleteraModal({ billetera, open, onClose, onUpdateEs
     )
   }
 
-  const handleUpdateEstado = async (movimiento: MovimientoBilletera, nuevoEstado: 'aprobado' | 'pendiente' | 'rechazado') => {
-    if (onUpdateEstado) {
-      onUpdateEstado(movimiento.tipo, movimiento.id, nuevoEstado)
-    }
-    await fetchMovimientos() // Refrescar los datos
-  }
 
   const clearFilters = () => {
     setFechaDesde('')

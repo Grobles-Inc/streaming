@@ -113,7 +113,7 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-PE', {
       style: 'currency',
-      currency: 'PEN'
+      currency: 'USD'
     }).format(amount)
   }
 

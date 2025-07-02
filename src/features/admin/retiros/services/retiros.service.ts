@@ -131,7 +131,7 @@ export class RetirosService {
     // Validar que el usuario tenga saldo suficiente
     const saldoBilletera = retiroWithUser.usuario?.billeteras?.[0]?.saldo || 0
     if (saldoBilletera < retiroWithUser.monto) {
-      throw new Error(`Saldo insuficiente. Saldo disponible: S/ ${saldoBilletera.toFixed(2)}, Monto solicitado: S/ ${retiroWithUser.monto.toFixed(2)}`)
+      throw new Error(`Saldo insuficiente. Saldo disponible: $ ${saldoBilletera.toFixed(2)}, Monto solicitado: $ ${retiroWithUser.monto.toFixed(2)}`)
     }
 
     return this.updateRetiro(id, { estado: 'aprobado' })

@@ -111,7 +111,7 @@ export function ComprasStats({ estadisticas, loading }: ComprasStatsProps) {
       title: 'Ingreso Total',
       value: new Intl.NumberFormat('es-PE', {
         style: 'currency',
-        currency: 'PEN',
+        currency: 'USD',
       }).format(estadisticas.ingresoTotal),
       description: 'Todos los ingresos',
       icon: IconCurrencyDollar,
@@ -122,7 +122,7 @@ export function ComprasStats({ estadisticas, loading }: ComprasStatsProps) {
       title: 'Ingreso Resuelto',
       value: new Intl.NumberFormat('es-PE', {
         style: 'currency',
-        currency: 'PEN',
+        currency: 'USD',
       }).format(estadisticas.ingresoResuelto),
       description: 'Solo compras resueltas',
       icon: IconCheck,
@@ -133,7 +133,7 @@ export function ComprasStats({ estadisticas, loading }: ComprasStatsProps) {
       title: 'Monto Reembolsado',
       value: new Intl.NumberFormat('es-PE', {
         style: 'currency',
-        currency: 'PEN',
+        currency: 'USD',
       }).format(estadisticas.montoReembolsado),
       description: 'Total reembolsado',
       icon: IconCurrencyDollar,

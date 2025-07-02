@@ -2,7 +2,8 @@ import { useUsersContext } from '../context/users-context-new'
 import { UsersActionDialog } from './users-action-dialog'
 import { UsersDeleteDialog } from './users-delete-dialog'
 import { UsersDetailsDialog } from './users-details-dialog'
-import { UsersInviteDialog } from './users-invite-dialog'
+import { UsersInviteWithReferralDialog } from './users-invite-referral-dialog'
+import { UsersChangeRoleDialog } from './users-change-role-dialog'
 
 export function UsersDialogs() {
   const { open, setOpen, currentRow, setCurrentRow } = useUsersContext()
@@ -14,7 +15,7 @@ export function UsersDialogs() {
         onOpenChange={() => setOpen('add')}
       />
 
-      <UsersInviteDialog
+      <UsersInviteWithReferralDialog
         key='user-invite'
         open={open === 'invite'}
         onOpenChange={() => setOpen('invite')}
@@ -51,6 +52,18 @@ export function UsersDialogs() {
             open={open === 'delete'}
             onOpenChange={() => {
               setOpen('delete')
+              setTimeout(() => {
+                setCurrentRow(null)
+              }, 500)
+            }}
+            currentRow={currentRow}
+          />
+
+          <UsersChangeRoleDialog
+            key={`user-change-role-${currentRow.id}`}
+            open={open === 'changeRole'}
+            onOpenChange={() => {
+              setOpen('changeRole')
               setTimeout(() => {
                 setCurrentRow(null)
               }, 500)

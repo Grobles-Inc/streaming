@@ -77,16 +77,26 @@ export const filterNavGroupsByRole = (groups: any[], userRole: UserRole) => {
 const baseNavGroups = [  
   {
     title: 'Tienda',
-    roles: ['admin', 'seller', 'provider'],
+    roles: ['admin', 'registrado', 'seller', 'provider'],
     items: [
-      
-      
       {
         title: 'Ir a la Tienda',
         url: '/',
         icon: IconHome,
-        roles: ['admin', 'seller', 'provider'],
+        roles: ['admin', 'registrado', 'seller', 'provider'],
       }
+    ]
+  },
+  {
+    title: 'Usuario Registrado',
+    roles: ['registrado'],
+    items: [
+      {
+        title: 'Mi Perfil',
+        url: '/profile',
+        icon: IconLayoutDashboard,
+        roles: ['registrado'],
+      },
     ]
   },
   {
@@ -184,14 +194,14 @@ const baseNavGroups = [
         roles: ['admin'],
       },
       {
-        title: 'Billeteras',
+        title: 'Gestión de Billeteras',
         url: '/admin/billeteras',
         icon: IconWallet,
         roles: ['admin'],
       },
       {
-        title: 'Gestión de Billeteras',
-        url: '/admin/billeteras',
+        title: 'Mi Billetera',
+        url: '/admin/mi-billetera',
         icon: IconWallet,
         roles: ['admin'],
       },
@@ -348,7 +358,7 @@ const baseNavGroups = [
 ]
 
 // Function to get sidebar data based on user role and user data
-export const getSidebarData = (userRole: UserRole = 'seller', user?: any): SidebarData => {
+export const getSidebarData = (userRole: UserRole = 'registrado', user?: any): SidebarData => {
   const filteredGroups = filterNavGroupsByRole(baseNavGroups, userRole)
   
   return {
@@ -368,9 +378,9 @@ export const getSidebarData = (userRole: UserRole = 'seller', user?: any): Sideb
 }
 
 // Function to get navigation groups only (without user data)
-export const getNavGroups = (userRole: UserRole = 'seller') => {
+export const getNavGroups = (userRole: UserRole = 'registrado') => {
   return filterNavGroupsByRole(baseNavGroups, userRole)
 }
 
 // Default export for backward compatibility - only navigation groups
-export const sidebarData = getNavGroups('seller')
+export const sidebarData = getNavGroups('registrado')

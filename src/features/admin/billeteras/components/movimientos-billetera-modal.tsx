@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { IconMenu2, IconCheck, IconX, IconClock, IconTrendingUp, IconTrendingDown } from '@tabler/icons-react'
+import { IconMenu2, IconCheck, IconX, IconClock, IconTrendingUp, IconTrendingDown, IconCalendar, IconFilter } from '@tabler/icons-react'
 import { BilleterasService } from '../services'
 import type { Billetera, Recarga, Retiro, MovimientoBilletera } from '../data/types'
 
@@ -20,6 +22,10 @@ export function MovimientosBilleteraModal({ billetera, open, onClose, onUpdateEs
   const [retiros, setRetiros] = useState<Retiro[]>([])
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(0)
+  const [fechaDesde, setFechaDesde] = useState('')
+  const [fechaHasta, setFechaHasta] = useState('')
+  const [tipoFiltro, setTipoFiltro] = useState<'todos' | 'recargas' | 'retiros'>('todos')
+  const [estadoFiltro, setEstadoFiltro] = useState<'todos' | 'pendiente' | 'aprobado' | 'rechazado'>('todos')
   const itemsPerPage = 10
 
   useEffect(() => {
@@ -47,7 +53,7 @@ export function MovimientosBilleteraModal({ billetera, open, onClose, onUpdateEs
   }
 
   // Combinar y ordenar movimientos
-  const movimientos: MovimientoBilletera[] = [
+  const todosMovimientos: MovimientoBilletera[] = [
     ...recargas.map(r => ({
       id: r.id,
       tipo: 'recarga' as const,
@@ -66,10 +72,48 @@ export function MovimientosBilleteraModal({ billetera, open, onClose, onUpdateEs
     }))
   ].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
 
+  // Aplicar filtros
+  const movimientosFiltrados = todosMovimientos.filter(movimiento => {
+    // Filtro por tipo
+    if (tipoFiltro !== 'todos' && movimiento.tipo !== tipoFiltro.slice(0, -1)) {
+      return false
+    }
+
+    // Filtro por estado
+    if (estadoFiltro !== 'todos' && movimiento.estado !== estadoFiltro) {
+      return false
+    }
+
+    // Filtro por fecha desde
+    if (fechaDesde) {
+      const fechaMovimiento = new Date(movimiento.fecha)
+      const fechaFiltro = new Date(fechaDesde)
+      if (fechaMovimiento < fechaFiltro) {
+        return false
+      }
+    }
+
+    // Filtro por fecha hasta
+    if (fechaHasta) {
+      const fechaMovimiento = new Date(movimiento.fecha)
+      const fechaFiltro = new Date(fechaHasta)
+      if (fechaMovimiento > fechaFiltro) {
+        return false
+      }
+    }
+
+    return true
+  })
+
   const startIndex = currentPage * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const paginatedMovimientos = movimientos.slice(startIndex, endIndex)
-  const totalPages = Math.ceil(movimientos.length / itemsPerPage)
+  const paginatedMovimientos = movimientosFiltrados.slice(startIndex, endIndex)
+  const totalPages = Math.ceil(movimientosFiltrados.length / itemsPerPage)
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(0)
+  }, [fechaDesde, fechaHasta, tipoFiltro, estadoFiltro])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-PE', {
@@ -123,11 +167,21 @@ export function MovimientosBilleteraModal({ billetera, open, onClose, onUpdateEs
     await fetchMovimientos() // Refrescar los datos
   }
 
+  const clearFilters = () => {
+    setFechaDesde('')
+    setFechaHasta('')
+    setTipoFiltro('todos')
+    setEstadoFiltro('todos')
+    setCurrentPage(0)
+  }
+
+  const hasActiveFilters = fechaDesde || fechaHasta || tipoFiltro !== 'todos' || estadoFiltro !== 'todos'
+
   if (!billetera) return null
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="!w-[98vw] !max-w-[98vw] max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             Movimientos de Billetera - {billetera.usuario?.nombres} {billetera.usuario?.apellidos}
@@ -137,39 +191,122 @@ export function MovimientosBilleteraModal({ billetera, open, onClose, onUpdateEs
           </DialogTitle>
         </DialogHeader>
 
+        {/* Filtros */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <IconFilter className="h-5 w-5" />
+              Filtros de Movimientos
+              {hasActiveFilters && (
+                <Badge variant="secondary" className="ml-2">
+                  Activos
+                </Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="fecha-desde">Desde fecha</Label>
+                <div className="relative">
+                  <IconCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    id="fecha-desde"
+                    type="date"
+                    value={fechaDesde}
+                    onChange={(e) => setFechaDesde(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="fecha-hasta">Hasta fecha</Label>
+                <div className="relative">
+                  <IconCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    id="fecha-hasta"
+                    type="date"
+                    value={fechaHasta}
+                    onChange={(e) => setFechaHasta(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="tipo-filtro">Tipo</Label>
+                <select
+                  id="tipo-filtro"
+                  value={tipoFiltro}
+                  onChange={(e) => setTipoFiltro(e.target.value as any)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="todos">Todos</option>
+                  <option value="recargas">Solo Recargas</option>
+                  <option value="retiros">Solo Retiros</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="estado-filtro">Estado</Label>
+                <select
+                  id="estado-filtro"
+                  value={estadoFiltro}
+                  onChange={(e) => setEstadoFiltro(e.target.value as any)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="todos">Todos</option>
+                  <option value="pendiente">Pendiente</option>
+                  <option value="aprobado">Aprobado</option>
+                  <option value="rechazado">Rechazado</option>
+                </select>
+              </div>
+            </div>
+
+            {hasActiveFilters && (
+              <div className="mt-4">
+                <Button variant="outline" onClick={clearFilters} className="flex items-center gap-2">
+                  <IconX className="h-4 w-4" />
+                  Limpiar Filtros
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
               Historial de Movimientos
               <Badge variant="outline" className="ml-2">
-                {movimientos.length} movimientos
+                {movimientosFiltrados.length} de {todosMovimientos.length} movimientos
               </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className="text-center py-8">Cargando movimientos...</div>
-            ) : movimientos.length === 0 ? (
+            ) : movimientosFiltrados.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                No hay movimientos registrados
+                {hasActiveFilters ? 'No hay movimientos que coincidan con los filtros' : 'No hay movimientos registrados'}
               </div>
             ) : (
               <>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
                     <thead>
-                      <tr className="border-b">
+                      <tr className="border-b bg-gray-50 dark:bg-gray-800">
                         <th className="px-4 py-3 font-medium">Tipo</th>
                         <th className="px-4 py-3 font-medium">Monto</th>
                         <th className="px-4 py-3 font-medium">Estado</th>
                         <th className="px-4 py-3 font-medium">Fecha</th>
-                        <th className="px-4 py-3 font-medium">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
                       {paginatedMovimientos.map(movimiento => (
-                        <tr key={`${movimiento.tipo}-${movimiento.id}`} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
-                          <td className="px-4 py-3">
+                        <tr key={`${movimiento.tipo}-${movimiento.id}`} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                          <td className="px-4 py-4">
                             <div className="flex items-center gap-2">
                               {getTipoIcon(movimiento.tipo)}
                               <span className="capitalize font-medium">
@@ -177,49 +314,18 @@ export function MovimientosBilleteraModal({ billetera, open, onClose, onUpdateEs
                               </span>
                             </div>
                           </td>
-                          <td className="px-4 py-3">
-                            <span className={`font-semibold ${movimiento.tipo === 'recarga' ? 'text-green-600' : 'text-red-600'}`}>
+                          <td className="px-4 py-4">
+                            <span className={`font-semibold text-lg ${movimiento.tipo === 'recarga' ? 'text-green-600' : 'text-red-600'}`}>
                               {movimiento.tipo === 'recarga' ? '+' : '-'}{formatCurrency(movimiento.monto)}
                             </span>
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-4 py-4">
                             {getEstadoBadge(movimiento.estado)}
                           </td>
-                          <td className="px-4 py-3 text-gray-500">
-                            {formatDate(movimiento.fecha)}
-                          </td>
-                          <td className="px-4 py-3">
-                            {movimiento.estado === 'pendiente' && (
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button size="sm" variant="outline">
-                                    <IconMenu2 className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                  <DropdownMenuItem
-                                    onClick={() => handleUpdateEstado(movimiento, 'aprobado')}
-                                    className="text-green-600"
-                                  >
-                                    <IconCheck className="mr-2 h-4 w-4" />
-                                    Aprobar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => handleUpdateEstado(movimiento, 'rechazado')}
-                                    className="text-red-600"
-                                  >
-                                    <IconX className="mr-2 h-4 w-4" />
-                                    Rechazar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => handleUpdateEstado(movimiento, 'pendiente')}
-                                  >
-                                    <IconClock className="mr-2 h-4 w-4" />
-                                    Marcar pendiente
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            )}
+                          <td className="px-4 py-4 text-gray-500">
+                            <div className="text-sm">
+                              {formatDate(movimiento.fecha)}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -229,7 +335,7 @@ export function MovimientosBilleteraModal({ billetera, open, onClose, onUpdateEs
 
                 {/* Paginación */}
                 {totalPages > 1 && (
-                  <div className="flex justify-between items-center mt-4">
+                  <div className="flex justify-between items-center mt-6 pt-4 border-t">
                     <Button
                       variant="outline"
                       disabled={currentPage === 0}
@@ -237,9 +343,14 @@ export function MovimientosBilleteraModal({ billetera, open, onClose, onUpdateEs
                     >
                       Anterior
                     </Button>
-                    <span className="text-sm text-gray-600">
-                      Página {currentPage + 1} de {totalPages}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600">
+                        Página {currentPage + 1} de {totalPages}
+                      </span>
+                      <Badge variant="outline">
+                        {startIndex + 1}-{Math.min(endIndex, movimientosFiltrados.length)} de {movimientosFiltrados.length}
+                      </Badge>
+                    </div>
                     <Button
                       variant="outline"
                       disabled={currentPage >= totalPages - 1}

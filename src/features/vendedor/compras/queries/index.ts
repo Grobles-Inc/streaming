@@ -67,13 +67,23 @@ export const useUpdateCompra = () => {
 export const useUpdateCompraStatus = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, status, message, subject }: { id: number; status: string, message : string, subject: string }) => comprasService.updateCompraStatus(id, status, message, subject),
+    mutationFn: ({ id, status, message, subject }: { id: string; status: string, message : string, subject: string }) => comprasService.updateCompraStatus(id, status, message, subject),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['compras'] })
       toast.success('Estado de la compra actualizado correctamente')
     },
     onError: () => {
       toast.error('Error al actualizar el estado de la compra')
+    },
+  })
+}
+
+export const useUpdateStockProductoStatus = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id }: { id: number }) => comprasService.updateStockProductoStatus(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stock_productos'] })
     },
   })
 }

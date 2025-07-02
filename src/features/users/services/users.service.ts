@@ -10,7 +10,7 @@ export type SupabaseUser = {
   telefono: string | null
   codigo_referido: string
   billetera_id: string | null
-  rol: 'provider' | 'admin' | 'seller'
+  rol: 'provider' | 'admin' | 'seller' | 'registrado'
   created_at: string
   updated_at: string
 }
@@ -28,7 +28,7 @@ export type CreateUserData = {
   password?: string
   telefono?: string | null
   codigo_referido?: string
-  rol?: 'provider' | 'admin' | 'seller'
+  rol?: 'provider' | 'admin' | 'seller' | 'registrado'
 }
 
 export type UpdateUserData = Partial<Omit<SupabaseUser, 'id' | 'created_at' | 'updated_at'>>
@@ -232,7 +232,7 @@ export class UsersService {
   }
 
   // Filtrar usuarios por rol con saldo desde billeteras
-  static async filterByRole(role: 'admin' | 'provider' | 'seller'): Promise<SupabaseUserWithWallet[]> {
+  static async filterByRole(role: 'admin' | 'provider' | 'seller' | 'registrado'): Promise<SupabaseUserWithWallet[]> {
     const { data, error } = await supabase
       .from('usuarios')
       .select(`

@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Select, 
   SelectContent, 
@@ -16,16 +17,17 @@ import {
   SelectValue 
 } from '@/components/ui/select'
 import { 
-  IconShoppingCart, 
   IconSearch, 
   IconFilter, 
-  IconRefresh
+  IconRefresh,
+  IconTable,
+  IconCards
 } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { useCompras } from './hooks/use-compras'
-import { ComprasStats } from './components/compras-stats'
 import { ComprasTable } from './components/compras-table'
 import { CompraDetailsModal } from './components/compra-details-modal'
+import { ComprasStatusCards } from './components/compras-status-cards'
 import { createComprasColumns } from './components/compras-columns'
 import type { MappedCompra, EstadoCompra } from './data/types'
 
@@ -39,11 +41,12 @@ export function ComprasPage() {
     compras,
     loading,
     error,
-    estadisticas,
     marcarComoResuelto,
     marcarComoVencido,
     enviarASoporte,
     procesarReembolso,
+    marcarComoPedidoEntregado,
+    cambiarEstadoCompra,
     refreshCompras,
     hayCompras
   } = useCompras()
@@ -125,6 +128,30 @@ export function ComprasPage() {
     }
   }
 
+  const handleMarcarComoPedidoEntregado = async (id: string) => {
+    try {
+      const result = await marcarComoPedidoEntregado(id)
+      if (result.success) {
+        toast.success('Pedido marcado como entregado', {
+          description: 'El estado de la compra ha sido actualizado correctamente.'
+        })
+      }
+    } catch (error) {
+      toast.error('Error al actualizar el estado', {
+        description: 'No se pudo actualizar el estado de la compra.'
+      })
+    }
+  }
+
+  const handleCambiarEstadoCard = async (id: string, nuevoEstado: EstadoCompra) => {
+    try {
+      const result = await cambiarEstadoCompra(id, nuevoEstado)
+      return { success: result.success }
+    } catch (error) {
+      return { success: false }
+    }
+  }
+
   const handleVerDetalles = (compra: MappedCompra) => {
     setSelectedCompra(compra)
     setShowDetailsModal(true)
@@ -149,6 +176,7 @@ export function ComprasPage() {
     handleMarcarVencido,
     handleEnviarASoporte,
     handleProcesarReembolso,
+    handleMarcarComoPedidoEntregado,
     handleVerDetalles
   )
 
@@ -162,62 +190,49 @@ export function ComprasPage() {
         </div>
       </Header>
       <Main>
-        <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-            <IconShoppingCart className="h-8 w-8 text-primary" />
-            Gestión de Compras
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Administra todas las compras, edita estados y procesa reembolsos
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            onClick={handleRefresh}
-            disabled={loading}
-          >
-            <IconRefresh className="h-4 w-4 mr-2" />
-            Actualizar
-          </Button>
-        </div>
-      </div>
-
-      {/* Estadísticas */}
-      <ComprasStats estadisticas={estadisticas} loading={loading} />
-
-      {/* Filtros y tabla */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <IconShoppingCart className="h-5 w-5" />
-                Compras
-                {hayCompras && (
-                  <Badge variant="secondary">
-                    {comprasFiltradas.length} de {compras.length}
-                  </Badge>
-                )}
-              </CardTitle>
-              <CardDescription>
-                Lista completa de compras con opciones de gestión
-              </CardDescription>
-            </div>
+        <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
+          <div>
+            <h2 className='text-2xl font-bold tracking-tight'>Gestión de Compras</h2>
+            <p className='text-muted-foreground'>
+              Administra todas las compras, edita estados y procesa reembolsos
+            </p>
           </div>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              onClick={handleRefresh}
+              disabled={loading}
+            >
+              <IconRefresh className="h-4 w-4 mr-2" />
+              Actualizar
+            </Button>
+          </div>
+        </div>
+        <div className="space-y-6">
 
-          {/* Filtros */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-4">
-            <div className="relative flex-1">
+      {/* Contenido con tabs */}
+      <Tabs defaultValue="table" className="space-y-6">
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="table" className="flex items-center gap-2">
+              <IconTable className="h-4 w-4" />
+              Vista de Tabla
+            </TabsTrigger>
+            <TabsTrigger value="cards" className="flex items-center gap-2">
+              <IconCards className="h-4 w-4" />
+              Vista de Cards
+            </TabsTrigger>
+          </TabsList>
+          
+          {/* Filtros generales */}
+          <div className="flex items-center gap-4">
+            <div className="relative">
               <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Buscar por cliente, producto, proveedor, vendedor o teléfono..."
+                placeholder="Buscar por cliente, producto..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
+                className="pl-9 w-64"
               />
             </div>
             <Select value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as EstadoCompra | 'all')}>
@@ -231,29 +246,86 @@ export function ComprasPage() {
                 <SelectItem value="vencido">Vencido</SelectItem>
                 <SelectItem value="soporte">Soporte</SelectItem>
                 <SelectItem value="reembolsado">Reembolsado</SelectItem>
+                <SelectItem value="pedido_entregado">Pedido Entregado</SelectItem>
               </SelectContent>
             </Select>
           </div>
-        </CardHeader>
+        </div>
 
-        <CardContent>
-          {error ? (
-            <div className="text-center py-8">
-              <p className="text-red-600 mb-4">Error: {error}</p>
-              <Button onClick={handleRefresh} variant="outline">
-                <IconRefresh className="h-4 w-4 mr-2" />
-                Reintentar
-              </Button>
-            </div>
-          ) : (
-            <ComprasTable
-              data={comprasFiltradas}
-              columns={columns}
-              loading={loading}
-            />
-          )}
-        </CardContent>
-      </Card>
+        {/* Vista de tabla */}
+        <TabsContent value="table">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <IconTable className="h-5 w-5" />
+                Tabla de Compras
+                {hayCompras && (
+                  <Badge variant="secondary">
+                    {comprasFiltradas.length} de {compras.length}
+                  </Badge>
+                )}
+              </CardTitle>
+              <CardDescription>
+                Vista detallada en formato de tabla con acciones
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {error ? (
+                <div className="text-center py-8">
+                  <p className="text-red-600 mb-4">Error: {error}</p>
+                  <Button onClick={handleRefresh} variant="outline">
+                    <IconRefresh className="h-4 w-4 mr-2" />
+                    Reintentar
+                  </Button>
+                </div>
+              ) : (
+                <ComprasTable
+                  data={comprasFiltradas}
+                  columns={columns}
+                  loading={loading}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Vista de cards */}
+        <TabsContent value="cards">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <IconCards className="h-5 w-5" />
+                Cards por Estado
+                {hayCompras && (
+                  <Badge variant="secondary">
+                    {comprasFiltradas.length} compras
+                  </Badge>
+                )}
+              </CardTitle>
+              <CardDescription>
+                Vista organizada por estados con opciones de cambio directo
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {error ? (
+                <div className="text-center py-8">
+                  <p className="text-red-600 mb-4">Error: {error}</p>
+                  <Button onClick={handleRefresh} variant="outline">
+                    <IconRefresh className="h-4 w-4 mr-2" />
+                    Reintentar
+                  </Button>
+                </div>
+              ) : (
+                <ComprasStatusCards
+                  compras={comprasFiltradas}
+                  onCambiarEstado={handleCambiarEstadoCard}
+                  loading={loading}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Modal de detalles */}
       <CompraDetailsModal

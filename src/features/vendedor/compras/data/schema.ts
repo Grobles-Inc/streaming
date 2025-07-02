@@ -18,6 +18,9 @@ export const compraSchema = z.object({
   proveedor_id: z.string().min(1, 'Proveedor es requerido.'),
   producto_id: z.string().min(1, 'Producto es requerido.'),
   vendedor_id: z.string().min(1, 'Vendedor es requerido.'),
+  soporte_mensaje: z.string().nullable().optional(),
+  soporte_asunto: z.string().nullable().optional(),
+  soporte_respuesta: z.string().nullable().optional(),
   stock_producto_id: z.number().min(1, 'Stock del producto es requerido.'),
   precio: z.number().min(1, 'Precio es requerido.'),
   stock_productos: z.object({

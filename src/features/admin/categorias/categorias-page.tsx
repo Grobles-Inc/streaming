@@ -4,9 +4,11 @@ import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { IconPlus } from '@tabler/icons-react'
 import { useCategorias, useProductosByCategoria } from './queries'
-import { CategoriaForm, CategoriasTable, ProductosPorCategoria } from './components'
+import { CategoriaModal, CategoriasTable, ProductosPorCategoria } from './components'
 import { CategoriaFilters } from './components/categoria-filters'
 import type { Categoria, Producto } from './data/types'
 
@@ -15,6 +17,8 @@ export default function CategoriasPage() {
   const [categoriaPagina, setCategoriaPagina] = useState(0)
   const [editandoCategoria, setEditandoCategoria] = useState<Categoria | null>(null)
   const [categoriasFiltradas, setCategoriasFiltradas] = useState<Categoria[]>([])
+  const [modalOpen, setModalOpen] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   const {
     categorias,
@@ -36,20 +40,31 @@ export default function CategoriasPage() {
   // Función para manejar la creación o actualización de categorías
   const handleSubmitCategoria = async (data: { nombre: string; descripcion: string; imagen_url: string }) => {
     try {
-      if (editandoCategoria) {
+      if (isEditing && editandoCategoria) {
         await updateCategoria(editandoCategoria.id, data)
-        setEditandoCategoria(null)
       } else {
         await createCategoria(data)
       }
+      setModalOpen(false)
+      setEditandoCategoria(null)
+      setIsEditing(false)
     } catch (error) {
       console.error('Error al guardar categoría:', error)
     }
   }
 
+  // Función para abrir modal para nueva categoría
+  const handleNuevaCategoria = () => {
+    setEditandoCategoria(null)
+    setIsEditing(false)
+    setModalOpen(true)
+  }
+
   // Función para manejar la edición
   const handleEditCategoria = (categoria: Categoria) => {
     setEditandoCategoria(categoria)
+    setIsEditing(true)
+    setModalOpen(true)
   }
 
   // Función para manejar la eliminación
@@ -64,11 +79,6 @@ export default function CategoriasPage() {
         console.error('Error al eliminar categoría:', error)
       }
     }
-  }
-
-  // Función para cancelar la edición
-  const handleCancelEdit = () => {
-    setEditandoCategoria(null)
   }
 
   // Función para seleccionar una categoría
@@ -124,25 +134,25 @@ export default function CategoriasPage() {
         </div>
       </Header>
       <Main>
+        <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
+          <div>
+            <h2 className='text-2xl font-bold tracking-tight'>Gestión de Categorías y Productos</h2>
+            <p className='text-muted-foreground'>
+              Gestiona las categorías de servicios y sus productos asociados.
+            </p>
+          </div>
+          <Button onClick={handleNuevaCategoria}>
+            <IconPlus className="mr-2 h-4 w-4" />
+            Nueva Categoría
+          </Button>
+        </div>
         <Card>
-      <CardHeader>
-        <CardTitle>Categorías</CardTitle>
-        <CardDescription>Gestiona las categorías de servicios.</CardDescription>
-      </CardHeader>
       <CardContent>
         {/* Filtros de categorías */}
         <CategoriaFilters
           categorias={categorias}
           onFilter={handleCategoriaFilter}
           className="mb-6"
-        />
-
-        {/* Formulario de categorías */}
-        <CategoriaForm
-          categoria={editandoCategoria}
-          onSubmit={handleSubmitCategoria}
-          onCancel={handleCancelEdit}
-          isEditing={!!editandoCategoria}
         />
 
         {/* Tabla de categorías */}
@@ -178,6 +188,15 @@ export default function CategoriasPage() {
         )}
       </CardContent>
     </Card>
+
+    {/* Modal para crear/editar categoría */}
+    <CategoriaModal
+      open={modalOpen}
+      onOpenChange={setModalOpen}
+      categoria={editandoCategoria}
+      onSubmit={handleSubmitCategoria}
+      isEditing={isEditing}
+    />
       </Main>
     </>
   )

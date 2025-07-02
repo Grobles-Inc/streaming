@@ -92,6 +92,10 @@ export function useCompras(filtrosIniciales?: FiltroCompra) {
     return await cambiarEstadoCompra(id, 'reembolsado')
   }
 
+  const marcarComoPedidoEntregado = async (id: string) => {
+    return await cambiarEstadoCompra(id, 'pedido_entregado')
+  }
+
   // Cambiar estado masivo
   const cambiarEstadoMasivo = async (ids: string[], nuevoEstado: EstadoCompra): Promise<{
     success: number
@@ -158,6 +162,7 @@ export function useCompras(filtrosIniciales?: FiltroCompra) {
     marcarComoVencido,
     enviarASoporte,
     procesarReembolso,
+    marcarComoPedidoEntregado,
     cambiarEstadoMasivo,
     aplicarFiltros,
     limpiarFiltros,
@@ -171,5 +176,6 @@ export function useCompras(filtrosIniciales?: FiltroCompra) {
     cantidadResueltas: compras.filter(c => c.estado === 'resuelto').length,
     cantidadEnSoporte: compras.filter(c => c.estado === 'soporte').length,
     cantidadReembolsadas: compras.filter(c => c.estado === 'reembolsado').length,
+    cantidadPedidoEntregado: compras.filter(c => c.estado === 'pedido_entregado').length,
   }
 }

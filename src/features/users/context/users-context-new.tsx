@@ -4,7 +4,7 @@ import { MappedUser } from '../data/schema'
 import { useUsers as useSupabaseUsers } from '../hooks/use-users'
 import { CreateUserData, UpdateUserData } from '../services/users.service'
 
-type UsersDialogType = 'invite' | 'add' | 'edit' | 'delete' | 'view'
+type UsersDialogType = 'invite' | 'add' | 'edit' | 'delete' | 'view' | 'changeRole'
 
 interface UsersContextType {
   open: UsersDialogType | null
@@ -19,7 +19,7 @@ interface UsersContextType {
   updateUser: (id: string, userData: UpdateUserData) => Promise<MappedUser | null>
   deleteUser: (id: string) => Promise<boolean>
   searchUsersByName: (name: string) => Promise<void>
-  filterByRole: (role: 'admin' | 'provider' | 'seller') => Promise<void>
+  filterByRole: (role: 'admin' | 'provider' | 'seller' | 'registrado') => Promise<void>
   updateUserBalance: (id: string, newBalance: number) => Promise<boolean>
   refreshUsers: () => void
   clearError: () => void

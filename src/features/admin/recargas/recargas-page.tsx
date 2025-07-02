@@ -24,7 +24,6 @@ import { toast } from 'sonner'
 import { useRecargas } from './hooks/use-recargas'
 import { createRecargasColumns } from './components/recargas-columns'
 import { RecargasTable } from './components/recargas-table'
-import { EstadisticasRecargasCard } from './components/estadisticas-recargas'
 import { RecargaDetailsModal } from './components/recarga-details-modal'
 import type { MappedRecarga, EstadoRecarga } from './data/types'
 
@@ -37,7 +36,6 @@ export default function RecargasPage() {
     recargas,
     loading,
     error,
-    estadisticas,
     aprobarRecarga,
     rechazarRecarga,
     updateEstadoRecarga,
@@ -191,14 +189,6 @@ export default function RecargasPage() {
               Exportar
             </Button>
           </div>
-        </div>
-
-        {/* Estadísticas */}
-        <div className="mb-6">
-          <EstadisticasRecargasCard 
-            estadisticas={estadisticas} 
-            loading={loading} 
-          />
         </div>
 
         {/* Tabla de recargas */}

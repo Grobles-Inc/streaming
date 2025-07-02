@@ -303,6 +303,7 @@ export interface Database {
           estado: string
           soporte_mensaje: string | null
           soporte_asunto: string | null
+          soporte_respuesta: string | null
           monto_reembolso: number
           created_at: string
           updated_at: string
@@ -321,6 +322,7 @@ export interface Database {
           estado?: string
           soporte_mensaje?: string | null
           soporte_asunto?: string | null
+          soporte_respuesta?: string | null
           monto_reembolso?: number
           created_at?: string
           updated_at?: string
@@ -339,6 +341,7 @@ export interface Database {
           estado?: string
           soporte_mensaje?: string | null
           soporte_asunto?: string | null
+          soporte_respuesta?: string | null
           monto_reembolso?: number
           created_at?: string
           updated_at?: string

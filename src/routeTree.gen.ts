@@ -19,6 +19,7 @@ import { Route as errors401RouteImport } from './routes/(errors)/401'
 import { Route as authSignUpRouteImport } from './routes/(auth)/sign-up'
 import { Route as authSignIn2RouteImport } from './routes/(auth)/sign-in-2'
 import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
+import { Route as authRegisterRouteImport } from './routes/(auth)/register'
 import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
@@ -40,6 +41,7 @@ import { Route as AuthenticatedAdminSettingsIndexRouteImport } from './routes/_a
 import { Route as AuthenticatedAdminRetirosIndexRouteImport } from './routes/_authenticated/admin/retiros/index'
 import { Route as AuthenticatedAdminReportesGlobalesIndexRouteImport } from './routes/_authenticated/admin/reportes-globales/index'
 import { Route as AuthenticatedAdminRecargasIndexRouteImport } from './routes/_authenticated/admin/recargas/index'
+import { Route as AuthenticatedAdminMiBilleteraIndexRouteImport } from './routes/_authenticated/admin/mi-billetera/index'
 import { Route as AuthenticatedAdminComprasIndexRouteImport } from './routes/_authenticated/admin/compras/index'
 import { Route as AuthenticatedAdminChatsIndexRouteImport } from './routes/_authenticated/admin/chats/index'
 import { Route as AuthenticatedAdminCategoriesIndexRouteImport } from './routes/_authenticated/admin/categories/index'
@@ -93,6 +95,11 @@ const authSignIn2Route = authSignIn2RouteImport.update({
 const authSignInRoute = authSignInRouteImport.update({
   id: '/(auth)/sign-in',
   path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authRegisterRoute = authRegisterRouteImport.update({
+  id: '/(auth)/register',
+  path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const authOtpRoute = authOtpRouteImport.update({
@@ -218,6 +225,12 @@ const AuthenticatedAdminRecargasIndexRoute =
     path: '/admin/recargas/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminMiBilleteraIndexRoute =
+  AuthenticatedAdminMiBilleteraIndexRouteImport.update({
+    id: '/admin/mi-billetera/',
+    path: '/admin/mi-billetera/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminComprasIndexRoute =
   AuthenticatedAdminComprasIndexRouteImport.update({
     id: '/admin/compras/',
@@ -253,6 +266,7 @@ export interface FileRoutesByFullPath {
   '': typeof AuthenticatedRouteRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
+  '/register': typeof authRegisterRoute
   '/sign-in': typeof authSignInRoute
   '/sign-in-2': typeof authSignIn2Route
   '/sign-up': typeof authSignUpRoute
@@ -274,6 +288,7 @@ export interface FileRoutesByFullPath {
   '/admin/categories': typeof AuthenticatedAdminCategoriesIndexRoute
   '/admin/chats': typeof AuthenticatedAdminChatsIndexRoute
   '/admin/compras': typeof AuthenticatedAdminComprasIndexRoute
+  '/admin/mi-billetera': typeof AuthenticatedAdminMiBilleteraIndexRoute
   '/admin/recargas': typeof AuthenticatedAdminRecargasIndexRoute
   '/admin/reportes-globales': typeof AuthenticatedAdminReportesGlobalesIndexRoute
   '/admin/retiros': typeof AuthenticatedAdminRetirosIndexRoute
@@ -291,6 +306,7 @@ export interface FileRoutesByTo {
   '': typeof AuthenticatedRouteRouteWithChildren
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
+  '/register': typeof authRegisterRoute
   '/sign-in': typeof authSignInRoute
   '/sign-in-2': typeof authSignIn2Route
   '/sign-up': typeof authSignUpRoute
@@ -312,6 +328,7 @@ export interface FileRoutesByTo {
   '/admin/categories': typeof AuthenticatedAdminCategoriesIndexRoute
   '/admin/chats': typeof AuthenticatedAdminChatsIndexRoute
   '/admin/compras': typeof AuthenticatedAdminComprasIndexRoute
+  '/admin/mi-billetera': typeof AuthenticatedAdminMiBilleteraIndexRoute
   '/admin/recargas': typeof AuthenticatedAdminRecargasIndexRoute
   '/admin/reportes-globales': typeof AuthenticatedAdminReportesGlobalesIndexRoute
   '/admin/retiros': typeof AuthenticatedAdminRetirosIndexRoute
@@ -330,6 +347,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/otp': typeof authOtpRoute
+  '/(auth)/register': typeof authRegisterRoute
   '/(auth)/sign-in': typeof authSignInRoute
   '/(auth)/sign-in-2': typeof authSignIn2Route
   '/(auth)/sign-up': typeof authSignUpRoute
@@ -351,6 +369,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/categories/': typeof AuthenticatedAdminCategoriesIndexRoute
   '/_authenticated/admin/chats/': typeof AuthenticatedAdminChatsIndexRoute
   '/_authenticated/admin/compras/': typeof AuthenticatedAdminComprasIndexRoute
+  '/_authenticated/admin/mi-billetera/': typeof AuthenticatedAdminMiBilleteraIndexRoute
   '/_authenticated/admin/recargas/': typeof AuthenticatedAdminRecargasIndexRoute
   '/_authenticated/admin/reportes-globales/': typeof AuthenticatedAdminReportesGlobalesIndexRoute
   '/_authenticated/admin/retiros/': typeof AuthenticatedAdminRetirosIndexRoute
@@ -370,6 +389,7 @@ export interface FileRouteTypes {
     | ''
     | '/forgot-password'
     | '/otp'
+    | '/register'
     | '/sign-in'
     | '/sign-in-2'
     | '/sign-up'
@@ -391,6 +411,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/chats'
     | '/admin/compras'
+    | '/admin/mi-billetera'
     | '/admin/recargas'
     | '/admin/reportes-globales'
     | '/admin/retiros'
@@ -408,6 +429,7 @@ export interface FileRouteTypes {
     | ''
     | '/forgot-password'
     | '/otp'
+    | '/register'
     | '/sign-in'
     | '/sign-in-2'
     | '/sign-up'
@@ -429,6 +451,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/chats'
     | '/admin/compras'
+    | '/admin/mi-billetera'
     | '/admin/recargas'
     | '/admin/reportes-globales'
     | '/admin/retiros'
@@ -446,6 +469,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/(auth)/forgot-password'
     | '/(auth)/otp'
+    | '/(auth)/register'
     | '/(auth)/sign-in'
     | '/(auth)/sign-in-2'
     | '/(auth)/sign-up'
@@ -467,6 +491,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/categories/'
     | '/_authenticated/admin/chats/'
     | '/_authenticated/admin/compras/'
+    | '/_authenticated/admin/mi-billetera/'
     | '/_authenticated/admin/recargas/'
     | '/_authenticated/admin/reportes-globales/'
     | '/_authenticated/admin/retiros/'
@@ -485,6 +510,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   authForgotPasswordRoute: typeof authForgotPasswordRoute
   authOtpRoute: typeof authOtpRoute
+  authRegisterRoute: typeof authRegisterRoute
   authSignInRoute: typeof authSignInRoute
   authSignIn2Route: typeof authSignIn2Route
   authSignUpRoute: typeof authSignUpRoute
@@ -567,6 +593,13 @@ declare module '@tanstack/react-router' {
       path: '/sign-in'
       fullPath: '/sign-in'
       preLoaderRoute: typeof authSignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)/register': {
+      id: '/(auth)/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof authRegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(auth)/otp': {
@@ -716,6 +749,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRecargasIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/mi-billetera/': {
+      id: '/_authenticated/admin/mi-billetera/'
+      path: '/admin/mi-billetera'
+      fullPath: '/admin/mi-billetera'
+      preLoaderRoute: typeof AuthenticatedAdminMiBilleteraIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/compras/': {
       id: '/_authenticated/admin/compras/'
       path: '/admin/compras'
@@ -766,6 +806,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminCategoriesIndexRoute: typeof AuthenticatedAdminCategoriesIndexRoute
   AuthenticatedAdminChatsIndexRoute: typeof AuthenticatedAdminChatsIndexRoute
   AuthenticatedAdminComprasIndexRoute: typeof AuthenticatedAdminComprasIndexRoute
+  AuthenticatedAdminMiBilleteraIndexRoute: typeof AuthenticatedAdminMiBilleteraIndexRoute
   AuthenticatedAdminRecargasIndexRoute: typeof AuthenticatedAdminRecargasIndexRoute
   AuthenticatedAdminReportesGlobalesIndexRoute: typeof AuthenticatedAdminReportesGlobalesIndexRoute
   AuthenticatedAdminRetirosIndexRoute: typeof AuthenticatedAdminRetirosIndexRoute
@@ -794,6 +835,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedAdminCategoriesIndexRoute,
   AuthenticatedAdminChatsIndexRoute: AuthenticatedAdminChatsIndexRoute,
   AuthenticatedAdminComprasIndexRoute: AuthenticatedAdminComprasIndexRoute,
+  AuthenticatedAdminMiBilleteraIndexRoute:
+    AuthenticatedAdminMiBilleteraIndexRoute,
   AuthenticatedAdminRecargasIndexRoute: AuthenticatedAdminRecargasIndexRoute,
   AuthenticatedAdminReportesGlobalesIndexRoute:
     AuthenticatedAdminReportesGlobalesIndexRoute,
@@ -822,6 +865,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   authForgotPasswordRoute: authForgotPasswordRoute,
   authOtpRoute: authOtpRoute,
+  authRegisterRoute: authRegisterRoute,
   authSignInRoute: authSignInRoute,
   authSignIn2Route: authSignIn2Route,
   authSignUpRoute: authSignUpRoute,

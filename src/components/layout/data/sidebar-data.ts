@@ -5,6 +5,7 @@ import {
   IconCoins,
   IconCreditCard,
   IconFlag,
+  IconHelp,
   IconHome,
   IconLayoutDashboard,
   IconPackage,
@@ -160,6 +161,12 @@ const baseNavGroups = [
         title: 'Billetera',
         url: '/proveedor/billetera',
         icon: IconWallet,
+        roles: ['provider'],
+      },
+      {
+        title: 'Soporte',
+        url: '/proveedor/soporte',
+        icon: IconHelp,
         roles: ['provider'],
       }
     ],

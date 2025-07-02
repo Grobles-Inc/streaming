@@ -92,7 +92,7 @@ export const updateCompraStatus = async (id:string, status: string, message: str
 export const updateStockProductoStatus = async (id: number): Promise<StockProducto | null> => {
   const { data, error } = await supabase
     .from('stock_productos')
-    .update({ estado: "soporte" })
+    .update({ soporte_stock_producto: "soporte" })
     .eq('id', id)
     .select()
     .single()

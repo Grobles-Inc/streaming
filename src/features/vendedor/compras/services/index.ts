@@ -73,10 +73,10 @@ export const updateCompra = async (id: string, updates: CompraUpdate): Promise<C
   return data
 }
 
-export const updateCompraStatus = async (id:string, status: string, message: string, subject: string, response: string): Promise<Compra | null> => {
+export const updateCompraStatus = async (id:string, status: string, message: string, subject: string, response?: string): Promise<Compra | null> => {
   const { data, error } = await supabase
     .from('compras')
-    .update({ estado: status, soporte_mensaje: message, soporte_asunto: subject, soporte_respuesta: response })
+    .update({ estado: status, soporte_mensaje: message, soporte_asunto: subject, soporte_respuesta: response || null })
     .eq('id', id)
     .select()
     .single()

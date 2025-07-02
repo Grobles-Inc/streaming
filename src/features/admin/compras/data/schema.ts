@@ -16,15 +16,15 @@ const compraBaseSchema = z.object({
   producto_id: z.string(),
   vendedor_id: z.string().nullable(),
   stock_producto_id: z.number().nullable(),
-  email_cuenta: z.string(),
-  clave_cuenta: z.string(),
-  pin_cuenta: z.string().nullable(),
-  perfil_usuario: z.string().nullable(),
   nombre_cliente: z.string(),
   telefono_cliente: z.string(),
   precio: z.number().min(0),
   estado: estadoCompraSchema,
   monto_reembolso: z.number().min(0),
+  fecha_expiracion: z.string().nullable(),
+  soporte_mensaje: z.string().nullable(),
+  soporte_asunto: z.string().nullable(),
+  soporte_respuesta: z.string().nullable(),
   created_at: z.string(),
   updated_at: z.string(),
 })
@@ -53,6 +53,9 @@ const compraWithRelationsSchema = compraBaseSchema.extend({
   stock_producto: z.object({
     id: z.number(),
     email: z.string().nullable(),
+    clave: z.string().nullable(),
+    pin: z.string().nullable(),
+    perfil: z.string().nullable(),
     tipo: z.string(),
     estado: z.string(),
   }).optional(),
@@ -81,6 +84,10 @@ const mappedCompraSchema = z.object({
   montoReembolsoFormateado: z.string(),
   fechaCreacion: z.date(),
   fechaActualizacion: z.date(),
+  fechaExpiracion: z.date().nullable(),
+  soporteMensaje: z.string().nullable(),
+  soporteAsunto: z.string().nullable(),
+  soporteRespuesta: z.string().nullable(),
   puedeModificar: z.boolean(),
   requiereReembolso: z.boolean(),
   tiempoTranscurrido: z.string(),
@@ -128,14 +135,23 @@ export function mapSupabaseCompraToComponent(compra: CompraWithRelations): Mappe
 
   const fechaCreacion = new Date(compra.created_at)
   const fechaActualizacion = new Date(compra.updated_at)
+  const fechaExpiracion = compra.fecha_expiracion ? new Date(compra.fecha_expiracion) : null
   const ahora = new Date()
 
-  // Calcular tiempo transcurrido
-  const tiempoTranscurridoMs = ahora.getTime() - fechaCreacion.getTime()
-  const tiempoTranscurridoDias = Math.floor(tiempoTranscurridoMs / (1000 * 60 * 60 * 24))
-  const tiempoTranscurrido = tiempoTranscurridoDias > 0 
-    ? `${tiempoTranscurridoDias} día(s)`
-    : 'Menos de 1 día'
+  // Calcular tiempo restante hasta la expiración
+  let tiempoTranscurrido = 'Sin expiración'
+  if (fechaExpiracion) {
+    const tiempoRestanteMs = fechaExpiracion.getTime() - ahora.getTime()
+    const diasRestantes = Math.ceil(tiempoRestanteMs / (1000 * 60 * 60 * 24))
+    
+    if (diasRestantes < 0) {
+      tiempoTranscurrido = `Vencido hace ${Math.abs(diasRestantes)} día(s)`
+    } else if (diasRestantes === 0) {
+      tiempoTranscurrido = 'Vence hoy'
+    } else {
+      tiempoTranscurrido = `${diasRestantes} día(s) restantes`
+    }
+  }
 
   return {
     id: compra.id,
@@ -146,10 +162,10 @@ export function mapSupabaseCompraToComponent(compra: CompraWithRelations): Mappe
     productoId: compra.producto_id,
     productoNombre,
     stockProductoId: compra.stock_producto_id,
-    emailCuenta: compra.email_cuenta,
-    claveCuenta: compra.clave_cuenta,
-    pinCuenta: compra.pin_cuenta,
-    perfilUsuario: compra.perfil_usuario,
+    emailCuenta: compra.stock_producto?.email || 'Sin email',
+    claveCuenta: compra.stock_producto?.clave || 'Sin clave',
+    pinCuenta: compra.stock_producto?.pin || null,
+    perfilUsuario: compra.stock_producto?.perfil || null,
     nombreCliente: compra.nombre_cliente,
     telefonoCliente: compra.telefono_cliente,
     precio: compra.precio,
@@ -159,6 +175,10 @@ export function mapSupabaseCompraToComponent(compra: CompraWithRelations): Mappe
     montoReembolsoFormateado,
     fechaCreacion,
     fechaActualizacion,
+    fechaExpiracion,
+    soporteMensaje: compra.soporte_mensaje,
+    soporteAsunto: compra.soporte_asunto,
+    soporteRespuesta: compra.soporte_respuesta,
     puedeModificar: ['soporte', 'vencido', 'pedido_entregado'].includes(compra.estado),
     requiereReembolso: compra.estado === 'reembolsado' && compra.monto_reembolso > 0,
     tiempoTranscurrido,

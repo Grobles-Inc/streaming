@@ -44,7 +44,7 @@ export default function LandingHeader() {
             <div className='flex items-center gap-2'>
               {
                 user?.rol === 'admin' ? (
-                  <Button onClick={() => navigate({ to: '/admin/apps' })} size="lg">
+                  <Button onClick={() => navigate({ to: '/admin/reportes-globales' })} size="lg">
                     <IconLayoutDashboard />
                     Dashboard </Button>
                 ) : user?.rol === 'provider' ? (

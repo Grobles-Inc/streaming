@@ -194,6 +194,18 @@ export function createComprasColumns(
       enableHiding: false,
     },
     {
+      accessorKey: 'id',
+      header: 'ID',
+      cell: ({ row }) => {
+        const id = row.getValue('id') as string
+        return (
+          <div className="font-mono text-xs">
+            {id.slice(0, 8)}...
+          </div>
+        )
+      },
+    },
+    {
       accessorKey: 'nombreCliente',
       header: 'Cliente',
       cell: ({ row }) => {
@@ -264,10 +276,176 @@ export function createComprasColumns(
       },
     },
     {
+      accessorKey: 'stockProductoId',
+      header: 'Stock ID',
+      cell: ({ row }) => {
+        const stockId = row.getValue('stockProductoId') as number | null
+        return (
+          <div className="text-center">
+            {stockId ? (
+              <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                #{stockId}
+              </span>
+            ) : (
+              <span className="text-xs text-muted-foreground">Sin stock</span>
+            )}
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'emailCuenta',
+      header: 'Email Cuenta',
+      cell: ({ row }) => {
+        const email = row.getValue('emailCuenta') as string
+        return (
+          <div className="font-mono text-sm max-w-[200px] truncate" title={email}>
+            {email}
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'claveCuenta',
+      header: 'Clave',
+      cell: ({ row }) => {
+        const clave = row.getValue('claveCuenta') as string
+        return (
+          <div className="font-mono text-sm">
+            {'*'.repeat(Math.min(clave.length, 8))}
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'pinCuenta',
+      header: 'PIN',
+      cell: ({ row }) => {
+        const pin = row.getValue('pinCuenta') as string | null
+        return (
+          <div className="text-center">
+            {pin ? (
+              <span className="font-mono text-sm">
+                {'*'.repeat(pin.length)}
+              </span>
+            ) : (
+              <span className="text-xs text-muted-foreground">Sin PIN</span>
+            )}
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'perfilUsuario',
+      header: 'Perfil',
+      cell: ({ row }) => {
+        const perfil = row.getValue('perfilUsuario') as string | null
+        return (
+          <div className="max-w-[150px] truncate">
+            {perfil || <span className="text-xs text-muted-foreground">Sin perfil</span>}
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'fechaExpiracion',
+      header: 'Fecha Expiración',
+      cell: ({ row }) => {
+        const fecha = row.getValue('fechaExpiracion') as Date | null
+        
+        if (!fecha) {
+          return <span className="text-xs text-muted-foreground">Sin expiración</span>
+        }
+        
+        const esVencida = fecha < new Date()
+        
+        return (
+          <div className={cn("space-y-1", esVencida && "text-red-600")}>
+            <div className="text-sm">
+              {fecha.toLocaleDateString('es-PE', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              })}
+            </div>
+            <div className="text-xs">
+              {fecha.toLocaleTimeString('es-PE', {
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </div>
+            {esVencida && (
+              <Badge variant="destructive" className="text-xs">
+                Vencida
+              </Badge>
+            )}
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'soporteMensaje',
+      header: 'Soporte',
+      cell: ({ row }) => {
+        const mensaje = row.getValue('soporteMensaje') as string | null
+        const asunto = row.original.soporteAsunto
+        const respuesta = row.original.soporteRespuesta
+        
+        if (!mensaje && !asunto && !respuesta) {
+          return <span className="text-xs text-muted-foreground">Sin soporte</span>
+        }
+        
+        return (
+          <div className="space-y-1 max-w-[200px]">
+            {asunto && (
+              <div className="text-sm font-medium truncate" title={asunto}>
+                {asunto}
+              </div>
+            )}
+            {mensaje && (
+              <div className="text-xs text-muted-foreground truncate" title={mensaje}>
+                {mensaje}
+              </div>
+            )}
+            {respuesta && (
+              <Badge variant="outline" className="text-xs">
+                Respondido
+              </Badge>
+            )}
+          </div>
+        )
+      },
+    },
+    {
       accessorKey: 'fechaCreacion',
       header: 'Fecha Creación',
       cell: ({ row }) => {
         const fecha = row.getValue('fechaCreacion') as Date
+        
+        return (
+          <div className="space-y-1">
+            <div className="text-sm">
+              {fecha.toLocaleDateString('es-PE', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              })}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {fecha.toLocaleTimeString('es-PE', {
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </div>
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'fechaActualizacion',
+      header: 'Última Actualización',
+      cell: ({ row }) => {
+        const fecha = row.original.fechaActualizacion
         
         return (
           <div className="space-y-1">
@@ -312,6 +490,47 @@ export function createComprasColumns(
       },
       meta: {
         className: 'text-right',
+      },
+    },
+    {
+      accessorKey: 'tiempoTranscurrido',
+      header: 'Tiempo Restante',
+      cell: ({ row }) => {
+        const tiempo = row.getValue('tiempoTranscurrido') as string
+        
+        // Función para determinar el color basado en el tiempo restante
+        const getTimeColor = (tiempoStr: string) => {
+          if (tiempoStr.includes('Vencido') || tiempoStr.includes('Vence hoy')) {
+            return 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
+          }
+          
+          if (tiempoStr.includes('Sin expiración')) {
+            return 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+          }
+          
+          // Extraer número de días del string
+          const matchDias = tiempoStr.match(/(\d+)\s+día/)
+          if (matchDias) {
+            const dias = parseInt(matchDias[1])
+            if (dias <= 5) {
+              return 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
+            } else if (dias <= 15) {
+              return 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100'
+            } else {
+              return 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
+            }
+          }
+          
+          return 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
+        }
+        
+        return (
+          <div className="text-sm text-center">
+            <Badge variant="outline" className={`text-xs ${getTimeColor(tiempo)}`}>
+              {tiempo}
+            </Badge>
+          </div>
+        )
       },
     },
     {

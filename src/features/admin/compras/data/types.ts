@@ -9,15 +9,15 @@ export type SupabaseCompra = {
   producto_id: string
   vendedor_id: string | null
   stock_producto_id: number | null
-  email_cuenta: string
-  clave_cuenta: string
-  pin_cuenta: string | null
-  perfil_usuario: string | null
   nombre_cliente: string
   telefono_cliente: string
   precio: number
   estado: EstadoCompra
   monto_reembolso: number
+  fecha_expiracion: string | null
+  soporte_mensaje: string | null
+  soporte_asunto: string | null
+  soporte_respuesta: string | null
   created_at: string
   updated_at: string
 }
@@ -28,15 +28,15 @@ export type CreateCompraData = {
   producto_id: string
   vendedor_id?: string | null
   stock_producto_id?: number | null
-  email_cuenta: string
-  clave_cuenta: string
-  pin_cuenta?: string | null
-  perfil_usuario?: string | null
   nombre_cliente: string
   telefono_cliente: string
   precio: number
   estado?: EstadoCompra
   monto_reembolso?: number
+  fecha_expiracion?: string | null
+  soporte_mensaje?: string | null
+  soporte_asunto?: string | null
+  soporte_respuesta?: string | null
 }
 
 // Tipo para actualizar una compra
@@ -46,15 +46,15 @@ export type UpdateCompraData = {
   producto_id?: string
   vendedor_id?: string | null
   stock_producto_id?: number | null
-  email_cuenta?: string
-  clave_cuenta?: string
-  pin_cuenta?: string | null
-  perfil_usuario?: string | null
   nombre_cliente?: string
   telefono_cliente?: string
   precio?: number
   estado?: EstadoCompra
   monto_reembolso?: number
+  fecha_expiracion?: string | null
+  soporte_mensaje?: string | null
+  soporte_asunto?: string | null
+  soporte_respuesta?: string | null
 }
 
 // Tipo de compra con información relacionada
@@ -81,6 +81,9 @@ export type CompraWithRelations = SupabaseCompra & {
   stock_producto?: {
     id: number
     email: string | null
+    clave: string | null
+    pin: string | null
+    perfil: string | null
     tipo: string
     estado: string
   }
@@ -132,6 +135,10 @@ export type MappedCompra = {
   montoReembolsoFormateado: string
   fechaCreacion: Date
   fechaActualizacion: Date
+  fechaExpiracion: Date | null
+  soporteMensaje: string | null
+  soporteAsunto: string | null
+  soporteRespuesta: string | null
   // Datos adicionales para la UI
   puedeModificar: boolean
   requiereReembolso: boolean

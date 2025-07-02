@@ -33,6 +33,9 @@ export class ComprasService {
         stock_producto:stock_productos!compras_stock_producto_id_fkey (
           id,
           email,
+          clave,
+          pin,
+          perfil,
           tipo,
           estado
         )
@@ -114,6 +117,9 @@ export class ComprasService {
         stock_producto:stock_productos!compras_stock_producto_id_fkey (
           id,
           email,
+          clave,
+          pin,
+          perfil,
           tipo,
           estado
         )

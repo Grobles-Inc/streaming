@@ -34,7 +34,7 @@ export function DataTableRowActions<TData>({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
         <DropdownMenuItem>Ver detalles</DropdownMenuItem>
-        <DropdownMenuItem>Exportar</DropdownMenuItem>
+        {/* <DropdownMenuItem>Exportar</DropdownMenuItem> */}
         <DropdownMenuSeparator />
         {transaccion.estado === 'pendiente' && (
           <>

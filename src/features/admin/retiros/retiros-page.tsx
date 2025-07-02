@@ -15,8 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { 
-  IconRefresh, 
-  IconDownload,
+  IconRefresh,
   IconCash 
 } from '@tabler/icons-react'
 import { toast } from 'sonner'
@@ -186,10 +185,10 @@ export default function RetirosPage() {
             
             
             
-            <Button variant="outline" disabled>
+            {/* <Button variant="outline" disabled>
               <IconDownload className="mr-2 h-4 w-4" />
               Exportar
-            </Button>
+            </Button> */}
           </div>
         </div>
 

@@ -28,6 +28,7 @@ import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedComprasIndexRouteImport } from './routes/_authenticated/compras/index'
 import { Route as publicCategoriaNameRouteImport } from './routes/(public)/categoria/$name'
+import { Route as AuthenticatedProveedorSoporteIndexRouteImport } from './routes/_authenticated/proveedor/soporte/index'
 import { Route as AuthenticatedProveedorReportesIndexRouteImport } from './routes/_authenticated/proveedor/reportes/index'
 import { Route as AuthenticatedProveedorProductosIndexRouteImport } from './routes/_authenticated/proveedor/productos/index'
 import { Route as AuthenticatedProveedorPedidosIndexRouteImport } from './routes/_authenticated/proveedor/pedidos/index'
@@ -145,6 +146,12 @@ const publicCategoriaNameRoute = publicCategoriaNameRouteImport.update({
   path: '/categoria/$name',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedProveedorSoporteIndexRoute =
+  AuthenticatedProveedorSoporteIndexRouteImport.update({
+    id: '/proveedor/soporte/',
+    path: '/proveedor/soporte/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProveedorReportesIndexRoute =
   AuthenticatedProveedorReportesIndexRouteImport.update({
     id: '/proveedor/reportes/',
@@ -278,6 +285,7 @@ export interface FileRoutesByFullPath {
   '/proveedor/pedidos': typeof AuthenticatedProveedorPedidosIndexRoute
   '/proveedor/productos': typeof AuthenticatedProveedorProductosIndexRoute
   '/proveedor/reportes': typeof AuthenticatedProveedorReportesIndexRoute
+  '/proveedor/soporte': typeof AuthenticatedProveedorSoporteIndexRoute
 }
 export interface FileRoutesByTo {
   '': typeof AuthenticatedRouteRouteWithChildren
@@ -315,6 +323,7 @@ export interface FileRoutesByTo {
   '/proveedor/pedidos': typeof AuthenticatedProveedorPedidosIndexRoute
   '/proveedor/productos': typeof AuthenticatedProveedorProductosIndexRoute
   '/proveedor/reportes': typeof AuthenticatedProveedorReportesIndexRoute
+  '/proveedor/soporte': typeof AuthenticatedProveedorSoporteIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -353,6 +362,7 @@ export interface FileRoutesById {
   '/_authenticated/proveedor/pedidos/': typeof AuthenticatedProveedorPedidosIndexRoute
   '/_authenticated/proveedor/productos/': typeof AuthenticatedProveedorProductosIndexRoute
   '/_authenticated/proveedor/reportes/': typeof AuthenticatedProveedorReportesIndexRoute
+  '/_authenticated/proveedor/soporte/': typeof AuthenticatedProveedorSoporteIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -392,6 +402,7 @@ export interface FileRouteTypes {
     | '/proveedor/pedidos'
     | '/proveedor/productos'
     | '/proveedor/reportes'
+    | '/proveedor/soporte'
   fileRoutesByTo: FileRoutesByTo
   to:
     | ''
@@ -429,6 +440,7 @@ export interface FileRouteTypes {
     | '/proveedor/pedidos'
     | '/proveedor/productos'
     | '/proveedor/reportes'
+    | '/proveedor/soporte'
   id:
     | '__root__'
     | '/_authenticated'
@@ -466,6 +478,7 @@ export interface FileRouteTypes {
     | '/_authenticated/proveedor/pedidos/'
     | '/_authenticated/proveedor/productos/'
     | '/_authenticated/proveedor/reportes/'
+    | '/_authenticated/proveedor/soporte/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -619,6 +632,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicCategoriaNameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/proveedor/soporte/': {
+      id: '/_authenticated/proveedor/soporte/'
+      path: '/proveedor/soporte'
+      fullPath: '/proveedor/soporte'
+      preLoaderRoute: typeof AuthenticatedProveedorSoporteIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/proveedor/reportes/': {
       id: '/_authenticated/proveedor/reportes/'
       path: '/proveedor/reportes'
@@ -757,6 +777,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProveedorPedidosIndexRoute: typeof AuthenticatedProveedorPedidosIndexRoute
   AuthenticatedProveedorProductosIndexRoute: typeof AuthenticatedProveedorProductosIndexRoute
   AuthenticatedProveedorReportesIndexRoute: typeof AuthenticatedProveedorReportesIndexRoute
+  AuthenticatedProveedorSoporteIndexRoute: typeof AuthenticatedProveedorSoporteIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -790,6 +811,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedProveedorProductosIndexRoute,
   AuthenticatedProveedorReportesIndexRoute:
     AuthenticatedProveedorReportesIndexRoute,
+  AuthenticatedProveedorSoporteIndexRoute:
+    AuthenticatedProveedorSoporteIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

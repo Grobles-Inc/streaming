@@ -213,6 +213,7 @@ export interface Database {
           created_at: string
           estado: 'disponible' | 'vendido'
           publicado: boolean
+          soporte_stock_producto: 'activo' | 'resuelto' | 'soporte'
         }
         Insert: {
           id?: number
@@ -227,6 +228,7 @@ export interface Database {
           created_at?: string
           estado?: 'disponible' | 'vendido'
           publicado?: boolean
+          soporte_stock_producto?: 'activo' | 'resuelto' | 'soporte'
         }
         Update: {
           id?: number
@@ -241,6 +243,7 @@ export interface Database {
           created_at?: string
           estado?: 'disponible' | 'vendido'
           publicado?: boolean
+          soporte_stock_producto?: 'activo' | 'resuelto' | 'soporte'
         }
         Relationships: [
           {
@@ -303,6 +306,7 @@ export interface Database {
           monto_reembolso: number
           created_at: string
           updated_at: string
+          soporte_respuesta: string | null
         }
         Insert: {
           id?: string
@@ -320,6 +324,7 @@ export interface Database {
           monto_reembolso?: number
           created_at?: string
           updated_at?: string
+          soporte_respuesta?: string | null
         }
         Update: {
           id?: string
@@ -337,6 +342,7 @@ export interface Database {
           monto_reembolso?: number
           created_at?: string
           updated_at?: string
+          soporte_respuesta?: string | null
         }
         Relationships: [
           {

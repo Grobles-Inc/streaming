@@ -14,7 +14,10 @@ import {
   IconMail,
   IconKey,
   IconId,
-  IconCurrencyDollar
+  IconCurrencyDollar,
+  IconHeadset,
+  IconMessage,
+  IconFileText
 } from '@tabler/icons-react'
 import type { MappedCompra } from '../data/types'
 
@@ -189,6 +192,57 @@ export function CompraDetailsModal({
             </>
           )}
 
+          {/* Información de Soporte */}
+          {(compra.soporteAsunto || compra.soporteMensaje || compra.soporteRespuesta) && (
+            <>
+              <div>
+                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <IconHeadset className="h-4 w-4" />
+                  Soporte
+                </h3>
+                <div className="space-y-3">
+                  {compra.soporteAsunto && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <IconFileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground font-medium">Asunto:</span>
+                      </div>
+                      <div className="bg-muted p-3 rounded-md">
+                        <p className="text-sm">{compra.soporteAsunto}</p>
+                      </div>
+                    </div>
+                  )}
+                  {compra.soporteMensaje && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <IconMessage className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground font-medium">Mensaje:</span>
+                      </div>
+                      <div className="bg-muted p-3 rounded-md">
+                        <p className="text-sm">{compra.soporteMensaje}</p>
+                      </div>
+                    </div>
+                  )}
+                  {compra.soporteRespuesta && (
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <IconMessage className="h-4 w-4 text-green-600" />
+                        <span className="text-sm text-muted-foreground font-medium">Respuesta:</span>
+                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                          Respondido
+                        </Badge>
+                      </div>
+                      <div className="bg-green-50 border border-green-200 p-3 rounded-md">
+                        <p className="text-sm text-green-800">{compra.soporteRespuesta}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
+
           {/* Información de Fechas */}
           <div>
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
@@ -220,9 +274,44 @@ export function CompraDetailsModal({
                   })}
                 </span>
               </div>
+              {compra.fechaExpiracion && (
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Expiración:</span>
+                  <div className="text-right">
+                    <span className={`text-sm ${compra.fechaExpiracion < new Date() ? 'text-red-600 font-medium' : ''}`}>
+                      {compra.fechaExpiracion.toLocaleDateString('es-PE', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                    {compra.fechaExpiracion < new Date() && (
+                      <Badge variant="destructive" className="ml-2 text-xs">
+                        Vencida
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Tiempo transcurrido:</span>
-                <span className="text-sm font-medium">{compra.tiempoTranscurrido}</span>
+                <span className="text-sm text-muted-foreground">Tiempo restante:</span>
+                <div className="text-right">
+                  <span className={`text-sm font-medium ${
+                    compra.tiempoTranscurrido.includes('Vencido') || compra.tiempoTranscurrido.includes('Vence hoy')
+                      ? 'text-red-600'
+                      : compra.tiempoTranscurrido.match(/(\d+)\s+día/) && 
+                        parseInt(compra.tiempoTranscurrido.match(/(\d+)\s+día/)![1]) <= 5
+                        ? 'text-red-600'
+                        : compra.tiempoTranscurrido.match(/(\d+)\s+día/) && 
+                          parseInt(compra.tiempoTranscurrido.match(/(\d+)\s+día/)![1]) <= 15
+                          ? 'text-yellow-600'
+                          : 'text-green-600'
+                  }`}>
+                    {compra.tiempoTranscurrido}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

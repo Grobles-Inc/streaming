@@ -39,7 +39,7 @@ export function BilleteraFiltersComponent({ billeteras, onFilter, className }: B
   }
 
   return (
-    <Card className={className}>
+    <div className={className}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
@@ -73,6 +73,6 @@ export function BilleteraFiltersComponent({ billeteras, onFilter, className }: B
           )}
         </div>
       </CardContent>
-    </Card>
+    </div>
   )
 }

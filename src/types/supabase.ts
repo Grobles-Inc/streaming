@@ -18,6 +18,7 @@ export interface Database {
           password: string
           billetera_id: string | null
           codigo_referido: string
+          referido_id: string | null
           apellidos: string
           telefono: string | null
           rol: 'provider' | 'admin' | 'seller'
@@ -32,6 +33,7 @@ export interface Database {
           password?: string
           billetera_id?: string | null
           codigo_referido?: string
+          referido_id?: string | null
           apellidos: string
           telefono?: string | null
           rol?: 'provider' | 'admin' | 'seller'
@@ -46,6 +48,7 @@ export interface Database {
           password?: string
           billetera_id?: string | null
           codigo_referido?: string
+          referido_id?: string | null
           apellidos?: string
           telefono?: string | null
           rol?: 'provider' | 'admin' | 'seller'

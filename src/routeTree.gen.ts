@@ -41,6 +41,7 @@ import { Route as AuthenticatedAdminSettingsIndexRouteImport } from './routes/_a
 import { Route as AuthenticatedAdminRetirosIndexRouteImport } from './routes/_authenticated/admin/retiros/index'
 import { Route as AuthenticatedAdminReportesGlobalesIndexRouteImport } from './routes/_authenticated/admin/reportes-globales/index'
 import { Route as AuthenticatedAdminRecargasIndexRouteImport } from './routes/_authenticated/admin/recargas/index'
+import { Route as AuthenticatedAdminProductosIndexRouteImport } from './routes/_authenticated/admin/productos/index'
 import { Route as AuthenticatedAdminMiBilleteraIndexRouteImport } from './routes/_authenticated/admin/mi-billetera/index'
 import { Route as AuthenticatedAdminComprasIndexRouteImport } from './routes/_authenticated/admin/compras/index'
 import { Route as AuthenticatedAdminChatsIndexRouteImport } from './routes/_authenticated/admin/chats/index'
@@ -225,6 +226,12 @@ const AuthenticatedAdminRecargasIndexRoute =
     path: '/admin/recargas/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminProductosIndexRoute =
+  AuthenticatedAdminProductosIndexRouteImport.update({
+    id: '/admin/productos/',
+    path: '/admin/productos/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminMiBilleteraIndexRoute =
   AuthenticatedAdminMiBilleteraIndexRouteImport.update({
     id: '/admin/mi-billetera/',
@@ -289,6 +296,7 @@ export interface FileRoutesByFullPath {
   '/admin/chats': typeof AuthenticatedAdminChatsIndexRoute
   '/admin/compras': typeof AuthenticatedAdminComprasIndexRoute
   '/admin/mi-billetera': typeof AuthenticatedAdminMiBilleteraIndexRoute
+  '/admin/productos': typeof AuthenticatedAdminProductosIndexRoute
   '/admin/recargas': typeof AuthenticatedAdminRecargasIndexRoute
   '/admin/reportes-globales': typeof AuthenticatedAdminReportesGlobalesIndexRoute
   '/admin/retiros': typeof AuthenticatedAdminRetirosIndexRoute
@@ -329,6 +337,7 @@ export interface FileRoutesByTo {
   '/admin/chats': typeof AuthenticatedAdminChatsIndexRoute
   '/admin/compras': typeof AuthenticatedAdminComprasIndexRoute
   '/admin/mi-billetera': typeof AuthenticatedAdminMiBilleteraIndexRoute
+  '/admin/productos': typeof AuthenticatedAdminProductosIndexRoute
   '/admin/recargas': typeof AuthenticatedAdminRecargasIndexRoute
   '/admin/reportes-globales': typeof AuthenticatedAdminReportesGlobalesIndexRoute
   '/admin/retiros': typeof AuthenticatedAdminRetirosIndexRoute
@@ -370,6 +379,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/chats/': typeof AuthenticatedAdminChatsIndexRoute
   '/_authenticated/admin/compras/': typeof AuthenticatedAdminComprasIndexRoute
   '/_authenticated/admin/mi-billetera/': typeof AuthenticatedAdminMiBilleteraIndexRoute
+  '/_authenticated/admin/productos/': typeof AuthenticatedAdminProductosIndexRoute
   '/_authenticated/admin/recargas/': typeof AuthenticatedAdminRecargasIndexRoute
   '/_authenticated/admin/reportes-globales/': typeof AuthenticatedAdminReportesGlobalesIndexRoute
   '/_authenticated/admin/retiros/': typeof AuthenticatedAdminRetirosIndexRoute
@@ -412,6 +422,7 @@ export interface FileRouteTypes {
     | '/admin/chats'
     | '/admin/compras'
     | '/admin/mi-billetera'
+    | '/admin/productos'
     | '/admin/recargas'
     | '/admin/reportes-globales'
     | '/admin/retiros'
@@ -452,6 +463,7 @@ export interface FileRouteTypes {
     | '/admin/chats'
     | '/admin/compras'
     | '/admin/mi-billetera'
+    | '/admin/productos'
     | '/admin/recargas'
     | '/admin/reportes-globales'
     | '/admin/retiros'
@@ -492,6 +504,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/chats/'
     | '/_authenticated/admin/compras/'
     | '/_authenticated/admin/mi-billetera/'
+    | '/_authenticated/admin/productos/'
     | '/_authenticated/admin/recargas/'
     | '/_authenticated/admin/reportes-globales/'
     | '/_authenticated/admin/retiros/'
@@ -749,6 +762,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRecargasIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/productos/': {
+      id: '/_authenticated/admin/productos/'
+      path: '/admin/productos'
+      fullPath: '/admin/productos'
+      preLoaderRoute: typeof AuthenticatedAdminProductosIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/mi-billetera/': {
       id: '/_authenticated/admin/mi-billetera/'
       path: '/admin/mi-billetera'
@@ -807,6 +827,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminChatsIndexRoute: typeof AuthenticatedAdminChatsIndexRoute
   AuthenticatedAdminComprasIndexRoute: typeof AuthenticatedAdminComprasIndexRoute
   AuthenticatedAdminMiBilleteraIndexRoute: typeof AuthenticatedAdminMiBilleteraIndexRoute
+  AuthenticatedAdminProductosIndexRoute: typeof AuthenticatedAdminProductosIndexRoute
   AuthenticatedAdminRecargasIndexRoute: typeof AuthenticatedAdminRecargasIndexRoute
   AuthenticatedAdminReportesGlobalesIndexRoute: typeof AuthenticatedAdminReportesGlobalesIndexRoute
   AuthenticatedAdminRetirosIndexRoute: typeof AuthenticatedAdminRetirosIndexRoute
@@ -837,6 +858,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminComprasIndexRoute: AuthenticatedAdminComprasIndexRoute,
   AuthenticatedAdminMiBilleteraIndexRoute:
     AuthenticatedAdminMiBilleteraIndexRoute,
+  AuthenticatedAdminProductosIndexRoute: AuthenticatedAdminProductosIndexRoute,
   AuthenticatedAdminRecargasIndexRoute: AuthenticatedAdminRecargasIndexRoute,
   AuthenticatedAdminReportesGlobalesIndexRoute:
     AuthenticatedAdminReportesGlobalesIndexRoute,

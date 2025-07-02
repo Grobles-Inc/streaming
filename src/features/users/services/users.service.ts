@@ -9,6 +9,7 @@ export type SupabaseUser = {
   password: string
   telefono: string | null
   codigo_referido: string
+  referido_id: string | null
   billetera_id: string | null
   rol: 'provider' | 'admin' | 'seller' | 'registrado'
   created_at: string
@@ -18,6 +19,7 @@ export type SupabaseUser = {
 export type SupabaseUserWithWallet = SupabaseUser & {
   saldo_billetera: number | null
   billetera_id: string | null
+  referido_por_nombre?: string | null
 }
 
 export type CreateUserData = {
@@ -43,6 +45,11 @@ export class UsersService {
         billeteras!billeteras_usuario_id_fkey (
           id,
           saldo
+        ),
+        referido_por:usuarios!referido_id (
+          id,
+          nombres,
+          apellidos
         )
       `)
       .order('created_at', { ascending: false })
@@ -52,11 +59,14 @@ export class UsersService {
       throw error
     }
     
-    // Mapear los datos para incluir el saldo de billetera
+    // Mapear los datos para incluir el saldo de billetera y nombre del referente
     return (data || []).map(user => ({
       ...user,
       saldo_billetera: user.billeteras?.[0]?.saldo || null,
-      billetera_id: user.billeteras?.[0]?.id || null
+      billetera_id: user.billeteras?.[0]?.id || null,
+      referido_por_nombre: user.referido_por 
+        ? `${user.referido_por.nombres} ${user.referido_por.apellidos}`.trim()
+        : null
     }))
   }
 
@@ -296,5 +306,151 @@ export class UsersService {
     }
     
     return stats
+  }
+
+  // Validar código de referido y obtener usuario referente
+  static async validateReferralCode(codigo: string): Promise<SupabaseUser | null> {
+    if (!codigo || codigo.trim() === '') {
+      return null
+    }
+
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select('*')
+      .eq('codigo_referido', codigo.trim())
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null // Código no encontrado
+      }
+      console.error('Error validating referral code:', error)
+      throw error
+    }
+
+    return data
+  }
+
+  // Crear usuario con código de referido
+  static async createUserWithReferral(userData: CreateUserData, codigoReferido?: string): Promise<SupabaseUser> {
+    try {
+      console.log('Creating user with referral data:', { userData, codigoReferido })
+      
+      let referidoPorId: string | null = null
+      
+      // Validar código de referido si se proporciona
+      if (codigoReferido) {
+        const usuarioReferente = await this.validateReferralCode(codigoReferido)
+        if (usuarioReferente) {
+          referidoPorId = usuarioReferente.id
+          console.log('Referral user found:', usuarioReferente.nombres, usuarioReferente.apellidos)
+        } else {
+          throw new Error('Código de referido inválido o no encontrado')
+        }
+      }
+      
+      // PASO 1: Crear el usuario SIN billetera_id pero CON referido_id
+      const { data: userData_inserted, error: userError } = await supabase
+        .from('usuarios')
+        .insert({
+          email: userData.email,
+          nombres: userData.nombres,
+          apellidos: userData.apellidos,
+          usuario: userData.usuario,
+          password: userData.password || '',
+          telefono: userData.telefono || null,
+          rol: userData.rol || 'registrado', // Por defecto, rol de registrado para referidos
+          codigo_referido: userData.codigo_referido || this.generateReferralCode(),
+          referido_id: referidoPorId, // Establecer la relación de referido
+        })
+        .select('*')
+        .single()
+      
+      if (userError) {
+        console.error('Error creating user with referral:', userError)
+        throw userError
+      }
+      
+      console.log('User with referral created successfully:', userData_inserted)
+      
+      // PASO 2: Crear la billetera
+      const { data: billetera_inserted, error: walletError } = await supabase
+        .from('billeteras')
+        .insert({
+          usuario_id: userData_inserted.id,
+          saldo: 0
+        })
+        .select('*')
+        .single()
+      
+      if (walletError) {
+        // Si falla la creación de la billetera, eliminar el usuario creado
+        await supabase
+          .from('usuarios')
+          .delete()
+          .eq('id', userData_inserted.id)
+          
+        console.error('Error creating wallet for referred user:', walletError)
+        throw new Error('Error al crear la billetera: ' + walletError.message)
+      }
+      
+      // PASO 3: Actualizar el usuario con el ID de la billetera
+      const { data: updated_user, error: updateError } = await supabase
+        .from('usuarios')
+        .update({
+          billetera_id: billetera_inserted.id
+        })
+        .eq('id', userData_inserted.id)
+        .select('*')
+        .single()
+      
+      if (updateError) {
+        console.error('Error updating user with wallet ID:', updateError)
+        throw updateError
+      }
+      
+      return updated_user
+      
+    } catch (error) {
+      console.error('Error in createUserWithReferral:', error)
+      throw error
+    }
+  }
+
+  // Generar código de referido único
+  static generateReferralCode(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    let result = ''
+    for (let i = 0; i < 10; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return result
+  }
+
+  // Obtener usuarios referidos por un usuario específico
+  static async getReferredUsers(userId: string): Promise<SupabaseUserWithWallet[]> {
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select(`
+        *,
+        billeteras!billeteras_usuario_id_fkey (
+          id,
+          saldo
+        )
+      `)
+      .eq('referido_id', userId)
+      .order('created_at', { ascending: false })
+    
+    if (error) {
+      console.error('Error fetching referred users:', error)
+      throw error
+    }
+    
+    // Mapear los datos para incluir el saldo de billetera
+    return (data || []).map(user => ({
+      ...user,
+      saldo_billetera: user.billeteras?.[0]?.saldo || null,
+      billetera_id: user.billeteras?.[0]?.id || null
+    }))
   }
 }

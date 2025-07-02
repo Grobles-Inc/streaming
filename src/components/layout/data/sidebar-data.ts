@@ -188,6 +188,12 @@ const baseNavGroups = [
         roles: ['admin'],
       },
       {
+        title: 'Gestión de Productos',
+        url: '/admin/productos',
+        icon: IconPackage,
+        roles: ['admin'],
+      },
+      {
         title: 'Gestión de Compras',
         url: '/admin/compras',
         icon: IconShoppingCart,

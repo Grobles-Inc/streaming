@@ -20,6 +20,7 @@ import { useRetiros as useRetirosRetiros } from '../retiros/hooks/use-retiros'
 import { ComprasStats } from '../compras/components/compras-stats'
 import { EstadisticasRecargasCard } from '../recargas/components/estadisticas-recargas'
 import { EstadisticasRetirosCard } from '../retiros/components/estadisticas-retiros'
+import { EstadisticasProductosCard } from './components/estadisticas-productos'
 
 export default function ReportesGlobalesPage() {
   const { loading: recargasLoading } = useRecargas()
@@ -70,10 +71,16 @@ export default function ReportesGlobalesPage() {
         <Tabs defaultValue="compras" className="space-y-6">
           <TabsList className="mb-4">
             <TabsTrigger value="compras">Compras</TabsTrigger>
+            <TabsTrigger value="productos">Productos</TabsTrigger>
             <TabsTrigger value="recargas">Recargas</TabsTrigger>
             <TabsTrigger value="billeteras">Billeteras</TabsTrigger>
             <TabsTrigger value="retiros">Retiros</TabsTrigger>
           </TabsList>
+
+          {/* Estadísticas de Productos */}
+          <TabsContent value="productos">
+            <EstadisticasProductosCard />
+          </TabsContent>
 
           {/* Estadísticas de Billeteras */}
           <TabsContent value="billeteras">

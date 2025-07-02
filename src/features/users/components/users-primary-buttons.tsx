@@ -1,4 +1,4 @@
-import { IconMailPlus, IconUserPlus } from '@tabler/icons-react'
+import { IconMailPlus, IconUserPlus, IconUsers } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import { useUsersContext } from '../context/users-context-new'
 
@@ -12,6 +12,13 @@ export function UsersPrimaryButtons() {
         onClick={() => setOpen('invite')}
       >
         <span>Invitar usuario</span> <IconMailPlus size={18} />
+      </Button>
+      <Button
+        variant='outline'
+        className='space-x-1'
+        onClick={() => setOpen('registerWithReferral')}
+      >
+        <span>Registrar con referido</span> <IconUsers size={18} />
       </Button>
       <Button className='space-x-1' onClick={() => setOpen('add')}>
         <span>Añadir usuario</span> <IconUserPlus size={18} />

@@ -3,10 +3,11 @@ import { UsersActionDialog } from './users-action-dialog'
 import { UsersDeleteDialog } from './users-delete-dialog'
 import { UsersDetailsDialog } from './users-details-dialog'
 import { UsersInviteWithReferralDialog } from './users-invite-referral-dialog'
+import { UsersRegisterWithReferralDialog } from './users-register-with-referral-dialog'
 import { UsersChangeRoleDialog } from './users-change-role-dialog'
 
 export function UsersDialogs() {
-  const { open, setOpen, currentRow, setCurrentRow } = useUsersContext()
+  const { open, setOpen, currentRow, setCurrentRow, refreshUsers } = useUsersContext()
   return (
     <>
       <UsersActionDialog
@@ -19,6 +20,15 @@ export function UsersDialogs() {
         key='user-invite'
         open={open === 'invite'}
         onOpenChange={() => setOpen('invite')}
+      />
+
+      <UsersRegisterWithReferralDialog
+        key='user-register-referral'
+        open={open === 'registerWithReferral'}
+        onOpenChange={() => setOpen('registerWithReferral')}
+        onSuccess={() => {
+          refreshUsers()
+        }}
       />
 
       {currentRow && (

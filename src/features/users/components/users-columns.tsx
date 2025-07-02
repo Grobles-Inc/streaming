@@ -194,4 +194,25 @@ export const columns: ColumnDef<MappedUser>[] = [
     id: 'actions',
     cell: DataTableRowActions,
   },
+  {
+    accessorKey: 'referido_por_nombre',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Referido Por' />
+    ),
+    cell: ({ row }) => {
+      const referidoPorNombre = row.getValue('referido_por_nombre') as string | null
+      return (
+        <div className='text-sm'>
+          {referidoPorNombre ? (
+            <span className='inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-50 text-green-700 border border-green-200'>
+              {referidoPorNombre}
+            </span>
+          ) : (
+            <span className='text-muted-foreground italic'>Registro directo</span>
+          )}
+        </div>
+      )
+    },
+    enableSorting: true,
+  },
 ]

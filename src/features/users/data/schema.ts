@@ -20,6 +20,7 @@ export type UserRole = z.infer<typeof userRoleSchema>
 // - password: string (nuevo)
 // - billetera_id: string | null (nuevo, opcional)
 // - codigo_referido: string (nuevo)
+// - referido_id: string | null (nuevo, FK a usuarios.id)
 // - telefono: string | null
 // - rol: 'admin' | 'registrado' | 'provider' | 'seller'
 // - created_at: string
@@ -33,6 +34,7 @@ const userSchema = z.object({
   password: z.string(),
   billetera_id: z.string().nullable(),
   codigo_referido: z.string(),
+  referido_id: z.string().nullable(),
   telefono: z.string().nullable(),
   rol: userRoleSchema,
   created_at: z.string(),
@@ -58,6 +60,8 @@ const mappedUserSchema = z.object({
   saldo: z.number(),
   billetera_id: z.string().nullable(),
   codigo_referido: z.string(),
+  referido_id: z.string().nullable(),
+  referido_por_nombre: z.string().nullable(), // Nombre del usuario que lo refirió
   fechaCreacion: z.coerce.date(),
   fechaActualizacion: z.coerce.date(),
 })
@@ -79,6 +83,8 @@ export function mapSupabaseUserToComponent(supabaseUser: SupabaseUserWithWallet)
     saldo: supabaseUser.saldo_billetera || 0, // Usar el saldo de la billetera
     billetera_id: supabaseUser.billetera_id,
     codigo_referido: supabaseUser.codigo_referido || '',
+    referido_id: supabaseUser.referido_id || null,
+    referido_por_nombre: supabaseUser.referido_por_nombre || null,
     fechaCreacion: new Date(supabaseUser.created_at),
     fechaActualizacion: new Date(supabaseUser.updated_at),
   }

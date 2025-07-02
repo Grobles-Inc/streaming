@@ -78,6 +78,16 @@ export const useUpdateCompraStatus = () => {
   })
 }
 
+export const useUpdateStockProductoStatus = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id }: { id: number }) => comprasService.updateStockProductoStatus(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stock_productos'] })
+    },
+  })
+}
+
 export const useUpdateCompraStatusVencido = () => {
   const queryClient = useQueryClient()
   return useMutation({

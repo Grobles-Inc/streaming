@@ -1,18 +1,74 @@
-import type { ColumnDef } from '@tanstack/react-table'
-import { Badge } from '@/components/ui/badge'
+import { ColumnDef } from '@tanstack/react-table'
 import { DataTableColumnHeader } from './data-table-column-header'
+import { Badge } from '@/components/ui/badge'
+import { useConfiguracionSistema } from '@/features/proveedor/productos/queries'
 
-// Tipo basado en la tabla recargas de la base de datos
-export type Recarga = {
+// Tipo para transacciones combinadas (recargas + retiros)
+type TransaccionCompleta = {
   id: string
   usuario_id: string
   monto: number
   estado: string
   created_at: string
   updated_at: string
+  tipo: 'recarga' | 'retiro'
 }
 
-export const columns: ColumnDef<Recarga>[] = [
+// Componente para mostrar el monto con conversión
+const MontoCell = ({ transaccion }: { transaccion: TransaccionCompleta }) => {
+  const { data: configuracion } = useConfiguracionSistema()
+  const tasaConversion = configuracion?.conversion || 3.7
+  
+  const montoDolares = transaccion.monto // El monto ya está en dólares
+  const valorEnSoles = (montoDolares * tasaConversion).toFixed(2)
+  
+  const formattedDolares = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  }).format(montoDolares)
+  
+  const formattedSoles = new Intl.NumberFormat('es-PE', {
+    style: 'currency',
+    currency: 'PEN',
+    minimumFractionDigits: 2,
+  }).format(parseFloat(valorEnSoles))
+  
+  // Color diferente según el tipo
+  const colorClass = transaccion.tipo === 'recarga' ? 'text-green-600' : 'text-red-600'
+  const signo = transaccion.tipo === 'recarga' ? '+' : '-'
+  
+  return (
+    <div className="text-left font-medium">
+      <span className={`${colorClass}`}>
+        {signo}Dólares: {formattedDolares}
+      </span>
+      <br />
+      <span className='text-muted-foreground text-sm'>
+        Equivale a {formattedSoles}
+      </span>
+    </div>
+  )
+}
+
+export const columns: ColumnDef<TransaccionCompleta>[] = [
+  {
+    accessorKey: 'tipo',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Tipo" />
+    ),
+    cell: ({ row }) => {
+      const tipo = row.getValue('tipo') as string
+      return (
+        <Badge 
+          variant={tipo === 'recarga' ? 'default' : 'secondary'}
+          className={tipo === 'recarga' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+        >
+          {tipo === 'recarga' ? 'Recarga' : 'Retiro'}
+        </Badge>
+      )
+    },
+  },
   {
     accessorKey: 'created_at',
     header: ({ column }) => (
@@ -40,21 +96,8 @@ export const columns: ColumnDef<Recarga>[] = [
       <DataTableColumnHeader column={column} title="Monto" />
     ),
     cell: ({ row }) => {
-      const monto = row.getValue('monto') as number
-      const tasaCambio = 3.7
-      const valorEnDolares = (monto / tasaCambio).toFixed(2)
-      
-      const formattedSoles = new Intl.NumberFormat('es-PE', {
-        style: 'currency',
-        currency: 'PEN',
-        minimumFractionDigits: 2,
-      }).format(monto)
-      
-      return (
-        <div className="text-left font-medium text-green-600">
-          +{formattedSoles} - (${valorEnDolares})
-        </div>
-      )
+      const transaccion = row.original
+      return <MontoCell transaccion={transaccion} />
     },
   },
   {
@@ -64,37 +107,17 @@ export const columns: ColumnDef<Recarga>[] = [
     ),
     cell: ({ row }) => {
       const estado = row.getValue('estado') as string
-      const estadoMap = {
-        completado: { 
-          label: 'Aprobado', 
-          variant: 'default' as const,
-          className: 'bg-green-100 text-green-800 hover:bg-green-200 border-green-300'
-        },
-        pendiente: { 
-          label: 'Pendiente', 
-          variant: 'secondary' as const,
-          className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 border-yellow-300'
-        },
-        fallido: { 
-          label: 'Rechazado', 
-          variant: 'destructive' as const,
-          className: 'bg-red-100 text-red-800 hover:bg-red-200 border-red-300'
-        },
-      }
-      const estadoInfo = estadoMap[estado as keyof typeof estadoMap] || { 
-        label: estado, 
-        variant: 'outline' as const,
-        className: 'bg-gray-100 text-gray-800 hover:bg-gray-200 border-gray-300'
-      }
-      
       return (
-        <Badge variant={estadoInfo.variant} className={estadoInfo.className}>
-          {estadoInfo.label}
+        <Badge 
+          variant={
+            estado === 'aprobado' ? 'default' : 
+            estado === 'pendiente' ? 'secondary' : 
+            'destructive'
+          }
+        >
+          {estado}
         </Badge>
       )
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
     },
   },
 ] 

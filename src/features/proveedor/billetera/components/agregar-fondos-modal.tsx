@@ -25,6 +25,7 @@ import { useAuth } from '@/stores/authStore'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { RecargaMessage } from '@/lib/whatsapp'
 import { useCreateRecarga } from '@/features/vendedor/recargas/queries'
+import { useConfiguracionSistema } from '@/features/proveedor/productos/queries'
 import { Loader2 } from 'lucide-react'
 
 interface AgregarFondosModalProps {
@@ -33,13 +34,14 @@ interface AgregarFondosModalProps {
   onSubmit: () => void
 }
 
-// Tasa de cambio fija (puede ser configurable en el futuro)
-const TASA_CAMBIO = 3.7
-
 export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFondosModalProps) {
   const isMobile = useIsMobile()
   const { user } = useAuth()
   const { mutate: crearRecarga, isPending } = useCreateRecarga()
+  
+  // Obtener la tasa de conversión de la configuración del sistema
+  const { data: configuracion } = useConfiguracionSistema()
+  const tasaConversion = configuracion?.conversion || 3.7 // Fallback a 3.7 si no hay configuración
 
   const form = useForm<AgregarFondos>({
     resolver: zodResolver(agregarFondosSchema),
@@ -52,8 +54,8 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
   const cantidadValue = form.watch('cantidad')
   const valorEnDolares = useMemo(() => {
     if (!cantidadValue || cantidadValue <= 0) return 0
-    return parseFloat((cantidadValue / TASA_CAMBIO).toFixed(2))
-  }, [cantidadValue])
+    return parseFloat((cantidadValue / tasaConversion).toFixed(2))
+  }, [cantidadValue, tasaConversion])
 
   const handleSubmit = async (data: AgregarFondos) => {
     if (!user) {
@@ -61,8 +63,11 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
     }
 
     try {
+      // Calcular el monto en dólares que se agregará a la billetera
+      const montoEnDolares = parseFloat((data.cantidad / tasaConversion).toFixed(2))
+      
       await crearRecarga({
-        monto: data.cantidad,
+        monto: montoEnDolares, // Guardar el valor en dólares
         usuario_id: user.id,
         estado: 'pendiente'
       })
@@ -74,7 +79,7 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
       setTimeout(() => {
         RecargaMessage({
           nombre_cliente: user?.nombres + ' ' + user?.apellidos || '',
-          monto: data.cantidad,
+          monto: data.cantidad, // En el mensaje se muestra el monto en soles
           id_cliente: user?.id || '',
         }, '51941442792', isMobile ? 'mobile' : 'web')
       }, 3000)
@@ -120,7 +125,7 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
                 <FormControl>
                   <Input
                     type="text"
-                    value={`S/ ${TASA_CAMBIO} = $1 USD`}
+                    value={`S/ ${tasaConversion} = $1 USD`}
                     disabled
                     className="bg-gray-50"
                   />

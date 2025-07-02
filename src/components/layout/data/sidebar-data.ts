@@ -5,13 +5,11 @@ import {
   IconCoins,
   IconCreditCard,
   IconFlag,
-  IconHelp,
   IconHome,
   IconLayoutDashboard,
   IconPackage,
   IconSettings,
   IconShoppingCart,
-  IconUserCog,
   IconUsers,
   IconWallet
 } from '@tabler/icons-react'

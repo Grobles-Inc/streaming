@@ -20,8 +20,8 @@ export const useBilleteraStats = (usuarioId: string) => {
 
 export const useHistorialTransacciones = (usuarioId: string) => {
   return useQuery({
-    queryKey: ['billetera', 'usuario', usuarioId, 'transacciones'],
-    queryFn: () => billeteraService.getHistorialTransacciones(usuarioId),
+    queryKey: ['billetera', 'usuario', usuarioId, 'historial-completo'],
+    queryFn: () => billeteraService.getHistorialCompleto(usuarioId),
     enabled: !!usuarioId,
   })
 }
@@ -38,6 +38,24 @@ export const useAgregarFondos = () => {
     },
     onError: (error: any) => {
       toast.error(error.message || 'Error al agregar fondos')
+    },
+  })
+}
+
+export const useCreateRetiro = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: billeteraService.createRetiro,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['billetera'] })
+      queryClient.invalidateQueries({ queryKey: ['recargas'] })
+      toast.success('Retiro solicitado', {
+        description: 'Tu solicitud de retiro ha sido enviada y será procesada pronto.',
+      })
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Error al crear el retiro')
     },
   })
 }

@@ -6,6 +6,7 @@ export type Usuario = Database['public']['Tables']['usuarios']['Row']
 export type Producto = Database['public']['Tables']['productos']['Row']
 export type CompraInsert = Database['public']['Tables']['compras']['Insert']
 export type CompraUpdate = Database['public']['Tables']['compras']['Update']
+export type StockProducto = Database['public']['Tables']['stock_productos']['Update']
 
 // Create a new compra
 export const createCompra = async (compra: CompraInsert): Promise<Compra | null> => {
@@ -82,6 +83,22 @@ export const updateCompraStatus = async (id:string, status: string, message: str
 
   if (error) {
     console.error('Error updating compra status:', error)
+    return null
+  }
+
+  return data
+}
+
+export const updateStockProductoStatus = async (id: number): Promise<StockProducto | null> => {
+  const { data, error } = await supabase
+    .from('stock_productos')
+    .update({ estado: "soporte" })
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating stock producto status:', error)
     return null
   }
 

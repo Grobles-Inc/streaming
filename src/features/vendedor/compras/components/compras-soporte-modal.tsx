@@ -11,7 +11,7 @@ import { Loader2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Compra } from '../data/schema'
-import { useUpdateCompraStatus } from '../queries'
+import { useUpdateCompraStatus, useUpdateStockProductoStatus } from '../queries'
 
 const subjectOptions = [
   { value: 'correo', label: 'Correo' },
@@ -26,6 +26,7 @@ const subjectOptions = [
 const formSchema = z.object({
   subject: z.string().min(1, 'Debes seleccionar un asunto'),
   message: z.string().min(1, 'El mensaje es requerido').min(10, 'El mensaje debe tener al menos 10 caracteres'),
+  response: z.string().optional(),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -39,11 +40,13 @@ interface ComprasSoporteModalProps {
 export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasSoporteModalProps) {
   const isMobile = useIsMobile()
   const { mutate: updateCompraStatus, isPending } = useUpdateCompraStatus()
+  const { mutate: updateStockProductoStatus } = useUpdateStockProductoStatus()
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       subject: currentRow.soporte_asunto || '',
       message: currentRow.soporte_mensaje || '',
+      response: currentRow.soporte_respuesta || 'Sin respuesta aún',
     },
   })
 
@@ -56,6 +59,9 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
         status: "soporte",
         message: data.message,
         subject: data.subject,
+      })
+      updateStockProductoStatus({
+        id: currentRow.stock_producto_id || 0,
       })
       form.reset()
       setTimeout(() => {
@@ -148,7 +154,28 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
                 </FormItem>
               )}
             />
-
+            {
+              currentRow.soporte_asunto && (
+                <FormField
+                  control={form.control}
+                  name="response"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className='mb-2 text-muted-foreground'>Respuesta</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          disabled={!currentRow.soporte_asunto}
+                          placeholder="Escribe la respuesta del soporte"
+                          className="min-h-[100px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )
+            }
             <div className="flex justify-end space-x-2">
 
               {

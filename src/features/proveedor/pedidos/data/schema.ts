@@ -19,6 +19,7 @@ export const pedidoSchema = z.object({
     nombre: z.string().optional(),
     precio_publico: z.number().optional(),
     stock: z.number().optional(),
+    tiempo_uso: z.number().optional(),
   }).optional(),
   usuarios: z.object({
     nombres: z.string().optional(),
@@ -42,6 +43,7 @@ export const pedidoSchema = z.object({
     perfil: z.string().nullable(),
     pin: z.string().nullable(),
     clave: z.string().nullable(),
+    url: z.string().nullable(),
     soporte_stock_producto: z.enum(['activo', 'soporte', 'vencido']).optional(),
   }).optional(),
 }).passthrough()

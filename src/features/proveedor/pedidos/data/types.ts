@@ -26,12 +26,15 @@ export type SoporteCompra = {
     id: number
     email: string | null
     clave: string | null
+    pin: string | null
     perfil: string | null
+    url: string | null
     soporte_stock_producto: 'activo' | 'vencido' | 'soporte'
   } | null
   // Datos relacionados del producto
   productos?: {
     nombre: string
+    tiempo_uso: number
   } | null
 }
 

@@ -14,9 +14,9 @@ export const getComprasByProveedorId = async (proveedorId: string): Promise<Comp
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, precio_publico, stock),
+      productos:producto_id (nombre, precio_publico, stock, tiempo_uso),
       usuarios:vendedor_id (nombres, apellidos, telefono),
-      stock_productos:stock_producto_id (id, email, clave, perfil, soporte_stock_producto)
+      stock_productos:stock_producto_id (id, email, clave, pin, perfil, url, soporte_stock_producto)
     `)
     .eq('proveedor_id', proveedorId)
     .order('created_at', { ascending: false })

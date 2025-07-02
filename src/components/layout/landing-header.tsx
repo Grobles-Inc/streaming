@@ -14,7 +14,7 @@ import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from 
 export default function LandingHeader() {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
-  const { data: billetera } = user ? useBilleteraByUsuario(user.id) : { data: null }
+  const { data: billetera } = useBilleteraByUsuario(user?.id || '')
   const { searchInput, setSearchInput } = useSearch()
   const isMobile = useIsMobile()
   const [isOpen, setIsOpen] = useState(false)

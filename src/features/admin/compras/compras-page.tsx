@@ -25,7 +25,6 @@ import {
 } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { useCompras } from './hooks/use-compras'
-import { ComprasStats } from './components/compras-stats'
 import { ComprasTable } from './components/compras-table'
 import { CompraDetailsModal } from './components/compra-details-modal'
 import { ComprasStatusCards } from './components/compras-status-cards'
@@ -42,7 +41,6 @@ export function ComprasPage() {
     compras,
     loading,
     error,
-    estadisticas,
     marcarComoResuelto,
     marcarComoVencido,
     enviarASoporte,
@@ -211,9 +209,6 @@ export function ComprasPage() {
           </div>
         </div>
         <div className="space-y-6">
-
-      {/* Estadísticas */}
-      <ComprasStats estadisticas={estadisticas} loading={loading} />
 
       {/* Contenido con tabs */}
       <Tabs defaultValue="table" className="space-y-6">

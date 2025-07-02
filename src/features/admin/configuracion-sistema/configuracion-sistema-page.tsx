@@ -1,7 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Header } from '@/components/layout/header'
@@ -12,7 +11,6 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { useConfiguracion } from './hooks/use-configuracion'
-import { MantenimientoConfirmDialog } from './components/mantenimiento-confirm-dialog'
 import { HistorialConfiguracionCard } from './components/historial-configuracion'
 
 export default function ConfiguracionSistemaPage() {
@@ -33,10 +31,6 @@ export default function ConfiguracionSistemaPage() {
   const [comision, setComision] = useState(10)
   const [conversion, setConversion] = useState(1)
   const [comisionPublicacion, setComisionPublicacion] = useState(1.35)
-
-  // Estado para el modal de confirmación
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
-  const [pendingMantenimiento, setPendingMantenimiento] = useState(false)
 
   // Estado para mostrar/ocultar historial
   const [showHistorial, setShowHistorial] = useState(false)
@@ -59,20 +53,8 @@ export default function ConfiguracionSistemaPage() {
     }
   }, [showHistorial, historial.length, loadHistorial])
 
-  // Manejar cambio de modo mantenimiento con confirmación
-  const handleMantenimientoChange = (checked: boolean) => {
-    setPendingMantenimiento(checked)
-    setShowConfirmDialog(true)
-  }
 
-  // Confirmar cambio de modo mantenimiento
-  const confirmMantenimientoChange = async () => {
-    setMantenimiento(pendingMantenimiento)
-    setShowConfirmDialog(false)
-    
-    // Guardar automáticamente cuando se cambia el mantenimiento
-    await handleSaveAll()
-  }
+
 
   // Manejar guardado de configuración
   const handleSaveAll = async () => {
@@ -347,12 +329,12 @@ export default function ConfiguracionSistemaPage() {
         )}
 
         {/* Modal de confirmación para modo mantenimiento */}
-        <MantenimientoConfirmDialog
+        {/* <MantenimientoConfirmDialog
           open={showConfirmDialog}
           onOpenChange={setShowConfirmDialog}
           activar={pendingMantenimiento}
           onConfirm={confirmMantenimientoChange}
-        />
+        /> */}
       </Main>
     </>
   )

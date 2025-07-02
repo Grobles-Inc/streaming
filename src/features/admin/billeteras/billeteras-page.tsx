@@ -6,8 +6,7 @@ import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
-import { IconWallet, IconUsers, IconCreditCard } from '@tabler/icons-react'
+import { IconWallet, IconUsers} from '@tabler/icons-react'
 import { 
   BilleteraFiltersComponent, 
   BilleterasTable, 
@@ -23,8 +22,8 @@ export default function BilleterasPage() {
   const [showMovimientosModal, setShowMovimientosModal] = useState(false)
 
   const { billeteras, loading: loadingBilleteras, error: errorBilleteras, refetch: refetchBilleteras } = useBilleteras()
-  const { recargas, updateRecargaEstado } = useRecargas()
-  const { retiros, updateRetiroEstado } = useRetiros()
+  const { updateRecargaEstado } = useRecargas()
+  const { updateRetiroEstado } = useRetiros()
 
   // Billeteras a mostrar (filtradas o todas)
   const billeterasAMostrar = billeterasFiltradas.length > 0 || billeteras.length === 0 ? billeterasFiltradas : billeteras
@@ -57,11 +56,6 @@ export default function BilleterasPage() {
     }
   }
 
-  // Calcular estadísticas
-  const totalSaldo = billeteras.reduce((sum, billetera) => sum + billetera.saldo, 0)
-  const recargasPendientes = recargas.filter(r => r.estado === 'pendiente').length
-  const retirosPendientes = retiros.filter(r => r.estado === 'pendiente').length
-
   if (loadingBilleteras) {
     return (
       <Card>
@@ -80,13 +74,6 @@ export default function BilleterasPage() {
         </CardContent>
       </Card>
     )
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-PE', {
-      style: 'currency',
-      currency: 'PEN'
-    }).format(amount)
   }
 
   return (
@@ -109,69 +96,6 @@ export default function BilleterasPage() {
         </div>
         <Card>
           <CardContent>
-            {/* Estadísticas generales */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Total en Billeteras</p>
-                      <p className="text-2xl font-bold text-green-600">
-                        {formatCurrency(totalSaldo)}
-                      </p>
-                    </div>
-                    <IconCreditCard className="h-8 w-8 text-green-600" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Total Usuarios</p>
-                      <p className="text-2xl font-bold">
-                        {billeteras.length}
-                      </p>
-                    </div>
-                    <IconUsers className="h-8 w-8 text-blue-600" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Recargas Pendientes</p>
-                      <p className="text-2xl font-bold text-orange-600">
-                        {recargasPendientes}
-                      </p>
-                    </div>
-                    <Badge variant="secondary" className="text-xs">
-                      Pendientes
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">Retiros Pendientes</p>
-                      <p className="text-2xl font-bold text-red-600">
-                        {retirosPendientes}
-                      </p>
-                    </div>
-                    <Badge variant="secondary" className="text-xs">
-                      Pendientes
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
             <Tabs defaultValue="usuarios" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="usuarios" className="flex items-center gap-2">

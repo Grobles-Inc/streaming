@@ -8,23 +8,23 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { IconLoader, IconPackage, IconAlertTriangle } from '@tabler/icons-react'
+import { IconLoader, IconAlertTriangle } from '@tabler/icons-react'
 import { useForm } from 'react-hook-form'
 import { useState } from 'react'
 import { z } from 'zod'
-import { SoporteCompra } from '../soporte-page'
-import { useUpdateSoporteStatus } from '../queries/soporte-queries'
+import { SoporteCompra } from '../data/types'
+import { useUpdateSoporteStatus } from '../queries'
 import { toast } from 'sonner'
 
 const estadoOptions = [
   { value: 'activo', label: 'Cuenta Sin Problemas', color: 'bg-green-400 text-green-800' },
-  { value: 'soporte', label: 'Problemas con Cuenta', color: 'bg-red-400 text-red-800' },
-  { value: 'resuelto', label: 'Problemas Resueltos', color: 'bg-blue-400 text-blue-800' },
+  { value: 'soporte', label: 'Problemas con Cuenta', color: 'bg-orange-400 text-orange-800' },
+  { value: 'vencido', label: 'Problemas Vencidos', color: 'bg-red-400 text-red-800' },
 ]
 
 const formSchema = z.object({
   respuesta: z.string().optional(),
-  estado: z.enum(['activo', 'soporte', 'resuelto']),
+  estado: z.enum(['activo', 'soporte', 'vencido']),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -51,7 +51,7 @@ export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteMod
 
   async function onSubmit(data: FormData) {
     // Si está marcando como resuelto, mostrar confirmación
-    if (data.estado === 'resuelto') {
+    if (data.estado === 'activo') {
       setPendingData(data)
       setShowConfirmDialog(true)
       return
@@ -63,13 +63,13 @@ export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteMod
 
   async function executeUpdate(data: FormData) {
     try {
-      if (!compra.stock_producto_id) {
+      if (!compra.stock_productos?.id) {
         toast.error('Error: No se encontró el ID del stock de producto')
         return
       }
 
       await updateStatus({
-        stockProductoId: compra.stock_producto_id,
+        stockProductoId: compra.stock_productos.id,
         estado: data.estado,
         respuesta: data.respuesta || undefined,
       })
@@ -121,38 +121,7 @@ export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteMod
               Gestionar Caso de Soporte
             </DialogTitle>
           </DialogHeader>
-
-          {/* Información del caso */}
           <div className="flex-1 overflow-y-auto space-y-4 py-4">
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-2">
-                  <IconPackage className="h-4 w-4" />
-                  Producto
-                </h4>
-                <div className="space-y-1">
-                  <p className="font-medium">{compra.productos?.nombre}</p>
-                  <p className="text-sm text-muted-foreground">${compra.productos?.precio_publico}</p>
-                </div>
-              </div>
-
-              {compra.usuarios && (
-                <div className="flex-1">
-                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-2">
-                    Vendedor
-                  </h4>
-                  <div className="space-y-1">
-                    <p className="font-medium">{compra.usuarios.nombres} {compra.usuarios.apellidos}</p>
-                    {compra.usuarios.telefono && (
-                      <p className="text-sm text-muted-foreground">{compra.usuarios.telefono}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <Separator />
-
             <div>
               <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-2">
                 Problema Reportado

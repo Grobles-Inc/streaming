@@ -4,7 +4,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { useBilleteraByUsuario } from '@/queries'
 import { useAuth } from '@/stores/authStore'
 import { useSearch } from '@/stores/searchStore'
-import { IconChartBar, IconLayoutDashboard, IconMenu, IconShoppingBag, IconUser, IconWallet } from '@tabler/icons-react'
+import { IconLayoutDashboard, IconMenu, IconPackage, IconShoppingBag, IconUser, IconWallet } from '@tabler/icons-react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Button } from '../ui/button'
@@ -48,9 +48,9 @@ export default function LandingHeader() {
                     <IconLayoutDashboard />
                     Dashboard </Button>
                 ) : user?.rol === 'provider' ? (
-                  <Button onClick={() => navigate({ to: '/proveedor/reportes' })} size="lg">
-                    <IconChartBar />
-                    Reportes </Button>
+                  <Button onClick={() => navigate({ to: '/proveedor/productos' })} size="lg">
+                    <IconPackage />
+                    Productos </Button>
                 ) : (
 
                   <div className='flex items-center gap-2'>

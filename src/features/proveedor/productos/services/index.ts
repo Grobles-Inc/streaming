@@ -521,3 +521,69 @@ export const publicarProductoWithCommission = async (
     throw error
   }
 }
+
+// === FUNCIONES PARA GESTIÓN DE STOCK ===
+
+// Get stock productos by producto ID
+export const getStockProductosByProductoId = async (productoId: string) => {
+  const { data, error } = await supabase
+    .from('stock_productos')
+    .select('*')
+    .eq('producto_id', productoId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching stock productos:', error)
+    throw new Error(`Error al obtener el stock: ${error.message}`)
+  }
+
+  return data || []
+}
+
+// Create stock producto
+export const createStockProducto = async (stockData: Database['public']['Tables']['stock_productos']['Insert']) => {
+  const { data, error } = await supabase
+    .from('stock_productos')
+    .insert(stockData)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error creating stock producto:', error)
+    throw new Error(`Error al crear stock: ${error.message}`)
+  }
+
+  return data
+}
+
+// Update stock producto
+export const updateStockProducto = async (id: number, updates: Database['public']['Tables']['stock_productos']['Update']) => {
+  const { data, error } = await supabase
+    .from('stock_productos')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating stock producto:', error)
+    throw new Error(`Error al actualizar stock: ${error.message}`)
+  }
+
+  return data
+}
+
+// Delete stock producto
+export const deleteStockProducto = async (id: number) => {
+  const { error } = await supabase
+    .from('stock_productos')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error deleting stock producto:', error)
+    throw new Error(`Error al eliminar stock: ${error.message}`)
+  }
+
+  return true
+}

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { Row } from '@tanstack/react-table'
-import { IconEdit, IconTrash, IconEye } from '@tabler/icons-react'
+import { IconEdit, IconTrash, IconEye, IconPackage } from '@tabler/icons-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { ProductoFormDialog } from './producto-form'
+import { GestionarExistenciasModal } from './gestionar-existencias-modal'
 
 import type { Producto } from '../data/schema'
 import { useDeleteProducto, usePublicarProductoWithCommission } from '../queries'
@@ -26,6 +27,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showPublishDialog, setShowPublishDialog] = useState(false)
+  const [showExistenciasDialog, setShowExistenciasDialog] = useState(false)
   
   const deleteProducto = useDeleteProducto()
   const publicarProducto = usePublicarProductoWithCommission()
@@ -44,6 +46,10 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
 
   const handlePublish = () => {
     setShowPublishDialog(true)
+  }
+
+  const handleGestionarExistencias = () => {
+    setShowExistenciasDialog(true)
   }
 
   const confirmDelete = () => {
@@ -89,6 +95,10 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               <DropdownMenuSeparator />
             </>
           )}
+          <DropdownMenuItem onClick={handleGestionarExistencias}>
+            <IconPackage className='mr-2 h-4 w-4' />
+            Gestionar Existencias
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={handleEdit}>
             <IconEdit className='mr-2 h-4 w-4' />
             Editar
@@ -158,6 +168,13 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         destructive
         handleConfirm={confirmDelete}
         isLoading={deleteProducto.isPending}
+      />
+
+      {/* Modal de gestión de existencias */}
+      <GestionarExistenciasModal
+        open={showExistenciasDialog}
+        onOpenChange={setShowExistenciasDialog}
+        producto={producto}
       />
     </>
   )

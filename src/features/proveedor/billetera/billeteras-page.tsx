@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Minus, Wallet, TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Plus, Minus, Wallet, DollarSign } from 'lucide-react'
 import { DataTable } from './components/billetera-table'
 import { columns } from './components/billetera-columns'
 import { AgregarFondosModal } from './components/agregar-fondos-modal'
@@ -9,7 +9,7 @@ import { RetirarFondosModal } from './components/retirar-fondos-modal'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { useAuth } from '@/stores/authStore'
-import { useBilleteraByUsuario, useHistorialTransacciones, useBilleteraStats } from './queries'
+import { useBilleteraByUsuario, useHistorialTransacciones } from './queries'
 import { useQueryClient } from '@tanstack/react-query'
 import { IconRefresh } from '@tabler/icons-react'
 import { ThemeSwitch } from '@/components/theme-switch'
@@ -25,7 +25,6 @@ export default function BilleterasPage() {
   // Obtener datos reales de la base de datos
   const { data: billetera } = useBilleteraByUsuario(user?.id || '')
   const { data: transacciones = [] } = useHistorialTransacciones(user?.id || '')
-  const { data: _stats } = useBilleteraStats(user?.id || '')
 
   // Si no hay usuario autenticado
   if (!user) {
@@ -46,15 +45,9 @@ export default function BilleterasPage() {
   }).format(billetera?.saldo || 0)
 
   // Calcular estadísticas de las recargas completadas
-  const recargasCompletadas = transacciones.filter(t => t.estado === 'completado')
-  const totalRecargas = recargasCompletadas.reduce((acc, t) => acc + t.monto, 0)
   const recargasPendientes = transacciones.filter(t => t.estado === 'pendiente').length
 
-  const totalRecargasFormateado = new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    minimumFractionDigits: 0,
-  }).format(totalRecargas)
+
 
   const handleAgregarFondos = async () => {
     // Refrescar los datos después de agregar fondos
@@ -120,32 +113,6 @@ export default function BilleterasPage() {
                 </p>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Recargas</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">{totalRecargasFormateado}</div>
-                <p className="text-xs text-muted-foreground">
-                  {recargasCompletadas.length} recargas completadas
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Transacciones</CardTitle>
-                <TrendingDown className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{transacciones.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  Total de transacciones
-                </p>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Botones de Acción */}
@@ -167,19 +134,7 @@ export default function BilleterasPage() {
               Retirar Fondos
             </Button>
           </div>
-
-          {/* Tabla de Transacciones */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Historial de Recargas</CardTitle>
-              <CardDescription>
-                Lista completa de todas tus recargas de billetera
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DataTable columns={columns} data={transacciones} />
-            </CardContent>
-          </Card>
+          <DataTable columns={columns} data={transacciones} />
 
           {/* Modales */}
           <AgregarFondosModal

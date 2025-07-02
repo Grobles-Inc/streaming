@@ -152,4 +152,65 @@ export const useDeleteProducto = () => {
       toast.error('Error al eliminar el producto')
     },
   })
+}
+
+// === HOOKS PARA GESTIÓN DE STOCK ===
+
+export const useStockProductosByProductoId = (productoId: string) => {
+  return useQuery({
+    queryKey: ['stock-productos', productoId],
+    queryFn: () => productosService.getStockProductosByProductoId(productoId),
+    enabled: !!productoId,
+  })
+}
+
+export const useCreateStockProducto = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: (stockData: Database['public']['Tables']['stock_productos']['Insert']) => 
+      productosService.createStockProducto(stockData),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['stock-productos', data.producto_id] })
+      queryClient.invalidateQueries({ queryKey: ['productos'] })
+      toast.success('Stock agregado correctamente')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Error al agregar stock')
+    },
+  })
+}
+
+export const useUpdateStockProducto = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: ({ id, updates }: { id: number; updates: Database['public']['Tables']['stock_productos']['Update'] }) => 
+      productosService.updateStockProducto(id, updates),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['stock-productos', data.producto_id] })
+      queryClient.invalidateQueries({ queryKey: ['productos'] })
+      toast.success('Stock actualizado correctamente')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Error al actualizar stock')
+    },
+  })
+}
+
+export const useDeleteStockProducto = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: ({ id, productoId }: { id: number; productoId: string }) => 
+      productosService.deleteStockProducto(id),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['stock-productos', variables.productoId] })
+      queryClient.invalidateQueries({ queryKey: ['productos'] })
+      toast.success('Stock eliminado correctamente')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Error al eliminar stock')
+    },
+  })
 } 

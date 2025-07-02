@@ -6,6 +6,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import { estadosMap } from '../data/data'
 import { PedidoEstado, Pedido } from '../data/schema'
 import { DataTableColumnHeader } from './data-table-column-header'
+import { DataTableRowActions } from './data-table-row-actions'
 import { Phone } from 'lucide-react'
 
 
@@ -156,6 +157,13 @@ export const columns: ColumnDef<Pedido>[] = [
       const precio = row.getValue('precio') as number
       return <div className='flex justify-center'>$ {precio.toFixed(2)}</div>
     },
+  },
+  {
+    id: 'actions',
+    header: 'Soporte',
+    cell: ({ row }) => <DataTableRowActions row={row} />,
+    enableSorting: false,
+    enableHiding: false,
   },
 
 ] 

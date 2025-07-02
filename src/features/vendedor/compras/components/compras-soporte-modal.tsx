@@ -84,6 +84,7 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
       status: "resuelto",
       message: '',
       subject: '',
+      response: '',
     })
     onOpenChange(false)
     form.reset()

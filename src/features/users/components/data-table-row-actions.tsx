@@ -1,6 +1,6 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { Row } from '@tanstack/react-table'
-import { IconEdit, IconTrash, IconEye } from '@tabler/icons-react'
+import { IconEdit, IconTrash, IconEye, IconUserCog } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -49,9 +49,20 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               setOpen('edit')
             }}
           >
-            Edit
+            Editar
             <DropdownMenuShortcut>
               <IconEdit size={16} />
+            </DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              setCurrentRow(row.original)
+              setOpen('changeRole')
+            }}
+          >
+            Cambiar Rol
+            <DropdownMenuShortcut>
+              <IconUserCog size={16} />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -62,7 +73,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             }}
             className='text-red-500!'
           >
-            Delete
+            Eliminar
             <DropdownMenuShortcut>
               <IconTrash size={16} />
             </DropdownMenuShortcut>

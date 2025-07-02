@@ -21,7 +21,7 @@ export function DataTableViewOptions<TData>({
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
-          variant='secondary'
+          variant='ghost'
           size='icon'
           className='ml-auto hidden h-8 lg:flex'
         >

@@ -113,7 +113,7 @@ const CompraMessageCell = ({ row }: { row: Compra }) => {
   }
 
   return (
-    <div className='flex justify-center gap-2'>
+    <div className='flex justify-center '>
       <Button variant="ghost" className='flex flex-col items-center gap-0' onClick={handleClick}>
         <img src="https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000" className='size-6' />
         <span className='text-green-500 text-[9px]'>
@@ -123,7 +123,7 @@ const CompraMessageCell = ({ row }: { row: Compra }) => {
 
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogTrigger asChild>
-          <Button variant="secondary" title='Editar cliente' size='icon' className='flex flex-col items-center gap-0'>
+          <Button variant="link" title='Editar cliente' size='icon' >
             <IconEdit size={16} />
           </Button>
         </DialogTrigger>
@@ -177,7 +177,7 @@ const RenovacionCell = ({ row }: { row: Compra }) => {
   }
   return (
     <div className='flex justify-center'>
-      <Button variant="secondary" size='icon' onClick={handleClick} disabled={isPending || row.estado === 'soporte'}>
+      <Button size='icon' onClick={handleClick} disabled={isPending || row.estado === 'soporte'}>
         <IconRefresh className={`${isPending ? 'animate-spin' : ''}`} />
       </Button>
     </div>
@@ -192,7 +192,7 @@ const ProductoCell = ({ row }: { row: Compra }) => {
   }
   return <div className='flex justify-center'>
     <Button variant="secondary" size='icon' onClick={handleClick}>
-      <IconPackage color='purple' />
+      <IconPackage />
     </Button>
   </div>
 }

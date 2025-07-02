@@ -9,16 +9,18 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Button } from '@/components/ui/button'
 import { IconRefresh } from '@tabler/icons-react'
+import { useAuth } from '@/stores/authStore'
 
 export default function Recargas() {
-  const { data: recargas } = useRecargas()
+  const { user } = useAuth()
+  const { data: recargas, refetch, isRefetching } = useRecargas(user?.id as string)
   const recargasList = recargas?.data.map(recarga => recargaSchema.parse(recarga)) ?? []
   return (
     <RecargasProvider>
       <Header>
         <div className='ml-auto flex items-center space-x-4'>
-          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()} >
-            <IconRefresh />
+          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => refetch()} disabled={isRefetching} >
+            <IconRefresh className={`${isRefetching ? 'animate-spin' : ''}`} />
           </Button>
           <ThemeSwitch />
           <ProfileDropdown />

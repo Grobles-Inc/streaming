@@ -61,26 +61,23 @@ export default function ComprasProductoDialog({ open, onOpenChange, id }: Compra
 
             {/* Plan Selector (Read-only) */}
             <div className="mb-4">
-              <div className="font-semibold mb-1">Tiempo de compra</div>
-              <div className="flex gap-4">
-                <label
-                  className="flex-1 border rounded-lg p-4 cursor-not-allowed transition-colors border-primary bg-secondary flex items-start gap-3"
-                >
-                  <input
-                    type="radio"
-                    name="plan"
-                    value={producto?.tiempo_uso}
-                    checked={!!producto?.tiempo_uso}
-                    disabled
-                    className="accent-primary mt-1"
-                  />
-                  <div>
-                    <span className="font-semibold text-base">{producto?.tiempo_uso} días</span>
-                    <div className="text-xs text-muted-foreground">Acceso por {producto?.tiempo_uso} días.</div>
-                  </div>
-                </label>
+              <div className="font-semibold mb-4">Tiempo de compra</div>
 
-              </div>
+              <label
+                className="flex-1 border rounded-lg p-4 cursor-not-allowed transition-colors border-primary bg-secondary flex items-start gap-3"
+              >
+                <input
+                  type="radio"
+                  name="plan"
+                  value={producto?.tiempo_uso}
+                  checked={!!producto?.tiempo_uso}
+                  className="accent-primary mt-1"
+                />
+                <div>
+                  <span className="font-semibold text-white dark:text-black">{producto?.tiempo_uso} días</span>
+                  <div className="text-xs text-white/50 dark:text-black/50">Acceso por {producto?.tiempo_uso} días.</div>
+                </div>
+              </label>
             </div>
           </DialogContent>
       }

@@ -1,15 +1,15 @@
+import Logo from '@/assets/logo.png'
+import { useCategorias } from '@/features/landing/queries'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { useBilleteraByUsuario } from '@/queries'
 import { useAuth } from '@/stores/authStore'
-import { IconChartBar, IconLayoutDashboard, IconLogout, IconMenu, IconShoppingBag, IconUser, IconWallet } from '@tabler/icons-react'
+import { useSearch } from '@/stores/searchStore'
+import { IconChartBar, IconLayoutDashboard, IconMenu, IconShoppingBag, IconUser, IconWallet } from '@tabler/icons-react'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { useState } from 'react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
-import { useIsMobile } from '@/hooks/use-mobile'
-import Logo from '@/assets/logo.png'
-import { useState } from 'react'
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '../ui/sheet'
-import { useCategorias } from '@/features/landing/queries'
-import { useSearch } from '@/stores/searchStore'
 
 export default function LandingHeader() {
   const navigate = useNavigate()
@@ -26,9 +26,10 @@ export default function LandingHeader() {
       <div className='flex flex-row justify-between items-center w-full'>
 
         <Link to="/">
-          <div className="flex items-center gap-2  ">
-            <img src={Logo} alt="ML+" className='size-24 md:size-full' />
-          </div>
+
+          <img src={Logo} alt="ML+" className='w-auto md:h-16 h-14 dark:invert' />
+
+
         </Link>
         <div className=" w-1/2 hidden md:block md:mx-8">
           <Input
@@ -69,7 +70,6 @@ export default function LandingHeader() {
               }
 
               <Button variant="destructive" onClick={() => signOut()} className='flex items-center gap-2'>
-                <IconLogout />
                 Salir</Button>
             </div>
           ) : (
@@ -101,7 +101,7 @@ export default function LandingHeader() {
                   <SheetTitle>
                     <Link to="/">
                       <div className="flex items-center gap-2 ">
-                        <img src={Logo} alt="ML+" className='size-20' />
+                        <img src={Logo} alt="ML+" className='w-auto md:20 h-14 dark:invert' />
                       </div>
                     </Link>
                   </SheetTitle>

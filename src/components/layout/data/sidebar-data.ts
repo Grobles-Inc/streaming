@@ -140,21 +140,9 @@ const baseNavGroups = [
         roles: ['provider'],
       },
       {
-        title: 'Cuentas',
-        url: '/proveedor/cuentas',
-        icon: IconUserCog,
-        roles: ['provider'],
-      },
-      {
         title: 'Pedidos',
         url: '/proveedor/pedidos',
         icon: IconClipboardList,
-        roles: ['provider'],
-      },
-      {
-        title: 'Reportes y Finanzas',
-        url: '/proveedor/reportes',
-        icon: IconChartBar,
         roles: ['provider'],
       },
       {
@@ -163,12 +151,6 @@ const baseNavGroups = [
         icon: IconWallet,
         roles: ['provider'],
       },
-      {
-        title: 'Soporte',
-        url: '/proveedor/soporte',
-        icon: IconHelp,
-        roles: ['provider'],
-      }
     ],
   },
   {

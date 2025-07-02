@@ -1,8 +1,0 @@
-export { SoporteTable } from './soporte-table'
-export { columns } from './soporte-columns'
-export { SoporteModal } from './soporte-modal'
-export { DataTableColumnHeader } from './data-table-column-header'
-export { DataTableToolbar } from './data-table-toolbar'
-export { DataTablePagination } from './data-table-pagination'
-export { DataTableFacetedFilter } from './data-table-faceted-filter'
-export { DataTableViewOptions } from './data-table-view-options' 

@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertTriangle } from 'lucide-react'
 import { columns } from './components/productos-columns'
 import { ProductosTable } from './components/productos-table'
-import { useProductosByProveedor, useProductosStatsByProveedor } from './queries'
+import { useProductosByProveedor } from './queries'
 import { useAuth } from '@/stores/authStore'
 import { Producto, productoCompleteSchema } from './data/schema'
 import { Button } from '@/components/ui/button'
@@ -19,8 +19,6 @@ export function ProductosPage() {
   const { user } = useAuth()
   const { data: productos, isLoading, error } = useProductosByProveedor(user?.id ?? '')
   const productList = productos?.map(producto => productoCompleteSchema.parse(producto))
-
-  const { data: stats } = useProductosStatsByProveedor(user?.id ?? '')
 
   if (error) {
     return (
@@ -63,44 +61,6 @@ export function ProductosPage() {
               </p>
             </div>
           </div>
-
-          {/* Estadísticas rápidas */}
-          {stats && (
-            <div className='grid gap-4 md:grid-cols-4'>
-              <Card>
-                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>Total Productos</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className='text-2xl font-bold'>{stats.total}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>En Stock</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className='text-2xl font-bold text-green-600'>{stats.enStock}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>Destacados</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className='text-2xl font-bold text-yellow-600'>{stats.destacados}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-                  <CardTitle className='text-sm font-medium'>Stock Total</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className='text-2xl font-bold'>{stats.stockTotal}</div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
 
           <Card>
             <CardHeader>

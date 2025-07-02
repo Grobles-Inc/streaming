@@ -1,10 +1,12 @@
 import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/supabase'
+import {  UpdateSoporteStatusParams } from '../data/types'
 
 export type Compra = Database['public']['Tables']['compras']['Row']
 export type Usuario = Database['public']['Tables']['usuarios']['Row']
 export type Producto = Database['public']['Tables']['productos']['Row']
 export type CompraUpdate = Database['public']['Tables']['compras']['Update']
+export type StockProducto = Database['public']['Tables']['stock_productos']['Row']
 
 // Get compras by proveedor ID (pedidos/ventas del proveedor)
 export const getComprasByProveedorId = async (proveedorId: string): Promise<Compra[]> => {
@@ -12,11 +14,12 @@ export const getComprasByProveedorId = async (proveedorId: string): Promise<Comp
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, precio_publico, stock),
-      usuarios:vendedor_id (nombres, apellidos, telefono)
+      productos:producto_id (nombre, precio_publico, stock, tiempo_uso),
+      usuarios:vendedor_id (nombres, apellidos, telefono),
+      stock_productos:stock_producto_id (id, email, clave, pin, perfil, url, soporte_stock_producto)
     `)
     .eq('proveedor_id', proveedorId)
-    .order('fecha_inicio', { ascending: false })
+    .order('created_at', { ascending: false })
 
   if (error) {
     console.error('Error fetching compras by proveedor:', error)
@@ -136,4 +139,48 @@ export const getComprasStatsByProveedor = async (proveedorId: string) => {
   }
 
   return stats
+}
+
+// Update stock producto soporte status
+export const updateStockProductoSoporteStatus = async (params: UpdateSoporteStatusParams): Promise<StockProducto | null> => {
+  const { stockProductoId, estado, respuesta } = params
+  
+  // Preparar los datos de actualización
+  const updateData: Database['public']['Tables']['stock_productos']['Update'] = {
+    soporte_stock_producto: estado
+  }
+
+  // Si se proporciona una respuesta, también actualizar la compra correspondiente
+  if (respuesta) {
+    // Primero obtener la compra relacionada
+    const { data: stockProducto } = await supabase
+      .from('stock_productos')
+      .select('id')
+      .eq('id', stockProductoId)
+      .single()
+
+    if (stockProducto) {
+      // Actualizar la respuesta de soporte en la compra
+      await supabase
+        .from('compras')
+        .update({ soporte_respuesta: respuesta })
+        .eq('stock_producto_id', stockProductoId)
+    }
+  }
+
+  // Actualizar el estado de soporte del stock
+  const { data, error } = await supabase
+    .from('stock_productos')
+    .update(updateData)
+    .eq('id', stockProductoId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating stock producto soporte status:', error)
+    throw error
+  }
+
+  return data
 } 
+

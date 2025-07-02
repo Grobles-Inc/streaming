@@ -6,6 +6,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import { estadosMap } from '../data/data'
 import { PedidoEstado, Pedido } from '../data/schema'
 import { DataTableColumnHeader } from './data-table-column-header'
+import { DataTableRowActions } from './data-table-row-actions'
 import { Phone } from 'lucide-react'
 
 
@@ -129,7 +130,7 @@ export const columns: ColumnDef<Pedido>[] = [
       }
       
       return (
-        <div className='flex justify-center'>
+        <div className='flex justify-center w-[100px]'>
           <Button
             variant='ghost'
             size='sm'
@@ -156,6 +157,170 @@ export const columns: ColumnDef<Pedido>[] = [
       const precio = row.getValue('precio') as number
       return <div className='flex justify-center'>$ {precio.toFixed(2)}</div>
     },
+  },
+  {
+    accessorKey: 'cuenta_email',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Email Cuenta' />
+    ),
+    enableSorting: false,
+    cell: ({ row }) => {
+      const email = row.original.stock_productos?.email
+      return (
+        <div className='flex justify-center'>
+          <span className='max-w-32 truncate text-sm sm:max-w-72 md:max-w-[15rem]'>
+            {email || 'N/A'}
+          </span>
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: 'cuenta_clave',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Clave' />
+    ),
+    enableSorting: false,
+    cell: ({ row }) => {
+      const clave = row.original.stock_productos?.clave
+      return (
+        <div className='flex justify-center'>
+          <span className='max-w-24 truncate text-sm font-mono'>
+            {clave || 'N/A'}
+          </span>
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: 'cuenta_url',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='URL' />
+    ),
+    enableSorting: false,
+    cell: ({ row }) => {
+      const url = row.original.stock_productos?.url
+      return (
+        <div className='flex justify-center'>
+          {url ? (
+            <a 
+              href={url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className='text-blue-600 hover:text-blue-800 underline text-sm max-w-32 truncate'
+            >
+              {url}
+            </a>
+          ) : (
+            <span className='text-sm'>N/A</span>
+          )}
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: 'perfil',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Perfil' />
+    ),
+    enableSorting: false,
+    cell: ({ row }) => {
+      const perfil = row.original.stock_productos?.perfil
+      return (
+        <div className='flex justify-center'>
+          <span className='text-sm'>
+            {perfil || 'N/A'}
+          </span>
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: 'pin',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='PIN' />
+    ),
+    enableSorting: false,
+    cell: ({ row }) => {
+      const pin = row.original.stock_productos?.pin
+      return (
+        <div className='flex justify-center'>
+          <span className='text-sm font-mono'>
+            {pin || 'N/A'}
+          </span>
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: 'fecha_inicio',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Fecha Inicio' />
+    ),
+    enableSorting: false,
+    cell: ({ row }) => {
+      const fechaCreacion = row.original.created_at
+      if (!fechaCreacion) return <div className='flex justify-center text-sm'>N/A</div>
+      
+      const fecha = new Date(fechaCreacion)
+      return (
+        <div className='flex justify-center'>
+          <span className='text-sm'>
+            {fecha.toLocaleDateString('es-ES')}
+          </span>
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: 'fecha_fin',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Fecha Fin' />
+    ),
+    enableSorting: false,
+    cell: ({ row }) => {
+      const fechaCreacion = row.original.created_at
+      const tiempoUso = row.original.productos?.tiempo_uso
+      
+      if (!fechaCreacion || !tiempoUso) {
+        return <div className='flex justify-center text-sm'>N/A</div>
+      }
+      
+      const fechaInicio = new Date(fechaCreacion)
+      const fechaFin = new Date(fechaInicio.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
+      
+      return (
+        <div className='flex justify-center'>
+          <span className='text-sm'>
+            {fechaFin.toLocaleDateString('es-ES')}
+          </span>
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: 'dias_duracion',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Días Duración' />
+    ),
+    enableSorting: false,
+    cell: ({ row }) => {
+      const tiempoUso = row.original.productos?.tiempo_uso
+      return (
+        <div className='flex justify-center'>
+          <span className='text-sm font-medium'>
+            {tiempoUso ? `${tiempoUso} días` : 'N/A'}
+          </span>
+        </div>
+      )
+    },
+  },
+  {
+    id: 'actions',
+    header: 'Soporte',
+    cell: ({ row }) => <DataTableRowActions row={row} />,
+    enableSorting: false,
+    enableHiding: false,
   },
 
 ] 

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as pedidosService from '../services'
 import { toast } from 'sonner'
 import type { Database } from '@/types/supabase'
+import { UpdateSoporteStatusParams } from '../data/types'
 
 type CompraUpdate = Database['public']['Tables']['compras']['Update']
 
@@ -93,6 +94,22 @@ export const useRechazarPedido = () => {
     },
     onError: () => {
       toast.error('Error al rechazar el pedido')
+    },
+  })
+}
+
+export const useUpdateSoporteStatus = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: (params: UpdateSoporteStatusParams) => 
+      pedidosService.updateStockProductoSoporteStatus(params),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+      toast.success('Estado de soporte actualizado correctamente')
+    },
+    onError: () => {
+      toast.error('Error al actualizar el estado de soporte')
     },
   })
 } 

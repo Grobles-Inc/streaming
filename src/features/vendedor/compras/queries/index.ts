@@ -11,8 +11,9 @@ export const useCompras = () => {
 
 export const useLatestCompras = (usuarioId: string) => {
   return useQuery({
-    queryKey: ['compras', 'latest'],
+    queryKey: ['compras', 'latest', usuarioId],
     queryFn: () => comprasService.getLatestCompras(usuarioId),
+    enabled: !!usuarioId,
   })
 }
 
@@ -67,7 +68,7 @@ export const useUpdateCompra = () => {
 export const useUpdateCompraStatus = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, status, message, subject }: { id: string; status: string, message : string, subject: string }) => comprasService.updateCompraStatus(id, status, message, subject),
+    mutationFn: ({ id, status, message, subject, response }: { id: string; status: string, message : string, subject: string, response?: string }) => comprasService.updateCompraStatus(id, status, message, subject, response),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['compras'] })
       toast.success('Estado de la compra actualizado correctamente')

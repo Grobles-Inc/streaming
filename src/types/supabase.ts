@@ -216,7 +216,7 @@ export interface Database {
           created_at: string
           estado: 'disponible' | 'vendido'
           publicado: boolean
-          soporte_stock_producto: 'activo' | 'resuelto' | 'soporte'
+          soporte_stock_producto: 'activo' | 'vencido' | 'soporte'
         }
         Insert: {
           id?: number
@@ -231,7 +231,7 @@ export interface Database {
           created_at?: string
           estado?: 'disponible' | 'vendido'
           publicado?: boolean
-          soporte_stock_producto?: 'activo' | 'resuelto' | 'soporte'
+          soporte_stock_producto?: 'activo' | 'vencido' | 'soporte'
         }
         Update: {
           id?: number
@@ -246,7 +246,7 @@ export interface Database {
           created_at?: string
           estado?: 'disponible' | 'vendido'
           publicado?: boolean
-          soporte_stock_producto?: 'activo' | 'resuelto' | 'soporte'
+          soporte_stock_producto?: 'activo' | 'vencido' | 'soporte'
         }
         Relationships: [
           {

@@ -21,7 +21,6 @@ import { useComprasByVendedor } from '../compras/queries'
 import { useRecargasAprobadasByVendedor } from '../recargas/queries'
 import { ResumenComprasPieChart } from './components/compras-pie-chart'
 import { ComprasRecientes } from './components/compras-recientes'
-import OperacionSaldoModal from './components/recargar-saldo-modal'
 import { ResumenRecargasPieChart } from './components/recargas-pie-chart'
 import { ResumenBarChart } from './components/resumen-bar-chart'
 
@@ -29,8 +28,6 @@ type TimeFilter = 'day' | 'week' | 'month'
 
 export default function Dashboard() {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('month')
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [dialogOpenRetirar, setDialogOpenRetirar] = useState(false)
   const { user } = useAuthStore()
   const { data: billetera, isLoading: isLoadingBilletera } = useBilleteraByUsuario(user?.id || '')
   const { data: recargas, isLoading: isLoadingRecargas } = useRecargasAprobadasByVendedor(user?.id || '')
@@ -61,13 +58,7 @@ export default function Dashboard() {
             </p>
           </div>
           <div className='flex items-center space-x-2'>
-
-            <Button onClick={() => setDialogOpen(true)}>
-              Recargar
-            </Button>
-            <Button variant='secondary' onClick={() => setDialogOpenRetirar(true)} hidden={user?.rol === 'seller'}>
-              Retirar
-            </Button><Select
+            <Select
               onValueChange={(value) => setTimeFilter(value as TimeFilter)}
               defaultValue='month'
             >
@@ -80,8 +71,6 @@ export default function Dashboard() {
                 <SelectItem value='month'>Mensual</SelectItem>
               </SelectContent>
             </Select>
-            <OperacionSaldoModal open={dialogOpen} onOpenChange={setDialogOpen} operacion='recargar' />
-            <OperacionSaldoModal open={dialogOpenRetirar} onOpenChange={setDialogOpenRetirar} operacion='retirar' />
           </div>
         </div>
 

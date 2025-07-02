@@ -2,10 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as recargasService from '../services'
 import { toast } from 'sonner'
 
-export const useRecargas = () => {
+export const useRecargas = (vendedorId: string) => {
   return useQuery({
-    queryKey: ['recargas'],
-    queryFn: () => recargasService.getRecargasPaginated(),
+    queryKey: ['recargas', vendedorId],
+    queryFn: () => recargasService.getRecargasPaginated(1, 10, vendedorId),
   })
 }
 

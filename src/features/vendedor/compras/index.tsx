@@ -14,14 +14,14 @@ import { Button } from '@/components/ui/button'
 
 export default function Compras() {
   const { user } = useAuth()
-  const { data: compras } = useComprasByVendedor(user?.id as string)
+  const { data: compras, refetch, isRefetching } = useComprasByVendedor(user?.id as string)
   const comprasList = compras?.map(compra => compraSchema.parse(compra))
   return (
     <ComprasProvider>
       <Header>
         <div className='ml-auto flex items-center space-x-4'>
-          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()} >
-            <IconRefresh />
+          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => refetch()} disabled={isRefetching} >
+            <IconRefresh className={`${isRefetching ? 'animate-spin' : ''}`} />
           </Button>
           <ThemeSwitch />
           <ProfileDropdown />

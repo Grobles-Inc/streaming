@@ -103,7 +103,8 @@ export const getRecargasAprobadasByVendedorId = async (vendedorId: string): Prom
 // Get recargas with pagination
 export const getRecargasPaginated = async (
   page: number = 1,
-  pageSize: number = 10
+  pageSize: number = 10,
+  vendedorId: string
 ): Promise<{ data: Recarga[]; count: number }> => {
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
@@ -111,6 +112,7 @@ export const getRecargasPaginated = async (
   const { data, error, count } = await supabase
     .from('recargas')
     .select('*', { count: 'exact' })
+    .eq('usuario_id', vendedorId)
     .range(from, to)
     .order('created_at', { ascending: false })
 

@@ -15,8 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { 
-  IconRefresh, 
-  IconDownload,
+  IconRefresh,
   IconCash 
 } from '@tabler/icons-react'
 import { toast } from 'sonner'

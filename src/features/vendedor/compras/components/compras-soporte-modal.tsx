@@ -161,10 +161,10 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
                   name="response"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className='mb-2 text-muted-foreground'>Respuesta</FormLabel>
+                      <FormLabel className='mb-2 text-muted-foreground'>Respuesta por el Proveedor</FormLabel>
                       <FormControl>
                         <Textarea
-                          disabled={!currentRow.soporte_asunto}
+                          disabled
                           placeholder="Escribe la respuesta del soporte"
                           className="min-h-[100px]"
                           {...field}

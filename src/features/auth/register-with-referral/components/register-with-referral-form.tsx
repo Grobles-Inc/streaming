@@ -158,32 +158,6 @@ export function RegisterWithReferralForm() {
     }
   }
 
-  const getRoleDisplayName = (role: string) => {
-    switch (role) {
-      case 'registered':
-        return 'Registrado'
-      case 'provider':
-        return 'Proveedor'
-      case 'seller':
-        return 'Vendedor'
-      default:
-        return role
-    }
-  }
-
-  const getRoleDescription = (role: string) => {
-    switch (role) {
-      case 'registered':
-        return 'Usuario básico con acceso limitado al sistema'
-      case 'provider':
-        return 'Podrás crear y gestionar productos en la plataforma'
-      case 'seller':
-        return 'Podrás vender productos existentes y gestionar tus ventas'
-      default:
-        return 'Tendrás que esperar asignación de rol por parte del administrador.'
-    }
-  }
-
   if (!urlParams.ref || !urlParams.role) {
     return (
       <div className="flex items-center justify-center min-h-screen">

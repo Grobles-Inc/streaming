@@ -91,7 +91,7 @@ export function useUsers() {
     }
   }
 
-  const filterByRole = async (role: 'admin' | 'provider' | 'seller' | 'registrado') => {
+  const filterByRole = async (role: 'admin' | 'provider' | 'seller' | 'registered') => {
     try {
       setLoading(true)
       const supabaseUsers = await UsersService.filterByRole(role)

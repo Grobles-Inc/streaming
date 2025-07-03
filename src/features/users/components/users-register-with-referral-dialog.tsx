@@ -115,7 +115,7 @@ export function UsersRegisterWithReferralDialog({ open, onOpenChange, onSuccess 
           usuario: usuarioFinal,
           telefono: values.telefono || null,
           password: 'defaultPassword123', // Deberías implementar generación de password o envío por email
-          rol: 'registrado' // Siempre asignar rol de registrado
+          rol: 'registered' // Siempre asignar rol de registrado
         },
         values.codigoReferido
       )

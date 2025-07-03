@@ -11,7 +11,7 @@ export type SupabaseUser = {
   codigo_referido: string
   referido_id: string | null
   billetera_id: string | null
-  rol: 'provider' | 'admin' | 'seller' | 'registrado'
+  rol: 'provider' | 'admin' | 'seller' | 'registered'
   created_at: string
   updated_at: string
 }
@@ -30,7 +30,7 @@ export type CreateUserData = {
   password?: string
   telefono?: string | null
   codigo_referido?: string
-  rol?: 'provider' | 'admin' | 'seller' | 'registrado'
+  rol?: 'provider' | 'admin' | 'seller' | 'registered'
 }
 
 export type UpdateUserData = Partial<Omit<SupabaseUser, 'id' | 'created_at' | 'updated_at'>>
@@ -45,11 +45,6 @@ export class UsersService {
         billeteras!billeteras_usuario_id_fkey (
           id,
           saldo
-        ),
-        referido_por:usuarios!referido_id (
-          id,
-          nombres,
-          apellidos
         )
       `)
       .order('created_at', { ascending: false })
@@ -58,16 +53,36 @@ export class UsersService {
       console.error('Error fetching users:', error)
       throw error
     }
-    
-    // Mapear los datos para incluir el saldo de billetera y nombre del referente
-    return (data || []).map(user => ({
-      ...user,
-      saldo_billetera: user.billeteras?.[0]?.saldo || null,
-      billetera_id: user.billeteras?.[0]?.id || null,
-      referido_por_nombre: user.referido_por 
-        ? `${user.referido_por.nombres} ${user.referido_por.apellidos}`.trim()
-        : null
+
+    // Obtener información de usuarios referentes por separado
+    const usersWithReferrals = await Promise.all((data || []).map(async (user) => {
+      let referido_por_nombre: string | null = null
+      
+      if (user.referido_id) {
+        try {
+          const { data: referente, error: referenteError } = await supabase
+            .from('usuarios')
+            .select('nombres, apellidos')
+            .eq('id', user.referido_id)
+            .single()
+          
+          if (!referenteError && referente) {
+            referido_por_nombre = `${referente.nombres} ${referente.apellidos}`.trim()
+          }
+        } catch (err) {
+          console.warn('Error fetching referente for user:', user.id, err)
+        }
+      }
+      
+      return {
+        ...user,
+        saldo_billetera: user.billeteras?.[0]?.saldo || null,
+        billetera_id: user.billeteras?.[0]?.id || null,
+        referido_por_nombre
+      }
     }))
+
+    return usersWithReferrals
   }
 
   // Obtener usuario por ID con saldo desde billeteras
@@ -91,11 +106,31 @@ export class UsersService {
       console.error('Error fetching user by ID:', error)
       throw error
     }
+
+    // Obtener información del referente si existe
+    let referido_por_nombre: string | null = null
+    
+    if (data.referido_id) {
+      try {
+        const { data: referente, error: referenteError } = await supabase
+          .from('usuarios')
+          .select('nombres, apellidos')
+          .eq('id', data.referido_id)
+          .single()
+        
+        if (!referenteError && referente) {
+          referido_por_nombre = `${referente.nombres} ${referente.apellidos}`.trim()
+        }
+      } catch (err) {
+        console.warn('Error fetching referente for user:', data.id, err)
+      }
+    }
     
     return {
       ...data,
       saldo_billetera: data.billeteras?.[0]?.saldo || null,
-      billetera_id: data.billeteras?.[0]?.id || null
+      billetera_id: data.billeteras?.[0]?.id || null,
+      referido_por_nombre
     }
   }
 
@@ -242,7 +277,7 @@ export class UsersService {
   }
 
   // Filtrar usuarios por rol con saldo desde billeteras
-  static async filterByRole(role: 'admin' | 'provider' | 'seller' | 'registrado'): Promise<SupabaseUserWithWallet[]> {
+  static async filterByRole(role: 'admin' | 'provider' | 'seller' | 'registered'): Promise<SupabaseUserWithWallet[]> {
     const { data, error } = await supabase
       .from('usuarios')
       .select(`
@@ -350,19 +385,24 @@ export class UsersService {
       }
       
       // PASO 1: Crear el usuario SIN billetera_id pero CON referido_id
+      const userInsertData = {
+        email: userData.email,
+        nombres: userData.nombres,
+        apellidos: userData.apellidos,
+        usuario: userData.usuario,
+        password: userData.password || '',
+        telefono: userData.telefono || null,
+        rol: userData.rol || 'provider', // Temporalmente cambiar por provider para probar
+        codigo_referido: userData.codigo_referido || this.generateReferralCode(),
+        referido_id: referidoPorId, // Establecer la relación de referido
+      }
+      
+      console.log('Insertando usuario con datos:', userInsertData)
+      console.log('Rol específico:', userInsertData.rol)
+      
       const { data: userData_inserted, error: userError } = await supabase
         .from('usuarios')
-        .insert({
-          email: userData.email,
-          nombres: userData.nombres,
-          apellidos: userData.apellidos,
-          usuario: userData.usuario,
-          password: userData.password || '',
-          telefono: userData.telefono || null,
-          rol: userData.rol || 'registrado', // Por defecto, rol de registrado para referidos
-          codigo_referido: userData.codigo_referido || this.generateReferralCode(),
-          referido_id: referidoPorId, // Establecer la relación de referido
-        })
+        .insert(userInsertData)
         .select('*')
         .single()
       

@@ -21,7 +21,7 @@ export interface Database {
           referido_id: string | null
           apellidos: string
           telefono: string | null
-          rol: 'provider' | 'admin' | 'seller'
+          rol: 'provider' | 'admin' | 'seller' | 'registered'
           created_at: string
           updated_at: string
         }
@@ -36,7 +36,7 @@ export interface Database {
           referido_id?: string | null
           apellidos: string
           telefono?: string | null
-          rol?: 'provider' | 'admin' | 'seller'
+          rol?: 'provider' | 'admin' | 'seller' | 'registered'
           created_at?: string
           updated_at?: string
         }
@@ -51,11 +51,19 @@ export interface Database {
           referido_id?: string | null
           apellidos?: string
           telefono?: string | null
-          rol?: 'provider' | 'admin' | 'seller'
+          rol?: 'provider' | 'admin' | 'seller' | 'registered'
           created_at?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "usuarios_referido_id_fkey"
+            columns: ["referido_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       billeteras: {
         Row: {

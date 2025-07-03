@@ -191,10 +191,6 @@ export const columns: ColumnDef<MappedUser>[] = [
     enableHiding: false,
   },
   {
-    id: 'actions',
-    cell: DataTableRowActions,
-  },
-  {
     accessorKey: 'referido_por_nombre',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Referido Por' />
@@ -214,5 +210,9 @@ export const columns: ColumnDef<MappedUser>[] = [
       )
     },
     enableSorting: true,
+  },
+  {
+    id: 'actions',
+    cell: DataTableRowActions,
   },
 ]

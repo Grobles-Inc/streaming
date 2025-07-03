@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
@@ -47,12 +47,7 @@ export function ProductosPage() {
 
           {/* Tabla de productos */}
           <Card>
-            <CardHeader>
-              <CardTitle>Lista de productos</CardTitle>
-              <CardDescription>
-                Gestiona todos los productos del catálogo con funciones CRUD completas
-              </CardDescription>
-            </CardHeader>
+            
             <CardContent>
               <ProductosTable />
             </CardContent>

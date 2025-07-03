@@ -33,7 +33,7 @@ export const userTypes = [
   },
   {
     label: 'Registrado',
-    value: 'registrado',
+    value: 'registered',
     icon: IconUser,
   },
 ] as const

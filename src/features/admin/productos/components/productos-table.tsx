@@ -27,13 +27,13 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { toast } from 'sonner'
 import { 
   Columns, 
   ChevronLeft, 
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  Plus,
   ToggleRight,
   ToggleLeft,
   Trash,
@@ -135,11 +135,29 @@ export function ProductosTable({ onProductoCreated }: ProductosTableProps) {
 
   const handlePublicarSeleccionados = async () => {
     if (selectedIds.length > 0) {
+      let erroresEncontrados = []
+      
       for (const id of selectedIds) {
-        await cambiarEstadoProducto(id, 'publicado')
+        const exito = await cambiarEstadoProducto(id, 'publicado')
+        if (!exito) {
+          // Buscar el producto para obtener su nombre
+          const producto = productos.find(p => p.id === id)
+          const nombreProducto = producto?.nombre || `Producto ${id.slice(0, 8)}`
+          erroresEncontrados.push(nombreProducto)
+        }
       }
+      
       await refreshProductos()
       setRowSelection({})
+      
+      // Mostrar resumen de errores si los hay
+      if (erroresEncontrados.length > 0) {
+        toast.error(`Error al publicar algunos productos: ${erroresEncontrados.join(', ')}`, {
+          description: 'Verifique que los proveedores tengan saldo suficiente para la comisión de publicación'
+        })
+      } else {
+        toast.success(`${selectedIds.length} productos publicados exitosamente`)
+      }
     }
   }
 
@@ -225,10 +243,10 @@ export function ProductosTable({ onProductoCreated }: ProductosTableProps) {
           </DropdownMenu>
         </div>
 
-        <Button onClick={() => setIsCreateModalOpen(true)}>
+        {/* <Button onClick={() => setIsCreateModalOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Agregar producto
-        </Button>
+        </Button> */}
       </div>
 
       {/* Acciones en lote */}

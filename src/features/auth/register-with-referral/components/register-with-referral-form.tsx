@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
+import { UsersService } from '@/features/users/services/users.service'
 
 // Schema de validación
 const registerWithReferralSchema = z
@@ -53,7 +54,7 @@ const registerWithReferralSchema = z
     confirmPassword: z.string(),
     // Campos bloqueados que vienen del link
     codigoReferido: z.string(),
-    rol: z.enum(['registrado', 'provider', 'seller']),
+    rol: z.enum(['registered', 'provider', 'seller']),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Las contraseñas no coinciden',
@@ -98,7 +99,7 @@ export function RegisterWithReferralForm() {
       password: '',
       confirmPassword: '',
       codigoReferido: urlParams.ref || '',
-      rol: (urlParams.role as 'registrado' | 'provider' | 'seller') || 'registrado',
+      rol: (urlParams.role as 'registered' | 'provider' | 'seller') || 'registered',
     },
   })
 
@@ -106,29 +107,51 @@ export function RegisterWithReferralForm() {
   useEffect(() => {
     if (urlParams.ref && urlParams.role) {
       form.setValue('codigoReferido', urlParams.ref)
-      form.setValue('rol', urlParams.role as 'registrado' | 'provider' | 'seller')
+      form.setValue('rol', urlParams.role as 'registered' | 'provider' | 'seller')
     }
   }, [urlParams, form])
 
   const onSubmit = async (values: RegisterFormData) => {
     setIsLoading(true)
     try {
-      // Aquí implementarías la lógica de registro con Supabase
-      console.log('Registrando usuario:', values)
+      console.log('Registrando usuario con referido:', values)
       
-      // Simulación de registro
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Extraer el código de referido de los valores
+      const { codigoReferido, confirmPassword, rol, ...userData } = values
+      
+      console.log('Datos del usuario a crear:', {
+        ...userData,
+        rol: 'registered' // El rol correcto para usuarios registrados con referido
+      })
+      console.log('Código de referido:', codigoReferido)
+      
+      // Crear el usuario usando el servicio correcto
+      const newUser = await UsersService.createUserWithReferral(
+        {
+          email: userData.email,
+          nombres: userData.nombres,
+          apellidos: userData.apellidos,
+          usuario: userData.usuario,
+          password: userData.password,
+          telefono: userData.telefono,
+          rol: 'registered' // El rol correcto para usuarios registrados con referido
+        },
+        codigoReferido // Código del referente (viene del enlace)
+      )
+      
+      console.log('Usuario creado exitosamente:', newUser)
       
       toast.success('¡Registro exitoso!', {
-        description: 'Tu cuenta ha sido creada correctamente.'
+        description: 'Tu cuenta ha sido creada correctamente con referido.'
       })
       
-      // Redirigir al login o dashboard
+      // Redirigir al login
       navigate({ to: '/sign-in' })
       
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Error en el registro:', error)
       toast.error('Error en el registro', {
-        description: 'No se pudo crear la cuenta. Inténtalo de nuevo.'
+        description: error.message || 'No se pudo crear la cuenta. Inténtalo de nuevo.'
       })
     } finally {
       setIsLoading(false)
@@ -137,7 +160,7 @@ export function RegisterWithReferralForm() {
 
   const getRoleDisplayName = (role: string) => {
     switch (role) {
-      case 'registrado':
+      case 'registered':
         return 'Registrado'
       case 'provider':
         return 'Proveedor'
@@ -150,7 +173,7 @@ export function RegisterWithReferralForm() {
 
   const getRoleDescription = (role: string) => {
     switch (role) {
-      case 'registrado':
+      case 'registered':
         return 'Usuario básico con acceso limitado al sistema'
       case 'provider':
         return 'Podrás crear y gestionar productos en la plataforma'
@@ -202,11 +225,11 @@ export function RegisterWithReferralForm() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Rol Asignado:</span>
                   <Badge variant="secondary">
-                    {getRoleDisplayName(urlParams.role)}
+                    Proveedor (temporal)
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {getRoleDescription(urlParams.role)}
+                  Temporalmente se asignará rol de proveedor. El administrador puede cambiar tu rol después del registro.
                 </p>
               </div>
             </CardContent>

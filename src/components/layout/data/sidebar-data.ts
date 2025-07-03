@@ -5,13 +5,11 @@ import {
   IconCoins,
   IconCreditCard,
   IconFlag,
-  IconHelp,
   IconHome,
   IconLayoutDashboard,
   IconPackage,
   IconSettings,
   IconShoppingCart,
-  IconUserCog,
   IconUsers,
   IconWallet
 } from '@tabler/icons-react'
@@ -77,25 +75,25 @@ export const filterNavGroupsByRole = (groups: any[], userRole: UserRole) => {
 const baseNavGroups = [  
   {
     title: 'Tienda',
-    roles: ['admin', 'registrado', 'seller', 'provider'],
+    roles: ['admin', 'registered', 'seller', 'provider'],
     items: [
       {
         title: 'Ir a la Tienda',
         url: '/',
         icon: IconHome,
-        roles: ['admin', 'registrado', 'seller', 'provider'],
+        roles: ['admin', 'registered', 'seller', 'provider'],
       }
     ]
   },
   {
     title: 'Usuario Registrado',
-    roles: ['registrado'],
+    roles: ['registered'],
     items: [
       {
         title: 'Mi Perfil',
         url: '/profile',
         icon: IconLayoutDashboard,
-        roles: ['registrado'],
+        roles: ['registered'],
       },
     ]
   },
@@ -346,7 +344,7 @@ const baseNavGroups = [
 ]
 
 // Function to get sidebar data based on user role and user data
-export const getSidebarData = (userRole: UserRole = 'registrado', user?: any): SidebarData => {
+export const getSidebarData = (userRole: UserRole = 'registered', user?: any): SidebarData => {
   const filteredGroups = filterNavGroupsByRole(baseNavGroups, userRole)
   
   return {
@@ -366,9 +364,9 @@ export const getSidebarData = (userRole: UserRole = 'registrado', user?: any): S
 }
 
 // Function to get navigation groups only (without user data)
-export const getNavGroups = (userRole: UserRole = 'registrado') => {
+export const getNavGroups = (userRole: UserRole = 'registered') => {
   return filterNavGroupsByRole(baseNavGroups, userRole)
 }
 
 // Default export for backward compatibility - only navigation groups
-export const sidebarData = getNavGroups('registrado')
+export const sidebarData = getNavGroups('registered')

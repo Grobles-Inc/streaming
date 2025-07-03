@@ -4,7 +4,7 @@ import type { SupabaseUserWithWallet } from '../services/users.service'
 // Esquema para roles de Supabase
 const userRoleSchema = z.union([
   z.literal('admin'),
-  z.literal('registrado'),
+  z.literal('registered'),
   z.literal('provider'),
   z.literal('seller'),
 ])
@@ -22,7 +22,7 @@ export type UserRole = z.infer<typeof userRoleSchema>
 // - codigo_referido: string (nuevo)
 // - referido_id: string | null (nuevo, FK a usuarios.id)
 // - telefono: string | null
-// - rol: 'admin' | 'registrado' | 'provider' | 'seller'
+// - rol: 'admin' | 'registered' | 'provider' | 'seller'
 // - created_at: string
 // - updated_at: string
 const userSchema = z.object({

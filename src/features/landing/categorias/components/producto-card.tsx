@@ -19,7 +19,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
     <>
       <Card className='relative overflow-hidden max-w-sm gap-4 flex flex-col h-full'>
         <CardHeader className="relative z-0  ">
-          <img src={producto.imagen_url || ''} alt={producto.nombre} className='w-full h-44   object-contain' />
+          <img src={producto.imagen_url || ''} alt={producto.nombre} className='w-full h-44 object-contain ' />
           <div className='flex items-center gap-1  mt-2'>
 
             {producto.nuevo && (
@@ -108,7 +108,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
 
           {/* Stock y precios */}
           <div className="flex flex-col md:flex-row justify-between md:items-center w-full ">
-            <Badge className='hidden md:block'>Stock: {producto.stock} </Badge>
+            <Badge className='hidden md:block'>Stock: {producto.stock_de_productos.length} </Badge>
 
             <div className='flex md:flex-col flex-row-reverse justify-between md:justify-start items-center'>
               <span className="font-bold md:text-xl text-foreground">     ${producto.precio_publico.toFixed(2)}</span><span className="text-xs text-muted-foreground">S/.{(producto.precio_publico * tasaDeConversion).toFixed(2)} </span>

@@ -213,4 +213,25 @@ export const useDeleteStockProducto = () => {
       toast.error(error.message || 'Error al eliminar stock')
     },
   })
+}
+
+// Hook para sincronizar stock_de_productos de todos los productos
+export const useSincronizarStockDeProductos = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: (proveedorId: string) => 
+      productosService.sincronizarStockDeProductos(proveedorId),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['productos'] })
+      if (result.success) {
+        toast.success(`Stock sincronizado: ${result.sincronizados} productos actualizados`)
+      } else {
+        toast.error(result.error || 'Error en la sincronización')
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Error al sincronizar stock')
+    },
+  })
 } 

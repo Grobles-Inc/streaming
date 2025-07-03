@@ -120,7 +120,6 @@ export function ProductoFormDialog({
       precio_vendedor: 0,
       precio_publico: 0,
       precio_renovacion: 0,
-      stock: 0,
       deshabilitar_boton_comprar: false,
       muestra_disponibilidad_stock: false,
       tiempo_uso: 0,
@@ -461,19 +460,6 @@ export function ProductoFormDialog({
                       <FormLabel>Precio renovación</FormLabel>
                       <FormControl>
                         <Input type="number" step="any" min={0} placeholder="0.00" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="stock"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Stock</FormLabel>
-                      <FormControl>
-                        <Input type="number" min={0} placeholder="0" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

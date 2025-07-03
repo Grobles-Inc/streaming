@@ -163,6 +163,37 @@ export const deleteProducto = async (id: string): Promise<boolean> => {
   return true
 }
 
+// Función para sincronizar todos los productos de un proveedor (útil para migración)
+export const sincronizarStockDeProductos = async (proveedorId: string) => {
+  try {
+    console.log('🔄 Iniciando sincronización de stock para proveedor:', proveedorId)
+    
+    // Obtener todos los productos del proveedor
+    const { data: productos, error: productosError } = await supabase
+      .from('productos')
+      .select('id')
+      .eq('proveedor_id', proveedorId)
+
+    if (productosError) {
+      console.error('Error fetching productos:', productosError)
+      return { success: false, error: productosError.message }
+    }
+
+    // Sincronizar cada producto
+    let sincronizados = 0
+    for (const producto of productos || []) {
+      await updateStockDeProductos(producto.id)
+      sincronizados++
+    }
+
+    console.log(`✅ Sincronización completada: ${sincronizados} productos actualizados`)
+    return { success: true, sincronizados }
+  } catch (error) {
+    console.error('Error en sincronizarStockDeProductos:', error)
+    return { success: false, error: error instanceof Error ? error.message : 'Error desconocido' }
+  }
+}
+
 // Get productos with pagination (for proveedor)
 export const getProductosPaginated = async (
   proveedorId: string,
@@ -214,7 +245,7 @@ export const getCategorias = async (): Promise<Categoria[]> => {
 export const getProductosStatsByProveedor = async (proveedorId: string) => {
   const { data, error } = await supabase
     .from('productos')
-    .select('stock, disponibilidad, destacado, mas_vendido')
+    .select('disponibilidad, destacado, mas_vendido')
     .eq('proveedor_id', proveedorId)
 
   if (error) {
@@ -228,12 +259,21 @@ export const getProductosStatsByProveedor = async (proveedorId: string) => {
     }
   }
 
+  // Obtener el total de stock real desde stock_productos
+  const { data: stockData, error: stockError } = await supabase
+    .from('stock_productos')
+    .select('id')
+    .eq('proveedor_id', proveedorId)
+    .eq('estado', 'disponible')
+
+  const stockTotal = stockError ? 0 : (stockData?.length || 0)
+
   const stats = {
     total: data.length,
     enStock: data.filter(p => p.disponibilidad === 'en_stock').length,
     destacados: data.filter(p => p.destacado).length,
     masVendidos: data.filter(p => p.mas_vendido).length,
-    stockTotal: data.reduce((sum, p) => sum + p.stock, 0)
+    stockTotal
   }
 
   return stats
@@ -524,6 +564,40 @@ export const publicarProductoWithCommission = async (
 
 // === FUNCIONES PARA GESTIÓN DE STOCK ===
 
+// Función auxiliar para actualizar stock_de_productos en la tabla productos
+export const updateStockDeProductos = async (productoId: string) => {
+  try {
+    // Obtener todos los IDs de stock_productos para este producto
+    const { data: stockItems, error: stockError } = await supabase
+      .from('stock_productos')
+      .select('id')
+      .eq('producto_id', productoId)
+      .eq('estado', 'disponible')
+
+    if (stockError) {
+      console.error('Error fetching stock items:', stockError)
+      return
+    }
+
+    // Formatear los IDs en el formato esperado por stock_de_productos
+    const stockDeProductos = stockItems?.map(item => ({ id: item.id })) || []
+
+    // Actualizar el campo stock_de_productos en la tabla productos
+    const { error: updateError } = await supabase
+      .from('productos')
+      .update({ stock_de_productos: stockDeProductos })
+      .eq('id', productoId)
+
+    if (updateError) {
+      console.error('Error updating stock_de_productos:', updateError)
+    } else {
+      console.log(`✅ stock_de_productos actualizado para producto ${productoId}:`, stockDeProductos.length, 'items')
+    }
+  } catch (error) {
+    console.error('Error in updateStockDeProductos:', error)
+  }
+}
+
 // Get stock productos by producto ID
 export const getStockProductosByProductoId = async (productoId: string) => {
   const { data, error } = await supabase
@@ -553,6 +627,9 @@ export const createStockProducto = async (stockData: Database['public']['Tables'
     throw new Error(`Error al crear stock: ${error.message}`)
   }
 
+  // Actualizar stock_de_productos en la tabla productos
+  await updateStockDeProductos(data.producto_id)
+
   return data
 }
 
@@ -570,11 +647,28 @@ export const updateStockProducto = async (id: number, updates: Database['public'
     throw new Error(`Error al actualizar stock: ${error.message}`)
   }
 
+  // Si se actualiza el estado, sincronizar stock_de_productos
+  if (updates.estado !== undefined) {
+    await updateStockDeProductos(data.producto_id)
+  }
+
   return data
 }
 
 // Delete stock producto
 export const deleteStockProducto = async (id: number) => {
+  // Primero obtener el producto_id antes de eliminar
+  const { data: stockItem, error: fetchError } = await supabase
+    .from('stock_productos')
+    .select('producto_id')
+    .eq('id', id)
+    .single()
+
+  if (fetchError) {
+    console.error('Error fetching stock producto:', fetchError)
+    throw new Error(`Error al obtener información del stock: ${fetchError.message}`)
+  }
+
   const { error } = await supabase
     .from('stock_productos')
     .delete()
@@ -584,6 +678,9 @@ export const deleteStockProducto = async (id: number) => {
     console.error('Error deleting stock producto:', error)
     throw new Error(`Error al eliminar stock: ${error.message}`)
   }
+
+  // Actualizar stock_de_productos en la tabla productos
+  await updateStockDeProductos(stockItem.producto_id)
 
   return true
 }

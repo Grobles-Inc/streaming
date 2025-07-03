@@ -109,7 +109,6 @@ export interface Database {
           informacion: string | null
           condiciones: string | null
           precio_publico: number
-          stock: number
           categoria_id: string
           proveedor_id: string
           imagen_url: string | null
@@ -140,7 +139,6 @@ export interface Database {
           informacion?: string | null
           condiciones?: string | null
           precio_publico: number
-          stock?: number
           categoria_id: string
           proveedor_id: string
           imagen_url?: string | null
@@ -169,7 +167,6 @@ export interface Database {
           informacion?: string | null
           condiciones?: string | null
           precio_publico?: number
-          stock?: number
           categoria_id?: string
           proveedor_id?: string
           imagen_url?: string | null

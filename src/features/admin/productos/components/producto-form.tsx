@@ -9,13 +9,13 @@ import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Loader2, Upload } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createProductoSchema, type CreateProductoData } from '../data/schema'
 import { useProductos } from '../hooks/use-productos'
 import type { SupabaseProducto } from '../data/types'
 
 interface ProductoFormProps {
-  producto?: SupabaseProducto
+  producto?: SupabaseProducto // Opcional para evitar errores
   onSuccess?: () => void
   onCancel?: () => void
 }
@@ -23,12 +23,6 @@ interface ProductoFormProps {
 interface Categoria {
   id: string
   nombre: string
-}
-
-interface Proveedor {
-  id: string
-  nombres: string
-  apellidos: string
 }
 
 // Datos de ejemplo - en una app real esto vendría de la base de datos
@@ -40,51 +34,92 @@ const categorias: Categoria[] = [
   { id: '5', nombre: 'Cloud Storage' },
 ]
 
-const proveedores: Proveedor[] = [
-  { id: '1', nombres: 'Juan', apellidos: 'Pérez' },
-  { id: '2', nombres: 'María', apellidos: 'García' },
-  { id: '3', nombres: 'Carlos', apellidos: 'López' },
-]
-
 export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProps) {
-  const { crearProducto, actualizarProducto, loading } = useProductos()
-  const [imagePreview, setImagePreview] = useState<string | null>(producto?.imagen_url || null)
+  const { actualizarProducto, loading } = useProductos()
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+
+  // No renderizar si no hay producto
+  if (!producto) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-muted-foreground">No hay producto seleccionado para editar.</p>
+      </div>
+    )
+  }
 
   const form = useForm<CreateProductoData>({
     resolver: zodResolver(createProductoSchema),
     defaultValues: {
-      nombre: producto?.nombre || '',
-      descripcion: producto?.descripcion || '',
-      informacion: producto?.informacion || '',
-      condiciones: producto?.condiciones || '',
-      precio_publico: producto?.precio_publico || 0,
-      stock: producto?.stock || 0,
-      categoria_id: producto?.categoria_id || '',
-      proveedor_id: producto?.proveedor_id || '',
-      imagen_url: producto?.imagen_url || '',
-      tiempo_uso: producto?.tiempo_uso || 30,
-      a_pedido: producto?.a_pedido || false,
-      nuevo: producto?.nuevo || false,
-      destacado: producto?.destacado || false,
-      mas_vendido: producto?.mas_vendido || false,
-      descripcion_completa: producto?.descripcion_completa || '',
-      disponibilidad: producto?.disponibilidad || 'en_stock',
-      renovable: producto?.renovable || false,
-      solicitud: producto?.solicitud || '',
-      muestra_disponibilidad_stock: producto?.muestra_disponibilidad_stock ?? true,
-      deshabilitar_boton_comprar: producto?.deshabilitar_boton_comprar || false,
-      precio_vendedor: producto?.precio_vendedor || 0,
-      precio_renovacion: producto?.precio_renovacion || null,
-      estado: producto?.estado || 'borrador',
+      nombre: '',
+      descripcion: '',
+      informacion: '',
+      condiciones: '',
+      precio_publico: 0,
+      stock: 0,
+      categoria_id: '',
+      proveedor_id: '',
+      imagen_url: '',
+      tiempo_uso: 30,
+      a_pedido: false,
+      nuevo: false,
+      destacado: false,
+      mas_vendido: false,
+      descripcion_completa: '',
+      disponibilidad: 'en_stock',
+      renovable: false,
+      solicitud: '',
+      muestra_disponibilidad_stock: true,
+      deshabilitar_boton_comprar: false,
+      precio_vendedor: 0,
+      precio_renovacion: null,
+      estado: 'borrador',
     },
   })
+
+  // Effect para cargar los datos del producto
+  useEffect(() => {
+    const formData = {
+      nombre: producto.nombre || '',
+      descripcion: producto.descripcion || '',
+      informacion: producto.informacion || '',
+      condiciones: producto.condiciones || '',
+      precio_publico: producto.precio_publico || 0,
+      stock: producto.stock || 0,
+      categoria_id: producto.categoria_id || '',
+      proveedor_id: producto.proveedor_id || '', // Mantener el proveedor original
+      imagen_url: producto.imagen_url || '',
+      tiempo_uso: producto.tiempo_uso || 30,
+      a_pedido: producto.a_pedido || false,
+      nuevo: producto.nuevo || false,
+      destacado: producto.destacado || false,
+      mas_vendido: producto.mas_vendido || false,
+      descripcion_completa: producto.descripcion_completa || '',
+      disponibilidad: producto.disponibilidad || 'en_stock',
+      renovable: producto.renovable || false,
+      solicitud: producto.solicitud || '',
+      muestra_disponibilidad_stock: producto.muestra_disponibilidad_stock ?? true,
+      deshabilitar_boton_comprar: producto.deshabilitar_boton_comprar || false,
+      precio_vendedor: producto.precio_vendedor || 0,
+      precio_renovacion: producto.precio_renovacion || null,
+      estado: producto.estado || 'borrador',
+    }
+    
+    // Resetear el formulario con los datos del producto
+    form.reset(formData)
+    
+    // Actualizar la imagen preview si existe
+    setImagePreview(producto.imagen_url || null)
+  }, [producto, form])
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
       const reader = new FileReader()
       reader.onload = (e) => {
-        setImagePreview(e.target?.result as string)
+        const result = e.target?.result as string
+        setImagePreview(result)
+        // Actualizar el campo imagen_url del formulario con la imagen en base64
+        form.setValue('imagen_url', result)
       }
       reader.readAsDataURL(file)
     }
@@ -92,14 +127,10 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
 
   const onSubmit = async (data: CreateProductoData) => {
     try {
-      if (producto) {
-        await actualizarProducto(producto.id, data)
-      } else {
-        await crearProducto(data)
-      }
+      await actualizarProducto(producto.id, data)
       onSuccess?.()
     } catch (error) {
-      console.error('Error al guardar producto:', error)
+      console.error('Error al actualizar producto:', error)
     }
   }
 
@@ -181,31 +212,6 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
                         {categorias.map((categoria) => (
                           <SelectItem key={categoria.id} value={categoria.id}>
                             {categoria.nombre}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="proveedor_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Proveedor *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar proveedor" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {proveedores.map((proveedor) => (
-                          <SelectItem key={proveedor.id} value={proveedor.id}>
-                            {proveedor.nombres} {proveedor.apellidos}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -354,36 +360,12 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="imagen_url"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>URL de imagen</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="https://ejemplo.com/imagen.jpg" 
-                          {...field}
-                          value={field.value || ''}
-                          onChange={(e) => {
-                            field.onChange(e.target.value)
-                            if (e.target.value) {
-                              setImagePreview(e.target.value)
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <div className="text-center">
-                  <p className="text-sm text-muted-foreground mb-2">o subir archivo</p>
                   <Label htmlFor="image-upload" className="cursor-pointer">
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-gray-400 transition-colors">
                       <Upload className="mx-auto h-8 w-8 text-gray-400" />
                       <p className="mt-2 text-sm text-gray-600">Hacer clic para subir imagen</p>
+                      <p className="text-xs text-gray-500">Formatos soportados: JPG, PNG, GIF</p>
                     </div>
                     <Input
                       id="image-upload"
@@ -408,6 +390,19 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
                     </div>
                   </div>
                 )}
+
+                {/* Campo oculto para imagen_url */}
+                <FormField
+                  control={form.control}
+                  name="imagen_url"
+                  render={({ field }) => (
+                    <FormItem className="hidden">
+                      <FormControl>
+                        <Input type="hidden" {...field} value={field.value || ''} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
               </div>
             </CardContent>
           </Card>

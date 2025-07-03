@@ -218,3 +218,21 @@
     height: 0;
   }
 }
+
+/* Estilos personalizados para modales de productos */
+.producto-modal-wide {
+  max-width: 72rem !important;
+  width: 72rem !important;
+}
+
+/* Override para cualquier modal de producto */
+[data-testid="producto-modal"] {
+  max-width: 72rem !important;
+  width: 72rem !important;
+}
+
+/* Clase específica para diálogos grandes */
+.dialog-wide {
+  max-width: 72rem !important;
+  width: 72rem !important;
+}

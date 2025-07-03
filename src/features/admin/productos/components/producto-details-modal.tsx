@@ -62,7 +62,11 @@ export function ProductoDetailsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent 
+        className="dialog-wide max-h-[90vh] overflow-y-auto"
+        data-testid="producto-modal"
+        style={{ width: '90vw', maxWidth: '72rem' }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <IconPackage className="h-5 w-5" />
@@ -223,6 +227,24 @@ export function ProductoDetailsModal({
                       {producto.aPedido ? 'Sí' : 'No'}
                     </Badge>
                   </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Nuevo:</span>
+                    <Badge variant={producto.nuevo ? 'default' : 'secondary'} className="text-xs">
+                      {producto.nuevo ? 'Sí' : 'No'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Destacado:</span>
+                    <Badge variant={producto.destacado ? 'default' : 'secondary'} className="text-xs">
+                      {producto.destacado ? 'Sí' : 'No'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Más Vendido:</span>
+                    <Badge variant={producto.masVendido ? 'default' : 'secondary'} className="text-xs">
+                      {producto.masVendido ? 'Sí' : 'No'}
+                    </Badge>
+                  </div>
                 </div>
               </div>
             </div>
@@ -332,6 +354,10 @@ export function ProductoDetailsModal({
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">ID Categoría:</span>
                   <span className="font-mono text-xs">{producto.categoriaId}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">ID Proveedor:</span>
+                  <span className="font-mono text-xs">{producto.proveedorId}</span>
                 </div>
               </div>
             </div>

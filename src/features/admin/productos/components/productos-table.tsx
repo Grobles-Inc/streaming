@@ -27,36 +27,27 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { toast } from 'sonner'
 import { 
   Columns, 
   ChevronLeft, 
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  ToggleRight,
-  ToggleLeft,
   Trash,
   Search
 } from 'lucide-react'
 import { useProductos } from '../hooks/use-productos'
-import { ProductoFormModal } from './producto-form-modal'
 import { ProductoDetailsModal } from './producto-details-modal'
 import { createProductosColumns } from './productos-columns'
 import type { MappedProducto, SupabaseProducto } from '../data/types'
 
-interface ProductosTableProps {
-  onProductoCreated?: () => void
-}
-
-export function ProductosTable({ onProductoCreated }: ProductosTableProps) {
+export function ProductosTable() {
   const { 
     productos, 
     loading, 
     refreshProductos, 
     eliminarProducto, 
-    duplicarProducto,
-    cambiarEstadoProducto 
+    duplicarProducto
   } = useProductos()
 
   const [sorting, setSorting] = useState<SortingState>([])
@@ -65,8 +56,6 @@ export function ProductosTable({ onProductoCreated }: ProductosTableProps) {
   const [rowSelection, setRowSelection] = useState({})
   
   // Estados para modales
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [selectedProducto, setSelectedProducto] = useState<SupabaseProducto | null>(null)
 
@@ -76,10 +65,6 @@ export function ProductosTable({ onProductoCreated }: ProductosTableProps) {
       setSelectedProducto(producto as any)
       setIsDetailsModalOpen(true)
     },
-    (producto: MappedProducto) => {
-      setSelectedProducto(producto as any)
-      setIsEditModalOpen(true)
-    },
     async (id: string) => {
       if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
         await eliminarProducto(id)
@@ -88,10 +73,6 @@ export function ProductosTable({ onProductoCreated }: ProductosTableProps) {
     },
     async (id: string) => {
       await duplicarProducto(id)
-      await refreshProductos()
-    },
-    async (id: string, estado: 'publicado' | 'borrador') => {
-      await cambiarEstadoProducto(id, estado)
       await refreshProductos()
     }
   )
@@ -122,54 +103,6 @@ export function ProductosTable({ onProductoCreated }: ProductosTableProps) {
 
   const selectedRows = table.getFilteredSelectedRowModel().rows
   const selectedIds = selectedRows.map(row => row.original.id)
-
-  const handleCreateSuccess = () => {
-    refreshProductos()
-    onProductoCreated?.()
-  }
-
-  const handleEditSuccess = () => {
-    refreshProductos()
-    setSelectedProducto(null)
-  }
-
-  const handlePublicarSeleccionados = async () => {
-    if (selectedIds.length > 0) {
-      let erroresEncontrados = []
-      
-      for (const id of selectedIds) {
-        const exito = await cambiarEstadoProducto(id, 'publicado')
-        if (!exito) {
-          // Buscar el producto para obtener su nombre
-          const producto = productos.find(p => p.id === id)
-          const nombreProducto = producto?.nombre || `Producto ${id.slice(0, 8)}`
-          erroresEncontrados.push(nombreProducto)
-        }
-      }
-      
-      await refreshProductos()
-      setRowSelection({})
-      
-      // Mostrar resumen de errores si los hay
-      if (erroresEncontrados.length > 0) {
-        toast.error(`Error al publicar algunos productos: ${erroresEncontrados.join(', ')}`, {
-          description: 'Verifique que los proveedores tengan saldo suficiente para la comisión de publicación'
-        })
-      } else {
-        toast.success(`${selectedIds.length} productos publicados exitosamente`)
-      }
-    }
-  }
-
-  const handleDeshabilitarSeleccionados = async () => {
-    if (selectedIds.length > 0) {
-      for (const id of selectedIds) {
-        await cambiarEstadoProducto(id, 'borrador')
-      }
-      await refreshProductos()
-      setRowSelection({})
-    }
-  }
 
   const handleEliminarSeleccionados = async () => {
     if (selectedIds.length > 0 && confirm(`¿Estás seguro de que quieres eliminar ${selectedIds.length} productos?`)) {
@@ -242,11 +175,6 @@ export function ProductosTable({ onProductoCreated }: ProductosTableProps) {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-
-        {/* <Button onClick={() => setIsCreateModalOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Agregar producto
-        </Button> */}
       </div>
 
       {/* Acciones en lote */}
@@ -255,22 +183,6 @@ export function ProductosTable({ onProductoCreated }: ProductosTableProps) {
           <span className="text-sm text-muted-foreground">
             {selectedIds.length} producto(s) seleccionado(s)
           </span>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handlePublicarSeleccionados}
-          >
-            <ToggleRight className="mr-2 h-4 w-4" />
-            Publicar
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleDeshabilitarSeleccionados}
-          >
-            <ToggleLeft className="mr-2 h-4 w-4" />
-            Deshabilitar
-          </Button>
           <Button
             size="sm"
             variant="outline"
@@ -384,22 +296,6 @@ export function ProductosTable({ onProductoCreated }: ProductosTableProps) {
       </div>
 
       {/* Modales */}
-      <ProductoFormModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSuccess={handleCreateSuccess}
-      />
-
-      <ProductoFormModal
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false)
-          setSelectedProducto(null)
-        }}
-        producto={selectedProducto || undefined}
-        onSuccess={handleEditSuccess}
-      />
-
       <ProductoDetailsModal
         open={isDetailsModalOpen}
         onOpenChange={(open) => {

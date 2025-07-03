@@ -32,13 +32,10 @@ export class ProductosService {
           email
         )
       `)
+      .eq('estado', 'publicado') // Solo mostrar productos publicados
       .order('created_at', { ascending: false })
 
-    // Aplicar filtros
-    if (filtros?.estado) {
-      query = query.eq('estado', filtros.estado)
-    }
-    
+    // Aplicar filtros adicionales (el estado ya está fijo a 'publicado')
     if (filtros?.categoria_id) {
       query = query.eq('categoria_id', filtros.categoria_id)
     }

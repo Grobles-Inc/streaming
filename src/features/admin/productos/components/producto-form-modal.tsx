@@ -5,7 +5,7 @@ import type { SupabaseProducto } from '../data/types'
 interface ProductoFormModalProps {
   isOpen: boolean
   onClose: () => void
-  producto?: SupabaseProducto
+  producto?: SupabaseProducto // Opcional para evitar errores
   onSuccess?: () => void
 }
 
@@ -20,12 +20,21 @@ export function ProductoFormModal({
     onClose()
   }
 
+  // No renderizar si no hay producto seleccionado
+  if (!producto) {
+    return null
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent 
+        className="dialog-wide max-h-[90vh] overflow-y-auto"
+        data-testid="producto-modal"
+        style={{ width: '90vw', maxWidth: '72rem' }}
+      >
         <DialogHeader>
           <DialogTitle>
-            {producto ? 'Editar producto' : 'Agregar nuevo producto'}
+            Editar producto: {producto.nombre}
           </DialogTitle>
         </DialogHeader>
         

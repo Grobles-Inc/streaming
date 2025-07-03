@@ -14,7 +14,6 @@ import {
 import { 
   IconDots, 
   IconEye, 
-  IconEdit, 
   IconTrash, 
   IconCopy,
   IconToggleLeft,
@@ -86,20 +85,16 @@ function getDisponibilidadBadge(disponibilidad: string) {
 interface ProductosTableActionsProps {
   producto: MappedProducto
   onVer: (producto: MappedProducto) => void
-  onEditar: (producto: MappedProducto) => void
   onEliminar: (id: string) => Promise<void>
   onDuplicar: (id: string) => Promise<void>
-  onCambiarEstado: (id: string, estado: 'publicado' | 'borrador') => Promise<void>
 }
 
 // Componente de acciones
 function ProductosTableActions({ 
   producto, 
-  onVer,
-  onEditar,
+  onVer, 
   onEliminar,
-  onDuplicar,
-  onCambiarEstado
+  onDuplicar
 }: ProductosTableActionsProps) {
   return (
     <DropdownMenu>
@@ -116,38 +111,9 @@ function ProductosTableActions({
           Ver detalles
         </DropdownMenuItem>
         
-        {producto.puedeEditar && (
-          <DropdownMenuItem onClick={() => onEditar(producto)}>
-            <IconEdit className="mr-2 h-4 w-4" />
-            Editar
-          </DropdownMenuItem>
-        )}
-        
         <DropdownMenuItem onClick={() => onDuplicar(producto.id)}>
           <IconCopy className="mr-2 h-4 w-4" />
           Duplicar
-        </DropdownMenuItem>
-        
-        <DropdownMenuSeparator />
-        
-        <DropdownMenuItem 
-          onClick={() => onCambiarEstado(
-            producto.id, 
-            producto.estado === 'publicado' ? 'borrador' : 'publicado'
-          )}
-          className={producto.estado === 'publicado' ? 'text-orange-600' : 'text-green-600'}
-        >
-          {producto.estado === 'publicado' ? (
-            <>
-              <IconToggleLeft className="mr-2 h-4 w-4" />
-              Pasar a borrador
-            </>
-          ) : (
-            <>
-              <IconToggleRight className="mr-2 h-4 w-4" />
-              Publicar
-            </>
-          )}
         </DropdownMenuItem>
         
         {producto.puedeEliminar && (
@@ -170,10 +136,8 @@ function ProductosTableActions({
 // Definir las columnas
 export function createProductosColumns(
   onVer: (producto: MappedProducto) => void,
-  onEditar: (producto: MappedProducto) => void,
   onEliminar: (id: string) => Promise<void>,
-  onDuplicar: (id: string) => Promise<void>,
-  onCambiarEstado: (id: string, estado: 'publicado' | 'borrador') => Promise<void>
+  onDuplicar: (id: string) => Promise<void>
 ): ColumnDef<MappedProducto>[] {
   return [
     {
@@ -375,10 +339,8 @@ export function createProductosColumns(
         <ProductosTableActions
           producto={row.original}
           onVer={onVer}
-          onEditar={onEditar}
           onEliminar={onEliminar}
           onDuplicar={onDuplicar}
-          onCambiarEstado={onCambiarEstado}
         />
       ),
     },

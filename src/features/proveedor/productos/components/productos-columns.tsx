@@ -176,22 +176,26 @@ export const columns: ColumnDef<Producto>[] = [
     meta: { className: 'w-32' },
   },
   {
-    accessorKey: 'stock',
+    accessorKey: 'stock_de_productos',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Stock' />
+      <DataTableColumnHeader column={column} title='Stock Disponible' />
     ),
     cell: ({ row }) => {
-      const stock = row.getValue('stock') as number
+      const stockDeProductos = row.getValue('stock_de_productos') as { id: number }[] | null
+      const cantidadStock = stockDeProductos?.length || 0
 
       return (
         <div className='text-center'>
-          <span className={`font-bold text-sm ${stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {stock}
+          <span className={`font-bold text-sm ${cantidadStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {cantidadStock}
           </span>
+          <div className='text-xs text-muted-foreground'>
+            {cantidadStock === 1 ? 'cuenta' : 'cuentas'}
+          </div>
         </div>
       )
     },
-    meta: { className: 'w-20' },
+    meta: { className: 'w-28' },
   },
   {
     accessorKey: 'disponibilidad',

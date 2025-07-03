@@ -45,7 +45,7 @@ export function CategoriasTable({
           {paginatedCategorias.map(categoria => (
             <tr
               key={categoria.id}
-              className="border-b cursor-pointer hover:bg-gray-50"
+              className="border-b cursor-pointer hover:bg-secondary/10"
               onClick={() => onSelect(categoria)}
             >
               <td className="pr-4 py-4 text-left font-medium">{categoria.nombre}</td>
@@ -84,7 +84,7 @@ export function CategoriasTable({
                     }}>
                       <IconEdit className="mr-2" /> Editar
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={(e) => {
                         e.stopPropagation()
                         onDelete(categoria.id)

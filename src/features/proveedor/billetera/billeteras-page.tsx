@@ -10,6 +10,7 @@ import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { useAuth } from '@/stores/authStore'
 import { useBilleteraByUsuario, useHistorialTransacciones } from './queries'
+import { useConfiguracionSistema } from '@/features/proveedor/productos/queries'
 import { useQueryClient } from '@tanstack/react-query'
 import { IconRefresh } from '@tabler/icons-react'
 import { ThemeSwitch } from '@/components/theme-switch'
@@ -25,6 +26,7 @@ export default function BilleterasPage() {
   // Obtener datos reales de la base de datos
   const { data: billetera } = useBilleteraByUsuario(user?.id || '')
   const { data: transacciones = [] } = useHistorialTransacciones(user?.id || '')
+  const { data: configuracion } = useConfiguracionSistema()
 
   // Si no hay usuario autenticado
   if (!user) {
@@ -37,31 +39,41 @@ export default function BilleterasPage() {
     )
   }
 
-  // Formatear datos
-  const saldoFormateado = new Intl.NumberFormat('es-CO', {
+  // Obtener tasa de conversión
+  const tasaConversion = configuracion?.conversion || 3.7
+
+  // Formatear saldo en dólares
+  const saldoEnDolares = billetera?.saldo || 0
+  const saldoFormateadoDolares = new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'COP',
-    minimumFractionDigits: 0,
-  }).format(billetera?.saldo || 0)
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  }).format(saldoEnDolares)
 
-  // Calcular estadísticas de las recargas completadas
-  const recargasPendientes = transacciones.filter(t => t.estado === 'pendiente').length
+  // Calcular equivalencia en soles
+  const saldoEnSoles = saldoEnDolares * tasaConversion
+  const saldoFormateadoSoles = new Intl.NumberFormat('es-PE', {
+    style: 'currency',
+    currency: 'PEN',
+    minimumFractionDigits: 2,
+  }).format(saldoEnSoles)
 
-
+  // Calcular estadísticas de las transacciones
+  const transaccionesPendientes = transacciones.filter(t => t.estado === 'pendiente').length
 
   const handleAgregarFondos = async () => {
     // Refrescar los datos después de agregar fondos
     await queryClient.invalidateQueries({ queryKey: ['billetera'] })
     await queryClient.invalidateQueries({ queryKey: ['recargas'] })
+    await queryClient.invalidateQueries({ queryKey: ['historial-completo'] })
   }
 
   const handleRetirarFondos = async () => {
     // Refrescar los datos después de retirar fondos
     await queryClient.invalidateQueries({ queryKey: ['billetera'] })
-    await queryClient.invalidateQueries({ queryKey: ['recargas'] })
+    await queryClient.invalidateQueries({ queryKey: ['retiros'] })
+    await queryClient.invalidateQueries({ queryKey: ['historial-completo'] })
   }
-
-
 
   return (
     <>
@@ -107,9 +119,25 @@ export default function BilleterasPage() {
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">{saldoFormateado}</div>
+                <div className="text-2xl font-bold text-blue-600">{saldoFormateadoDolares}</div>
                 <p className="text-xs text-muted-foreground">
-                  {recargasPendientes} transacciones pendientes
+                  Equivale a {saldoFormateadoSoles}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {transaccionesPendientes} transacciones pendientes
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Tasa de Conversión</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl font-bold">S/ {tasaConversion}</div>
+                <p className="text-xs text-muted-foreground">
+                  = $1.00 USD
                 </p>
               </CardContent>
             </Card>

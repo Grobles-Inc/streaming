@@ -1,43 +1,40 @@
-import { useState } from 'react'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { 
+import { Button } from '@/components/ui/button'
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { 
-  IconRefresh, 
-  IconCash 
+import {
+  IconRefresh
 } from '@tabler/icons-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
-import { useRecargas } from './hooks/use-recargas'
+import { RecargaDetailsModal } from './components/recarga-details-modal'
 import { createRecargasColumns } from './components/recargas-columns'
 import { RecargasTable } from './components/recargas-table'
-import { RecargaDetailsModal } from './components/recarga-details-modal'
-import type { MappedRecarga, EstadoRecarga } from './data/types'
+import type { EstadoRecarga, MappedRecarga } from './data/types'
+import { useRecargas } from './hooks/use-recargas'
 
 export default function RecargasPage() {
   const [filtroEstado, setFiltroEstado] = useState<EstadoRecarga | 'todos'>('todos')
   const [selectedRecarga, setSelectedRecarga] = useState<MappedRecarga | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
-  
+
   const {
     recargas,
     loading,
     error,
     aprobarRecarga,
     rechazarRecarga,
-    updateEstadoRecarga,
     aprobarRecargas,
     rechazarRecargas,
     aplicarFiltros,
@@ -92,10 +89,6 @@ export default function RecargasPage() {
     setModalOpen(true)
   }
 
-  // Actualizar estado desde el modal
-  const handleUpdateEstado = async (id: string, nuevoEstado: EstadoRecarga): Promise<boolean> => {
-    return await updateEstadoRecarga(id, nuevoEstado)
-  }
 
   // Aplicar filtro por estado
   const handleFiltroEstado = async (estado: EstadoRecarga | 'todos') => {
@@ -115,8 +108,8 @@ export default function RecargasPage() {
   )
 
   // Filtrar recargas según el estado seleccionado
-  const recargasFiltradas = filtroEstado === 'todos' 
-    ? recargas 
+  const recargasFiltradas = filtroEstado === 'todos'
+    ? recargas
     : recargas.filter(r => r.estado === filtroEstado)
 
   if (error) {
@@ -126,11 +119,11 @@ export default function RecargasPage() {
           <div className="text-center">
             <h3 className="text-lg font-semibold text-red-600">Error al cargar recargas</h3>
             <p className="text-sm text-gray-600 mt-2">{error}</p>
-            <Button 
+            <Button
               onClick={() => {
                 clearError()
                 refreshRecargas()
-              }} 
+              }}
               className="mt-4"
             >
               Intentar nuevamente
@@ -164,7 +157,7 @@ export default function RecargasPage() {
               )}
             </p>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Select value={filtroEstado} onValueChange={handleFiltroEstado}>
               <SelectTrigger className="w-[180px]">
@@ -177,12 +170,12 @@ export default function RecargasPage() {
                 <SelectItem value="rechazado">Rechazadas</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <Button variant="outline" onClick={refreshRecargas} disabled={loading}>
               <IconRefresh className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               Actualizar
             </Button>
-            
+
             {/* <Button variant="outline" disabled>
               <IconDownload className="mr-2 h-4 w-4" />
               Exportar
@@ -190,32 +183,15 @@ export default function RecargasPage() {
           </div>
         </div>
 
-        {/* Tabla de recargas */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <IconCash className="h-5 w-5" />
-              Solicitudes de Recarga
-            </CardTitle>
-            <CardDescription>
-              Lista completa de todas las solicitudes de recarga con opciones de gestión.
-              {filtroEstado !== 'todos' && (
-                <span className="ml-2 font-medium">
-                  Mostrando: {filtroEstado}
-                </span>
-              )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <RecargasTable
-              data={recargasFiltradas}
-              columns={columns}
-              loading={loading}
-              onAprobarSeleccionadas={handleAprobarSeleccionadas}
-              onRechazarSeleccionadas={handleRechazarSeleccionadas}
-            />
-          </CardContent>
-        </Card>
+
+        <RecargasTable
+          data={recargasFiltradas}
+          columns={columns}
+          loading={loading}
+          onAprobarSeleccionadas={handleAprobarSeleccionadas}
+          onRechazarSeleccionadas={handleRechazarSeleccionadas}
+        />
+
       </Main>
 
       {/* Modal de detalles */}
@@ -223,7 +199,6 @@ export default function RecargasPage() {
         recarga={selectedRecarga}
         open={modalOpen}
         onOpenChange={setModalOpen}
-        onUpdateEstado={handleUpdateEstado}
       />
     </>
   )

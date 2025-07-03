@@ -2,7 +2,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -10,11 +10,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { 
-  IconDots, 
-  IconCheck, 
-  IconX, 
-  IconEye, 
+import {
+  IconDots,
+  IconCheck,
+  IconX,
+  IconEye,
   IconClock,
   IconCurrencyDollar
 } from '@tabler/icons-react'
@@ -25,43 +25,43 @@ import type { MappedCompra } from '../data/types'
 function getEstadoBadge(estado: string) {
   switch (estado) {
     case 'resuelto':
-      return { 
-        variant: 'default' as const, 
+      return {
+        variant: 'default' as const,
         label: 'Resuelto',
         className: 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100',
         icon: IconCheck
       }
     case 'vencido':
-      return { 
-        variant: 'destructive' as const, 
+      return {
+        variant: 'destructive' as const,
         label: 'Vencido',
         className: 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100',
         icon: IconX
       }
     case 'soporte':
-      return { 
-        variant: 'secondary' as const, 
+      return {
+        variant: 'secondary' as const,
         label: 'Soporte',
         className: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100',
         icon: IconClock
       }
     case 'reembolsado':
-      return { 
-        variant: 'outline' as const, 
+      return {
+        variant: 'outline' as const,
         label: 'Reembolsado',
         className: 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100',
         icon: IconCurrencyDollar
       }
     case 'pedido_entregado':
-      return { 
-        variant: 'secondary' as const, 
+      return {
+        variant: 'secondary' as const,
         label: 'Pedido Entregado',
         className: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100',
         icon: IconCheck
       }
     default:
-      return { 
-        variant: 'outline' as const, 
+      return {
+        variant: 'outline' as const,
         label: estado,
         className: '',
         icon: IconClock
@@ -81,14 +81,14 @@ interface ComprasTableActionsProps {
 }
 
 // Componente de acciones
-function ComprasTableActions({ 
-  compra, 
-  onMarcarResuelto, 
-  onMarcarVencido, 
-  onEnviarASoporte, 
-  onProcesarReembolso, 
+function ComprasTableActions({
+  compra,
+  onMarcarResuelto,
+  onMarcarVencido,
+  onEnviarASoporte,
+  onProcesarReembolso,
   onMarcarComoPedidoEntregado,
-  onVer 
+  onVer
 }: ComprasTableActionsProps) {
   const puedeModificar = compra.puedeModificar
   const puedeReembolsar = compra.requiereReembolso || ['soporte', 'vencido'].includes(compra.estado)
@@ -107,32 +107,32 @@ function ComprasTableActions({
           <IconEye className="mr-2 h-4 w-4" />
           Ver detalles
         </DropdownMenuItem>
-        
+
         {puedeModificar && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={() => onMarcarResuelto(compra.id)}
               className="text-green-600 focus:text-green-600"
             >
               <IconCheck className="mr-2 h-4 w-4" />
               Marcar como resuelto
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={() => onMarcarVencido(compra.id)}
               className="text-red-600 focus:text-red-600"
             >
               <IconX className="mr-2 h-4 w-4" />
               Marcar como vencido
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={() => onEnviarASoporte(compra.id)}
               className="text-blue-600 focus:text-blue-600"
             >
               <IconClock className="mr-2 h-4 w-4" />
               Enviar a soporte
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={() => onMarcarComoPedidoEntregado(compra.id)}
               className="text-emerald-600 focus:text-emerald-600"
             >
@@ -141,11 +141,11 @@ function ComprasTableActions({
             </DropdownMenuItem>
           </>
         )}
-        
+
         {puedeReembolsar && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={() => onProcesarReembolso(compra.id)}
               className="text-purple-600 focus:text-purple-600"
             >
@@ -199,7 +199,7 @@ export function createComprasColumns(
       cell: ({ row }) => {
         const id = row.getValue('id') as string
         return (
-          <div className="font-mono text-xs">
+          <div className=" text-xs">
             {id.slice(0, 8)}...
           </div>
         )
@@ -211,12 +211,10 @@ export function createComprasColumns(
       cell: ({ row }) => {
         const nombre = row.getValue('nombreCliente') as string
         const telefono = row.original.telefonoCliente
-        const vendedor = row.original.vendedorNombre
         return (
           <div className="space-y-1">
             <div className="font-medium">{nombre}</div>
             <div className="text-xs text-muted-foreground">{telefono}</div>
-            <div className="text-xs text-blue-600">Vendedor: {vendedor}</div>
           </div>
         )
       },
@@ -241,13 +239,10 @@ export function createComprasColumns(
       cell: ({ row }) => {
         const precioFormateado = row.getValue('precioFormateado') as string
         return (
-          <div className="text-right font-mono">
-            <span className={cn(
-              'inline-flex items-center px-2 py-1 rounded-md text-sm font-medium',
-              'bg-green-50 text-green-700 border border-green-200'
-            )}>
+          <div className="text-right ">
+            <Badge className="text-sm">
               {precioFormateado}
-            </span>
+            </Badge>
           </div>
         )
       },
@@ -283,9 +278,9 @@ export function createComprasColumns(
         return (
           <div className="text-center">
             {stockId ? (
-              <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+              <Badge className="text-sm">
                 #{stockId}
-              </span>
+              </Badge>
             ) : (
               <span className="text-xs text-muted-foreground">Sin stock</span>
             )}
@@ -299,38 +294,8 @@ export function createComprasColumns(
       cell: ({ row }) => {
         const email = row.getValue('emailCuenta') as string
         return (
-          <div className="font-mono text-sm max-w-[200px] truncate" title={email}>
+          <div className=" text-sm max-w-[200px] truncate" title={email}>
             {email}
-          </div>
-        )
-      },
-    },
-    {
-      accessorKey: 'claveCuenta',
-      header: 'Clave',
-      cell: ({ row }) => {
-        const clave = row.getValue('claveCuenta') as string
-        return (
-          <div className="font-mono text-sm">
-            {'*'.repeat(Math.min(clave.length, 8))}
-          </div>
-        )
-      },
-    },
-    {
-      accessorKey: 'pinCuenta',
-      header: 'PIN',
-      cell: ({ row }) => {
-        const pin = row.getValue('pinCuenta') as string | null
-        return (
-          <div className="text-center">
-            {pin ? (
-              <span className="font-mono text-sm">
-                {'*'.repeat(pin.length)}
-              </span>
-            ) : (
-              <span className="text-xs text-muted-foreground">Sin PIN</span>
-            )}
           </div>
         )
       },
@@ -352,13 +317,13 @@ export function createComprasColumns(
       header: 'Fecha Expiración',
       cell: ({ row }) => {
         const fecha = row.getValue('fechaExpiracion') as Date | null
-        
+
         if (!fecha) {
           return <span className="text-xs text-muted-foreground">Sin expiración</span>
         }
-        
+
         const esVencida = fecha < new Date()
-        
+
         return (
           <div className={cn("space-y-1", esVencida && "text-red-600")}>
             <div className="text-sm">
@@ -390,11 +355,11 @@ export function createComprasColumns(
         const mensaje = row.getValue('soporteMensaje') as string | null
         const asunto = row.original.soporteAsunto
         const respuesta = row.original.soporteRespuesta
-        
+
         if (!mensaje && !asunto && !respuesta) {
           return <span className="text-xs text-muted-foreground">Sin soporte</span>
         }
-        
+
         return (
           <div className="space-y-1 max-w-[200px]">
             {asunto && (
@@ -421,7 +386,7 @@ export function createComprasColumns(
       header: 'Fecha Creación',
       cell: ({ row }) => {
         const fecha = row.getValue('fechaCreacion') as Date
-        
+
         return (
           <div className="space-y-1">
             <div className="text-sm">
@@ -446,7 +411,7 @@ export function createComprasColumns(
       header: 'Última Actualización',
       cell: ({ row }) => {
         const fecha = row.original.fechaActualizacion
-        
+
         return (
           <div className="space-y-1">
             <div className="text-sm">
@@ -472,19 +437,16 @@ export function createComprasColumns(
       cell: ({ row }) => {
         const monto = row.original.montoReembolso
         const montoFormateado = row.getValue('montoReembolsoFormateado') as string
-        
+
         if (monto <= 0) {
           return <span className="text-xs text-muted-foreground">No aplica</span>
         }
-        
+
         return (
-          <div className="text-right font-mono">
-            <span className={cn(
-              'inline-flex items-center px-2 py-1 rounded-md text-sm font-medium',
-              'bg-purple-50 text-purple-700 border border-purple-200'
-            )}>
+          <div className="text-right ">
+            <Badge variant="secondary" className="text-sm">
               {montoFormateado}
-            </span>
+            </Badge>
           </div>
         )
       },
@@ -497,17 +459,17 @@ export function createComprasColumns(
       header: 'Tiempo Restante',
       cell: ({ row }) => {
         const tiempo = row.getValue('tiempoTranscurrido') as string
-        
+
         // Función para determinar el color basado en el tiempo restante
         const getTimeColor = (tiempoStr: string) => {
           if (tiempoStr.includes('Vencido') || tiempoStr.includes('Vence hoy')) {
             return 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
           }
-          
+
           if (tiempoStr.includes('Sin expiración')) {
             return 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
           }
-          
+
           // Extraer número de días del string
           const matchDias = tiempoStr.match(/(\d+)\s+día/)
           if (matchDias) {
@@ -520,10 +482,10 @@ export function createComprasColumns(
               return 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
             }
           }
-          
+
           return 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'
         }
-        
+
         return (
           <div className="text-sm text-center">
             <Badge variant="outline" className={`text-xs ${getTimeColor(tiempo)}`}>

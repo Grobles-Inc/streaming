@@ -13,7 +13,7 @@ export const getProductosByCategoria = async (categoriaId: string): Promise<Prod
     .select(`
       *,
       categorias:categoria_id(nombre),
-      usuarios:proveedor_id(nombres)
+      usuarios:proveedor_id(nombres, apellidos, billetera_id)
     `)
     .eq('categoria_id', categoriaId)
 

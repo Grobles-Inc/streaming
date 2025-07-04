@@ -9,7 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { useCreateCompra } from '../../queries/compra'
+import { useCreateCompra, useUpdateBilleteraProveedorSaldo } from '../../queries/compra'
 import { useRemoveIdFromStockProductos, useStockProductosIds, useUpdateStockProductoStatusVendido } from '../../queries/productos'
 import { Producto } from '../../services'
 import { PhoneInput } from './phone-input'
@@ -33,7 +33,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
   const { data: billetera } = useBilleteraByUsuario(user?.id || '0')
   const { mutate: actualizarSaldo } = useUpdateBilleteraSaldo()
   const { data: stockProductosIds } = useStockProductosIds(producto?.id || '')
-  const { mutate: updateProveedorBilletera } = useUpdateBilleteraSaldo()
+  const { mutate: updateProveedorBilletera } = useUpdateBilleteraProveedorSaldo()
   const { mutate: removeIdFromStockProductos } = useRemoveIdFromStockProductos()
   const { mutate: updateStockProductoStatusVendido } = useUpdateStockProductoStatusVendido()
   const monto = billetera?.saldo
@@ -87,25 +87,24 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
             {
               onSuccess: () => {
                 updateStockProductoStatusVendido({ id: stock_producto_id })
+                updateProveedorBilletera({ idBilletera: producto.usuarios.billetera_id, precioProducto: producto?.precio_publico })
               }
             }
           )
         }
       }
     )
-    updateProveedorBilletera(
-      { id: producto.proveedor_id, nuevoSaldo: monto - producto?.precio_publico }
-    )
+
     onOpenChange(false)
     form.reset()
   }
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md w-full">
         <DialogHeader className='flex flex-col gap-3'>
           <DialogTitle className='flex items-center gap-4'>
-
             {producto.nombre}
           </DialogTitle>
           <DialogDescription>{producto.descripcion}</DialogDescription>

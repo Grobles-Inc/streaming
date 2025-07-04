@@ -21,6 +21,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
         <CardHeader className="relative z-0  ">
           <img src={producto.imagen_url || ''} alt={producto.nombre} className='w-full h-44 object-contain ' />
           <div className='flex items-center gap-1  mt-2'>
+
             {producto.nuevo && (
               <Badge className='bg-green-500' >Nuevo</Badge>
             )}

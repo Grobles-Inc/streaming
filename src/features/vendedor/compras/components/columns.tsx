@@ -15,11 +15,12 @@ import { useEffect, useState } from 'react'
 import { useCompras } from '../context/compras-context'
 import { estadosMap, productoOpciones } from '../data/data'
 import { Compra, CompraEstado, compraSchema } from '../data/schema'
-import { useRenovarCompra, useUpdateCompra, useUpdateCompraStatusVencido } from '../queries'
+import { useRenovarCompra, useUpdateBilleteraProveedorSaldo, useUpdateCompra, useUpdateCompraStatusVencido } from '../queries'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { useBilleteraByUsuario } from '@/queries'
 import { useAuth } from '@/stores/authStore'
 import { Label } from '@/components/ui/label'
+
 
 const DiasRestantesCell = ({ fecha_expiracion, id }: { fecha_expiracion: string, id: string }) => {
   const { isPending } = useRenovarCompra()
@@ -181,10 +182,12 @@ const RenovacionCell = ({ row }: { row: Compra }) => {
   const { data: billetera } = useBilleteraByUsuario(user?.id as string)
   const saldo = (billetera?.saldo || 0) - (row.productos?.precio_renovacion || 0)
   const [open, setOpen] = useState(false)
-
+  const { mutate: updateProveedorBilletera } = useUpdateBilleteraProveedorSaldo
+    ()
   const handleRenovar = () => {
     if (row.id && row.fecha_expiracion !== null) {
       renovarCompra({ id: row.id, tiempo_uso: row.productos?.tiempo_uso || 0, fecha_expiracion: row.fecha_expiracion, billeteraId: billetera?.id as string, saldo })
+      updateProveedorBilletera({ idBilletera: row.usuarios?.billetera_id as string, precioRenovacion: row.productos?.precio_renovacion || 0 })
       setOpen(false)
     }
   }

@@ -27,6 +27,7 @@ import { RecargaMessage } from '@/lib/whatsapp'
 import { useCreateRecarga } from '@/features/vendedor/recargas/queries'
 import { useConfiguracionSistema } from '@/features/proveedor/productos/queries'
 import { Loader2 } from 'lucide-react'
+import YapeQRImage from '@/assets/YapeQR.jpg'
 
 interface AgregarFondosModalProps {
   open: boolean
@@ -75,14 +76,12 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
       onOpenChange(false)
       onSubmit() // Esto disparará la refetch de los datos
       
-      // Enviar mensaje de WhatsApp después de un breve delay
-      setTimeout(() => {
-        RecargaMessage({
-          nombre_cliente: user?.nombres + ' ' + user?.apellidos || '',
-          monto: data.cantidad, // En el mensaje se muestra el monto en soles
-          id_cliente: user?.id || '',
-        }, '51941442792', isMobile ? 'mobile' : 'web')
-      }, 3000)
+      // Enviar mensaje de WhatsApp inmediatamente
+      RecargaMessage({
+        nombre_cliente: user?.nombres + ' ' + user?.apellidos || '',
+        monto: data.cantidad, // En el mensaje se muestra el monto en soles
+        id_cliente: user?.id || '',
+      }, '51913190401', isMobile ? 'mobile' : 'web')
     } catch (error) {
       console.error('Error:', error)
     }
@@ -153,9 +152,9 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <p className="text-xs md:text-sm">1. Ingresa el monto a recargar.</p>
-                  <p className="text-xs md:text-sm">2. Yapea, Plinea o Transferir el importe recargado.</p>
+                  <p className="text-xs md:text-sm">2. Yapea, Plinea el importe recargado.</p>
                   <p className="text-xs md:text-sm mt-4">Para mayor información comunicarse al:</p>
-                  <p className="text-xs md:text-sm font-semibold">+51 941 442 792</p>
+                  <p className="text-xs md:text-sm font-semibold">+51 913 190 401</p>
                 </CardContent>
               </Card>
 
@@ -167,12 +166,12 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
                 <CardContent className="space-y-3">
                   <div>
                     <p className="text-xs md:text-sm font-semibold">** Yape **</p>
-                    <p className="text-xs md:text-sm">+51 941 442 792</p>
+                    <p className="text-xs md:text-sm">+51 913 190 401</p>
                   </div>
                   <div>
                     <p className="text-xs md:text-sm font-semibold">** Binance **</p>
-                    <p className="text-xs md:text-sm">ID: 1096171177</p>
-                    <p className="text-xs md:text-sm">Nombre: Maiky L.</p>
+                    <p className="text-xs md:text-sm">ID: 977731480</p>
+                    <p className="text-xs md:text-sm">Nombre: Juan M.</p>
                     <p className="text-xs md:text-sm">1 USDT = 3.5 soles</p>
                   </div>
                 </CardContent>
@@ -183,9 +182,12 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
                 <CardHeader>
                   <CardTitle className="text-base md:text-lg">Yape QR</CardTitle>
                 </CardHeader>
-                <CardContent className="flex justify-center">
-                  <div className="w-24 h-24 md:w-32 md:h-32 bg-gray-200 border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center">
-                    <img src="/src/assets/YapeQR.jpg" alt="" />
+                <CardContent className="flex flex-col items-center space-y-3">
+                  <div className="w-24 h-24 md:w-32 md:h-32 bg-gray-200 border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center p-2">
+                    <img src={YapeQRImage} alt="Imagen de QR de Yape" className="w-full h-full object-contain" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs md:text-sm font-semibold">Juan Laura P.</p>
                   </div>
                 </CardContent>
               </Card>

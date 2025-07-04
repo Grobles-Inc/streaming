@@ -685,16 +685,21 @@ export const updateStockProducto = async (id: number, updates: Database['public'
 
 // Delete stock producto
 export const deleteStockProducto = async (id: number) => {
-  // Primero obtener el producto_id antes de eliminar
+  // Primero obtener información del stock antes de eliminar
   const { data: stockItem, error: fetchError } = await supabase
     .from('stock_productos')
-    .select('producto_id')
+    .select('producto_id, estado')
     .eq('id', id)
     .single()
 
   if (fetchError) {
     console.error('Error fetching stock producto:', fetchError)
     throw new Error(`Error al obtener información del stock: ${fetchError.message}`)
+  }
+
+  // Verificar si el stock está vendido
+  if (stockItem.estado === 'vendido') {
+    throw new Error('No se puede eliminar esta cuenta porque ya está vendida y tiene referencias en el sistema. Las cuentas vendidas deben permanecer en el historial.')
   }
 
   const { error } = await supabase
@@ -704,6 +709,12 @@ export const deleteStockProducto = async (id: number) => {
 
   if (error) {
     console.error('Error deleting stock producto:', error)
+    
+    // Verificar si es un error de foreign key constraint (stock tiene referencias)
+    if (error.code === '23503') {
+      throw new Error('No se puede eliminar esta cuenta porque tiene referencias en el sistema (ventas asociadas).')
+    }
+    
     throw new Error(`Error al eliminar stock: ${error.message}`)
   }
 

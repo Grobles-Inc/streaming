@@ -42,6 +42,34 @@ export class SupabaseStorageService {
   }
 
   /**
+   * Sube una imagen al bucket de categorías
+   */
+  static async uploadCategoryImage(file: File, userId: string): Promise<string> {
+    const fileExtension = file.name.split('.').pop()
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`
+    const filePath = `categorias/${userId}/${fileName}`
+
+    const { data, error } = await supabase.storage
+      .from('productos-images')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      })
+
+    if (error) {
+      console.error('Error subiendo imagen de categoría:', error)
+      throw new Error(`Error al subir imagen: ${error.message}`)
+    }
+
+    // Obtener la URL pública
+    const { data: { publicUrl } } = supabase.storage
+      .from('productos-images')
+      .getPublicUrl(data.path)
+
+    return publicUrl
+  }
+
+  /**
    * Elimina una imagen del storage
    */
   static async deleteProductImage(imageUrl: string): Promise<void> {

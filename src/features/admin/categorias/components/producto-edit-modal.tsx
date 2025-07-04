@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { IconLoader2, IconUpload, IconX } from '@tabler/icons-react'
-import { SupabaseStorageService, supabase } from '@/lib/supabase'
 import { CategoriasService } from '../services'
 import { useCategorias, useProveedores } from '../queries'
 import type { Producto } from '../data/types'
@@ -23,11 +22,7 @@ interface ProductoEditModalProps {
 export function ProductoEditModal({ producto, open, onClose, onUpdate }: ProductoEditModalProps) {
   const [formData, setFormData] = useState<Partial<Producto>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isUploadingImage, setIsUploadingImage] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const fileInputRef = useRef<HTMLInputElement>(null)
   
   const { categorias } = useCategorias()
   const { proveedores } = useProveedores()
@@ -45,8 +40,6 @@ export function ProductoEditModal({ producto, open, onClose, onUpdate }: Product
         proveedor_id: producto.proveedor_id,
         imagen_url: producto.imagen_url || '',
       })
-      setPreviewUrl(producto.imagen_url || null)
-      setSelectedFile(null)
       setErrors({})
     }
   }, [producto, open])
@@ -78,42 +71,6 @@ export function ProductoEditModal({ producto, open, onClose, onUpdate }: Product
     return Object.keys(newErrors).length === 0
   }
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      // Validar que sea una imagen
-      if (!file.type.startsWith('image/')) {
-        setErrors({ ...errors, imagen: 'Por favor selecciona un archivo de imagen válido' })
-        return
-      }
-
-      // Validar tamaño (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors({ ...errors, imagen: 'La imagen debe ser menor a 5MB' })
-        return
-      }
-
-      setSelectedFile(file)
-      setErrors({ ...errors, imagen: '' })
-      
-      // Crear preview
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setPreviewUrl(e.target?.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const handleRemoveImage = () => {
-    setSelectedFile(null)
-    setPreviewUrl(null)
-    setFormData({ ...formData, imagen_url: '' })
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -123,29 +80,9 @@ export function ProductoEditModal({ producto, open, onClose, onUpdate }: Product
 
     try {
       setIsSubmitting(true)
-      let finalImageUrl = formData.imagen_url || ''
-
-      // Si hay un archivo seleccionado, subirlo primero
-      if (selectedFile) {
-        setIsUploadingImage(true)
-        try {
-          // Obtener el usuario actual
-          const { data: { user } } = await supabase.auth.getUser()
-          const userId = user?.id || 'anonymous'
-          
-          finalImageUrl = await SupabaseStorageService.uploadProductImage(selectedFile, userId)
-        } catch (error) {
-          console.error('Error subiendo imagen:', error)
-          setErrors({ ...errors, imagen: 'Error al subir la imagen. Por favor intenta de nuevo.' })
-          return
-        } finally {
-          setIsUploadingImage(false)
-        }
-      }
-
       const updatedProducto = await CategoriasService.updateProducto(
         producto.id,
-        { ...formData, imagen_url: finalImageUrl } as Producto
+        formData as Producto
       )
       onUpdate(updatedProducto)
       onClose()
@@ -162,11 +99,6 @@ export function ProductoEditModal({ producto, open, onClose, onUpdate }: Product
       onClose()
       setFormData({})
       setErrors({})
-      setSelectedFile(null)
-      setPreviewUrl(null)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
     }
   }
 
@@ -354,58 +286,30 @@ export function ProductoEditModal({ producto, open, onClose, onUpdate }: Product
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="imagen">Imagen del Producto</Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                <div className="flex flex-col items-center space-y-3">
-                  {previewUrl ? (
-                    <div className="relative">
-                      <img
-                        src={previewUrl}
-                        alt="Preview"
-                        className="w-32 h-32 object-cover rounded-lg"
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        className="absolute -top-2 -right-2 rounded-full w-6 h-6 p-0"
-                        onClick={handleRemoveImage}
-                        disabled={isSubmitting}
-                      >
-                        <IconX className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <IconUpload className="h-8 w-8 text-gray-400" />
-                    </div>
-                  )}
-                  
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isSubmitting}
-                  >
-                    <IconUpload className="mr-2 h-4 w-4" />
-                    {previewUrl ? 'Cambiar imagen' : 'Seleccionar imagen'}
-                  </Button>
-                  
-                  <p className="text-xs text-gray-500 text-center">
-                    JPG, PNG o WebP (máx. 5MB)
-                  </p>
-
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
+              <Label htmlFor="imagen_url">URL de Imagen</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="imagen_url"
+                  placeholder="https://ejemplo.com/imagen.jpg"
+                  value={formData.imagen_url || ''}
+                  onChange={(e) => setFormData({ ...formData, imagen_url: e.target.value })}
+                  disabled={isSubmitting}
+                />
+                <Button type="button" variant="outline" size="icon" disabled={isSubmitting}>
+                  <IconUpload className="h-4 w-4" />
+                </Button>
+              </div>
+              {formData.imagen_url && (
+                <div className="mt-2">
+                  <img
+                    src={formData.imagen_url}
+                    alt="Preview"
+                    className="w-20 h-20 object-cover rounded border"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                    }}
                   />
                 </div>
-              </div>
-              {errors.imagen && (
-                <p className="text-sm text-red-600">{errors.imagen}</p>
               )}
             </div>
           </div>

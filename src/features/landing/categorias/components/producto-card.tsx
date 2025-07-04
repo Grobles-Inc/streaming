@@ -64,7 +64,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
             </Button>
           </div>
         </CardHeader>
-        {producto.stock_de_productos?.length > 0 && (
+        {producto.stock_de_productos.length > 0 && (
           <div className="absolute top-0 left-0 z-50">
             <div
               className="bg-blue-600  text-white px-10 py-2 text-sm font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"

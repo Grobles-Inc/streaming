@@ -16,70 +16,16 @@ import {
   IconEye, 
   IconTrash, 
   IconCopy,
-  IconToggleLeft,
-  IconToggleRight,
   IconPackage,
-  IconClock
+  IconClock,
+  IconStar,
+  IconCheck,
+  IconX,
+  IconRefresh,
+  IconShoppingCart
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import type { MappedProducto } from '../data/types'
-
-// Función para obtener el badge del estado
-function getEstadoBadge(estado: string) {
-  switch (estado) {
-    case 'publicado':
-      return { 
-        variant: 'default' as const, 
-        label: 'Publicado',
-        className: 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100',
-        icon: IconToggleRight
-      }
-    case 'borrador':
-      return { 
-        variant: 'secondary' as const, 
-        label: 'Borrador',
-        className: 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100',
-        icon: IconToggleLeft
-      }
-    default:
-      return { 
-        variant: 'outline' as const, 
-        label: estado,
-        className: '',
-        icon: IconToggleLeft
-      }
-  }
-}
-
-// Función para obtener el badge de disponibilidad
-function getDisponibilidadBadge(disponibilidad: string) {
-  switch (disponibilidad) {
-    case 'en_stock':
-      return { 
-        variant: 'default' as const, 
-        label: 'En Stock',
-        className: 'bg-green-50 text-green-700 border-green-200'
-      }
-    case 'a_pedido':
-      return { 
-        variant: 'secondary' as const, 
-        label: 'A Pedido',
-        className: 'bg-blue-50 text-blue-700 border-blue-200'
-      }
-    case 'activacion':
-      return { 
-        variant: 'outline' as const, 
-        label: 'Activación',
-        className: 'bg-purple-50 text-purple-700 border-purple-200'
-      }
-    default:
-      return { 
-        variant: 'outline' as const, 
-        label: disponibilidad,
-        className: ''
-      }
-  }
-}
 
 // Props para las acciones
 interface ProductosTableActionsProps {
@@ -196,6 +142,27 @@ export function createProductosColumns(
                   )}
                 </div>
               )}
+              {/* Badges de características */}
+              <div className="flex flex-wrap gap-1 mt-1">
+                {producto.nuevo && (
+                  <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                    <IconStar className="mr-1 h-2 w-2" />
+                    Nuevo
+                  </Badge>
+                )}
+                {producto.destacado && (
+                  <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                    <IconStar className="mr-1 h-2 w-2" />
+                    Destacado
+                  </Badge>
+                )}
+                {producto.masVendido && (
+                  <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                    <IconStar className="mr-1 h-2 w-2" />
+                    Más Vendido
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
         )
@@ -215,7 +182,7 @@ export function createProductosColumns(
     },
     {
       accessorKey: 'precioPublicoFormateado',
-      header: 'Precio Público',
+      header: 'Precios',
       cell: ({ row }) => {
         const precio = row.getValue('precioPublicoFormateado') as string
         const producto = row.original
@@ -232,6 +199,11 @@ export function createProductosColumns(
             <div className="text-xs text-muted-foreground text-right">
               Vendedor: {producto.precioVendedorFormateado}
             </div>
+            {producto.precioRenovacionFormateado && (
+              <div className="text-xs text-muted-foreground text-right">
+                Renovación: {producto.precioRenovacionFormateado}
+              </div>
+            )}
           </div>
         )
       },
@@ -240,56 +212,41 @@ export function createProductosColumns(
       },
     },
     {
-      accessorKey: 'stock',
-      header: 'Stock',
+      accessorKey: 'configuracion',
+      header: 'Configuración',
       cell: ({ row }) => {
         const producto = row.original
         return (
-          <div className="text-center space-y-1">
-            <div className="font-mono text-sm">
-              {producto.stock}
+          <div className="space-y-1">
+            <div className="flex items-center gap-1">
+              <Badge variant={producto.aPedido ? "default" : "outline"} className="text-xs">
+                {producto.aPedido ? "A Pedido" : "Stock"}
+              </Badge>
             </div>
-            <div className="text-xs text-muted-foreground">
-              <span className="text-green-600">{producto.stockDisponible}</span>
-              {' / '}
-              <span className="text-red-600">{producto.stockVendido}</span>
+            <div className="flex items-center gap-1">
+              <Badge variant={producto.renovable ? "default" : "outline"} className="text-xs">
+                <IconRefresh className="mr-1 h-2 w-2" />
+                {producto.renovable ? "Renovable" : "No Renovable"}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-1">
+              {producto.muestraDisponibilidadStock ? (
+                <IconCheck className="h-3 w-3 text-green-600" />
+              ) : (
+                <IconX className="h-3 w-3 text-red-600" />
+              )}
+              <span className="text-xs text-muted-foreground">Muestra Stock</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {producto.deshabilitarBotonComprar ? (
+                <IconX className="h-3 w-3 text-red-600" />
+              ) : (
+                <IconShoppingCart className="h-3 w-3 text-green-600" />
+              )}
+              <span className="text-xs text-muted-foreground">Botón Comprar</span>
             </div>
           </div>
         )
-      },
-    },
-    {
-      accessorKey: 'disponibilidad',
-      header: 'Disponibilidad',
-      cell: ({ row }) => {
-        const disponibilidad = row.getValue('disponibilidad') as string
-        const badge = getDisponibilidadBadge(disponibilidad)
-        return (
-          <Badge variant={badge.variant} className={badge.className}>
-            {badge.label}
-          </Badge>
-        )
-      },
-      filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
-      },
-    },
-    {
-      accessorKey: 'estado',
-      header: 'Estado',
-      cell: ({ row }) => {
-        const estado = row.getValue('estado') as string
-        const badge = getEstadoBadge(estado)
-        const Icon = badge.icon
-        return (
-          <Badge variant={badge.variant} className={badge.className}>
-            <Icon className="mr-1 h-3 w-3" />
-            {badge.label}
-          </Badge>
-        )
-      },
-      filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
       },
     },
     {

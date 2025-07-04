@@ -1,10 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { IconUpload, IconX } from '@tabler/icons-react'
-import { SupabaseStorageService, supabase } from '@/lib/supabase'
 import { CategoriasService } from '../services'
 import { useCategorias, useProveedores } from '../queries'
 import type { Producto } from '../data/types'
@@ -18,57 +16,14 @@ interface ProductoDetailsModalProps {
 export function ProductoDetailsModal({ producto, onClose, onUpdate }: ProductoDetailsModalProps) {
   const [productoDetalles, setProductoDetalles] = useState<Producto | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isUploadingImage, setIsUploadingImage] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const { categorias } = useCategorias()
   const { proveedores } = useProveedores()
 
   useEffect(() => {
     if (producto) {
       setProductoDetalles({ ...producto })
-      setPreviewUrl(producto.imagen_url || null)
-      setSelectedFile(null)
     }
   }, [producto])
-
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      // Validar que sea una imagen
-      if (!file.type.startsWith('image/')) {
-        alert('Por favor selecciona un archivo de imagen válido')
-        return
-      }
-
-      // Validar tamaño (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('La imagen debe ser menor a 5MB')
-        return
-      }
-
-      setSelectedFile(file)
-      
-      // Crear preview
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setPreviewUrl(e.target?.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const handleRemoveImage = () => {
-    setSelectedFile(null)
-    setPreviewUrl(null)
-    if (productoDetalles) {
-      setProductoDetalles({ ...productoDetalles, imagen_url: '' })
-    }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -76,29 +31,9 @@ export function ProductoDetailsModal({ producto, onClose, onUpdate }: ProductoDe
 
     try {
       setIsSubmitting(true)
-      let finalImageUrl = productoDetalles.imagen_url || ''
-
-      // Si hay un archivo seleccionado, subirlo primero
-      if (selectedFile) {
-        setIsUploadingImage(true)
-        try {
-          // Obtener el usuario actual
-          const { data: { user } } = await supabase.auth.getUser()
-          const userId = user?.id || 'anonymous'
-          
-          finalImageUrl = await SupabaseStorageService.uploadProductImage(selectedFile, userId)
-        } catch (error) {
-          console.error('Error subiendo imagen:', error)
-          alert('Error al subir la imagen. Por favor intenta de nuevo.')
-          return
-        } finally {
-          setIsUploadingImage(false)
-        }
-      }
-
       const updatedProducto = await CategoriasService.updateProducto(
         productoDetalles.id,
-        { ...productoDetalles, imagen_url: finalImageUrl }
+        productoDetalles
       )
       onUpdate(updatedProducto)
       onClose()
@@ -237,56 +172,15 @@ export function ProductoDetailsModal({ producto, onClose, onUpdate }: ProductoDe
                 </div>
 
                 <div className="col-span-1 md:col-span-2 lg:col-span-3">
-                  <label className="block text-sm font-medium mb-1">Imagen del Producto</label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                    <div className="flex flex-col items-center space-y-3">
-                      {previewUrl ? (
-                        <div className="relative">
-                          <img
-                            src={previewUrl}
-                            alt="Preview"
-                            className="w-32 h-32 object-cover rounded-lg"
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            className="absolute -top-2 -right-2 rounded-full w-6 h-6 p-0"
-                            onClick={handleRemoveImage}
-                            disabled={isSubmitting}
-                          >
-                            <IconX className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="w-32 h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <IconUpload className="h-8 w-8 text-gray-400" />
-                        </div>
-                      )}
-                      
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isSubmitting}
-                      >
-                        <IconUpload className="mr-2 h-4 w-4" />
-                        {previewUrl ? 'Cambiar imagen' : 'Seleccionar imagen'}
-                      </Button>
-                      
-                      <p className="text-xs text-gray-500 text-center">
-                        JPG, PNG o WebP (máx. 5MB)
-                      </p>
-
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileSelect}
-                        className="hidden"
-                      />
-                    </div>
-                  </div>
+                  <label className="block text-sm font-medium mb-1">URL Imagen</label>
+                  <Input
+                    placeholder="URL Imagen"
+                    value={productoDetalles.imagen_url || ''}
+                    onChange={e =>
+                      setProductoDetalles({ ...productoDetalles, imagen_url: e.target.value })
+                    }
+                    disabled={isSubmitting}
+                  />
                 </div>
 
                 <div className="col-span-1 md:col-span-2 lg:col-span-3">
@@ -332,10 +226,8 @@ export function ProductoDetailsModal({ producto, onClose, onUpdate }: ProductoDe
               </div>
 
               <div className="flex gap-4 mt-6">
-                <Button type="submit" disabled={isSubmitting || isUploadingImage}>
-                  {isUploadingImage ? 'Subiendo imagen...' : 
-                   isSubmitting ? 'Actualizando...' : 
-                   'Actualizar'}
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Actualizando...' : 'Actualizar'}
                 </Button>
                 <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
                   Cancelar

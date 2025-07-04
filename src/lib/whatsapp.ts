@@ -16,6 +16,9 @@ interface CompraMessage {
   producto_nombre: string
   producto_precio: number
   email_cuenta: string
+  descripcion: string
+  informacion: string
+  condiciones: string
   clave_cuenta: string
   perfil?: string
   pin?: string
@@ -154,7 +157,10 @@ export async function CompraMessage(
 - *PIN:* ${message.pin}
 - *Fecha de inicio:* ${message.fecha_inicio}
 - *Fecha de término:* ${message.fecha_expiracion || 'Sin activar'}
-- *Ciclo de facturación:* ${message.ciclo_facturacion}`
+- *Ciclo de facturación:* ${message.ciclo_facturacion}
+- *Descripción:* ${message.descripcion}
+- *Información:* ${message.informacion}
+- *Condiciones:* ${message.condiciones}`
 
   return EnviarWhatsAppMessage(formattedMessage, businessPhone, device)
 }

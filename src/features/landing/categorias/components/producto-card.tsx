@@ -1,11 +1,11 @@
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import ComprarProductoModal from './comprar-producto-modal'
-import ProductoInfoModal from './producto-info-modal'
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { IconFileInfo, IconHandClick, IconHeartHandshake } from '@tabler/icons-react'
 import { useState } from 'react'
 import { Producto } from '../../services'
-import { IconFileInfo, IconHandClick, IconHeartHandshake } from '@tabler/icons-react'
+import ComprarProductoModal from './comprar-producto-modal'
+import ProductoInfoModal from './producto-info-modal'
 
 
 

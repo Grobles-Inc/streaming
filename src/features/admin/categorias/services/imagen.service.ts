@@ -1,5 +1,4 @@
 // Servicio para manejo de imágenes en Supabase Storage
-// import { supabase } from '@/lib/supabase'
 
 // Configuración de Supabase Storage
 export const SUPABASE_STORAGE_CONFIG = {
@@ -108,8 +107,7 @@ export function validateImageFile(file: File): { isValid: boolean; error?: strin
 }
 
 /**
- * Sube una imagen a Supabase Storage (versión simulada)
- * En producción, esta función haría la subida real
+ * Sube una imagen a Supabase Storage
  */
 export async function uploadImageToSupabase(file: File): Promise<string> {
   // Validar archivo
@@ -118,64 +116,31 @@ export async function uploadImageToSupabase(file: File): Promise<string> {
     throw new Error(validation.error)
   }
 
-  // Simular delay de subida
-  await new Promise(resolve => setTimeout(resolve, 1500))
-
-  // En producción, el código sería algo así:
-  /*
-  const fileName = generateUniqueFileName(file.name)
-  const filePath = `${SUPABASE_STORAGE_CONFIG.categoriasPath}/${fileName}`
+  // Obtener el usuario actual para organizar por usuario
+  // En este contexto no podemos usar hooks, así que usaremos un userId genérico por ahora
+  // En producción se debería pasar el userId como parámetro
+  const userId = 'categoria-admin'
   
-  const { data, error } = await supabase.storage
-    .from(SUPABASE_STORAGE_CONFIG.bucket)
-    .upload(filePath, file, {
-      cacheControl: '3600',
-      upsert: false
-    })
-
-  if (error) {
-    throw new Error(`Error al subir imagen: ${error.message}`)
+  try {
+    const { SupabaseStorageService } = await import('@/lib/supabase')
+    return await SupabaseStorageService.uploadCategoryImage(file, userId)
+  } catch (error) {
+    console.error('Error al subir imagen:', error)
+    throw new Error('Error al subir la imagen. Inténtalo de nuevo.')
   }
-
-  // Obtener URL pública
-  const { data: publicUrlData } = supabase.storage
-    .from(SUPABASE_STORAGE_CONFIG.bucket)
-    .getPublicUrl(filePath)
-
-  return publicUrlData.publicUrl
-  */
-
-  // Por ahora, simulamos la URL resultante
-  const fileName = generateUniqueFileName(file.name)
-  return `${SUPABASE_STORAGE_CONFIG.baseUrl}/categorias/${fileName}`
 }
 
 /**
- * Elimina una imagen de Supabase Storage (versión simulada)
+ * Elimina una imagen de Supabase Storage
  */
 export async function deleteImageFromSupabase(imageUrl: string): Promise<void> {
-  // Extraer el path del archivo de la URL
-  const baseUrl = SUPABASE_STORAGE_CONFIG.baseUrl
-  if (!imageUrl.startsWith(baseUrl)) {
-    // No es una imagen de nuestro storage, no hacer nada
-    return
-  }
-
-  // En producción:
-  /*
-  const filePath = imageUrl.replace(`${baseUrl}/`, '')
-  
-  const { error } = await supabase.storage
-    .from(SUPABASE_STORAGE_CONFIG.bucket)
-    .remove([filePath])
-
-  if (error) {
+  try {
+    const { SupabaseStorageService } = await import('@/lib/supabase')
+    await SupabaseStorageService.deleteCategoryImage(imageUrl)
+  } catch (error) {
     console.error('Error al eliminar imagen:', error)
+    // No lanzamos error para no bloquear operaciones si la eliminación falla
   }
-  */
-
-  // Por ahora, solo simular
-  console.log('Imagen eliminada (simulado):', imageUrl)
 }
 
 /**

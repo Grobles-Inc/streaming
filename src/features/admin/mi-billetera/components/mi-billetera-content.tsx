@@ -7,9 +7,10 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { IconPlus, IconWallet, IconTrendingUp, IconTrendingDown, IconMenu2, IconCheck, IconX, IconLoader2 } from '@tabler/icons-react'
+import { IconPlus, IconWallet, IconTrendingUp, IconTrendingDown, IconMenu2, IconCheck, IconX, IconLoader2, IconCoin } from '@tabler/icons-react'
 import { BilleterasService } from '@/features/admin/billeteras/services'
 import { useAuthStore } from '@/stores/authStore'
+import { ComisionesContent } from './comisiones-content'
 import type { Billetera, Recarga, Retiro } from '@/features/admin/billeteras/data/types'
 
 interface MiBilleteraContentProps {
@@ -297,7 +298,7 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="recargas" className="w-full">
-            <TabsList>
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="recargas" className="flex items-center gap-2">
                 <IconTrendingUp className="h-4 w-4" />
                 Recargas ({recargas.length})
@@ -305,6 +306,10 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
               <TabsTrigger value="retiros" className="flex items-center gap-2">
                 <IconTrendingDown className="h-4 w-4" />
                 Retiros ({retiros.length})
+              </TabsTrigger>
+              <TabsTrigger value="comisiones" className="flex items-center gap-2">
+                <IconCoin className="h-4 w-4" />
+                Comisiones
               </TabsTrigger>
             </TabsList>
 
@@ -440,6 +445,10 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
                   </tbody>
                 </table>
               </div>
+            </TabsContent>
+
+            <TabsContent value="comisiones" className="mt-4">
+              <ComisionesContent />
             </TabsContent>
           </Tabs>
         </CardContent>

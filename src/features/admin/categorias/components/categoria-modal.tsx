@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { ImagenSelector } from './imagen-selector'
 import type { Categoria } from '../data/types'
 
 interface CategoriaModalProps {
@@ -88,7 +89,7 @@ export function CategoriaModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? 'Editar Categoría' : 'Nueva Categoría'}
@@ -101,43 +102,45 @@ export function CategoriaModal({
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid gap-2">
-            <Label htmlFor="nombre">Nombre *</Label>
-            <Input
-              id="nombre"
-              placeholder="Nombre de la categoría"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              required
-              disabled={isSubmitting}
-            />
-          </div>
-          
-          <div className="grid gap-2">
-            <Label htmlFor="descripcion">Descripción</Label>
-            <Textarea
-              id="descripcion"
-              placeholder="Descripción de la categoría"
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
-              disabled={isSubmitting}
-              rows={3}
-            />
-          </div>
-          
-          <div className="grid gap-2">
-            <Label htmlFor="imagen_url">URL de la Imagen</Label>
-            <Input
-              id="imagen_url"
-              placeholder="https://ejemplo.com/imagen.jpg"
-              value={imagenUrl}
-              onChange={(e) => setImagenUrl(e.target.value)}
-              disabled={isSubmitting}
-            />
+        <form onSubmit={handleSubmit} className="space-y-6 py-2">
+          <div className="space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="nombre">Nombre *</Label>
+              <Input
+                id="nombre"
+                placeholder="Nombre de la categoría"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                required
+                disabled={isSubmitting}
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="descripcion">Descripción</Label>
+              <Textarea
+                id="descripcion"
+                placeholder="Descripción de la categoría"
+                value={descripcion}
+                onChange={(e) => setDescripcion(e.target.value)}
+                disabled={isSubmitting}
+                rows={3}
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label>Imagen de la categoría</Label>
+              <div className="min-h-[80px]">
+                <ImagenSelector
+                  imagenSeleccionada={imagenUrl}
+                  onImagenSeleccionada={setImagenUrl}
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="pt-4 border-t">
             <Button 
               type="button" 
               variant="outline" 

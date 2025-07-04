@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Loader2, Upload } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { Loader2 } from 'lucide-react'
+import { useEffect } from 'react'
 import { createProductoSchema, type CreateProductoData } from '../data/schema'
 import { useProductos } from '../hooks/use-productos'
+import { ProductoImagenSelector } from './producto-imagen-selector'
 import type { SupabaseProducto } from '../data/types'
 
 interface ProductoFormProps {
@@ -36,7 +36,6 @@ const categorias: Categoria[] = [
 
 export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProps) {
   const { actualizarProducto, loading } = useProductos()
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   // No renderizar si no hay producto
   if (!producto) {
@@ -106,24 +105,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
     
     // Resetear el formulario con los datos del producto
     form.reset(formData)
-    
-    // Actualizar la imagen preview si existe
-    setImagePreview(producto.imagen_url || null)
   }, [producto, form])
-
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const result = e.target?.result as string
-        setImagePreview(result)
-        // Actualizar el campo imagen_url del formulario con la imagen en base64
-        form.setValue('imagen_url', result)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
 
   const onSubmit = async (data: CreateProductoData) => {
     try {
@@ -359,51 +341,22 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
               <CardTitle>Imagen del producto</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-4">
-                <div className="text-center">
-                  <Label htmlFor="image-upload" className="cursor-pointer">
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-gray-400 transition-colors">
-                      <Upload className="mx-auto h-8 w-8 text-gray-400" />
-                      <p className="mt-2 text-sm text-gray-600">Hacer clic para subir imagen</p>
-                      <p className="text-xs text-gray-500">Formatos soportados: JPG, PNG, GIF</p>
-                    </div>
-                    <Input
-                      id="image-upload"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleImageUpload}
-                    />
-                  </Label>
-                </div>
-
-                {imagePreview && (
-                  <div className="space-y-2">
-                    <Label>Vista previa:</Label>
-                    <div className="border rounded-lg p-2">
-                      <img
-                        src={imagePreview}
-                        alt="Vista previa"
-                        className="w-full h-32 object-cover rounded"
-                        onError={() => setImagePreview(null)}
+              <FormField
+                control={form.control}
+                name="imagen_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <ProductoImagenSelector
+                        imagenSeleccionada={field.value || ''}
+                        onImagenSeleccionada={field.onChange}
+                        disabled={loading}
                       />
-                    </div>
-                  </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-
-                {/* Campo oculto para imagen_url */}
-                <FormField
-                  control={form.control}
-                  name="imagen_url"
-                  render={({ field }) => (
-                    <FormItem className="hidden">
-                      <FormControl>
-                        <Input type="hidden" {...field} value={field.value || ''} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
+              />
             </CardContent>
           </Card>
 

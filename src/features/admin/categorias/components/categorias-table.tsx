@@ -17,7 +17,7 @@ interface CategoriasTableProps {
 export function CategoriasTable({
   categorias,
   currentPage,
-  itemsPerPage = 3,
+  itemsPerPage = 10,
   onEdit,
   onDelete,
   onSelect,

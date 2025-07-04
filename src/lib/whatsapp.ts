@@ -83,7 +83,6 @@ export async function RecargaMessage(
 *DETALLES DE LA RECARGA:*
 - *Cliente:* ${message.nombre_cliente}
 - *Monto:* S/. ${message.monto}
-- *Comisión:* S/. ${(message.monto * 0.03).toFixed(2)}
 - *ID Cliente:* ${message.id_cliente}`
 
   return EnviarWhatsAppMessage(formattedMessage, businessPhone, device)

@@ -21,16 +21,8 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
         <CardHeader className="relative z-0  ">
           <img src={producto.imagen_url || ''} alt={producto.nombre} className='w-full h-44 object-contain ' />
           <div className='flex items-center gap-1  mt-2'>
-
             {producto.nuevo && (
               <Badge className='bg-green-500' >Nuevo</Badge>
-            )}
-            {/* //TODO: These badges should be synced with the db */}
-            {producto.nuevo && (
-              <Badge className='bg-red-500' >- 15%</Badge>
-            )}
-            {producto.nuevo && (
-              <Badge className='bg-gray-500 text-white' >Oferta</Badge>
             )}
           </div>
           <div className="absolute  flex-col right-2 -top-4 flex gap-1">

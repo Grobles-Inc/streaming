@@ -21,7 +21,7 @@ export const getStockProductosIds = async (productoId: string): Promise<number[]
   return data?.map((stock) => stock.id as number) || []
 }
 
-export const removeIdFromStockProductos = async (productoId: string, stockProductoId: number): Promise<boolean> => {
+export const removeIdFromStockProductos = async (productoId: string): Promise<boolean> => {
   const { data: producto, error: fetchError } = await supabase
     .from('productos')
     .select('stock_de_productos')
@@ -34,12 +34,16 @@ export const removeIdFromStockProductos = async (productoId: string, stockProduc
   }
 
   const stockDeProductos = producto.stock_de_productos as { id: number }[]
-  const updatedStockDeProductos = stockDeProductos.filter(item => item.id !== stockProductoId)
+  const updatedStockProducts = stockDeProductos.slice(1)
 
   const { error: updateError } = await supabase
     .from('productos')
-    .update({ stock_de_productos: updatedStockDeProductos })
+    .update({
+      stock_de_productos: updatedStockProducts
+    })
     .eq('id', productoId)
+
+  console.log(updatedStockProducts)
 
   if (updateError) {
     console.error('Error updating producto:', updateError)
@@ -49,11 +53,11 @@ export const removeIdFromStockProductos = async (productoId: string, stockProduc
   return true
 }
 
-export const updateStockProductoStatusVendido = async (stockProductoId: number): Promise<boolean> => {
+export const updateStockProductoStatusVendido = async (id: number): Promise<boolean> => {
   const { error } = await supabase
     .from('stock_productos')
     .update({ estado: 'vendido' })
-    .eq('id', stockProductoId)
+    .eq('id', id)
   return error ? false : true
 }
 

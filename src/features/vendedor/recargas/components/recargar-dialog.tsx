@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/stepper'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { RecargaMessage } from '@/lib/whatsapp'
-import { useBilleteraByUsuario } from '@/queries'
 import { useAuth } from '@/stores/authStore'
 import { IconPlus } from '@tabler/icons-react'
 import { Loader2 } from 'lucide-react'
@@ -47,12 +46,10 @@ export function RecargarDialog() {
   if (!user?.id) {
     return null
   }
-  const { data: billetera } = useBilleteraByUsuario(user.id)
   const { mutate: crearRecarga, isPending } = useCreateRecarga()
-  const monto = billetera?.saldo || 0
 
   const form = useForm<{ amount: number }>({
-    defaultValues: { amount: 0 },
+    defaultValues: undefined,
   })
 
   async function onSubmit(data: { amount: number }) {
@@ -110,9 +107,6 @@ export function RecargarDialog() {
                         <div className="relative">
                           <Input
                             type="number"
-                            min={1}
-                            max={monto}
-                            step="any"
                             placeholder="0.00"
                             className="pr-12"
                             {...field}

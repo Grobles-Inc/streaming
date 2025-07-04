@@ -36,7 +36,8 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
   const { mutate: removeIdFromStockProductos } = useRemoveIdFromStockProductos()
   const { mutate: updateStockProductoStatusVendido } = useUpdateStockProductoStatusVendido()
   const monto = billetera?.saldo
-  const stock_producto_id = stockProductosIds?.[0]
+  const randomIndex = Math.floor(Math.random() * (stockProductosIds?.length || 1))
+  const stock_producto_id = stockProductosIds?.[randomIndex] || 0
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -73,12 +74,24 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       precio: producto.precio_publico,
       monto_reembolso: producto.precio_publico,
       telefono_cliente: data.telefono_cliente.replace(/\s/g, ''),
-      stock_producto_id: stock_producto_id || 0,
+      stock_producto_id: stock_producto_id,
       fecha_expiracion: producto.a_pedido ? null : fecha_expiracion,
     })
-    actualizarSaldo({ id: billetera?.id, nuevoSaldo: monto - producto?.precio_publico })
-    removeIdFromStockProductos({ productoId: producto.id, stockProductoId: stock_producto_id || 0 })
-    updateStockProductoStatusVendido({ stockProductoId: stock_producto_id || 0 })
+    actualizarSaldo(
+      { id: billetera?.id, nuevoSaldo: monto - producto?.precio_publico },
+      {
+        onSuccess: () => {
+          removeIdFromStockProductos(
+            { productoId: producto.id },
+            {
+              onSuccess: () => {
+                updateStockProductoStatusVendido({ id: stock_producto_id })
+              }
+            }
+          )
+        }
+      }
+    )
     onOpenChange(false)
     form.reset()
   }

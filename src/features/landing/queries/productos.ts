@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as productosService from '../services/productos'
 import * as stockProductosService from '../services/stock'
 
@@ -34,13 +34,13 @@ export const useStockProductosIds = (productoId: string) => {
 
 export const useRemoveIdFromStockProductos = () => {
   return useMutation({
-    mutationFn: ({ productoId, stockProductoId }: { productoId: string, stockProductoId: number }) => stockProductosService.removeIdFromStockProductos(productoId, stockProductoId),
+    mutationFn: ({ productoId }: { productoId: string }) => stockProductosService.removeIdFromStockProductos(productoId),
   })
 }
 
 export const useUpdateStockProductoStatusVendido = () => {
   return useMutation({
-    mutationFn: ({ stockProductoId }: { stockProductoId: number }) => stockProductosService.updateStockProductoStatusVendido(stockProductoId),
+    mutationFn: ({ id }: { id: number }) => stockProductosService.updateStockProductoStatusVendido(id),
   })
 }
 

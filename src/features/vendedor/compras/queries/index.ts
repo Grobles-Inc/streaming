@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as comprasService from '../services'
+import * as proveedorService from '../services/proveedor'
 import { toast } from 'sonner'
 
 export const useCompras = () => {
@@ -136,5 +137,15 @@ export const useRenovarCompra = () => {
       toast.error('Error al renovar la compra')
     },
   
+  })
+}
+
+export const useUpdateBilleteraProveedorSaldo = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ idBilletera, precioRenovacion }: { idBilletera: string, precioRenovacion: number }) => proveedorService.updateBilleteraProveedorSaldo(idBilletera, precioRenovacion),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['billeteras'] })
+    },
   })
 }

@@ -54,6 +54,10 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       toast.error("Debes iniciar sesión para comprar un producto", { duration: 3000 })
       return
     }
+    if (user?.rol !== 'seller') {
+      toast.error("Tu rol no permite comprar productos", { duration: 3000 })
+      return
+    }
     if (!producto?.precio_publico || !monto || !billetera?.id) return
     if (monto && monto < producto?.precio_publico) {
       toast.error("No tienes suficiente saldo", { duration: 3000 })
@@ -172,7 +176,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
             </div>
 
             <DialogFooter>
-              <Button type="submit" className="w-full">
+              <Button type="submit" disabled={!form.formState.isValid} className="w-full">
                 Comprar
               </Button>
             </DialogFooter>

@@ -7,6 +7,7 @@ export type Producto = Database['public']['Tables']['productos']['Row']
 export type CompraInsert = Database['public']['Tables']['compras']['Insert']
 export type CompraUpdate = Database['public']['Tables']['compras']['Update']
 export type StockProducto = Database['public']['Tables']['stock_productos']['Update']
+export type Billetera = Database['public']['Tables']['billeteras']['Row']
 
 // Create a new compra
 export const createCompra = async (compra: CompraInsert): Promise<Compra | null> => {
@@ -122,11 +123,11 @@ export const updateCompraStatusVencido = async (id: string): Promise<Compra | nu
 }
 
 
-export const renovarCompra = async (id: string, tiempo_uso: number, fecha_expiracion: string): Promise<Compra | null> => {
+export const renovarCompra = async (id: string, tiempo_uso: number, fecha_expiracion: string, billeteraId: string, saldo: number): Promise<Compra | Billetera | null> => {
   const endDate = new Date(fecha_expiracion)
   const newDate = new Date(endDate.setDate(endDate.getDate() + tiempo_uso))
 
-  const { data, error } = await supabase
+  const { data: compraData, error } = await supabase
     .from('compras')
     .update({ fecha_expiracion: newDate.toISOString() })
     .eq('id', id)
@@ -134,11 +135,23 @@ export const renovarCompra = async (id: string, tiempo_uso: number, fecha_expira
     .single()
 
   if (error) {
-    console.error('Error renovando compra:', error)
+    console.error('Error renovando la fecha de expiracion:', error)
     return null
   }
 
-  return data
+  const { data: billeteraData, error: billeteraError } = await supabase
+    .from('billeteras')
+    .update({ saldo })
+    .eq('id', billeteraId)
+    .select()
+    .single()
+
+  if (billeteraError) {
+    console.error('Error actualizando el saldo de la billetera:', billeteraError)
+    return null
+  }
+
+  return compraData || billeteraData || null
 }
 
 // Recycle compra
@@ -162,7 +175,7 @@ export const getComprasByVendedorId = async (vendedorId: string): Promise<Compra
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, precio_publico, tiempo_uso),
+      productos:producto_id (nombre, precio_publico, tiempo_uso, condiciones, descripcion, informacion, precio_renovacion, renovable),
       usuarios:proveedor_id (nombres, apellidos, telefono),
       stock_productos:stock_producto_id (email, perfil, pin, clave)
     `)

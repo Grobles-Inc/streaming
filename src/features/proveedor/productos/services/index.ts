@@ -148,6 +148,22 @@ export const updateProducto = async (id: string, updates: ProductoUpdate): Promi
   return data
 }
 
+// Verificar si un producto tiene cuentas de stock asociadas
+export const verificarProductoTieneCuentas = async (productoId: string): Promise<boolean> => {
+  const { data, error } = await supabase
+    .from('stock_productos')
+    .select('id')
+    .eq('producto_id', productoId)
+    .limit(1)
+
+  if (error) {
+    console.error('Error checking stock productos:', error)
+    return false
+  }
+
+  return (data && data.length > 0) || false
+}
+
 // Delete producto
 export const deleteProducto = async (id: string): Promise<boolean> => {
   const { error } = await supabase
@@ -157,7 +173,19 @@ export const deleteProducto = async (id: string): Promise<boolean> => {
 
   if (error) {
     console.error('Error deleting producto:', error)
-    return false
+    
+    // Verificar si es un error de foreign key constraint (producto tiene cuentas asociadas)
+    if (error.code === '23503' && error.details?.includes('stock_productos')) {
+      throw new Error('No se puede eliminar este producto porque tiene cuentas de stock asociadas. Para eliminarlo, primero debes eliminar todas las cuentas de este producto.')
+    }
+    
+    // Otros errores de constraint
+    if (error.code === '23503') {
+      throw new Error('No se puede eliminar este producto porque tiene datos asociados. Verifica que no tenga ventas o referencias pendientes.')
+    }
+    
+    // Error genérico
+    throw new Error('Error al eliminar el producto. Intenta nuevamente.')
   }
 
   return true

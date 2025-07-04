@@ -1,4 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Header } from '@/components/layout/header'
 import { Search } from '@/components/search'
 import { Main } from '@/components/layout/main'
@@ -11,9 +10,10 @@ import { useProductosByProveedor } from './queries'
 import { useAuth } from '@/stores/authStore'
 import { Producto, productoCompleteSchema } from './data/schema'
 import { Button } from '@/components/ui/button'
-import { IconRefresh } from '@tabler/icons-react'
+import { IconRefresh, IconPlus } from '@tabler/icons-react'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { ProfileDropdown } from '@/components/profile-dropdown'
+import { ProductoFormDialog } from './components/producto-form'
 
 export function ProductosPage() {
   const { user } = useAuth()
@@ -53,40 +53,40 @@ export function ProductosPage() {
       </Header>
       <Main>
         <div className='space-y-6'>
-          <div className='flex items-center justify-between'>
+          <div className='space-y-4'>
             <div>
               <h1 className='text-3xl font-bold tracking-tight'>Productos</h1>
               <p className='text-muted-foreground'>
-                Gestiona tus productos y servicios de streaming
+                Gestiona tus productos desde este panel de administración de productos.
               </p>
             </div>
+            <ProductoFormDialog
+              trigger={
+                <Button>
+                  <IconPlus className='mr-2 h-4 w-4' />
+                  Nuevo Producto
+                </Button>
+              }
+            />
           </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Lista de Productos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className='space-y-4'>
-                  <Skeleton className='h-10 w-full' />
-                  <Skeleton className='h-10 w-full' />
-                  <Skeleton className='h-10 w-full' />
-                  <Skeleton className='h-10 w-full' />
-                  <Skeleton className='h-10 w-full' />
-                </div>
-              ) : productos && productos.length > 0 ? (
-                <ProductosTable columns={columns} data={productList || [] as Producto[]} />
-              ) : (
-                <div className='text-center py-12'>
-                  <p className='text-muted-foreground mb-4'>No tienes productos registrados</p>
-                  <p className='text-sm text-muted-foreground'>
-                    Comienza agregando tu primer producto para comenzar a vender
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {isLoading ? (
+            <div className='space-y-4'>
+              <Skeleton className='h-10 w-full' />
+              <Skeleton className='h-10 w-full' />
+              <Skeleton className='h-10 w-full' />
+              <Skeleton className='h-10 w-full' />
+              <Skeleton className='h-10 w-full' />
+            </div>
+          ) : productos && productos.length > 0 ? (
+            <ProductosTable columns={columns} data={productList || [] as Producto[]} />
+          ) : (
+            <div className='text-center py-12'>
+              <p className='text-muted-foreground mb-4'>No tienes productos registrados</p>
+              <p className='text-sm text-muted-foreground'>
+                Comienza agregando tu primer producto para comenzar a vender
+              </p>
+            </div>
+          )}
         </div>
       </Main>
     </>

@@ -139,6 +139,16 @@ export const useUpdateProducto = () => {
   })
 }
 
+// Hook para verificar si un producto tiene cuentas asociadas
+export const useVerificarProductoTieneCuentas = (productoId: string) => {
+  return useQuery({
+    queryKey: ['verificar-cuentas', productoId],
+    queryFn: () => productosService.verificarProductoTieneCuentas(productoId),
+    enabled: !!productoId,
+    staleTime: 1000 * 60 * 5, // 5 minutos
+  })
+}
+
 export const useDeleteProducto = () => {
   const queryClient = useQueryClient()
   
@@ -148,8 +158,8 @@ export const useDeleteProducto = () => {
       queryClient.invalidateQueries({ queryKey: ['productos'] })
       toast.success('Producto eliminado correctamente')
     },
-    onError: () => {
-      toast.error('Error al eliminar el producto')
+    onError: (error: Error) => {
+      toast.error(error.message || 'Error al eliminar el producto')
     },
   })
 }

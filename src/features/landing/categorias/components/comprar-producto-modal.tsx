@@ -10,9 +10,9 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { useCreateCompra } from '../../queries/compra'
+import { useRemoveIdFromStockProductos, useStockProductosIds, useUpdateStockProductoStatusVendido } from '../../queries/productos'
 import { Producto } from '../../services'
 import { PhoneInput } from './phone-input'
-import { useRemoveIdFromStockProductos, useStockProductosIds, useUpdateStockProductoStatusVendido } from '../../queries/productos'
 
 const formSchema = z.object({
   nombre_cliente: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -33,6 +33,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
   const { data: billetera } = useBilleteraByUsuario(user?.id || '0')
   const { mutate: actualizarSaldo } = useUpdateBilleteraSaldo()
   const { data: stockProductosIds } = useStockProductosIds(producto?.id || '')
+  const { mutate: updateProveedorBilletera } = useUpdateBilleteraSaldo()
   const { mutate: removeIdFromStockProductos } = useRemoveIdFromStockProductos()
   const { mutate: updateStockProductoStatusVendido } = useUpdateStockProductoStatusVendido()
   const monto = billetera?.saldo
@@ -91,6 +92,9 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
           )
         }
       }
+    )
+    updateProveedorBilletera(
+      { id: producto.proveedor_id, nuevoSaldo: monto - producto?.precio_publico }
     )
     onOpenChange(false)
     form.reset()

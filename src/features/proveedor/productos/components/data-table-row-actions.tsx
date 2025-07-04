@@ -16,7 +16,7 @@ import { ProductoFormDialog } from './producto-form'
 import { GestionarExistenciasModal } from './gestionar-existencias-modal'
 
 import type { Producto } from '../data/schema'
-import { useDeleteProducto, usePublicarProductoWithCommission } from '../queries'
+import { useDeleteProducto, usePublicarProductoWithCommission, useVerificarProductoTieneCuentas } from '../queries'
 import { useAuth } from '@/stores/authStore'
 
 interface DataTableRowActionsProps {
@@ -35,6 +35,9 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   
   const producto = row.original
   const esBorrador = producto.estado === 'borrador'
+  
+  // Verificar si el producto tiene cuentas asociadas
+  const { data: tieneCuentas, isLoading: verificandoCuentas } = useVerificarProductoTieneCuentas(producto.id)
 
   const handleEdit = () => {
     setShowEditDialog(true)
@@ -161,12 +164,16 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
       <ConfirmDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
-        title="¿Estás seguro?"
-        desc="Esta acción eliminará permanentemente el producto. Esta acción no se puede deshacer."
-        confirmText="Eliminar"
-        destructive
-        handleConfirm={confirmDelete}
-        isLoading={deleteProducto.isPending}
+        title={tieneCuentas ? "No se puede eliminar" : "¿Estás seguro?"}
+        desc={
+          tieneCuentas 
+            ? "No se puede eliminar este producto porque tiene cuentas de stock asociadas. Para eliminarlo, primero debes eliminar todas las cuentas desde 'Gestionar Existencias'."
+            : "Esta acción eliminará permanentemente el producto. Esta acción no se puede deshacer."
+        }
+        confirmText={tieneCuentas ? "Entendido" : "Eliminar"}
+        destructive={!tieneCuentas}
+        handleConfirm={tieneCuentas ? () => setShowDeleteDialog(false) : confirmDelete}
+        isLoading={verificandoCuentas || deleteProducto.isPending}
       />
 
       {/* Modal de gestión de existencias */}

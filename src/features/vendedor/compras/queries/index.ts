@@ -125,10 +125,11 @@ export const useProductoById = (id: string) => {
 export const useRenovarCompra = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (params: { id: string, tiempo_uso: number, fecha_expiracion: string }) => 
-      comprasService.renovarCompra(params.id, params.tiempo_uso, params.fecha_expiracion),
+    mutationFn: (params: { id: string, tiempo_uso: number, fecha_expiracion: string, billeteraId: string, saldo: number }) => 
+      comprasService.renovarCompra(params.id, params.tiempo_uso, params.fecha_expiracion, params.billeteraId, params.saldo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['compras'] })
+      queryClient.invalidateQueries({ queryKey: ['billeteras'] })
       toast.success('Compra renovada correctamente')
     },
     onError: () => {

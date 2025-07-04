@@ -78,6 +78,9 @@ export function GestionarExistenciasModal({
     })
   }
 
+  // Verificar si el stock seleccionado está vendido
+  const stockEstaVendido = selectedStock?.estado === 'vendido'
+
   const getEstadoBadge = (estado: string) => {
     const colors = {
       'disponible': 'bg-green-50 text-green-700 border-green-200',
@@ -261,19 +264,18 @@ export function GestionarExistenciasModal({
                 </Table>
               </div>
             ) : (
-                                <div className="text-center py-12">
-                    <IconPackage size={48} className="mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No hay existencias</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Este producto no tiene stock agregado aún
-                    </p>
-                    <Button onClick={() => setShowAgregarStockDialog(true)}>
-                      <IconPlus size={16} className="mr-2" />
-                      Agregar Primera Existencia
-                    </Button>
-                  </div>
+              <div className="text-center py-12">
+                <IconPackage size={48} className="mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">No hay existencias</h3>
+                <p className="text-muted-foreground mb-4">
+                  Este producto no tiene stock agregado aún
+                </p>
+                <Button onClick={() => setShowAgregarStockDialog(true)}>
+                  <IconPlus size={16} className="mr-2" />
+                  Agregar Primera Existencia
+                </Button>
+              </div>
             )}
-
           </div>
         </DialogContent>
       </Dialog>
@@ -282,11 +284,15 @@ export function GestionarExistenciasModal({
       <ConfirmDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
-        title="¿Eliminar existencia?"
-        desc="Esta acción eliminará permanentemente esta existencia del stock. Esta acción no se puede deshacer."
-        confirmText="Eliminar"
-        destructive
-        handleConfirm={confirmDelete}
+        title={stockEstaVendido ? "No se puede eliminar" : "¿Eliminar existencia?"}
+        desc={
+          stockEstaVendido 
+            ? "No se puede eliminar esta cuenta porque ya está vendida y tiene referencias en el sistema. Las cuentas vendidas deben permanecer en el historial."
+            : "Esta acción eliminará permanentemente esta existencia del stock. Esta acción no se puede deshacer."
+        }
+        confirmText={stockEstaVendido ? "Entendido" : "Eliminar"}
+        destructive={!stockEstaVendido}
+        handleConfirm={stockEstaVendido ? () => setShowDeleteDialog(false) : confirmDelete}
         isLoading={deleteStockMutation.isPending}
       />
 

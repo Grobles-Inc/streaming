@@ -1,3 +1,4 @@
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -16,6 +17,9 @@ import { estadosMap, productoOpciones } from '../data/data'
 import { Compra, CompraEstado, compraSchema } from '../data/schema'
 import { useRenovarCompra, useUpdateCompra, useUpdateCompraStatusVencido } from '../queries'
 import { DataTableColumnHeader } from './data-table-column-header'
+import { useBilleteraByUsuario } from '@/queries'
+import { useAuth } from '@/stores/authStore'
+import { Label } from '@/components/ui/label'
 
 const DiasRestantesCell = ({ fecha_expiracion, id }: { fecha_expiracion: string, id: string }) => {
   const { isPending } = useRenovarCompra()
@@ -90,14 +94,17 @@ const CompraMessageCell = ({ row }: { row: Compra }) => {
   const handleClick = () => {
     CompraMessage({
       producto_nombre: row.productos?.nombre || '',
-      producto_precio: row.monto_reembolso,
+      producto_precio: row.precio,
       email_cuenta: row.stock_productos?.email || '',
       clave_cuenta: row.stock_productos?.clave || '',
       perfil: row.stock_productos?.perfil || '',
       pin: row.stock_productos?.pin || '',
-      fecha_inicio: row.fecha_inicio,
-      fecha_expiracion: row.fecha_expiracion,
-      ciclo_facturacion: '30 días',
+      fecha_inicio: new Date(row.fecha_inicio).toLocaleDateString('es-ES'),
+      fecha_expiracion: row.fecha_expiracion ? new Date(row.fecha_expiracion).toLocaleDateString('es-ES') : '',
+      descripcion: row.productos?.descripcion || '',
+      informacion: row.productos?.informacion || '',
+      condiciones: row.productos?.condiciones || '',
+      ciclo_facturacion: row.productos?.tiempo_uso ? `${row.productos.tiempo_uso} días` : '',
     }, row.telefono_cliente || '', isMobile ? 'mobile' : 'web')
   }
 
@@ -113,13 +120,13 @@ const CompraMessageCell = ({ row }: { row: Compra }) => {
   }
 
   return (
-    <div className='flex justify-center '>
-      <Button variant="ghost" className='flex flex-col items-center gap-0' onClick={handleClick}>
+    <div className='flex justify-center  '>
+      <button className='flex flex-col items-center hover:opacity-60' onClick={handleClick}>
         <img src="https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000" className='size-6' />
         <span className='text-green-500 text-[9px]'>
           {row.telefono_cliente}
         </span>
-      </Button>
+      </button>
 
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogTrigger asChild>
@@ -170,16 +177,65 @@ const SoporteCell = ({ row }: { row: Compra }) => {
 
 const RenovacionCell = ({ row }: { row: Compra }) => {
   const { mutate: renovarCompra, isPending } = useRenovarCompra()
-  const handleClick = () => {
+  const { user } = useAuth()
+  const { data: billetera } = useBilleteraByUsuario(user?.id as string)
+  const saldo = (billetera?.saldo || 0) - (row.productos?.precio_renovacion || 0)
+  const [open, setOpen] = useState(false)
+
+  const handleRenovar = () => {
     if (row.id && row.fecha_expiracion !== null) {
-      renovarCompra({ id: row.id, tiempo_uso: row.productos?.tiempo_uso || 0, fecha_expiracion: row.fecha_expiracion })
+      renovarCompra({ id: row.id, tiempo_uso: row.productos?.tiempo_uso || 0, fecha_expiracion: row.fecha_expiracion, billeteraId: billetera?.id as string, saldo })
+      setOpen(false)
     }
   }
+
   return (
     <div className='flex justify-center'>
-      <Button size='icon' onClick={handleClick} disabled={isPending || row.estado === 'soporte'}>
-        <IconRefresh className={`${isPending ? 'animate-spin' : ''}`} />
-      </Button>
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogTrigger asChild>
+          <Button size='icon' disabled={row.estado === 'soporte' || row.productos?.renovable === false}>
+            <IconRefresh />
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Renovar Compra</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro que deseas renovar esta compra?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-2">
+            <Label >Saldo Actual</Label>
+            <Badge variant="outline" className="text-xl font-semibold text-green-600 dark:text-green-400 h-auto py-2">
+              ${billetera?.saldo}
+            </Badge>
+          </div>
+          <div className="space-y-2">
+            <Label>Después de renovar</Label>
+            <Badge
+              variant="outline"
+              className={cn(
+                "text-xl font-semibold h-auto py-2",
+                saldo < 0 ? "text-destructive" : "text-red-600 dark:text-red-400"
+              )}
+            >
+              ${saldo}
+            </Badge>
+            {saldo < 0 && (
+              <p className="text-xs text-destructive">No tienes saldo suficiente para renovar</p>
+            )}
+          </div>
+
+
+          <AlertDialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+            <Button onClick={handleRenovar} disabled={isPending}>
+              {isPending ? <IconLoader2 className="animate-spin" /> : 'Renovar'}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
@@ -270,7 +326,7 @@ export const columns: ColumnDef<Compra>[] = [
     ),
     cell: ({ row }) => {
       const { stock_productos } = row.original
-      return <div className='flex justify-center'>{stock_productos?.email}</div>
+      return <span>{stock_productos?.email}</span>
     },
     enableSorting: false,
 
@@ -317,7 +373,7 @@ export const columns: ColumnDef<Compra>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const { stock_productos } = row.original
-      return <div className='flex justify-center'>{stock_productos?.perfil}</div>
+      return <span>{stock_productos?.perfil}</span>
     },
   },
   {
@@ -328,7 +384,7 @@ export const columns: ColumnDef<Compra>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const { stock_productos } = row.original
-      return <div className='flex justify-center'>{stock_productos?.pin}</div>
+      return <span>{stock_productos?.pin}</span>
     },
   },
   {

@@ -17,7 +17,6 @@ const subjectOptions = [
   { value: 'correo', label: 'Correo' },
   { value: 'clave', label: 'Clave' },
   { value: 'pago', label: 'Pago' },
-  { value: 'reembolso', label: 'Reembolso' },
   { value: 'geo', label: 'Geo' },
   { value: 'codigo', label: 'Código' },
   { value: 'otros', label: 'Otros' },

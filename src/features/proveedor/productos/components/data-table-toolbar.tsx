@@ -1,7 +1,6 @@
 import { Cross2Icon } from '@radix-ui/react-icons'
 import { Table } from '@tanstack/react-table'
-import { IconPlus, IconPackage, IconClock, IconShoppingCart } from '@tabler/icons-react'
-import { ProductoFormDialog } from './producto-form'
+import { IconPackage, IconClock, IconShoppingCart } from '@tabler/icons-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -48,7 +47,7 @@ export function DataTableToolbar<TData>({
 
   return (
     <div className='space-y-4'>
-      {/* Fila superior: Búsqueda y botón principal */}
+      {/* Fila superior: Búsqueda y opciones de vista */}
       <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
         <div className='flex flex-1 items-center space-x-2'>
           <Input
@@ -61,19 +60,7 @@ export function DataTableToolbar<TData>({
           />
         </div>
         <div className='flex items-center space-x-2'>
-
-          <ProductoFormDialog
-            trigger={
-              <Button size='sm' className='h-8 w-full sm:w-auto'>
-                <IconPlus className='mr-2 h-4 w-4' />
-                <span className='hidden sm:inline'>Nuevo Producto</span>
-                <span className='sm:hidden'>Nuevo</span>
-              </Button>
-            }
-          />
-          <div className='hidden sm:block'>
-            <DataTableViewOptions table={table} />
-          </div>
+          <DataTableViewOptions table={table} />
         </div>
       </div>
 
@@ -147,9 +134,6 @@ export function DataTableToolbar<TData>({
               <Cross2Icon className='ml-2 h-4 w-4' />
             </Button>
           )}
-          <div className='sm:hidden'>
-            <DataTableViewOptions table={table} />
-          </div>
         </div>
       </div>
     </div>

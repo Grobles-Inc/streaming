@@ -18,7 +18,6 @@ export const pedidoSchema = z.object({
   productos: z.object({
     nombre: z.string().optional(),
     precio_publico: z.number().optional(),
-    stock: z.number().optional(),
     tiempo_uso: z.number().optional(),
   }).optional(),
   usuarios: z.object({

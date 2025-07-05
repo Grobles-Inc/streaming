@@ -176,7 +176,7 @@ export const getComprasByVendedorId = async (vendedorId: string): Promise<Compra
     .select(`
       *,
       productos:producto_id (nombre, precio_publico, tiempo_uso, condiciones, descripcion, informacion, precio_renovacion, renovable),
-      usuarios:proveedor_id (nombres, apellidos, telefono),
+      usuarios:proveedor_id (nombres, apellidos, telefono, billetera_id),
       stock_productos:stock_producto_id (email, perfil, pin, clave)
     `)
     .eq('vendedor_id', vendedorId)
@@ -203,7 +203,7 @@ export const getComprasPaginated = async (
     .select(`
       *,
       productos:producto_id (nombre, precio_publico),
-      usuarios:proveedor_id (nombres, apellidos),
+      usuarios:proveedor_id (nombres, apellidos, billetera_id),
       stock_productos:stock_producto_id (email, perfil, pin, clave)
     `, { count: 'exact' })
     .range(from, to)

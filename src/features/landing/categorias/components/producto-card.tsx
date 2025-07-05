@@ -25,13 +25,6 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
             {producto.nuevo && (
               <Badge className='bg-green-500' >Nuevo</Badge>
             )}
-            {/* //TODO: These badges should be synced with the db */}
-            {producto.nuevo && (
-              <Badge className='bg-red-500' >- 15%</Badge>
-            )}
-            {producto.nuevo && (
-              <Badge className='bg-gray-500 text-white' >Oferta</Badge>
-            )}
           </div>
           <div className="absolute  flex-col right-2 -top-4 flex gap-1">
             <Button size="icon" variant="secondary" title="Información del Producto" onClick={() => {

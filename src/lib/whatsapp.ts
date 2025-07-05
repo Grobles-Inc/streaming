@@ -4,6 +4,15 @@ interface RecargaMessage {
   id_cliente: string
 }
 
+interface RetiroMessage {
+  nombre_cliente: string
+  monto_soles: number
+  monto_dolares: number
+  monto_neto: number
+  comision: number
+  id_cliente: string
+}
+
 interface PublicacionMessage {
   nombre_cliente: string
   nombre_producto: string
@@ -82,8 +91,7 @@ export async function RecargaMessage(
 
 *DETALLES DE LA RECARGA:*
 - *Cliente:* ${message.nombre_cliente}
-- *Monto:* S/. ${message.monto}
-- *Comisión:* S/. ${(message.monto * 0.03).toFixed(2)}
+- *Monto:* S/. ${message.monto.toFixed(2)}
 - *ID Cliente:* ${message.id_cliente}`
 
   return EnviarWhatsAppMessage(formattedMessage, businessPhone, device)
@@ -161,6 +169,24 @@ export async function CompraMessage(
 - *Descripción:* ${message.descripcion}
 - *Información:* ${message.informacion}
 - *Condiciones:* ${message.condiciones}`
+
+  return EnviarWhatsAppMessage(formattedMessage, businessPhone, device)
+}
+
+export async function RetiroMessage(
+  message: RetiroMessage,
+  businessPhone: string,
+  device: 'mobile' | 'web' = 'mobile'
+) {
+  const formattedMessage = `Hola, quiero hacer un *retiro* con los siguientes datos:
+
+*DETALLES DEL RETIRO:*
+- *Cliente:* ${message.nombre_cliente}
+- *Monto solicitado:* S/. ${message.monto_soles.toFixed(2)}
+- *Valor en USD:* $${message.monto_dolares.toFixed(2)}
+- *Comisión (10%):* $${message.comision.toFixed(2)}
+- *Monto neto a recibir:* $${message.monto_neto.toFixed(2)}
+- *ID Cliente:* ${message.id_cliente}`
 
   return EnviarWhatsAppMessage(formattedMessage, businessPhone, device)
 }

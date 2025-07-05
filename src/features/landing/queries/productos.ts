@@ -34,13 +34,13 @@ export const useStockProductosIds = (productoId: string) => {
 
 export const useRemoveIdFromStockProductos = () => {
   return useMutation({
-    mutationFn: ({ productoId, stockProductoId }: { productoId: string, stockProductoId: number }) => stockProductosService.removeIdFromStockProductos(productoId, stockProductoId),
+    mutationFn: ({ productoId }: { productoId: string }) => stockProductosService.removeIdFromStockProductos(productoId),
   })
 }
 
 export const useUpdateStockProductoStatusVendido = () => {
   return useMutation({
-    mutationFn: ({ stockProductoId }: { stockProductoId: number }) => stockProductosService.updateStockProductoStatusVendido(stockProductoId),
+    mutationFn: ({ id }: { id: number }) => stockProductosService.updateStockProductoStatusVendido(id),
   })
 }
 

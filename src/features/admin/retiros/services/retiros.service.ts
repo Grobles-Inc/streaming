@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { procesarRetiroAprobado } from '@/features/proveedor/billetera/services'
 import type { 
   SupabaseRetiro, 
   UpdateRetiroData, 
@@ -120,7 +121,7 @@ export class RetirosService {
     return data as SupabaseRetiro
   }
 
-  // Aprobar retiro (con validación de saldo)
+  // Aprobar retiro (con validación de saldo y procesamiento de fondos)
   static async aprobarRetiro(id: string): Promise<SupabaseRetiro> {
     // Primero obtener el retiro con información de la billetera
     const retiroWithUser = await this.getRetiroById(id)
@@ -134,7 +135,16 @@ export class RetirosService {
       throw new Error(`Saldo insuficiente. Saldo disponible: $ ${saldoBilletera.toFixed(2)}, Monto solicitado: $ ${retiroWithUser.monto.toFixed(2)}`)
     }
 
-    return this.updateRetiro(id, { estado: 'aprobado' })
+    try {
+      // 1. Procesar la transferencia de fondos y comisión
+      await procesarRetiroAprobado(id)
+      
+      // 2. Cambiar el estado a aprobado
+      return this.updateRetiro(id, { estado: 'aprobado' })
+    } catch (error) {
+      console.error('Error procesando retiro aprobado:', error)
+      throw new Error(`Error al procesar el retiro: ${error instanceof Error ? error.message : 'Error desconocido'}`)
+    }
   }
 
   // Rechazar retiro
@@ -169,7 +179,7 @@ export class RetirosService {
     return estadisticas
   }
 
-  // Aprobar múltiples retiros (con validación de saldo)
+  // Aprobar múltiples retiros (con validación de saldo y procesamiento de fondos)
   static async aprobarRetiros(ids: string[]): Promise<SupabaseRetiro[]> {
     // Validar cada retiro antes de aprobar
     const retirosValidados: string[] = []
@@ -205,21 +215,37 @@ export class RetirosService {
       throw new Error('No hay retiros válidos para aprobar')
     }
 
-    const { data, error } = await supabase
-      .from('retiros')
-      .update({ 
-        estado: 'aprobado' as EstadoRetiro,
-        updated_at: new Date().toISOString()
-      })
-      .in('id', retirosValidados)
-      .select('*')
+    // Procesar cada retiro individualmente para manejar fondos y comisiones
+    const retirosAprobados: SupabaseRetiro[] = []
+    const erroresProcesamiento: string[] = []
 
-    if (error) {
-      console.error('Error approving multiple retiros:', error)
-      throw error
+    for (const retiroId of retirosValidados) {
+      try {
+        // 1. Procesar la transferencia de fondos y comisión
+        await procesarRetiroAprobado(retiroId)
+        
+        // 2. Cambiar el estado a aprobado
+        const retiroActualizado = await this.updateRetiro(retiroId, { estado: 'aprobado' })
+        retirosAprobados.push(retiroActualizado)
+      } catch (error) {
+        console.error(`Error procesando retiro ${retiroId}:`, error)
+        erroresProcesamiento.push(`Retiro ${retiroId}: ${error instanceof Error ? error.message : 'Error desconocido'}`)
+      }
     }
 
-    return data as SupabaseRetiro[]
+    // Si hubo errores de procesamiento, informar cuáles se aprobaron y cuáles fallaron
+    if (erroresProcesamiento.length > 0) {
+      const mensaje = `Se aprobaron ${retirosAprobados.length} de ${retirosValidados.length} retiros. Errores:\n${erroresProcesamiento.join('\n')}`
+      
+      if (retirosAprobados.length === 0) {
+        throw new Error(mensaje)
+      } else {
+        console.warn(mensaje)
+        // Continuar con los retiros que sí se procesaron correctamente
+      }
+    }
+
+    return retirosAprobados
   }
 
   // Rechazar múltiples retiros

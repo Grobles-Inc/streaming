@@ -26,6 +26,8 @@ import { useConfiguracionSistema } from '@/features/proveedor/productos/queries'
 import { useCreateRetiro } from '../queries'
 import { Loader2, AlertTriangle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { RetiroMessage } from '@/lib/whatsapp'
 
 interface RetirarFondosModalProps {
   open: boolean
@@ -43,6 +45,7 @@ export function RetirarFondosModal({
   const { user } = useAuth()
   const { data: configuracion } = useConfiguracionSistema()
   const { mutate: crearRetiro, isPending } = useCreateRetiro()
+  const isMobile = useIsMobile()
   
   // Obtener tasa de conversión y comisión de la configuración del sistema
   const tasaConversion = configuracion?.conversion || 3.7
@@ -100,6 +103,16 @@ export function RetirarFondosModal({
       form.reset()
       onOpenChange(false)
       onSubmit() // Esto disparará la refetch de los datos
+      
+      // Enviar mensaje de WhatsApp inmediatamente
+      RetiroMessage({
+        nombre_cliente: user?.nombres + ' ' + user?.apellidos || '',
+        monto_soles: data.cantidad,
+        monto_dolares: calculosRetiro.valorEnDolares,
+        monto_neto: calculosRetiro.montoNetoUsuario,
+        comision: calculosRetiro.comisionDolares,
+        id_cliente: user?.id || '',
+      }, '51913190401', isMobile ? 'mobile' : 'web')
     } catch (error) {
       console.error('Error:', error)
     }
@@ -245,11 +258,11 @@ export function RetirarFondosModal({
                   <CardTitle className="text-base md:text-lg">Información del Retiro</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <p className="text-xs md:text-sm">• El retiro será procesado en 1-3 días hábiles</p>
-                  <p className="text-xs md:text-sm">• Se aplicará una comisión del {comisionPorcentaje}% sobre el monto</p>
-                  <p className="text-xs md:text-sm">• El dinero será transferido a tu cuenta registrada</p>
-                  <p className="text-xs md:text-sm mt-4">Para mayor información comunicarse al:</p>
-                  <p className="text-xs md:text-sm font-semibold">+51 941 442 792</p>
+                  <p className="text-xs md:text-sm font-semibold">Detalles del retiro:</p>
+                  <p className="text-xs md:text-sm">• Se aplicará una comisión del {comisionPorcentaje}% sobre el monto.</p>
+                  <p className="text-xs md:text-sm">• El dinero será retirado via comunicación previa con el administrador.</p>
+                  <p className="text-xs md:text-sm mt-4 font-semibold">Para mayor información comunicarse al:</p>
+                  <p className="text-xs md:text-sm font-semibold">+51 913 190 401</p>
                 </CardContent>
               </Card>
 
@@ -282,7 +295,7 @@ export function RetirarFondosModal({
                 <CardContent className="flex flex-col justify-center">
                   <div className="text-center">
                     <p className="text-xs md:text-sm mb-2">¿Necesitas ayuda?</p>
-                    <p className="text-xs md:text-sm font-semibold text-green-600">+51 941 442 792</p>
+                    <p className="text-xs md:text-sm font-semibold text-green-600">+51 913 190 401</p>
                   </div>
                 </CardContent>
               </Card>

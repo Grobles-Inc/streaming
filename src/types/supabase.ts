@@ -103,6 +103,7 @@ export interface Database {
           usuarios: {
             nombres: string
             apellidos: string
+            billetera_id: string
           }
           nombre: string
           descripcion: string | null

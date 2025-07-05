@@ -63,8 +63,10 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           navigate({ to: '/proveedor/productos' })
           break
         case 'seller':
-        default:
           navigate({ to: '/dashboard' })
+          break
+        default:
+          navigate({ to: '/' })
           break
       }
     }

@@ -1,116 +1,198 @@
-import { useState, useEffect } from 'react'
-import { ChevronDownIcon } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
-import { cn } from '@/lib/utils'
+import * as React from "react";
+import { CheckIcon, ChevronsUpDown } from "lucide-react";
+import * as RPNInput from "react-phone-number-input";
+import flags from "react-phone-number-input/flags";
 
-// Países de Sudamérica y México con códigos
-const countries = [
-  { code: '+54', name: 'Argentina', flag: '🇦🇷' },
-  { code: '+591', name: 'Bolivia', flag: '🇧🇴' },
-  { code: '+55', name: 'Brasil', flag: '🇧🇷' },
-  { code: '+56', name: 'Chile', flag: '🇨🇱' },
-  { code: '+57', name: 'Colombia', flag: '🇨🇴' },
-  { code: '+593', name: 'Ecuador', flag: '🇪🇨' },
-  { code: '+594', name: 'Guayana Francesa', flag: '🇬🇫' },
-  { code: '+592', name: 'Guyana', flag: '🇬🇾' },
-  { code: '+52', name: 'México', flag: '🇲🇽' },
-  { code: '+595', name: 'Paraguay', flag: '🇵🇾' },
-  { code: '+51', name: 'Perú', flag: '🇵🇪' },
-  { code: '+597', name: 'Surinam', flag: '🇸🇷' },
-  { code: '+598', name: 'Uruguay', flag: '🇺🇾' },
-  { code: '+58', name: 'Venezuela', flag: '🇻🇪' },
-]
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
-interface PhoneInputProps {
-  value?: string
-  onChange?: (value: string) => void
-  placeholder?: string
-  className?: string
-}
+type PhoneInputProps = Omit<
+  React.ComponentProps<"input">,
+  "onChange" | "value" | "ref"
+> &
+  Omit<RPNInput.Props<typeof RPNInput.default>, "onChange"> & {
+    onChange?: (value: RPNInput.Value) => void;
+  };
 
-export function PhoneInput({ value = '', onChange, placeholder = 'Número de teléfono', className }: PhoneInputProps) {
-  const [selectedCountry, setSelectedCountry] = useState(countries[10]) // Perú por defecto
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [open, setOpen] = useState(false)
+const PhoneInput: React.ForwardRefExoticComponent<PhoneInputProps> =
+  React.forwardRef<React.ElementRef<typeof RPNInput.default>, PhoneInputProps>(
+    ({ className, onChange, value, ...props }, ref) => {
+      return (
+        <RPNInput.default
+          ref={ref}
+          className={cn("flex", className)}
+          flagComponent={FlagComponent}
+          countrySelectComponent={CountrySelect}
 
-  // Separar el código del país del número al cargar
-  useEffect(() => {
-    if (value) {
-      const matchedCountry = countries.find(country => value.startsWith(country.code))
-      if (matchedCountry) {
-        setSelectedCountry(matchedCountry)
-        setPhoneNumber(value.substring(matchedCountry.code.length))
-      } else {
-        setPhoneNumber(value)
-      }
-    }
-  }, [value])
+          inputComponent={InputComponent}
+          smartCaret={false}
+          value={value || undefined}
+          /**
+           * Handles the onChange event.
+           *
+           * react-phone-number-input might trigger the onChange event as undefined
+           * when a valid phone number is not entered. To prevent this,
+           * the value is coerced to an empty string.
+           *
+           * @param {E164Number | undefined} value - The entered value
+           */
+          onChange={(value) => onChange?.(value || ("" as RPNInput.Value))}
+          {...props}
+        />
+      );
+    },
+  );
+PhoneInput.displayName = "PhoneInput";
 
-  // Actualizar el valor completo cuando cambie el país o número
-  useEffect(() => {
-    const fullNumber = phoneNumber ? `${selectedCountry.code}${phoneNumber}` : ''
-    onChange?.(fullNumber)
-  }, [selectedCountry, phoneNumber, onChange])
+const InputComponent = React.forwardRef<
+  HTMLInputElement,
+  React.ComponentProps<"input">
+>(({ className, ...props }, ref) => (
+  <Input
+    className={cn("rounded-e-lg rounded-s-none", className)}
+    {...props}
+    ref={ref}
+  />
+));
+InputComponent.displayName = "InputComponent";
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value.replace(/\D/g, '') // Solo números
-    setPhoneNumber(inputValue)
-  }
+type CountryEntry = { label: string; value: RPNInput.Country | undefined };
+
+type CountrySelectProps = {
+  disabled?: boolean;
+  value: RPNInput.Country;
+  options: CountryEntry[];
+  onChange: (country: RPNInput.Country) => void;
+};
+
+const CountrySelect = ({
+  disabled,
+  value: selectedCountry,
+  options: countryList,
+  onChange,
+}: CountrySelectProps) => {
+  const scrollAreaRef = React.useRef<HTMLDivElement>(null);
+  const [searchValue, setSearchValue] = React.useState("");
+  const [isOpen, setIsOpen] = React.useState(false);
 
   return (
-    <div className={cn('flex', className)}>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-[120px] justify-between rounded-r-none border-r-0"
-          >
-            <span className="flex items-center gap-2">
-              <span className="text-base">{selectedCountry.flag}</span>
-              <span className="text-sm">{selectedCountry.code}</span>
-            </span>
-            <ChevronDownIcon className="h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[300px] p-0">
-          <Command>
-            <CommandInput placeholder="Buscar país..." />
-            <CommandEmpty>No se encontró ningún país.</CommandEmpty>
-            <CommandList>
+    <Popover open={isOpen} onOpenChange={setIsOpen} modal>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          className="flex gap-1 rounded-e-none rounded-s-lg border-r-0 px-3 focus:z-10"
+          disabled={disabled}
+        >
+          <FlagComponent
+            country={selectedCountry}
+            countryName={selectedCountry}
+          />
+          <ChevronsUpDown
+            className={cn(
+              "-mr-2 size-4 opacity-50",
+              disabled ? "hidden" : "opacity-100",
+            )}
+          />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[300px] p-0">
+        <Command>
+          <CommandInput
+            value={searchValue}
+            onValueChange={(value) => {
+              setSearchValue(value);
+              setTimeout(() => {
+                if (scrollAreaRef.current) {
+                  const viewportElement = scrollAreaRef.current.querySelector(
+                    "[data-radix-scroll-area-viewport]",
+                  );
+                  if (viewportElement) {
+                    viewportElement.scrollTop = 0;
+                  }
+                }
+              }, 0);
+            }}
+            placeholder="Buscar país..."
+          />
+          <CommandList>
+            <ScrollArea ref={scrollAreaRef} className="h-72">
+              <CommandEmpty>No se encontró ningún país.</CommandEmpty>
               <CommandGroup>
-                {countries.map((country) => (
-                  <CommandItem
-                    key={country.code}
-                    value={`${country.name} ${country.code}`}
-                    onSelect={() => {
-                      setSelectedCountry(country)
-                      setOpen(false)
-                    }}
-                  >
-                    <span className="flex items-center gap-3">
-                      <span className="text-base">{country.flag}</span>
-                      <span className="font-medium">{country.name}</span>
-                      <span className="text-muted-foreground text-sm">{country.code}</span>
-                    </span>
-                  </CommandItem>
-                ))}
+                {countryList.map(({ value, label }) =>
+                  value ? (
+                    <CountrySelectOption
+                      key={value}
+                      country={value}
+                      countryName={label}
+                      selectedCountry={selectedCountry}
+                      onChange={onChange}
+                      onSelectComplete={() => setIsOpen(false)}
+                    />
+                  ) : null,
+                )}
               </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-      <Input
-        type="tel"
-        placeholder={placeholder}
-        value={phoneNumber}
-        onChange={handlePhoneChange}
-        className="rounded-l-none"
-      />
-    </div>
-  )
+            </ScrollArea>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+interface CountrySelectOptionProps extends RPNInput.FlagProps {
+  selectedCountry: RPNInput.Country;
+  onChange: (country: RPNInput.Country) => void;
+  onSelectComplete: () => void;
 }
+
+const CountrySelectOption = ({
+  country,
+  countryName,
+  selectedCountry,
+  onChange,
+  onSelectComplete,
+}: CountrySelectOptionProps) => {
+  const handleSelect = () => {
+    onChange(country);
+    onSelectComplete();
+  };
+
+  return (
+    <CommandItem className="gap-2" onSelect={handleSelect}>
+      <FlagComponent country={country} countryName={countryName} />
+      <span className="flex-1 text-sm">{countryName}</span>
+      <span className="text-sm text-foreground/50">{`+${RPNInput.getCountryCallingCode(country)}`}</span>
+      <CheckIcon
+        className={`ml-auto size-4 ${country === selectedCountry ? "opacity-100" : "opacity-0"}`}
+      />
+    </CommandItem>
+  );
+};
+
+const FlagComponent = ({ country, countryName }: RPNInput.FlagProps) => {
+  const Flag = flags[country];
+
+  return (
+    <span className="flex h-4 w-6 overflow-hidden rounded-sm bg-foreground/20 [&_svg:not([class*='size-'])]:size-full">
+      {Flag && <Flag title={countryName} />}
+    </span>
+  );
+};
+
+export { PhoneInput };

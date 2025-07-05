@@ -22,7 +22,7 @@ export default function Home() {
   const productosMasVendidos = productosData.filter((producto) => producto.mas_vendido)
 
   return (
-    <div className="min-h-screen bg-base-100">
+    <div className="min-h-screen bg-base-100 max-w-[1500px] mx-auto">
       <LandingHeader />
       {!loadingCategorias && categoriasData.length > 0 && (
         <ScrollArea className="m-4 rounded-md bg-white border whitespace-nowrap hidden md:block">
@@ -61,7 +61,7 @@ export default function Home() {
 
 
 
-      <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-7 gap-2 p-4">
+      <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-7  gap-4 p-4">
         {loadingCategorias ? (
           // Skeleton loading para categorías
           Array.from({ length: 6 }).map((_, i) => (

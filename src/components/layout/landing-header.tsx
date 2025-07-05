@@ -11,6 +11,13 @@ import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '../ui/sheet'
 
+const rolRedirect = {
+  admin: '/admin/reportes-globales',
+  provider: '/proveedor/productos',
+  user: '/dashboard',
+  registrado: '/settings',
+}
+
 export default function LandingHeader() {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
@@ -20,7 +27,7 @@ export default function LandingHeader() {
   const [isOpen, setIsOpen] = useState(false)
   const { data: categorias } = useCategorias()
   const [activeTab, setActiveTab] = useState<string | null>(null)
-  const redirectRoute = user?.rol === 'admin' ? '/admin/reportes-globales' : user?.rol === 'provider' ? '/proveedor/productos' : '/dashboard'
+  const redirectRoute = rolRedirect[user?.rol as keyof typeof rolRedirect] || '/dashboard'
   return (
     <nav className="flex flex-col md:flex-row md:items-center md:justify-between md:px-6 px-4 py-4 gap-4 bg-base-100 shadow">
       <div className='flex flex-row justify-between items-center w-full'>
@@ -51,13 +58,10 @@ export default function LandingHeader() {
                   <Button onClick={() => navigate({ to: '/proveedor/productos' })} size="lg">
                     <IconPackage />
                     Productos </Button>
-                ) : (
-
+                ) : user?.rol === 'registered' ? null : (
                   <div className='flex items-center gap-2'>
                     <Button variant="ghost" className='text-xl font-bold' onClick={() => navigate({ to: '/dashboard' })} size="lg">
                       $ {billetera?.saldo.toFixed(2)}
-
-
                     </Button>
                     <Button variant="secondary" onClick={() => navigate({ to: '/compras' })} className='flex items-center gap-2'>
                       <IconShoppingBag />
@@ -79,12 +83,8 @@ export default function LandingHeader() {
         {isMobile && (
           <div className='flex items-center gap-2'>
             {
-              user ? (
-                <Button variant="outline" onClick={() => navigate({ to: redirectRoute })}>
-                  <IconUser />
-                </Button>
-              ) : (
-                <Button variant="outline" onClick={() => navigate({ to: '/sign-in' })}>
+              user && user.rol !== 'registered' && (
+                <Button variant="outline" size="icon" onClick={() => navigate({ to: redirectRoute })}>
                   <IconUser />
                 </Button>
               )
@@ -92,7 +92,7 @@ export default function LandingHeader() {
             <div className="sm:hidden">
               <Sheet open={isOpen} onOpenChange={setIsOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="outline" >
+                  <Button variant="outline" size="icon">
                     <IconMenu />
                   </Button>
 

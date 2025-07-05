@@ -163,5 +163,6 @@ export const useAuth = () => {
     isAdmin: user?.rol === 'admin',
     isProvider: user?.rol === 'provider',
     isSeller: user?.rol === 'seller',
+    isRegistered: user?.rol === 'registered',
   }
 }

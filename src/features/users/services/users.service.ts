@@ -392,7 +392,7 @@ export class UsersService {
         usuario: userData.usuario,
         password: userData.password || '',
         telefono: userData.telefono || null,
-        rol: userData.rol || 'provider', // Temporalmente cambiar por provider para probar
+        rol: userData.rol || 'registered', // Usar el rol correcto del parámetro
         codigo_referido: userData.codigo_referido || this.generateReferralCode(),
         referido_id: referidoPorId, // Establecer la relación de referido
       }
@@ -400,14 +400,48 @@ export class UsersService {
       console.log('Insertando usuario con datos:', userInsertData)
       console.log('Rol específico:', userInsertData.rol)
       
+      // PASO 1A: Crear el usuario en Supabase Auth usando signUp normal
+      const { data: authSignUp, error: authError } = await supabase.auth.signUp({
+        email: userData.email,
+        password: userData.password || '', // Asegurar que no sea undefined
+        options: {
+          data: {
+            nombres: userData.nombres,
+            apellidos: userData.apellidos,
+            usuario: userData.usuario,
+            rol: userData.rol || 'registered'
+          }
+        }
+      })
+
+      if (authError) {
+        console.error('Error creating auth user:', authError)
+        throw authError
+      }
+
+      if (!authSignUp.user) {
+        throw new Error('No se pudo crear el usuario en Auth')
+      }
+
+      console.log('Auth user created successfully:', authSignUp.user.id)
+      
+      // PASO 1B: Crear el usuario en la tabla usuarios con el ID de Auth
+      const userInsertDataWithAuth = {
+        ...userInsertData,
+        id: authSignUp.user.id // Usar el ID generado por Auth
+      }
+      
       const { data: userData_inserted, error: userError } = await supabase
         .from('usuarios')
-        .insert(userInsertData)
+        .insert(userInsertDataWithAuth)
         .select('*')
         .single()
       
       if (userError) {
         console.error('Error creating user with referral:', userError)
+        // Limpiar el usuario de Auth si falla la creación en la tabla
+        // Nota: Con signUp no podemos usar admin.deleteUser, pero el usuario de Auth quedará sin datos en la tabla
+        console.warn('Usuario creado en Auth pero falló en la tabla usuarios:', authSignUp.user.id)
         throw userError
       }
       
@@ -424,11 +458,14 @@ export class UsersService {
         .single()
       
       if (walletError) {
-        // Si falla la creación de la billetera, eliminar el usuario creado
+        // Si falla la creación de la billetera, eliminar el usuario de la tabla
         await supabase
           .from('usuarios')
           .delete()
           .eq('id', userData_inserted.id)
+        
+        // Nota: Con signUp no podemos eliminar el usuario de Auth fácilmente
+        console.warn('Usuario creado en Auth pero falló la billetera:', userData_inserted.id)
           
         console.error('Error creating wallet for referred user:', walletError)
         throw new Error('Error al crear la billetera: ' + walletError.message)
@@ -448,6 +485,10 @@ export class UsersService {
         console.error('Error updating user with wallet ID:', updateError)
         throw updateError
       }
+      
+      // IMPORTANTE: Cerrar la sesión del usuario recién creado para que el formulario pueda hacer login
+      await supabase.auth.signOut()
+      console.log('Sesión cerrada para permitir login desde el formulario')
       
       return updated_user
       

@@ -1,6 +1,6 @@
 import { IconMailPlus, IconUserPlus } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
-import { useUsersContext } from '../context/users-context-new'
+import { useUsersContext } from '../context/users-context'
 
 export function UsersPrimaryButtons() {
   const { setOpen } = useUsersContext()

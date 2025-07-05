@@ -1,4 +1,4 @@
-import { useUsersContext } from '../context/users-context-new'
+import { useUsersContext } from '../context/users-context'
 import { UsersActionDialog } from './users-action-dialog'
 import { UsersDeleteDialog } from './users-delete-dialog'
 import { UsersDetailsDialog } from './users-details-dialog'

@@ -10,7 +10,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useUsersContext } from '../context/users-context-new'
+import { useUsersContext } from '../context/users-context'
 import { MappedUser } from '../data/schema'
 
 interface DataTableRowActionsProps {

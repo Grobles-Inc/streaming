@@ -48,6 +48,11 @@ export const columns: ColumnDef<MappedUser>[] = [
       const nombreCompleto = `${nombres} ${apellidos}`
       return <LongText className='max-w-48'>{nombreCompleto}</LongText>
     },
+    filterFn: (row, _id, value) => {
+      const { nombres, apellidos } = row.original
+      const nombreCompleto = `${nombres} ${apellidos}`.toLowerCase()
+      return nombreCompleto.includes(value.toLowerCase())
+    },
     meta: {
       className: cn(
         'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',

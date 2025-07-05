@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { IconMailPlus, IconCopy, IconCheck, IconEye, IconLink, IconX, IconLoader } from '@tabler/icons-react'
+import { encryptReferralData } from '@/lib/encryption'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -38,10 +39,11 @@ interface Props {
   onOpenChange: (open: boolean) => void
 }
 
-// Función para generar el link de invitación
+// Función para generar el link de invitación con código y rol encriptados
 function generateInviteLink(referralCode: string): string {
   const baseUrl = window.location.origin
-  return `${baseUrl}/register?ref=${referralCode}&role=registered`
+  const encryptedData = encryptReferralData(referralCode, 'registered')
+  return `${baseUrl}/register?data=${encryptedData}`
 }
 
 export function UsersInviteDialog({ open, onOpenChange }: Props) {

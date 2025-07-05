@@ -33,7 +33,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
-import { useUsersContext } from '../context/users-context-new'
+import { useUsersContext } from '../context/users-context'
+import { encryptReferralData } from '@/lib/encryption'
 
 const formSchema = z.object({
   referralUserId: z.string().min(1, { message: 'Debe seleccionar un usuario para referido.' }),
@@ -47,10 +48,11 @@ interface Props {
   onOpenChange: (open: boolean) => void
 }
 
-// Función para generar el link de invitación
+// Función para generar el link de invitación con código y rol encriptados
 function generateInviteLink(referralCode: string, role: string): string {
   const baseUrl = window.location.origin
-  return `${baseUrl}/register?ref=${referralCode}&role=${role}`
+  const encryptedData = encryptReferralData(referralCode, role)
+  return `${baseUrl}/register?data=${encryptedData}`
 }
 
 export function UsersInviteWithReferralDialog({ open, onOpenChange }: Props) {

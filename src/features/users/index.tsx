@@ -7,7 +7,7 @@ import { columns } from './components/users-columns'
 import { UsersDialogs } from './components/users-dialogs'
 import { UsersPrimaryButtons } from './components/users-primary-buttons'
 import { UsersTable } from './components/users-table'
-import UsersProvider, { useUsersContext } from './context/users-context-new'
+import UsersProvider, { useUsersContext } from './context/users-context'
 
 function UsersContent() {
   const { users, loading, error } = useUsersContext()

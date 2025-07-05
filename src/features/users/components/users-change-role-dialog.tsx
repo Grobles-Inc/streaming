@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { userTypes } from '../data/data'
 import { MappedUser, UserRole } from '../data/schema'
-import { useUsersContext } from '../context/users-context-new'
+import { useUsersContext } from '../context/users-context'
 
 interface UsersChangeRoleDialogProps {
   open: boolean

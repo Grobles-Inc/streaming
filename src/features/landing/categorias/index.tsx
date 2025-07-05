@@ -47,7 +47,7 @@ export default function Categoria({ nombre }: { nombre: string }) {
           <div className="flex h-24 gap-8 px-7 items-center rounded-lg ">
             {categoriasData.map((categoria: Categoria) => {
               return (
-                <Link key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
+                <Link className="w-20" key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <img src={categoria.imagen_url || ''} alt={categoria.nombre} className="size-16" />

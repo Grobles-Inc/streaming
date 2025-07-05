@@ -86,24 +86,3 @@ export const getCategorias = async (): Promise<Categoria[]> => {
   return data || []
 }
 
-// Get categorias with pagination
-export const getCategoriasPaginated = async (
-  page: number = 1,
-  pageSize: number = 10
-): Promise<{ data: Categoria[]; count: number }> => {
-  const from = (page - 1) * pageSize
-  const to = from + pageSize - 1
-
-  const { data, error, count } = await supabase
-    .from('categorias')
-    .select('*', { count: 'exact' })
-    .range(from, to)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching paginated categorias:', error)
-    return { data: [], count: 0 }
-  }
-
-  return { data: data || [], count: count || 0 }
-}

@@ -10,6 +10,7 @@ import { useState } from 'react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '../ui/sheet'
+import { Categoria } from '@/features/landing/services'
 
 const rolRedirect = {
   admin: '/admin/reportes-globales',
@@ -109,7 +110,7 @@ export default function LandingHeader() {
                     Selecciona una categoría para ver los productos disponibles.
                   </SheetDescription>
                   <div className="flex flex-col gap-2 mt-8">
-                    {categorias?.data.map((categoria) => (
+                    {categorias?.map((categoria: Categoria) => (
                       <Button
                         key={categoria.id}
                         variant={activeTab === categoria.id ? 'default' : 'ghost'}

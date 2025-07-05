@@ -16,7 +16,7 @@ export default function Home() {
   const filteredProductos = productos?.data.filter((producto) =>
     producto.nombre.toLowerCase().includes(searchInput.toLowerCase())
   )
-  const categoriasData = categorias?.data || []
+  const categoriasData = categorias || []
   const productosData = productos?.data || []
   const productosDestacados = productosData.filter((producto) => producto.destacado)
   const productosMasVendidos = productosData.filter((producto) => producto.mas_vendido)
@@ -27,8 +27,8 @@ export default function Home() {
       {!loadingCategorias && categoriasData.length > 0 && (
         <ScrollArea className="m-4 rounded-md bg-white border whitespace-nowrap hidden md:block">
           <div className="flex h-24 gap-8 px-7 items-center rounded-lg ">
-            {categoriasData.map((categoria) => (
-              <Link key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
+            {categoriasData.map((categoria: Categoria) => (
+              <Link className='w-20' key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <img src={categoria.imagen_url || ''} alt={categoria.nombre} className="size-16" />
@@ -68,7 +68,7 @@ export default function Home() {
             <div key={i} className="size-[100px] md:size-48 bg-muted animate-pulse rounded-lg" />
           ))
         ) : (
-          categoriasData.map((categoria) => (
+          categoriasData.map((categoria: Categoria) => (
             <Link key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
               <CategoriaCard categoria={categoria as Categoria} />
             </Link>

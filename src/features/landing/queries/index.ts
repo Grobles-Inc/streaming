@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 export const useCategorias = () => {
   return useQuery({
     queryKey: ['categorias'],
-    queryFn: () => categoriasService.getCategoriasPaginated(),
+    queryFn: () => categoriasService.getCategorias(),
   })
 }
 

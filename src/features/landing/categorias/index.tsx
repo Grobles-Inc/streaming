@@ -11,6 +11,7 @@ import { useState, useMemo } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
 import { useProductos } from "../queries/productos"
+import type { Categoria } from "../services/index"
 
 
 export default function Categoria({ nombre }: { nombre: string }) {
@@ -21,7 +22,7 @@ export default function Categoria({ nombre }: { nombre: string }) {
 
   const isMobile = useIsMobile()
   // Validaciones adicionales
-  const categoriasData = categorias?.data || []
+  const categoriasData = categorias || []
   const categoria = categoriasData.find(c => c.nombre.toLowerCase() === nombre.toLowerCase())
   const categoriaId = categoria?.id || ''
 
@@ -44,7 +45,7 @@ export default function Categoria({ nombre }: { nombre: string }) {
       {!loadingCategorias && categoriasData.length > 0 && (
         <ScrollArea className=" rounded-md bg-white border whitespace-nowrap hidden md:block">
           <div className="flex h-24 gap-8 px-7 items-center rounded-lg ">
-            {categoriasData.map((categoria) => {
+            {categoriasData.map((categoria: Categoria) => {
               return (
                 <Link key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
                   <Tooltip>

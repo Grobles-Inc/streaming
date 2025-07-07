@@ -51,7 +51,8 @@ export function ComprasDialogs() {
               }, 500)
             }}
             handleConfirm={() => {
-              reciclarCompra(currentRow.id || '')
+              if (!currentRow.id) return
+              reciclarCompra(currentRow.id)
               setOpen(null)
               setTimeout(() => {
                 setCurrentRow(null)

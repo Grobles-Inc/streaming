@@ -25,7 +25,7 @@ export const useProductosByCategoria = (categoriaId: string) => {
   })
 }
 
-export const useStockProductosIds = (productoId: string) => {
+export const useStockProductosIds = (productoId: number) => {
   return useQuery({
     queryKey: ['stock-productos-ids', productoId],
     queryFn: () => stockProductosService.getStockProductosIds(productoId),
@@ -34,7 +34,7 @@ export const useStockProductosIds = (productoId: string) => {
 
 export const useRemoveIdFromStockProductos = () => {
   return useMutation({
-    mutationFn: ({ productoId }: { productoId: string }) => stockProductosService.removeIdFromStockProductos(productoId),
+    mutationFn: ({ productoId }: { productoId: number }) => stockProductosService.removeIdFromStockProductos(productoId),
   })
 }
 

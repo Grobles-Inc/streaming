@@ -7,7 +7,7 @@ export type StockProductoUpdate = Database['public']['Tables']['stock_productos'
 
 
 // Get all stock productos
-export const getStockProductosIds = async (productoId: string): Promise<number[]> => {
+export const getStockProductosIds = async (productoId: number): Promise<number[]> => {
   const { data, error } = await supabase
     .from('stock_productos')
     .select('id')
@@ -21,7 +21,7 @@ export const getStockProductosIds = async (productoId: string): Promise<number[]
   return data?.map((stock) => stock.id as number) || []
 }
 
-export const removeIdFromStockProductos = async (productoId: string): Promise<boolean> => {
+export const removeIdFromStockProductos = async (productoId: number): Promise<boolean> => {
   const { data: producto, error: fetchError } = await supabase
     .from('productos')
     .select('stock_de_productos')

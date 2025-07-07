@@ -5,6 +5,7 @@ export type Categoria = Database['public']['Tables']['categorias']['Row']
 export type CategoriaInsert = Database['public']['Tables']['categorias']['Insert']
 export type CategoriaUpdate = Database['public']['Tables']['categorias']['Update']
 export type Producto = Database['public']['Tables']['productos']['Row']
+export type ConfiguracionRow = Database['public']['Tables']['configuracion']['Row']
 
 // Create a new categoria
 export const createCategoria = async (categoria: CategoriaInsert): Promise<Categoria | null> => {
@@ -86,3 +87,18 @@ export const getCategorias = async (): Promise<Categoria[]> => {
   return data || []
 }
 
+export const getConfiguracionActual = async (): Promise<ConfiguracionRow | null> => {
+  const { data, error } = await supabase
+    .from('configuracion')
+    .select('*')
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (error) {
+    console.error('Error obteniendo configuración:', error)
+    return null
+  }
+
+  return data
+}

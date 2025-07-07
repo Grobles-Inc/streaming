@@ -18,7 +18,7 @@ interface PublicacionMessage {
   nombre_producto: string
   metodo: string
   id_cliente: string
-  id_producto: string
+  id_producto: number
 }
 
 interface CompraMessage {
@@ -47,7 +47,7 @@ interface SoporteMessage {
   nombre_cliente: string
   asunto: string
   mensaje: string
-  id_producto: string
+  id_producto: number
   id_cliente: string
 }
 
@@ -122,7 +122,7 @@ export async function DesembolsoMessage(
 ) {
   const formattedMessage = `Hola, quiero hacer un *desembolso* con los siguientes datos:
 
-*DETALLES DEL DESEMBOLSO:*
+*DETALLES DEL REEMBOLSO:*
 - *Cliente:* ${message.nombre_cliente}
 - *Monto:* S/. ${message.monto.toFixed(2)}
 - *Comisión:* S/. ${(message.monto * 0.05).toFixed(2)}

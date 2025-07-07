@@ -24,7 +24,7 @@ const subjectOptions = [
 
 const formSchema = z.object({
   subject: z.string().min(1, 'Debes seleccionar un asunto'),
-  message: z.string().min(1, 'El mensaje es requerido').min(10, 'El mensaje debe tener al menos 10 caracteres'),
+  message: z.string().min(1, 'El mensaje es requerido').min(4, 'El mensaje debe tener al menos 4 caracteres'),
   response: z.string().optional(),
 })
 
@@ -53,8 +53,9 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
   async function onSubmit(data: FormData) {
     try {
       onOpenChange(false)
+      if (!currentRow.id) return
       await updateCompraStatus({
-        id: currentRow.id || '',
+        id: currentRow.id,
         status: "soporte",
         message: data.message,
         subject: data.subject,
@@ -68,7 +69,7 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
           nombre_cliente: currentRow.nombre_cliente,
           asunto: data.subject,
           mensaje: data.message,
-          id_producto: currentRow.producto_id || '',
+          id_producto: currentRow.producto_id,
           id_cliente: currentRow.vendedor_id || '',
         }, currentRow.usuarios?.telefono || '', isMobile ? 'mobile' : 'web')
       }, 3000)
@@ -78,8 +79,9 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
   }
 
   const handleValidarSoporte = () => {
+    if (!currentRow.id) return
     updateCompraStatus({
-      id: currentRow.id || '',
+      id: currentRow.id,
       status: "resuelto",
       message: '',
       subject: '',

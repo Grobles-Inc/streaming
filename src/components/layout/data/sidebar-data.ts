@@ -118,13 +118,8 @@ const baseNavGroups = [
           url: '/recargas',
           icon: IconCreditCard,
           roles: ['seller'],
-        },
-        {
-          title: 'Referidos',
-          url: '/referidos',
-          icon: IconUsers,
-          roles: ['seller'],
-        },
+        }
+        
     ],
   },
   {
@@ -216,6 +211,18 @@ const baseNavGroups = [
         roles: ['admin'],
       },
     ],
+  },
+  {
+    title: 'Referidos',
+    roles: ['admin', 'registered', 'seller', 'provider'],
+    items: [
+      {
+        title: 'Mis Referidos',
+        url: '/referidos',
+        icon: IconUsers,
+        roles: ['admin', 'registered', 'seller', 'provider'],
+      }
+    ]
   },
   // {
   //   title: 'Pages',

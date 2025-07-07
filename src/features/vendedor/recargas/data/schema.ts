@@ -10,7 +10,7 @@ const recargaEstadoSchema = z.union([
 ])
 
 export const recargaSchema = z.object({
-  id: z.string(),
+  id: z.number(),
   usuario_id: z.string(),
   monto: z.number(),
   estado: recargaEstadoSchema,

@@ -42,7 +42,7 @@ export const getLatestCompras = async (usuarioId: string): Promise<Compra[]> => 
   return data
 }
 // Get compra by ID
-export const getCompraById = async (id: string): Promise<Compra | null> => {
+export const getCompraById = async (id: number): Promise<Compra | null> => {
   const { data, error } = await supabase
     .from('compras')
     .select('*')
@@ -58,7 +58,7 @@ export const getCompraById = async (id: string): Promise<Compra | null> => {
 }
 
 // Update compra
-export const updateCompra = async (id: string, updates: CompraUpdate): Promise<Compra | null> => {
+export const updateCompra = async (id: number, updates: CompraUpdate): Promise<Compra | null> => {
   const { data, error } = await supabase
     .from('compras')
     .update(updates)
@@ -74,7 +74,7 @@ export const updateCompra = async (id: string, updates: CompraUpdate): Promise<C
   return data
 }
 
-export const updateCompraStatus = async (id:string, status: string, message: string, subject: string, response?: string): Promise<Compra | null> => {
+export const updateCompraStatus = async (id:number, status: string, message: string, subject: string, response?: string): Promise<Compra | null> => {
   const { data, error } = await supabase
     .from('compras')
     .update({ estado: status, soporte_mensaje: message, soporte_asunto: subject, soporte_respuesta: response || null })
@@ -107,7 +107,7 @@ export const updateStockProductoStatus = async (id: number): Promise<StockProduc
 }
 
 
-export const updateCompraStatusVencido = async (id: string): Promise<Compra | null> => {
+export const updateCompraStatusVencido = async (id: number): Promise<Compra | null> => {
   const { data, error } = await supabase
     .from('compras')
     .update({ estado: 'vencido' })
@@ -123,7 +123,7 @@ export const updateCompraStatusVencido = async (id: string): Promise<Compra | nu
 }
 
 
-export const renovarCompra = async (id: string, tiempo_uso: number, fecha_expiracion: string, billeteraId: string, saldo: number): Promise<Compra | Billetera | null> => {
+export const renovarCompra = async (id: number, tiempo_uso: number, fecha_expiracion: string, billeteraId: string, saldo: number): Promise<Compra | Billetera | null> => {
   const endDate = new Date(fecha_expiracion)
   const newDate = new Date(endDate.setDate(endDate.getDate() + tiempo_uso))
 
@@ -155,7 +155,7 @@ export const renovarCompra = async (id: string, tiempo_uso: number, fecha_expira
 }
 
 // Recycle compra
-export const reciclarCompra = async (id: string): Promise<boolean> => {
+export const reciclarCompra = async (id: number): Promise<boolean> => {
   const { error } = await supabase
     .from('compras')
     .delete()
@@ -170,30 +170,34 @@ export const reciclarCompra = async (id: string): Promise<boolean> => {
 }
 
 // Get compras by vendedor ID
-export const getComprasByVendedorId = async (vendedorId: string): Promise<Compra[]> => {
-  const { data, error } = await supabase
+export const getComprasByVendedorId = async (vendedorId: string, page: number = 1, pageSize: number = 200): Promise<{ data: Compra[]; count: number }> => {
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+
+  const { data, error, count } = await supabase
     .from('compras')
     .select(`
       *,
       productos:producto_id (nombre, precio_publico, tiempo_uso, condiciones, descripcion, informacion, precio_renovacion, renovable),
       usuarios:proveedor_id (nombres, apellidos, telefono, billetera_id),
       stock_productos:stock_producto_id (email, perfil, pin, clave)
-    `)
+    `, { count: 'exact' })
     .eq('vendedor_id', vendedorId)
+    .range(from, to)
     .order('created_at', { ascending: false })
 
   if (error) {
     console.error('Error fetching compras by vendedor:', error)
-    return []
+    return { data: [], count: 0 }
   }
 
-  return data || []
+  return { data: data || [], count: count || 0 }
 }
 
 // Get compras with pagination
 export const getComprasPaginated = async (
   page: number = 1,
-  pageSize: number = 10
+  pageSize: number = 200
 ): Promise<{ data: Compra[]; count: number }> => {
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1

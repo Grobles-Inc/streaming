@@ -28,7 +28,7 @@ export const useComprasByVendedor = (vendedorId: string) => {
   })
 }
 
-export const useCompraById = (id: string) => {
+export const useCompraById = (id: number) => {
   return useQuery({
     queryKey: ['compras', id],
     queryFn: () => comprasService.getCompraById(id),
@@ -54,7 +54,7 @@ export const useUpdateCompra = () => {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: any }) => 
+    mutationFn: ({ id, updates }: { id: number; updates: any }) => 
       comprasService.updateCompra(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['compras'] })
@@ -69,7 +69,7 @@ export const useUpdateCompra = () => {
 export const useUpdateCompraStatus = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, status, message, subject, response }: { id: string; status: string, message : string, subject: string, response?: string }) => comprasService.updateCompraStatus(id, status, message, subject, response),
+    mutationFn: ({ id, status, message, subject, response }: { id: number; status: string, message : string, subject: string, response?: string }) => comprasService.updateCompraStatus(id, status, message, subject, response),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['compras'] })
       toast.success('Estado de la compra actualizado correctamente')
@@ -93,7 +93,7 @@ export const useUpdateStockProductoStatus = () => {
 export const useUpdateCompraStatusVencido = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (id: string) => comprasService.updateCompraStatusVencido(id),
+    mutationFn: (id: number) => comprasService.updateCompraStatusVencido(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['compras'] })
     },
@@ -104,7 +104,7 @@ export const useReciclarCompra = () => {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: (id: string) => comprasService.reciclarCompra(id),
+    mutationFn: (id: number) => comprasService.reciclarCompra(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['compras'] })
       toast.success('Compra reciclada correctamente')
@@ -126,7 +126,7 @@ export const useProductoById = (id: string) => {
 export const useRenovarCompra = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (params: { id: string, tiempo_uso: number, fecha_expiracion: string, billeteraId: string, saldo: number }) => 
+    mutationFn: (params: { id: number, tiempo_uso: number, fecha_expiracion: string, billeteraId: string, saldo: number }) => 
       comprasService.renovarCompra(params.id, params.tiempo_uso, params.fecha_expiracion, params.billeteraId, params.saldo),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['compras'] })

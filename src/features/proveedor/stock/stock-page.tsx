@@ -1,0 +1,249 @@
+import { useState } from 'react'
+import { Header } from '@/components/layout/header'
+import { Main } from '@/components/layout/main'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { IconPlus, IconRefresh } from '@tabler/icons-react'
+import { ConfirmDialog } from '@/components/confirm-dialog'
+import { AgregarStockModal } from '../productos/components/agregar-stock-modal'
+import { EditarStockModal } from '../productos/components/editar-stock-modal'
+import { 
+  useStockProductosByProveedor, 
+  useDeleteStockProducto,
+  useUpdateStockProducto,
+  useProductosByProveedor
+} from './queries/index'
+import { useAuth } from '@/stores/authStore'
+import type { Database } from '@/types/supabase'
+import { ThemeSwitch } from '@/components/theme-switch'
+import { ProfileDropdown } from '@/components/profile-dropdown'
+import { StockTable } from './components/stock-table'
+import { createStockColumns } from './components/stock-columns'
+import { useMemo } from 'react'
+import { toast } from 'sonner'
+
+type StockProducto = Database['public']['Tables']['stock_productos']['Row'] & {
+  producto?: {
+    id: string
+    nombre: string
+  }
+}
+
+
+export function StockPage() {
+  const { user } = useAuth()
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showAgregarStockDialog, setShowAgregarStockDialog] = useState(false)
+  const [showEditarStockDialog, setShowEditarStockDialog] = useState(false)
+  const [selectedStock, setSelectedStock] = useState<StockProducto | null>(null)
+  // Queries
+  const { data: stockItems, isLoading, error } = useStockProductosByProveedor(user?.id ?? '')
+  const { data: productos } = useProductosByProveedor(user?.id ?? '')
+  const deleteStockMutation = useDeleteStockProducto()
+  const updateStockMutation = useUpdateStockProducto()
+
+  const handleDelete = (stock: StockProducto) => {
+    setSelectedStock(stock)
+    setShowDeleteDialog(true)
+  }
+
+  const handleEdit = (stock: StockProducto) => {
+    setSelectedStock(stock)
+    setShowEditarStockDialog(true)
+  }
+
+  const confirmDelete = () => {
+    if (!selectedStock) return
+
+    deleteStockMutation.mutate(
+      { id: selectedStock.id, productoId: selectedStock.producto_id },
+      {
+        onSuccess: () => {
+          setShowDeleteDialog(false)
+          setSelectedStock(null)
+        }
+      }
+    )
+  }
+
+  const togglePublicado = (stock: StockProducto) => {
+    updateStockMutation.mutate({
+      id: stock.id,
+      updates: { publicado: !stock.publicado }
+    })
+  }
+
+  const handleDeleteSelected = (selectedIds: number[]) => {
+    // Verificar si algún stock está vendido
+    const selectedStockItems = stockItems?.filter(item => selectedIds.includes(item.id))
+    const hasVendidoItems = selectedStockItems?.some(item => item.estado === 'vendido')
+    
+    if (hasVendidoItems) {
+      toast.error('No se pueden eliminar elementos vendidos', {
+        description: 'Algunos de los elementos seleccionados ya están vendidos y no se pueden eliminar.'
+      })
+      return
+    }
+
+    // Confirmar eliminación
+    if (window.confirm(`¿Estás seguro de que deseas eliminar ${selectedIds.length} elemento(s)?`)) {
+      Promise.all(
+        selectedIds.map(id => 
+          deleteStockMutation.mutateAsync({ 
+            id, 
+            productoId: selectedStockItems?.find(item => item.id === id)?.producto_id || '' 
+          })
+        )
+      ).then(() => {
+        toast.success('Elementos eliminados correctamente')
+      }).catch(() => {
+        toast.error('Error al eliminar algunos elementos')
+      })
+    }
+  }
+
+  const handleTogglePublishedSelected = (selectedIds: number[], published: boolean) => {
+    const action = published ? 'publicar' : 'despublicar'
+    
+    if (window.confirm(`¿Estás seguro de que deseas ${action} ${selectedIds.length} elemento(s)?`)) {
+      Promise.all(
+        selectedIds.map(id => 
+          updateStockMutation.mutateAsync({
+            id,
+            updates: { publicado: published }
+          })
+        )
+      ).then(() => {
+        toast.success(`Elementos ${published ? 'publicados' : 'despublicados'} correctamente`)
+      }).catch(() => {
+        toast.error(`Error al ${action} algunos elementos`)
+      })
+    }
+  }
+
+  // Verificar si el stock seleccionado está vendido
+  const stockEstaVendido = selectedStock?.estado === 'vendido'
+
+  // Crear las columnas con las acciones
+  const columns = useMemo(() => createStockColumns({
+    onEdit: handleEdit,
+    onDelete: handleDelete,
+    onTogglePublicado: togglePublicado,
+    isUpdating: updateStockMutation.isPending
+  }), [updateStockMutation.isPending])
+
+  if (error) {
+    return (
+      <>
+        <Header>
+          <div className='ml-auto flex items-center space-x-4'>
+            <Button className='rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()}>
+              <IconRefresh />
+            </Button>
+            <ThemeSwitch />
+            <ProfileDropdown />
+          </div>
+        </Header>
+        <Main>
+          <Alert variant="destructive">
+            <AlertDescription>
+              Error al cargar el stock. Por favor, intenta nuevamente.
+            </AlertDescription>
+          </Alert>
+        </Main>
+      </>
+    )
+  }
+
+  return (
+    <>
+      <Header>
+        <div className='ml-auto flex items-center space-x-4'>
+          <Button className='rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()}>
+            <IconRefresh />
+          </Button>
+          <ThemeSwitch />
+          <ProfileDropdown />
+        </div>
+      </Header>
+      <Main>
+        <div className='space-y-6'>
+          {/* Header de la página */}
+          <div className='space-y-4'>
+            <div>
+              <h1 className='text-3xl font-bold tracking-tight'>Gestión de Stock</h1>
+              <p className='text-muted-foreground'>
+                Administra todas las existencias de tus productos desde un solo lugar.
+              </p>
+            </div>
+          </div>
+
+          {/* Tabla de stock con paginación */}
+          {isLoading ? (
+            <div className='space-y-4'>
+              <Skeleton className='h-10 w-full' />
+              <Skeleton className='h-10 w-full' />
+              <Skeleton className='h-10 w-full' />
+              <Skeleton className='h-10 w-full' />
+              <Skeleton className='h-10 w-full' />
+            </div>
+          ) : stockItems && stockItems.length > 0 ? (
+            <StockTable 
+              columns={columns} 
+              data={stockItems} 
+              productos={productos}
+              onAgregarStock={() => setShowAgregarStockDialog(true)}
+              onDeleteSelected={handleDeleteSelected}
+              onTogglePublishedSelected={handleTogglePublishedSelected}
+            />
+          ) : (
+            <div className="text-center py-12">
+              <div className="text-4xl mb-4">📦</div>
+              <h3 className="text-lg font-medium mb-2">No hay stock disponible</h3>
+              <p className="text-muted-foreground mb-4">
+                Aún no has agregado ningún stock a tus productos.
+              </p>
+              <Button onClick={() => setShowAgregarStockDialog(true)}>
+                <IconPlus size={16} className="mr-2" />
+                Agregar Primer Stock
+              </Button>
+            </div>
+          )}
+        </div>
+      </Main>
+
+      {/* Modal de confirmación de eliminación */}
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title={stockEstaVendido ? "No se puede eliminar" : "¿Eliminar existencia?"}
+        desc={
+          stockEstaVendido 
+            ? "No se puede eliminar esta cuenta porque ya está vendida y tiene referencias en el sistema. Las cuentas vendidas deben permanecer en el historial."
+            : "Esta acción eliminará permanentemente esta existencia del stock. Esta acción no se puede deshacer."
+        }
+        confirmText={stockEstaVendido ? "Entendido" : "Eliminar"}
+        destructive={!stockEstaVendido}
+        handleConfirm={stockEstaVendido ? () => setShowDeleteDialog(false) : confirmDelete}
+        isLoading={deleteStockMutation.isPending}
+      />
+
+      {/* Modal para agregar nuevo stock */}
+      <AgregarStockModal
+        open={showAgregarStockDialog}
+        onOpenChange={setShowAgregarStockDialog}
+      />
+
+      {/* Modal para editar stock */}
+      <EditarStockModal
+        open={showEditarStockDialog}
+        onOpenChange={(open) => {
+          setShowEditarStockDialog(open)
+          if (!open) setSelectedStock(null)
+        }}
+        stock={selectedStock}
+      />
+    </>
+  )
+}

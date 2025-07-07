@@ -138,6 +138,12 @@ const baseNavGroups = [
         roles: ['provider'],
       },
       {
+        title: 'Stock',
+        url: '/proveedor/stock',
+        icon: IconPackage,
+        roles: ['provider'],
+      },
+      {
         title: 'Pedidos',
         url: '/proveedor/pedidos',
         icon: IconClipboardList,

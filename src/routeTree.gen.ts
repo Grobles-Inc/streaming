@@ -29,6 +29,7 @@ import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedComprasIndexRouteImport } from './routes/_authenticated/compras/index'
 import { Route as publicCategoriaNameRouteImport } from './routes/(public)/categoria/$name'
+import { Route as AuthenticatedProveedorStockIndexRouteImport } from './routes/_authenticated/proveedor/stock/index'
 import { Route as AuthenticatedProveedorProductosIndexRouteImport } from './routes/_authenticated/proveedor/productos/index'
 import { Route as AuthenticatedProveedorPedidosIndexRouteImport } from './routes/_authenticated/proveedor/pedidos/index'
 import { Route as AuthenticatedProveedorBilleteraIndexRouteImport } from './routes/_authenticated/proveedor/billetera/index'
@@ -151,6 +152,12 @@ const publicCategoriaNameRoute = publicCategoriaNameRouteImport.update({
   path: '/categoria/$name',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedProveedorStockIndexRoute =
+  AuthenticatedProveedorStockIndexRouteImport.update({
+    id: '/proveedor/stock/',
+    path: '/proveedor/stock/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProveedorProductosIndexRoute =
   AuthenticatedProveedorProductosIndexRouteImport.update({
     id: '/proveedor/productos/',
@@ -285,6 +292,7 @@ export interface FileRoutesByFullPath {
   '/proveedor/billetera': typeof AuthenticatedProveedorBilleteraIndexRoute
   '/proveedor/pedidos': typeof AuthenticatedProveedorPedidosIndexRoute
   '/proveedor/productos': typeof AuthenticatedProveedorProductosIndexRoute
+  '/proveedor/stock': typeof AuthenticatedProveedorStockIndexRoute
 }
 export interface FileRoutesByTo {
   '': typeof AuthenticatedRouteRouteWithChildren
@@ -323,6 +331,7 @@ export interface FileRoutesByTo {
   '/proveedor/billetera': typeof AuthenticatedProveedorBilleteraIndexRoute
   '/proveedor/pedidos': typeof AuthenticatedProveedorPedidosIndexRoute
   '/proveedor/productos': typeof AuthenticatedProveedorProductosIndexRoute
+  '/proveedor/stock': typeof AuthenticatedProveedorStockIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -362,6 +371,7 @@ export interface FileRoutesById {
   '/_authenticated/proveedor/billetera/': typeof AuthenticatedProveedorBilleteraIndexRoute
   '/_authenticated/proveedor/pedidos/': typeof AuthenticatedProveedorPedidosIndexRoute
   '/_authenticated/proveedor/productos/': typeof AuthenticatedProveedorProductosIndexRoute
+  '/_authenticated/proveedor/stock/': typeof AuthenticatedProveedorStockIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -402,6 +412,7 @@ export interface FileRouteTypes {
     | '/proveedor/billetera'
     | '/proveedor/pedidos'
     | '/proveedor/productos'
+    | '/proveedor/stock'
   fileRoutesByTo: FileRoutesByTo
   to:
     | ''
@@ -440,6 +451,7 @@ export interface FileRouteTypes {
     | '/proveedor/billetera'
     | '/proveedor/pedidos'
     | '/proveedor/productos'
+    | '/proveedor/stock'
   id:
     | '__root__'
     | '/_authenticated'
@@ -478,6 +490,7 @@ export interface FileRouteTypes {
     | '/_authenticated/proveedor/billetera/'
     | '/_authenticated/proveedor/pedidos/'
     | '/_authenticated/proveedor/productos/'
+    | '/_authenticated/proveedor/stock/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -639,6 +652,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicCategoriaNameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/proveedor/stock/': {
+      id: '/_authenticated/proveedor/stock/'
+      path: '/proveedor/stock'
+      fullPath: '/proveedor/stock'
+      preLoaderRoute: typeof AuthenticatedProveedorStockIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/proveedor/productos/': {
       id: '/_authenticated/proveedor/productos/'
       path: '/proveedor/productos'
@@ -777,6 +797,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProveedorBilleteraIndexRoute: typeof AuthenticatedProveedorBilleteraIndexRoute
   AuthenticatedProveedorPedidosIndexRoute: typeof AuthenticatedProveedorPedidosIndexRoute
   AuthenticatedProveedorProductosIndexRoute: typeof AuthenticatedProveedorProductosIndexRoute
+  AuthenticatedProveedorStockIndexRoute: typeof AuthenticatedProveedorStockIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -809,6 +830,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedProveedorPedidosIndexRoute,
   AuthenticatedProveedorProductosIndexRoute:
     AuthenticatedProveedorProductosIndexRoute,
+  AuthenticatedProveedorStockIndexRoute: AuthenticatedProveedorStockIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

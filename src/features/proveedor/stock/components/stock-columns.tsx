@@ -48,13 +48,22 @@ export const createStockColumns = (
     enableHiding: false,
   },
   {
-    accessorKey: 'id',
+    id: 'numero',
     header: 'ID',
-    cell: ({ row }) => (
-      <div className="font-mono text-sm">
-        #{row.getValue('id')}
-      </div>
-    ),
+    cell: ({ row, table }) => {
+      const pageIndex = table.getState().pagination.pageIndex
+      const pageSize = table.getState().pagination.pageSize
+      const rowIndex = row.index
+      const numero = pageIndex * pageSize + rowIndex + 1
+      
+      return (
+        <div className="font-mono text-sm">
+          {numero}
+        </div>
+      )
+    },
+    enableSorting: false,
+    enableHiding: false,
   },
   {
     accessorKey: 'producto',

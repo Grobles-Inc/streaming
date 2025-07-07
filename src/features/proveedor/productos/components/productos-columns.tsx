@@ -74,13 +74,20 @@ export const columns: ColumnDef<Producto>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'id',
+    id: 'numero',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='ID' />
     ),
-    cell: ({ row }) => (
-      <div className='w-12 font-mono text-sm'>{(row.getValue('id') as string)?.slice(0, 8)}</div>
-    ),
+    cell: ({ row, table }) => {
+      const pageIndex = table.getState().pagination.pageIndex
+      const pageSize = table.getState().pagination.pageSize
+      const rowIndex = row.index
+      const numero = pageIndex * pageSize + rowIndex + 1
+      
+      return (
+        <div className='w-12 font-mono text-sm text-left'>{numero}</div>
+      )
+    },
     meta: {
       className: cn(
         'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
@@ -88,6 +95,7 @@ export const columns: ColumnDef<Producto>[] = [
         'sticky left-6 md:table-cell'
       ),
     },
+    enableSorting: false,
     enableHiding: false,
   },
   {

@@ -45,13 +45,22 @@ export const columns: ColumnDef<Pedido>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'id',
+    id: 'numero',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='ID' />
     ),
-    cell: ({ row }) => {
-      const idValue = row.getValue('id')
-      return <div className='flex justify-center w-[80px]'>C-{typeof idValue === 'string' ? idValue.slice(0, 4) : ''}</div>
+    cell: ({ row, table }) => {
+      const pageIndex = table.getState().pagination.pageIndex
+      const pageSize = table.getState().pagination.pageSize
+      const rowIndex = row.index
+      const numero = pageIndex * pageSize + rowIndex + 1
+      
+      return <div className='flex justify-center w-[80px] font-mono text-sm'>{numero}</div>
+    },
+    filterFn: (row, _id, value) => {
+      // Calcular el número de la fila para el filtro
+      const numero = row.index + 1
+      return numero.toString().includes(value)
     },
     enableSorting: false,
     enableHiding: false,
@@ -114,6 +123,13 @@ export const columns: ColumnDef<Pedido>[] = [
       const usuario = row.original.usuarios
       return <div className='flex justify-center'>{usuario?.nombres || row.getValue('nombre_cliente')}</div>
     },
+    filterFn: (row, _id, value) => {
+      const usuario = row.original.usuarios
+      const nombreCliente = usuario?.nombres || row.original.nombre_cliente || ''
+      const apellidoCliente = usuario?.apellidos || ''
+      const nombreCompleto = `${nombreCliente} ${apellidoCliente}`.toLowerCase()
+      return nombreCompleto.includes(value.toLowerCase())
+    },
   },
   {
     accessorKey: 'telefono_whatsapp',
@@ -173,6 +189,10 @@ export const columns: ColumnDef<Pedido>[] = [
           </span>
         </div>
       )
+    },
+    filterFn: (row, _id, value) => {
+      const email = row.original.stock_productos?.email || ''
+      return email.toLowerCase().includes(value.toLowerCase())
     },
   },
   {

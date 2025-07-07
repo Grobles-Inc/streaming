@@ -104,6 +104,7 @@ export interface Database {
             nombres: string
             apellidos: string
             billetera_id: string
+            usuario: string
           }
           nombre: string
           descripcion: string | null

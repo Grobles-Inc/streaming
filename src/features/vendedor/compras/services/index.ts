@@ -223,7 +223,7 @@ export const getComprasPaginated = async (
 
 
 //Get producto by id
-export const getProductoById = async (id: string): Promise<Producto | null> => {
+export const getProductoById = async (id: number): Promise<Producto | null> => {
   const { data, error } = await supabase
     .from('productos')
     .select(`

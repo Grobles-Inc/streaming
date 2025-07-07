@@ -36,7 +36,7 @@ export function ComprasRecientes() {
               <div className='space-y-1'>
                 <p className='text-sm leading-none font-medium'>{compra.productos?.nombre}</p>
                 <p className='text-muted-foreground text-sm'>
-                  {new Date(compra.fecha_inicio).toLocaleDateString('es-ES')}
+                  {compra.fecha_inicio ? new Date(compra.fecha_inicio).toLocaleDateString('es-ES') : ''}
                 </p>
               </div>
               <div className='font-medium'>$ {compra.precio.toFixed(2)}</div>

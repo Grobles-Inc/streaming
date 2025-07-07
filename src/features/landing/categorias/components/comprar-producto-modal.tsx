@@ -13,6 +13,7 @@ import { useCreateCompra, useUpdateBilleteraProveedorSaldo } from '../../queries
 import { useRemoveIdFromStockProductos, useStockProductosIds, useUpdateStockProductoStatusVendido } from '../../queries/productos'
 import { Producto } from '../../services'
 import { PhoneInput } from './phone-input'
+import { useConfiguracionSistema } from '../../queries'
 
 const formSchema = z.object({
   nombre_cliente: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -32,13 +33,11 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
   const { mutate: createCompra } = useCreateCompra()
   const { data: billetera } = useBilleteraByUsuario(user?.id || '0')
   const { mutate: actualizarSaldo } = useUpdateBilleteraSaldo()
+  const { data: configuracion } = useConfiguracionSistema()
   const { data: stockProductosIds } = useStockProductosIds(producto?.id || '')
   const { mutate: updateProveedorBilletera } = useUpdateBilleteraProveedorSaldo()
   const { mutate: removeIdFromStockProductos } = useRemoveIdFromStockProductos()
   const { mutate: updateStockProductoStatusVendido } = useUpdateStockProductoStatusVendido()
-  const monto = billetera?.saldo
-  const randomIndex = Math.floor(Math.random() * (stockProductosIds?.length || 1))
-  const stock_producto_id = stockProductosIds?.[randomIndex] || 0
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -48,10 +47,17 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
     },
   })
 
-  if (!producto) return null
+  if (!configuracion || !producto) return null
+
+  const tasaDeConversion = configuracion?.conversion || 1
+  const monto = billetera?.saldo
+  const randomIndex = Math.floor(Math.random() * (stockProductosIds?.length || 1))
+  const stock_producto_id = stockProductosIds?.[randomIndex] || 0
   const fecha_expiracion = new Date(Date.now() + producto.tiempo_uso * 24 * 60 * 60 * 1000).toISOString()
+  const precio_producto = user ? producto.precio_vendedor : producto.precio_publico
 
   function onSubmit(data: FormData) {
+
     if (!user?.id) {
       toast.error("Debes iniciar sesión para comprar un producto", { duration: 3000 })
       return
@@ -60,26 +66,27 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       toast.error("Tu rol no permite comprar productos", { duration: 3000 })
       return
     }
-    if (!producto?.precio_publico || !monto || !billetera?.id) return
-    if (monto && monto < producto?.precio_publico) {
+    if (!precio_producto || !monto || !billetera?.id) return
+    if (monto && monto < precio_producto) {
       toast.error("No tienes suficiente saldo", { duration: 3000 })
       return
     }
+    if (!producto?.proveedor_id || !producto?.id) return
     createCompra({
       proveedor_id: producto.proveedor_id,
       producto_id: producto.id,
       vendedor_id: user.id,
       nombre_cliente: data.nombre_cliente,
       estado: producto.a_pedido ? 'pedido' : 'resuelto',
-      precio: producto.precio_publico,
-      monto_reembolso: producto.precio_publico,
+      precio: producto.precio_vendedor,
+      monto_reembolso: producto.precio_vendedor,
       telefono_cliente: data.telefono_cliente.replace(/\s/g, ''),
       fecha_inicio: producto.a_pedido ? null : new Date().toISOString(),
       stock_producto_id: stock_producto_id,
       fecha_expiracion: producto.a_pedido ? null : fecha_expiracion,
     })
     actualizarSaldo(
-      { id: billetera?.id, nuevoSaldo: monto - producto?.precio_publico },
+      { id: billetera?.id, nuevoSaldo: monto - producto?.precio_vendedor },
       {
         onSuccess: () => {
           removeIdFromStockProductos(
@@ -87,7 +94,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
             {
               onSuccess: () => {
                 updateStockProductoStatusVendido({ id: stock_producto_id })
-                updateProveedorBilletera({ idBilletera: producto.usuarios.billetera_id, precioProducto: producto?.precio_publico })
+                updateProveedorBilletera({ idBilletera: producto.usuarios.billetera_id, precioProducto: producto?.precio_vendedor })
               }
             }
           )
@@ -111,8 +118,22 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
 
         </DialogHeader>
         <div className='flex justify-between'>
-          <img src={producto.imagen_url || ''} alt={producto.nombre} className='size-14 rounded-lg' />
-          <span className="font-bold text-2xl">${producto.precio_publico.toFixed(2)}</span>
+          <div className='flex items-center gap-4'>
+
+            <img src={producto.imagen_url || ''} alt={producto.nombre} className='size-14 rounded' />
+            <div className='flex flex-col gap-1'>
+
+
+              <span className="font-bold text-2xl">$ {precio_producto.toFixed(2)}</span>
+              <span className="text-xs text-muted-foreground">S/.{(precio_producto * tasaDeConversion).toFixed(2)} </span>
+            </div>
+          </div>
+          {user && (
+            <div className='flex flex-col items-end'>
+              <span className="font-bold text-2xl">$ {monto?.toFixed(2)} </span>
+              <span className="text-xs text-muted-foreground ">Saldo Actual</span>
+            </div>
+          )}
         </div>
 
         <Accordion type="single" collapsible className="w-full">

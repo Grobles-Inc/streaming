@@ -103,7 +103,7 @@ export const getRecargasAprobadasByVendedorId = async (vendedorId: string): Prom
 // Get recargas with pagination
 export const getRecargasPaginated = async (
   page: number = 1,
-  pageSize: number = 10,
+  pageSize: number = 200,
   vendedorId: string
 ): Promise<{ data: Recarga[]; count: number }> => {
   const from = (page - 1) * pageSize

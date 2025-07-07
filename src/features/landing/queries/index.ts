@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as categoriasService from '../services'
 import * as productosService from '../services/productos'
+import * as landingService from '../services'
 import { toast } from 'sonner'
 
 export const useCategorias = () => {
@@ -37,6 +38,14 @@ export const useCreateCategoria = () => {
     onError: () => {
       toast.error('Error al crear la categoría')
     },
+  })
+}
+
+export const useConfiguracionSistema = () => {
+  return useQuery({
+    queryKey: ['configuracion-sistema'],
+    queryFn: () => landingService.getConfiguracionActual(),
+    staleTime: 1000 * 60 * 5, // 5 minutos
   })
 }
 

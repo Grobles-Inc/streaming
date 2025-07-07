@@ -115,7 +115,7 @@ export const useReciclarCompra = () => {
   })
 }
 
-export const useProductoById = (id: string) => {
+export const useProductoById = (id: number) => {
   return useQuery({
     queryKey: ['productos', id],
     queryFn: () => comprasService.getProductoById(id),

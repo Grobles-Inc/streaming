@@ -61,8 +61,6 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
       tiempo_uso: 30,
       a_pedido: false,
       nuevo: false,
-      destacado: false,
-      mas_vendido: false,
       descripcion_completa: '',
       disponibilidad: 'en_stock',
       renovable: false,
@@ -90,8 +88,6 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
       tiempo_uso: producto.tiempo_uso || 30,
       a_pedido: producto.a_pedido || false,
       nuevo: producto.nuevo || false,
-      destacado: producto.destacado || false,
-      mas_vendido: producto.mas_vendido || false,
       descripcion_completa: producto.descripcion_completa || '',
       disponibilidad: producto.disponibilidad || 'en_stock',
       renovable: producto.renovable || false,
@@ -421,37 +417,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="destacado"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between">
-                      <FormLabel>Producto destacado</FormLabel>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
 
-                <FormField
-                  control={form.control}
-                  name="mas_vendido"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between">
-                      <FormLabel>Más vendido</FormLabel>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
 
                 <FormField
                   control={form.control}

@@ -11,7 +11,7 @@ const pedidoEstadoSchema = z.union([
 export const pedidoSchema = z.object({
   id: z.string().optional(),
   proveedor_id: z.string().optional(),
-  producto_id: z.string().optional(),
+  producto_id: z.number().optional(),
   vendedor_id: z.string().optional(),
   stock_producto_id: z.number().optional(),
   precio: z.number().min(0, 'Precio debe ser positivo.'),

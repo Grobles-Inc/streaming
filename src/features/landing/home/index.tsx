@@ -18,8 +18,7 @@ export default function Home() {
   )
   const categoriasData = categorias || []
   const productosData = productos?.data || []
-  const productosDestacados = productosData.filter((producto) => producto.destacado)
-  const productosMasVendidos = productosData.filter((producto) => producto.mas_vendido)
+  const productosNuevos = productosData.filter((producto) => producto.nuevo)
 
   return (
     <div className="min-h-screen bg-base-100 max-w-[1500px] mx-auto">
@@ -77,43 +76,22 @@ export default function Home() {
       </div>
 
 
-      {/* Productos Destacados */}
-      <div className="md:px-8 px-4 pt-12">
-        <h2 className="text-2xl font-bold mb-4">Productos Destacados</h2>
-        <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-6 md:gap-6 gap-4">
-          {loadingProductos ? (
-            // Skeleton loading para productos
-            Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="w-full bg-muted animate-pulse rounded-lg h-64" />
-            ))
-          ) : productosDestacados.length > 0 ? (
-            productosDestacados.map((producto) => (
-              <ProductoCard key={producto.id} producto={producto} />
-            ))
-          ) : (
-            <div className="col-span-full text-center py-8 text-muted-foreground">
-              No hay productos destacados disponibles
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Los más vendidos */}
+      {/* Productos Nuevos */}
       <div className="md:px-8 px-4 pt-12 pb-12">
-        <h2 className="text-2xl font-bold mb-4">Los más vendidos</h2>
+        <h2 className="text-2xl font-bold mb-4">Productos Nuevos</h2>
         <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-6 md:gap-6 gap-4">
           {loadingProductos ? (
             // Skeleton loading para productos
             Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="w-full bg-muted animate-pulse rounded-lg h-64" />
             ))
-          ) : productosMasVendidos.length > 0 ? (
-            productosMasVendidos.map((producto) => (
+          ) : productosNuevos.length > 0 ? (
+            productosNuevos.map((producto) => (
               <ProductoCard key={producto.id} producto={producto} />
             ))
           ) : (
             <div className="col-span-full text-center py-8 text-muted-foreground">
-              No hay productos más vendidos disponibles
+              No hay productos nuevos disponibles
             </div>
           )}
         </div>

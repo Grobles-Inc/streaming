@@ -42,6 +42,7 @@ export function GestionarExistenciasModal({
   const [showAgregarStockDialog, setShowAgregarStockDialog] = useState(false)
   const [showEditarStockDialog, setShowEditarStockDialog] = useState(false)
   const [selectedStock, setSelectedStock] = useState<StockProducto | null>(null)
+  const [modalPrincipalCerrado, setModalPrincipalCerrado] = useState(false)
 
   const { data: stockItems, isLoading, error } = useStockProductosByProductoId(producto.id)
   const deleteStockMutation = useDeleteStockProducto()
@@ -49,12 +50,22 @@ export function GestionarExistenciasModal({
 
   const handleDelete = (stock: StockProducto) => {
     setSelectedStock(stock)
+    setModalPrincipalCerrado(true)
+    onOpenChange(false) // Cerrar modal principal
     setShowDeleteDialog(true)
   }
 
   const handleEdit = (stock: StockProducto) => {
     setSelectedStock(stock)
+    setModalPrincipalCerrado(true)
+    onOpenChange(false) // Cerrar modal principal
     setShowEditarStockDialog(true)
+  }
+
+  const handleAgregarStock = () => {
+    setModalPrincipalCerrado(true)
+    onOpenChange(false) // Cerrar modal principal
+    setShowAgregarStockDialog(true)
   }
 
   const confirmDelete = () => {
@@ -66,9 +77,22 @@ export function GestionarExistenciasModal({
         onSuccess: () => {
           setShowDeleteDialog(false)
           setSelectedStock(null)
+          // Reabrir modal principal
+          setModalPrincipalCerrado(false)
+          onOpenChange(true)
         }
       }
     )
+  }
+
+  const handleCloseSubModals = () => {
+    setShowDeleteDialog(false)
+    setShowAgregarStockDialog(false)
+    setShowEditarStockDialog(false)
+    setSelectedStock(null)
+    // Reabrir modal principal
+    setModalPrincipalCerrado(false)
+    onOpenChange(true)
   }
 
   const togglePublicado = (stock: StockProducto) => {
@@ -124,7 +148,7 @@ export function GestionarExistenciasModal({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open && !modalPrincipalCerrado} onOpenChange={onOpenChange}>
         <DialogContent className="!max-w-[90vw] !max-h-[150vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -135,7 +159,7 @@ export function GestionarExistenciasModal({
           <div className="flex-1 overflow-hidden flex flex-col">
             {/* Botón para agregar nuevo stock */}
             <div className="mb-4">
-              <Button onClick={() => setShowAgregarStockDialog(true)}>
+              <Button onClick={handleAgregarStock}>
                 <IconPlus size={16} className="mr-2" />
                 Agregar Stock
               </Button>
@@ -283,7 +307,9 @@ export function GestionarExistenciasModal({
       {/* Modal de confirmación de eliminación */}
       <ConfirmDialog
         open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
+        onOpenChange={(open) => {
+          if (!open) handleCloseSubModals()
+        }}
         title={stockEstaVendido ? "No se puede eliminar" : "¿Eliminar existencia?"}
         desc={
           stockEstaVendido 
@@ -299,7 +325,9 @@ export function GestionarExistenciasModal({
       {/* Modal para agregar nuevo stock */}
       <AgregarStockModal
         open={showAgregarStockDialog}
-        onOpenChange={setShowAgregarStockDialog}
+        onOpenChange={(open) => {
+          if (!open) handleCloseSubModals()
+        }}
         productoId={producto.id}
       />
 
@@ -307,8 +335,7 @@ export function GestionarExistenciasModal({
       <EditarStockModal
         open={showEditarStockDialog}
         onOpenChange={(open) => {
-          setShowEditarStockDialog(open)
-          if (!open) setSelectedStock(null)
+          if (!open) handleCloseSubModals()
         }}
         stock={selectedStock}
       />

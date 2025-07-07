@@ -25,7 +25,7 @@ export const useProductosPaginatedByProveedor = (
   })
 }
 
-export const useProductoById = (id: string) => {
+export const useProductoById = (id: number) => {
   return useQuery({
     queryKey: ['productos', id],
     queryFn: () => productosService.getProductoById(id),
@@ -108,7 +108,7 @@ export const usePublicarProductoWithCommission = () => {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: ({ productoId, proveedorId }: { productoId: string, proveedorId: string }) => 
+    mutationFn: ({ productoId, proveedorId }: { productoId: number, proveedorId: string }) => 
       productosService.publicarProductoWithCommission({ productoId, proveedorId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['productos'] })
@@ -127,7 +127,7 @@ export const useUpdateProducto = () => {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Database['public']['Tables']['productos']['Update'] }) => 
+    mutationFn: ({ id, updates }: { id: number; updates: Database['public']['Tables']['productos']['Update'] }) => 
       productosService.updateProducto(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['productos'] })
@@ -140,7 +140,7 @@ export const useUpdateProducto = () => {
 }
 
 // Hook para verificar si un producto tiene cuentas asociadas
-export const useVerificarProductoTieneCuentas = (productoId: string) => {
+export const useVerificarProductoTieneCuentas = (productoId: number) => {
   return useQuery({
     queryKey: ['verificar-cuentas', productoId],
     queryFn: () => productosService.verificarProductoTieneCuentas(productoId),
@@ -153,7 +153,7 @@ export const useDeleteProducto = () => {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: (id: string) => productosService.deleteProducto(id),
+    mutationFn: (id: number) => productosService.deleteProducto(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['productos'] })
       toast.success('Producto eliminado correctamente')
@@ -166,7 +166,7 @@ export const useDeleteProducto = () => {
 
 // === HOOKS PARA GESTIÓN DE STOCK ===
 
-export const useStockProductosByProductoId = (productoId: string) => {
+export const useStockProductosByProductoId = (productoId: number) => {
   return useQuery({
     queryKey: ['stock-productos', productoId],
     queryFn: () => productosService.getStockProductosByProductoId(productoId),
@@ -212,7 +212,7 @@ export const useDeleteStockProducto = () => {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: ({ id }: { id: number; productoId: string }) => 
+    mutationFn: ({ id }: { id: number; productoId: number }) => 
       productosService.deleteStockProducto(id),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['stock-productos', variables.productoId] })

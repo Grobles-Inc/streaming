@@ -100,7 +100,7 @@ export const getProductosByProveedorId = async (proveedorId: string): Promise<(P
 }
 
 // Get producto by ID
-export const getProductoById = async (id: string): Promise<Producto | null> => {
+export const getProductoById = async (id: number): Promise<Producto | null> => {
   const { data, error } = await supabase
     .from('productos')
     .select(`
@@ -124,7 +124,7 @@ export const getProductoById = async (id: string): Promise<Producto | null> => {
 }
 
 // Update producto
-export const updateProducto = async (id: string, updates: ProductoUpdate): Promise<Producto | null> => {
+export const updateProducto = async (id: number, updates: ProductoUpdate): Promise<Producto | null> => {
   const { data, error } = await supabase
     .from('productos')
     .update(updates)
@@ -149,7 +149,7 @@ export const updateProducto = async (id: string, updates: ProductoUpdate): Promi
 }
 
 // Verificar si un producto tiene cuentas de stock asociadas
-export const verificarProductoTieneCuentas = async (productoId: string): Promise<boolean> => {
+export const verificarProductoTieneCuentas = async (productoId: number): Promise<boolean> => {
   const { data, error } = await supabase
     .from('stock_productos')
     .select('id')
@@ -165,7 +165,7 @@ export const verificarProductoTieneCuentas = async (productoId: string): Promise
 }
 
 // Delete producto
-export const deleteProducto = async (id: string): Promise<boolean> => {
+export const deleteProducto = async (id: number): Promise<boolean> => {
   const { error } = await supabase
     .from('productos')
     .delete()
@@ -273,7 +273,7 @@ export const getCategorias = async (): Promise<Categoria[]> => {
 export const getProductosStatsByProveedor = async (proveedorId: string) => {
   const { data, error } = await supabase
     .from('productos')
-    .select('disponibilidad, destacado, mas_vendido')
+          .select('disponibilidad')
     .eq('proveedor_id', proveedorId)
 
   if (error) {
@@ -281,8 +281,6 @@ export const getProductosStatsByProveedor = async (proveedorId: string) => {
     return {
       total: 0,
       enStock: 0,
-      destacados: 0,
-      masVendidos: 0,
       stockTotal: 0
     }
   }
@@ -299,8 +297,6 @@ export const getProductosStatsByProveedor = async (proveedorId: string) => {
   const stats = {
     total: data.length,
     enStock: data.filter(p => p.disponibilidad === 'en_stock').length,
-    destacados: data.filter(p => p.destacado).length,
-    masVendidos: data.filter(p => p.mas_vendido).length,
     stockTotal
   }
 
@@ -527,7 +523,7 @@ export const verificarSaldoSuficiente = async (
 
 // Nueva función para publicar productos existentes cobrando comisión
 export const publicarProductoWithCommission = async (
-  { productoId, proveedorId }: { productoId: string, proveedorId: string }
+  { productoId, proveedorId }: { productoId: number, proveedorId: string }
 ): Promise<Producto> => {
   console.log('🔄 Iniciando publicación de producto con comisión...', { productoId, proveedorId })
   
@@ -593,7 +589,7 @@ export const publicarProductoWithCommission = async (
 // === FUNCIONES PARA GESTIÓN DE STOCK ===
 
 // Función auxiliar para actualizar stock_de_productos en la tabla productos
-export const updateStockDeProductos = async (productoId: string) => {
+export const updateStockDeProductos = async (productoId: number) => {
   try {
     // Obtener todos los IDs de stock_productos para este producto
     const { data: stockItems, error: stockError } = await supabase
@@ -627,7 +623,7 @@ export const updateStockDeProductos = async (productoId: string) => {
 }
 
 // Get stock productos by producto ID
-export const getStockProductosByProductoId = async (productoId: string) => {
+export const getStockProductosByProductoId = async (productoId: number) => {
   const { data, error } = await supabase
     .from('stock_productos')
     .select('*')

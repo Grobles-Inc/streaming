@@ -52,13 +52,7 @@ export class ProductosService {
       query = query.eq('nuevo', filtros.nuevo)
     }
     
-    if (filtros?.destacado !== undefined) {
-      query = query.eq('destacado', filtros.destacado)
-    }
     
-    if (filtros?.mas_vendido !== undefined) {
-      query = query.eq('mas_vendido', filtros.mas_vendido)
-    }
 
     if (filtros?.busqueda) {
       query = query.or(`nombre.ilike.%${filtros.busqueda}%,descripcion.ilike.%${filtros.busqueda}%`)
@@ -285,8 +279,7 @@ export class ProductosService {
       tiempo_uso: productoOriginal.tiempo_uso,
       a_pedido: productoOriginal.a_pedido,
       nuevo: false, // No es nuevo al duplicar
-      destacado: false, // No está destacado al duplicar
-      mas_vendido: false, // No es más vendido al duplicar
+
       descripcion_completa: productoOriginal.descripcion_completa,
       disponibilidad: productoOriginal.disponibilidad,
       renovable: productoOriginal.renovable,
@@ -305,7 +298,7 @@ export class ProductosService {
   static async getEstadisticasProductos(): Promise<EstadisticasProductos> {
     const { data, error } = await supabase
       .from('productos')
-      .select('estado, disponibilidad, nuevo, destacado, mas_vendido')
+      .select('estado, disponibilidad, nuevo')
 
     if (error) {
       console.error('❌ Error fetching productos statistics:', error)
@@ -321,9 +314,7 @@ export class ProductosService {
       enStock: productos.filter(p => p.disponibilidad === 'en_stock').length,
       aPedido: productos.filter(p => p.disponibilidad === 'a_pedido').length,
       activacion: productos.filter(p => p.disponibilidad === 'activacion').length,
-      nuevos: productos.filter(p => p.nuevo).length,
-      destacados: productos.filter(p => p.destacado).length,
-      masVendidos: productos.filter(p => p.mas_vendido).length,
+          nuevos: productos.filter(p => p.nuevo).length,
     }
   }
 

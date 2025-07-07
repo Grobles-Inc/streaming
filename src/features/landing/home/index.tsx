@@ -16,17 +16,13 @@ export default function Home() {
   const filteredProductos = productos?.data.filter((producto) =>
     producto.nombre.toLowerCase().includes(searchInput.toLowerCase())
   )
-  const categoriasData = categorias || []
-  const productosData = productos?.data || []
-  const productosNuevos = productosData.filter((producto) => producto.nuevo)
-
   return (
     <div className="min-h-screen bg-base-100 max-w-[1500px] mx-auto">
       <LandingHeader />
-      {!loadingCategorias && categoriasData.length > 0 && (
+      {!loadingCategorias && categorias && categorias.length > 0 && (
         <ScrollArea className="m-4 rounded-md bg-white border whitespace-nowrap hidden md:block">
           <div className="flex h-24 gap-8 px-7 items-center rounded-lg ">
-            {categoriasData.map((categoria: Categoria) => (
+            {categorias.map((categoria: Categoria) => (
               <Link className='w-20' key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -67,7 +63,7 @@ export default function Home() {
             <div key={i} className="size-[100px] md:size-48 bg-muted animate-pulse rounded-lg" />
           ))
         ) : (
-          categoriasData.map((categoria: Categoria) => (
+          categorias && categorias.map((categoria: Categoria) => (
             <Link key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
               <CategoriaCard categoria={categoria as Categoria} />
             </Link>
@@ -76,7 +72,31 @@ export default function Home() {
       </div>
 
 
-      {/* Productos Nuevos */}
+      {/* Productos Destacados */}
+      <div className="md:px-8 px-4 pt-12">
+        <h2 className="text-2xl font-bold mb-4">Productos Destacados</h2>
+        <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-6 md:gap-6 gap-4">
+          {loadingProductos ? (
+            // Skeleton loading para productos
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="w-full bg-muted animate-pulse rounded-lg h-64" />
+            ))
+          ) : productos?.data && productos.data.length > 0 ? (
+            [...productos.data]
+              .sort(() => Math.random() - 0.5)
+              .slice(0, 10)
+              .map((producto) => (
+                <ProductoCard key={producto.id} producto={producto} />
+              ))
+          ) : (
+            <div className="col-span-full text-center py-8 text-muted-foreground">
+              No hay productos destacados disponibles
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Los más vendidos */}
       <div className="md:px-8 px-4 pt-12 pb-12">
         <h2 className="text-2xl font-bold mb-4">Productos Nuevos</h2>
         <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-6 md:gap-6 gap-4">
@@ -85,10 +105,13 @@ export default function Home() {
             Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="w-full bg-muted animate-pulse rounded-lg h-64" />
             ))
-          ) : productosNuevos.length > 0 ? (
-            productosNuevos.map((producto) => (
-              <ProductoCard key={producto.id} producto={producto} />
-            ))
+          ) : productos?.data && productos.data.length > 0 ? (
+            [...productos.data]
+              .sort(() => Math.random() - 0.5)
+              .slice(0, 10)
+              .map((producto) => (
+                <ProductoCard key={producto.id} producto={producto} />
+              ))
           ) : (
             <div className="col-span-full text-center py-8 text-muted-foreground">
               No hay productos nuevos disponibles

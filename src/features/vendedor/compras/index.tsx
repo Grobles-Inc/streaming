@@ -15,7 +15,8 @@ import { Button } from '@/components/ui/button'
 export default function Compras() {
   const { user } = useAuth()
   const { data: compras, refetch, isRefetching } = useComprasByVendedor(user?.id as string)
-  const comprasList = compras?.map(compra => compraSchema.parse(compra))
+  const comprasList = compras?.data.map(compra => compraSchema.parse(compra)) || []
+  const totalCompras = compras?.count || 0
   return (
     <ComprasProvider>
       <Header>
@@ -34,7 +35,7 @@ export default function Compras() {
           <div>
             <h2 className='text-2xl font-bold tracking-tight'>Compras</h2>
             <p className='text-muted-foreground'>
-              Aquí puedes ver la lista de tus compras.
+              Haz realizado {totalCompras} compra(s).
             </p>
           </div>
         </div>

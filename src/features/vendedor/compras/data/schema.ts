@@ -14,9 +14,9 @@ const compraEstadoSchema = z.union([
 
 
 export const compraSchema = z.object({
-  id: z.string().optional(),
+  id: z.number().optional(),
   proveedor_id: z.string().min(1, 'Proveedor es requerido.'),
-  producto_id: z.string().min(1, 'Producto es requerido.'),
+  producto_id: z.number().min(1, 'Producto es requerido.'),
   vendedor_id: z.string().min(1, 'Vendedor es requerido.'),
   soporte_mensaje: z.string().nullable().optional(),
   soporte_asunto: z.string().nullable().optional(),
@@ -47,7 +47,7 @@ export const compraSchema = z.object({
   }).optional(),
   nombre_cliente: z.string().min(1, 'Nombre del cliente es requerido.'),
   telefono_cliente: z.string().min(1, 'Teléfono del cliente es requerido.'),
-  fecha_inicio: z.string().min(1, 'Fecha de inicio es requerida.'),
+  fecha_inicio: z.string().nullable(),
   fecha_expiracion: z.string().nullable(),
   monto_reembolso: z.number(),
   estado: compraEstadoSchema,

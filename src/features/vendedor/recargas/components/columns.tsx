@@ -1,5 +1,4 @@
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 import { ColumnDef } from '@tanstack/react-table'
 import { estadosMap } from '../data/data'
@@ -8,28 +7,13 @@ import { DataTableColumnHeader } from './data-table-column-header'
 
 export const columns: ColumnDef<Recarga>[] = [
   {
-    id: 'select',
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && 'indeterminate')
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label='Select all'
-        className='translate-y-[2px]'
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label='Select row'
-        className='translate-y-[2px]'
-      />
+    accessorKey: 'id',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='ID' />
     ),
     enableSorting: false,
-  }, {
+  },
+  {
     accessorKey: 'created_at',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Fecha' />
@@ -41,18 +25,8 @@ export const columns: ColumnDef<Recarga>[] = [
         </div>
       )
     },
-
-  },
-  {
-    accessorKey: 'id',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='ID' />
-    ),
-    cell: ({ row }) => {
-      const id = row.getValue('id') as string
-      return <div className='w-[80px]'>R-{id.slice(0, 6)}</div>
-    },
     enableSorting: false,
+
   },
 
   {
@@ -84,7 +58,6 @@ export const columns: ColumnDef<Recarga>[] = [
         </Badge>
       )
     },
-    enableSorting: false,
   },
   {
     accessorKey: 'monto',

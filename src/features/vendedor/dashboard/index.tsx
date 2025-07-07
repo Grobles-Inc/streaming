@@ -33,7 +33,7 @@ export default function Dashboard() {
   const { data: recargas, isLoading: isLoadingRecargas } = useRecargasAprobadasByVendedor(user?.id || '')
   const { data: compras, isLoading: isLoadingCompras } = useComprasByVendedor(user?.id || '')
   const saldo = billetera?.saldo || 0
-  const totalCompras = compras?.reduce((acc, compra) => acc + compra.precio, 0) || 0
+  const totalCompras = compras?.count || 0
   return (
     <>
       {/* ===== Top Heading ===== */}

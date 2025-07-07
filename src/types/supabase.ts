@@ -294,7 +294,7 @@ export interface Database {
       }
       compras: {
         Row: {
-          id: string
+          id: number
           proveedor_id: string
           producto_id: number
           vendedor_id: string | null
@@ -312,12 +312,13 @@ export interface Database {
           updated_at: string
         }
         Insert: {
-          id?: string
+          id?: number
           proveedor_id: string
           producto_id: number
           vendedor_id?: string | null
           stock_producto_id?: number | null
           fecha_expiracion?: string | null
+          fecha_inicio?: string | null
           nombre_cliente: string
           telefono_cliente: string
           precio: number
@@ -330,12 +331,13 @@ export interface Database {
           updated_at?: string
         }
         Update: {
-          id?: string
+          id?: number
           proveedor_id?: string
           producto_id?: number
           vendedor_id?: string | null
           stock_producto_id?: number | null
           fecha_expiracion?: string | null
+          fecha_inicio?: string | null
           nombre_cliente?: string
           telefono_cliente?: string
           precio?: number
@@ -373,7 +375,7 @@ export interface Database {
       }
       recargas: {
         Row: {
-          id: string
+          id: number
           usuario_id: string
           monto: number
           estado: "aprobado" | "pendiente" | "rechazado"
@@ -381,7 +383,7 @@ export interface Database {
           updated_at: string
         }
         Insert: {
-          id?: string
+          id?: number
           usuario_id: string
           monto: number
           estado?: "aprobado" | "pendiente" | "rechazado"
@@ -389,7 +391,7 @@ export interface Database {
           updated_at?: string
         }
         Update: {
-          id?: string
+          id?: number
           usuario_id?: string
           monto?: number
           estado?: "aprobado" | "pendiente" | "rechazado"

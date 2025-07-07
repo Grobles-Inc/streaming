@@ -22,7 +22,7 @@ import { useAuth } from '@/stores/authStore'
 import { Label } from '@/components/ui/label'
 
 
-const DiasRestantesCell = ({ fecha_expiracion, id }: { fecha_expiracion: string, id: string }) => {
+const DiasRestantesCell = ({ fecha_expiracion, id }: { fecha_expiracion: string, id: number | undefined }) => {
   const { isPending } = useRenovarCompra()
   const { mutate: updateCompraStatus } = useUpdateCompraStatusVencido()
   const fecha_actual = new Date()
@@ -31,7 +31,9 @@ const DiasRestantesCell = ({ fecha_expiracion, id }: { fecha_expiracion: string,
 
   useEffect(() => {
     if (dias_restantes === 0) {
-      updateCompraStatus(id)
+      if (id) {
+        updateCompraStatus(id)
+      }
     }
   }, [dias_restantes, id, updateCompraStatus])
 
@@ -100,7 +102,7 @@ const CompraMessageCell = ({ row }: { row: Compra }) => {
       clave_cuenta: row.stock_productos?.clave || '',
       perfil: row.stock_productos?.perfil || '',
       pin: row.stock_productos?.pin || '',
-      fecha_inicio: new Date(row.fecha_inicio).toLocaleDateString('es-ES'),
+      fecha_inicio: row.fecha_inicio ? new Date(row.fecha_inicio).toLocaleDateString('es-ES') : '',
       fecha_expiracion: row.fecha_expiracion ? new Date(row.fecha_expiracion).toLocaleDateString('es-ES') : '',
       descripcion: row.productos?.descripcion || '',
       informacion: row.productos?.informacion || '',
@@ -110,8 +112,9 @@ const CompraMessageCell = ({ row }: { row: Compra }) => {
   }
 
   const handleUpdate = () => {
+    if (!row.id) return
     updateCompra({
-      id: row.id as string,
+      id: row.id,
       updates: {
         telefono_cliente: telefono,
         nombre_cliente: nombres
@@ -290,10 +293,6 @@ export const columns: ColumnDef<Compra>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='ID' />
     ),
-    cell: ({ row }) => {
-      const idValue = row.getValue('id');
-      return <div className='w-[80px]'>C-{typeof idValue === 'string' ? idValue.slice(0, 4) : ''}</div>;
-    },
     enableSorting: false,
     enableHiding: false,
   },
@@ -406,7 +405,7 @@ export const columns: ColumnDef<Compra>[] = [
     ),
     enableSorting: false,
     cell: ({ row }) => {
-      return <div className='flex justify-center'>{new Date(row.original.fecha_inicio).toLocaleDateString('es-ES')}</div>
+      return <div className='flex justify-center'>{row.original.fecha_inicio ? new Date(row.original.fecha_inicio).toLocaleDateString('es-ES') : 'Sin activar'}</div>
     },
   },
   {
@@ -470,7 +469,7 @@ export const columns: ColumnDef<Compra>[] = [
       <DataTableColumnHeader column={column} title='Días restantes' />
     ),
     cell: ({ row }) => {
-      return <DiasRestantesCell fecha_expiracion={row.original.fecha_expiracion as string} id={row.original.id as string} />
+      return <DiasRestantesCell fecha_expiracion={row.original.fecha_expiracion as string} id={row.original.id} />
     },
     enableSorting: false,
   },

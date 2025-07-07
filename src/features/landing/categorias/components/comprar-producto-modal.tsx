@@ -65,7 +65,6 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       toast.error("No tienes suficiente saldo", { duration: 3000 })
       return
     }
-
     createCompra({
       proveedor_id: producto.proveedor_id,
       producto_id: producto.id,
@@ -75,6 +74,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       precio: producto.precio_publico,
       monto_reembolso: producto.precio_publico,
       telefono_cliente: data.telefono_cliente.replace(/\s/g, ''),
+      fecha_inicio: producto.a_pedido ? null : new Date().toISOString(),
       stock_producto_id: stock_producto_id,
       fecha_expiracion: producto.a_pedido ? null : fecha_expiracion,
     })

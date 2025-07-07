@@ -34,7 +34,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
   const { data: billetera } = useBilleteraByUsuario(user?.id || '0')
   const { mutate: actualizarSaldo } = useUpdateBilleteraSaldo()
   const { data: configuracion } = useConfiguracionSistema()
-  const { data: stockProductosIds } = useStockProductosIds(producto?.id || '')
+  const { data: stockProductosIds } = useStockProductosIds(producto?.id || 0)
   const { mutate: updateProveedorBilletera } = useUpdateBilleteraProveedorSaldo()
   const { mutate: removeIdFromStockProductos } = useRemoveIdFromStockProductos()
   const { mutate: updateStockProductoStatusVendido } = useUpdateStockProductoStatusVendido()

@@ -3,26 +3,23 @@ import type { Table } from '@tanstack/react-table'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { IconHash } from '@tabler/icons-react'
 
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
 import { DataTableViewOptions } from './data-table-view-options'
 
-const estados = [
+const tiposTransaccion = [
   {
-    value: 'completado',
-    label: 'Completado',
+    value: 'recarga',
+    label: 'Recarga',
   },
   {
-    value: 'pendiente',
-    label: 'Pendiente',
+    value: 'retiro',
+    label: 'Retiro',
   },
   {
-    value: 'fallido',
-    label: 'Fallido',
-  },
-  {
-    value: 'cancelado',
-    label: 'Cancelado',
+    value: 'compra',
+    label: 'Venta',
   },
 ]
 
@@ -37,37 +34,37 @@ export function DataTableToolbar<TData>({
   const isFiltered = table.getState().columnFilters.length > 0
 
   return (
-    <div className='space-y-4'>
-      {/* Fila superior: Búsqueda */}
-      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-        <div className='flex flex-1 items-center space-x-2'>
+    <div className='flex flex-col gap-4'>
+      {/* Filtros de búsqueda */}
+      <div className='flex flex-col sm:flex-row gap-2'>
+        {/* Búsqueda por ID */}
+        <div className='relative'>
+          <IconHash className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
           <Input
-            placeholder='Buscar recargas...'
-            value={(table.getColumn('monto')?.getFilterValue() as string) ?? ''}
+            placeholder='Buscar por ID...'
+            value={(table.getColumn('id')?.getFilterValue() as string) ?? ''}
             onChange={(event) =>
-              table.getColumn('monto')?.setFilterValue(event.target.value)
+              table.getColumn('id')?.setFilterValue(event.target.value)
             }
-            className='h-8 w-full sm:w-[150px] lg:w-[250px]'
+            className='h-9 w-full sm:w-[140px] pl-8'
           />
         </div>
-        <div className='hidden sm:block'>
-          <DataTableViewOptions table={table} />
-        </div>
-      </div>
-
-      {/* Fila inferior: Filtros */}
-      <div className='flex flex-col sm:flex-row sm:items-center gap-2'>
+        
+        {/* Filtros */}
         <div className='flex flex-wrap items-center gap-2'>
-          {table.getColumn('estado') && (
+          {table.getColumn('tipo') && (
             <DataTableFacetedFilter
-              column={table.getColumn('estado')}
-              title='Estado'
-              options={estados}
+              column={table.getColumn('tipo')}
+              title='Tipo'
+              options={tiposTransaccion}
             />
           )}
         </div>
-        
-        <div className='flex items-center space-x-2'>
+      </div>
+
+      {/* Barra de herramientas */}
+      <div className='flex items-center justify-between gap-2'>
+        <div className='flex items-center gap-2'>
           {isFiltered && (
             <Button
               variant='ghost'
@@ -78,7 +75,13 @@ export function DataTableToolbar<TData>({
               <Cross2Icon className='ml-2 h-4 w-4' />
             </Button>
           )}
+        </div>
+        
+        <div className='flex items-center gap-2'>
           <div className='sm:hidden'>
+            <DataTableViewOptions table={table} />
+          </div>
+          <div className='hidden sm:block'>
             <DataTableViewOptions table={table} />
           </div>
         </div>

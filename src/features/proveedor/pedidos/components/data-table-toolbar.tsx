@@ -3,7 +3,7 @@ import { Table } from '@tanstack/react-table'
 import { estados } from '../data/data'
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
 import { DataTableViewOptions } from './data-table-view-options'
-import { IconSearch, IconUser, IconMail, IconPackage, IconHash } from '@tabler/icons-react'
+import { IconUser, IconMail, IconPackage, IconHash } from '@tabler/icons-react'
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>

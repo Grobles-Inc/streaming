@@ -53,22 +53,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     if (error) {
       toast.error(error.message)
     } else {
-      const user = useAuthStore.getState().user
-      const userRole = user?.rol
-      switch (userRole) {
-        case 'admin':
-          navigate({ to: '/admin/users' })
-          break
-        case 'provider':
-          navigate({ to: '/proveedor/productos' })
-          break
-        case 'seller':
-          navigate({ to: '/dashboard' })
-          break
-        default:
-          navigate({ to: '/' })
-          break
-      }
+      navigate({ to: '/' })
     }
     setTimeout(() => {
       setIsLoading(false)

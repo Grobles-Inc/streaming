@@ -16,18 +16,13 @@ export default function Home() {
   const filteredProductos = productos?.data.filter((producto) =>
     producto.nombre.toLowerCase().includes(searchInput.toLowerCase())
   )
-  const categoriasData = categorias || []
-  const productosData = productos?.data || []
-  const productosDestacados = productosData.filter((producto) => producto.destacado)
-  const productosMasVendidos = productosData.filter((producto) => producto.mas_vendido)
-
   return (
     <div className="min-h-screen bg-base-100 max-w-[1500px] mx-auto">
       <LandingHeader />
-      {!loadingCategorias && categoriasData.length > 0 && (
+      {!loadingCategorias && categorias && categorias.length > 0 && (
         <ScrollArea className="m-4 rounded-md bg-white border whitespace-nowrap hidden md:block">
           <div className="flex h-24 gap-8 px-7 items-center rounded-lg ">
-            {categoriasData.map((categoria: Categoria) => (
+            {categorias.map((categoria: Categoria) => (
               <Link className='w-20' key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -68,7 +63,7 @@ export default function Home() {
             <div key={i} className="size-[100px] md:size-48 bg-muted animate-pulse rounded-lg" />
           ))
         ) : (
-          categoriasData.map((categoria: Categoria) => (
+          categorias && categorias.map((categoria: Categoria) => (
             <Link key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
               <CategoriaCard categoria={categoria as Categoria} />
             </Link>
@@ -86,10 +81,13 @@ export default function Home() {
             Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="w-full bg-muted animate-pulse rounded-lg h-64" />
             ))
-          ) : productosDestacados.length > 0 ? (
-            productosDestacados.map((producto) => (
-              <ProductoCard key={producto.id} producto={producto} />
-            ))
+          ) : productos?.data && productos.data.length > 0 ? (
+            [...productos.data]
+              .sort(() => Math.random() - 0.5)
+              .slice(0, 10)
+              .map((producto) => (
+                <ProductoCard key={producto.id} producto={producto} />
+              ))
           ) : (
             <div className="col-span-full text-center py-8 text-muted-foreground">
               No hay productos destacados disponibles
@@ -107,10 +105,13 @@ export default function Home() {
             Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="w-full bg-muted animate-pulse rounded-lg h-64" />
             ))
-          ) : productosMasVendidos.length > 0 ? (
-            productosMasVendidos.map((producto) => (
-              <ProductoCard key={producto.id} producto={producto} />
-            ))
+          ) : productos?.data && productos.data.length > 0 ? (
+            [...productos.data]
+              .sort(() => Math.random() - 0.5)
+              .slice(0, 10)
+              .map((producto) => (
+                <ProductoCard key={producto.id} producto={producto} />
+              ))
           ) : (
             <div className="col-span-full text-center py-8 text-muted-foreground">
               No hay productos más vendidos disponibles

@@ -54,16 +54,20 @@ export default function LandingHeader() {
                 user?.rol === 'admin' ? (
                   <Button onClick={() => navigate({ to: '/admin/reportes-globales' })} size="lg">
                     <IconLayoutDashboard />
-                    Dashboard </Button>
+                    Admin </Button>
                 ) : user?.rol === 'provider' ? (
                   <Button onClick={() => navigate({ to: '/proveedor/productos' })} size="lg">
                     <IconPackage />
-                    Productos </Button>
+                    Admin </Button>
                 ) : user?.rol === 'registered' ? null : (
                   <div className='flex items-center gap-2'>
-                    <Button variant="ghost" className='text-xl font-bold' onClick={() => navigate({ to: '/dashboard' })} size="lg">
+                    <div className='text-xl flex flex-col gap-0 items-center mx-4 font-bold' >
                       $ {billetera?.saldo.toFixed(2)}
-                    </Button>
+                      <div className='flex gap-1 items-center'>
+                        <IconUser size={16} />
+                        <span className='text-xs font-normal font-mono'>  {user.usuario}</span>
+                      </div>
+                    </div>
                     <Button variant="secondary" onClick={() => navigate({ to: '/compras' })} className='flex items-center gap-2'>
                       <IconShoppingBag />
                       Compras</Button>

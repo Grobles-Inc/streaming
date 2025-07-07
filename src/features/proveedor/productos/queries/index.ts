@@ -182,7 +182,11 @@ export const useCreateStockProducto = () => {
     mutationFn: (stockData: Database['public']['Tables']['stock_productos']['Insert']) => 
       productosService.createStockProducto(stockData),
     onSuccess: (data) => {
+      // Invalidar queries específicas del producto
       queryClient.invalidateQueries({ queryKey: ['stock-productos', data.producto_id] })
+      // Invalidar queries del proveedor (para la tabla principal de stock)
+      queryClient.invalidateQueries({ queryKey: ['stock-productos', 'proveedor'] })
+      // Invalidar productos
       queryClient.invalidateQueries({ queryKey: ['productos'] })
       toast.success('Stock agregado correctamente')
     },
@@ -199,7 +203,11 @@ export const useUpdateStockProducto = () => {
     mutationFn: ({ id, updates }: { id: number; updates: Database['public']['Tables']['stock_productos']['Update'] }) => 
       productosService.updateStockProducto(id, updates),
     onSuccess: (data) => {
+      // Invalidar queries específicas del producto
       queryClient.invalidateQueries({ queryKey: ['stock-productos', data.producto_id] })
+      // Invalidar queries del proveedor (para la tabla principal de stock)
+      queryClient.invalidateQueries({ queryKey: ['stock-productos', 'proveedor'] })
+      // Invalidar productos
       queryClient.invalidateQueries({ queryKey: ['productos'] })
       toast.success('Stock actualizado correctamente')
     },
@@ -216,7 +224,11 @@ export const useDeleteStockProducto = () => {
     mutationFn: ({ id }: { id: number; productoId: number }) => 
       productosService.deleteStockProducto(id),
     onSuccess: (_, variables) => {
+      // Invalidar queries específicas del producto
       queryClient.invalidateQueries({ queryKey: ['stock-productos', variables.productoId] })
+      // Invalidar queries del proveedor (para la tabla principal de stock)
+      queryClient.invalidateQueries({ queryKey: ['stock-productos', 'proveedor'] })
+      // Invalidar productos
       queryClient.invalidateQueries({ queryKey: ['productos'] })
       toast.success('Stock eliminado correctamente')
     },

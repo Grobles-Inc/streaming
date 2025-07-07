@@ -34,6 +34,8 @@ type StockProducto = Database['public']['Tables']['stock_productos']['Row'] & {
 export function StockPage() {
   const { user } = useAuth()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showPublicarDialog, setShowPublicarDialog] = useState(false)
+  const [showDespublicarDialog, setShowDespublicarDialog] = useState(false)
   const [showAgregarStockDialog, setShowAgregarStockDialog] = useState(false)
   const [showEditarStockDialog, setShowEditarStockDialog] = useState(false)
   const [selectedStock, setSelectedStock] = useState<StockProducto | null>(null)
@@ -67,10 +69,41 @@ export function StockPage() {
     )
   }
 
-  const togglePublicado = (stock: StockProducto) => {
+  const handlePublicar = (stock: StockProducto) => {
+    setSelectedStock(stock)
+    setShowPublicarDialog(true)
+  }
+
+  const handleDespublicar = (stock: StockProducto) => {
+    setSelectedStock(stock)
+    setShowDespublicarDialog(true)
+  }
+
+  const confirmPublicar = () => {
+    if (!selectedStock) return
+
     updateStockMutation.mutate({
-      id: stock.id,
-      updates: { publicado: !stock.publicado }
+      id: selectedStock.id,
+      updates: { publicado: true }
+    }, {
+      onSuccess: () => {
+        setShowPublicarDialog(false)
+        setSelectedStock(null)
+      }
+    })
+  }
+
+  const confirmDespublicar = () => {
+    if (!selectedStock) return
+
+    updateStockMutation.mutate({
+      id: selectedStock.id,
+      updates: { publicado: false }
+    }, {
+      onSuccess: () => {
+        setShowDespublicarDialog(false)
+        setSelectedStock(null)
+      }
     })
   }
 
@@ -129,7 +162,8 @@ export function StockPage() {
   const columns = useMemo(() => createStockColumns({
     onEdit: handleEdit,
     onDelete: handleDelete,
-    onTogglePublicado: togglePublicado,
+    onPublicar: handlePublicar,
+    onDespublicar: handleDespublicar,
     isUpdating: updateStockMutation.isPending
   }), [updateStockMutation.isPending])
 
@@ -243,6 +277,28 @@ export function StockPage() {
           if (!open) setSelectedStock(null)
         }}
         stock={selectedStock}
+      />
+
+      {/* Modal de confirmación para publicar */}
+      <ConfirmDialog
+        open={showPublicarDialog}
+        onOpenChange={setShowPublicarDialog}
+        title="¿Publicar existencia?"
+        desc={`¿Estás seguro de que deseas publicar esta existencia? Aparecerá en el conteo de stock disponible para los clientes.`}
+        confirmText="Publicar"
+        handleConfirm={confirmPublicar}
+        isLoading={updateStockMutation.isPending}
+      />
+
+      {/* Modal de confirmación para despublicar */}
+      <ConfirmDialog
+        open={showDespublicarDialog}
+        onOpenChange={setShowDespublicarDialog}
+        title="¿Despublicar existencia?"
+        desc={`¿Estás seguro de que deseas despublicar esta existencia? Se ocultará del conteo de stock disponible para los clientes.`}
+        confirmText="Despublicar"
+        handleConfirm={confirmDespublicar}
+        isLoading={updateStockMutation.isPending}
       />
     </>
   )

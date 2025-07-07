@@ -599,12 +599,13 @@ export const publicarProductoWithCommission = async (
 // Función auxiliar para actualizar stock_de_productos en la tabla productos
 export const updateStockDeProductos = async (productoId: number) => {
   try {
-    // Obtener todos los IDs de stock_productos para este producto
+    // Obtener todos los IDs de stock_productos para este producto que estén disponibles Y publicados
     const { data: stockItems, error: stockError } = await supabase
       .from('stock_productos')
       .select('id')
       .eq('producto_id', productoId)
       .eq('estado', 'disponible')
+      .eq('publicado', true)
 
     if (stockError) {
       console.error('Error fetching stock items:', stockError)
@@ -623,7 +624,7 @@ export const updateStockDeProductos = async (productoId: number) => {
     if (updateError) {
       console.error('Error updating stock_de_productos:', updateError)
     } else {
-      console.log(`✅ stock_de_productos actualizado para producto ${productoId}:`, stockDeProductos.length, 'items')
+      console.log(`✅ stock_de_productos actualizado para producto ${productoId}:`, stockDeProductos.length, 'items (disponibles y publicados)')
     }
   } catch (error) {
     console.error('Error in updateStockDeProductos:', error)
@@ -679,8 +680,8 @@ export const updateStockProducto = async (id: number, updates: Database['public'
     throw new Error(`Error al actualizar stock: ${error.message}`)
   }
 
-  // Si se actualiza el estado, sincronizar stock_de_productos
-  if (updates.estado !== undefined) {
+  // Si se actualiza el estado o el campo publicado, sincronizar stock_de_productos
+  if (updates.estado !== undefined || updates.publicado !== undefined) {
     await updateStockDeProductos(data.producto_id)
   }
 

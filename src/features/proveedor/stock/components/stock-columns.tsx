@@ -2,7 +2,14 @@ import { type ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { IconEdit, IconTrash, IconEye, IconEyeOff } from '@tabler/icons-react'
+import { IconEdit, IconTrash, IconEye, IconEyeOff, IconDots } from '@tabler/icons-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import type { Database } from '@/types/supabase'
 
@@ -16,7 +23,8 @@ type StockProducto = Database['public']['Tables']['stock_productos']['Row'] & {
 interface StockColumnActions {
   onEdit: (stock: StockProducto) => void
   onDelete: (stock: StockProducto) => void
-  onTogglePublicado: (stock: StockProducto) => void
+  onPublicar: (stock: StockProducto) => void
+  onDespublicar: (stock: StockProducto) => void
   isUpdating: boolean
 }
 
@@ -199,20 +207,20 @@ export const createStockColumns = (
     accessorKey: 'publicado',
     header: 'Publicado',
     cell: ({ row }) => {
-      const stock = row.original
+      const publicado = row.getValue('publicado') as boolean
+      
       return (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => actions.onTogglePublicado(stock)}
-          disabled={actions.isUpdating}
-        >
-          {stock.publicado ? (
-            <IconEye size={16} className="text-green-600" />
-          ) : (
-            <IconEyeOff size={16} className="text-gray-400" />
+        <Badge 
+          variant="outline" 
+          className={cn(
+            'text-xs',
+            publicado 
+              ? 'bg-green-50 text-green-700 border-green-200' 
+              : 'bg-red-50 text-red-700 border-red-200'
           )}
-        </Button>
+        >
+          {publicado ? 'Publicado' : 'Sin Publicar'}
+        </Badge>
       )
     },
   },
@@ -232,24 +240,43 @@ export const createStockColumns = (
       const stock = row.original
       
       return (
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0"
-            onClick={() => actions.onEdit(stock)}
-          >
-            <IconEdit size={14} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-            onClick={() => actions.onDelete(stock)}
-          >
-            <IconTrash size={14} />
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+            >
+              <IconDots className="h-4 w-4" />
+              <span className="sr-only">Abrir menú</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[160px]">
+            {stock.publicado ? (
+              <DropdownMenuItem onClick={() => actions.onDespublicar(stock)} disabled={actions.isUpdating}>
+                <IconEyeOff className="mr-2 h-4 w-4" />
+                Despublicar
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem onClick={() => actions.onPublicar(stock)} disabled={actions.isUpdating}>
+                <IconEye className="mr-2 h-4 w-4" />
+                Publicar
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => actions.onEdit(stock)}>
+              <IconEdit className="mr-2 h-4 w-4" />
+              Editar
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-red-600"
+              onClick={() => actions.onDelete(stock)}
+            >
+              <IconTrash className="mr-2 h-4 w-4" />
+              Eliminar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )
     },
   },

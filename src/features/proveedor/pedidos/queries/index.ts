@@ -112,4 +112,30 @@ export const useUpdateSoporteStatus = () => {
       toast.error('Error al actualizar el estado de soporte')
     },
   })
+}
+
+export const useUpdateStockProductoAccountData = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: ({ 
+      stockProductoId, 
+      accountData 
+    }: { 
+      stockProductoId: number
+      accountData: {
+        email?: string | null
+        clave?: string | null
+        pin?: string | null
+        perfil?: string | null
+        url?: string | null
+      }
+    }) => pedidosService.updateStockProductoAccountData(stockProductoId, accountData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+    },
+    onError: () => {
+      toast.error('Error al actualizar los datos de la cuenta')
+    },
+  })
 } 

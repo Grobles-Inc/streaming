@@ -8,8 +8,9 @@ type ProductoInsert = Database['public']['Tables']['productos']['Insert']
 export const useProductosByProveedor = (proveedorId: string) => {
   return useQuery({
     queryKey: ['productos', 'proveedor', proveedorId],
-    queryFn: () => productosService.getProductosByProveedorId(proveedorId),
+    queryFn: () => productosService.getProductosByProveedorConVerificacion(proveedorId),
     enabled: !!proveedorId,
+    staleTime: 1000 * 30, // 30 segundos - para verificar vencimientos frecuentemente
   })
 }
 
@@ -242,6 +243,60 @@ export const useSincronizarStockDeProductos = () => {
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Error al sincronizar stock')
+    },
+  })
+}
+
+// === HOOKS PARA RENOVACIÓN DE PRODUCTOS ===
+
+export const useRenovarProducto = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: ({ productoId, proveedorId }: { productoId: number, proveedorId: string }) => 
+      productosService.renovarProducto({ productoId, proveedorId }),
+    onSuccess: (result) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: ['productos'] })
+        queryClient.invalidateQueries({ queryKey: ['billetera'] })
+        queryClient.invalidateQueries({ queryKey: ['verificar-saldo'] })
+        toast.success('Producto renovado exitosamente por 30 días más')
+      } else {
+        toast.error(result.error || 'Error al renovar producto')
+      }
+    },
+    onError: (error: Error) => {
+      console.error('❌ Error al renovar producto:', error)
+      toast.error(error.message || 'Error al renovar producto')
+    },
+  })
+}
+
+// === HOOKS PARA VERIFICACIÓN DE VENCIMIENTOS ===
+
+export const useVerificarProductosVencidos = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: (proveedorId: string) => 
+      productosService.verificarYActualizarProductosVencidos(proveedorId),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['productos'] })
+      
+      if (result.productosActualizados > 0) {
+        toast.success(
+          `${result.productosActualizados} producto(s) vencido(s) despublicado(s) automáticamente`,
+          { duration: 5000 }
+        )
+      }
+      
+      if (result.error) {
+        toast.error(`Error en verificación: ${result.error}`)
+      }
+    },
+    onError: (error: Error) => {
+      console.error('❌ Error al verificar productos vencidos:', error)
+      toast.error(error.message || 'Error al verificar productos vencidos')
     },
   })
 } 

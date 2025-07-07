@@ -182,5 +182,40 @@ export const updateStockProductoSoporteStatus = async (params: UpdateSoporteStat
   }
 
   return data
+}
+
+// Update stock producto account data (email, clave, pin, perfil, url)
+export const updateStockProductoAccountData = async (
+  stockProductoId: number,
+  accountData: {
+    email?: string | null
+    clave?: string | null
+    pin?: string | null
+    perfil?: string | null
+    url?: string | null
+  }
+): Promise<StockProducto | null> => {
+  const updateData: Database['public']['Tables']['stock_productos']['Update'] = {}
+
+  // Solo incluir campos que fueron proporcionados
+  if (accountData.email !== undefined) updateData.email = accountData.email
+  if (accountData.clave !== undefined) updateData.clave = accountData.clave
+  if (accountData.pin !== undefined) updateData.pin = accountData.pin
+  if (accountData.perfil !== undefined) updateData.perfil = accountData.perfil
+  if (accountData.url !== undefined) updateData.url = accountData.url
+
+  const { data, error } = await supabase
+    .from('stock_productos')
+    .update(updateData)
+    .eq('id', stockProductoId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating stock producto account data:', error)
+    throw error
+  }
+
+  return data
 } 
 

@@ -127,6 +127,7 @@ export interface Database {
           precio_vendedor: number
           precio_renovacion: number | null
           estado: 'borrador' | 'publicado'
+          fecha_expiracion: string | null
           stock_de_productos: {
             id: number
           }[]
@@ -153,6 +154,7 @@ export interface Database {
           precio_vendedor: number
           precio_renovacion?: number | null
           estado?: 'borrador' | 'publicado'
+          fecha_expiracion?: string | null
           stock_de_productos?: {
             id: number
           }[]
@@ -181,6 +183,7 @@ export interface Database {
           precio_vendedor?: number
           precio_renovacion?: number | null
           estado?: 'borrador' | 'publicado'
+          fecha_expiracion?: string | null
           stock_de_productos?: {
             id: number
           }[]

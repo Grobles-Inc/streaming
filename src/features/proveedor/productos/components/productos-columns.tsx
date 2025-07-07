@@ -3,10 +3,11 @@ import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import LongText from '@/components/long-text'
-import { IconCheck, IconX, IconPackage, IconClock, IconShoppingCart } from '@tabler/icons-react'
+import { IconCheck, IconX, IconPackage, IconClock, IconShoppingCart, IconAlertTriangle, IconCalendarClock } from '@tabler/icons-react'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 import type { Producto } from '../data/schema'
+import { calcularEstadoExpiracion, formatearFechaExpiracion } from '../utils/expiracion'
 
 // Estados para badges
 const disponibilidadColors = {
@@ -236,6 +237,74 @@ export const columns: ColumnDef<Producto>[] = [
       return value.includes(row.getValue(id))
     },
     meta: { className: 'w-24' },
+  },
+  {
+    accessorKey: 'fecha_expiracion',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Expiración' />
+    ),
+    cell: ({ row }) => {
+      const producto = row.original
+      
+      // Para productos en borrador, verificar si fueron despublicados por vencimiento
+      if (producto.estado === 'borrador') {
+        // Si tiene fecha de expiración y ya venció, fue despublicado automáticamente
+        if (producto.fecha_expiracion) {
+          const ahora = new Date()
+          const fechaExp = new Date(producto.fecha_expiracion)
+          const diasVencido = Math.floor((ahora.getTime() - fechaExp.getTime()) / (1000 * 60 * 60 * 24))
+          
+          if (diasVencido > 0) {
+            return (
+              <div className='space-y-1'>
+                <Badge variant='destructive' className='text-xs'>
+                  <IconAlertTriangle size={12} className='mr-1' />
+                  Despublicado por vencimiento
+                </Badge>
+                <div className='text-xs text-muted-foreground'>
+                  Venció hace {diasVencido} día(s)
+                </div>
+              </div>
+            )
+          }
+        }
+        
+        // Borrador normal (sin fecha de expiración o no vencido)
+        return (
+          <Badge variant='outline' className='text-xs text-gray-500'>
+            <IconClock size={12} className='mr-1' />
+            Sin expirar
+          </Badge>
+        )
+      }
+
+      // Para productos publicados, usar la lógica normal
+      const infoExpiracion = calcularEstadoExpiracion(producto.estado, producto.fecha_expiracion || null)
+
+      const iconMap = {
+        vigente: IconCalendarClock,
+        por_vencer: IconAlertTriangle,
+        vencido: IconAlertTriangle,
+        sin_expirar: IconClock
+      }
+
+      const Icon = iconMap[infoExpiracion.estado]
+
+      return (
+        <div className='space-y-1'>
+          <Badge variant={infoExpiracion.variant} className='text-xs'>
+            <Icon size={12} className='mr-1' />
+            {infoExpiracion.mensaje}
+          </Badge>
+          {producto.fecha_expiracion && (
+            <div className='text-xs text-muted-foreground'>
+              {formatearFechaExpiracion(producto.fecha_expiracion)}
+            </div>
+          )}
+        </div>
+      )
+    },
+    meta: { className: 'w-36' },
   },
   {
     accessorKey: 'tiempo_uso',

@@ -35,6 +35,7 @@ export const productoSchema = z.object({
   solicitud: z.string().optional(),
   muestra_disponibilidad_stock: z.boolean(),
   deshabilitar_boton_comprar: z.boolean(),
+  fecha_expiracion: z.string().optional(),
 })
 
 // Schema completo que incluye todos los campos de la BD (para uso interno)
@@ -62,6 +63,7 @@ export const productoCompleteSchema = z.object({
   muestra_disponibilidad_stock: z.boolean().nullable().transform(val => val ?? false),
   deshabilitar_boton_comprar: z.boolean().nullable().transform(val => val ?? false),
   estado: estadoProductoSchema,
+  fecha_expiracion: z.string().nullable().optional(),
   stock_de_productos: z.any().optional(),
   categorias: z.object({
     nombre: z.string(),

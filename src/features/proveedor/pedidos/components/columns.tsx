@@ -333,7 +333,7 @@ export const columns: ColumnDef<Pedido>[] = [
   },
   {
     id: 'actions',
-    header: 'Soporte',
+    header: 'Acciones',
     cell: ({ row }) => <DataTableRowActions row={row} />,
     enableSorting: false,
     enableHiding: false,

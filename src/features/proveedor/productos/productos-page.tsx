@@ -20,6 +20,7 @@ export function ProductosPage() {
   const { data: productos, isLoading, error } = useProductosByProveedor(user?.id ?? '')
   const productList = productos?.map(producto => productoCompleteSchema.parse(producto))
 
+
   if (error) {
     return (
       <>
@@ -60,14 +61,16 @@ export function ProductosPage() {
                 Gestiona tus productos desde este panel de administración de productos.
               </p>
             </div>
-            <ProductoFormDialog
-              trigger={
-                <Button>
-                  <IconPlus className='mr-2 h-4 w-4' />
-                  Nuevo Producto
-                </Button>
-              }
-            />
+            <div className='flex gap-2'>
+              <ProductoFormDialog
+                trigger={
+                  <Button>
+                    <IconPlus className='mr-2 h-4 w-4' />
+                    Nuevo Producto
+                  </Button>
+                }
+              />
+            </div>
           </div>
           {isLoading ? (
             <div className='space-y-4'>

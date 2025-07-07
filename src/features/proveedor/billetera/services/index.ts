@@ -240,19 +240,46 @@ export const getHistorialRetiros = async (usuarioId: string) => {
   return data || []
 }
 
-// Get historial completo (recargas + retiros)
+// Get historial de compras/pedidos del proveedor
+export const getHistorialCompras = async (proveedorId: string) => {
+  const { data, error } = await supabase
+    .from('compras')
+    .select(`
+      *,
+      productos:producto_id(nombre, precio_publico),
+      usuarios:vendedor_id(nombres, apellidos, email, telefono)
+    `)
+    .eq('proveedor_id', proveedorId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching compras:', error)
+    return []
+  }
+
+  return data || []
+}
+
+// Get historial completo (recargas + retiros + compras del proveedor)
 export const getHistorialCompleto = async (usuarioId: string) => {
-  const [recargas, retiros] = await Promise.all([
+  const [recargas, retiros, compras] = await Promise.all([
     getHistorialTransacciones(usuarioId),
-    getHistorialRetiros(usuarioId)
+    getHistorialRetiros(usuarioId),
+    getHistorialCompras(usuarioId) // usuarioId = proveedorId cuando es un proveedor
   ])
 
   // Combinar y marcar el tipo
   const recargasConTipo = recargas.map(r => ({ ...r, tipo: 'recarga' as const }))
   const retirosConTipo = retiros.map(r => ({ ...r, tipo: 'retiro' as const }))
+  const comprasConTipo = compras.map(c => ({ 
+    ...c, 
+    tipo: 'compra' as const,
+    monto: c.precio, // Usar el precio de la compra como monto
+    estado: c.estado || 'completado' // Las compras generalmente están completadas
+  }))
 
   // Combinar y ordenar por fecha
-  const historialCompleto = [...recargasConTipo, ...retirosConTipo]
+  const historialCompleto = [...recargasConTipo, ...retirosConTipo, ...comprasConTipo]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   return historialCompleto

@@ -27,7 +27,7 @@ export function DataTableViewOptions<TData>({
           className="ml-auto hidden h-8 lg:flex"
         >
           <MixerHorizontalIcon className="mr-2 h-4 w-4" />
-          Ver
+          Vista
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[150px]">
@@ -35,11 +35,19 @@ export function DataTableViewOptions<TData>({
         <DropdownMenuSeparator />
         {table
           .getAllColumns()
-          .filter(
-            (column) =>
-              typeof column.accessorFn !== 'undefined' && column.getCanHide(),
-          )
+          .filter((column) => column.getCanHide())
           .map((column) => {
+            // Mapear IDs a títulos amigables
+            const titleMap: Record<string, string> = {
+              'id': 'ID',
+              'tipo': 'Tipo',
+              'created_at': 'Fecha',
+              'monto': 'Monto',
+              'detalles': 'Detalles',
+              'estado': 'Estado'
+            }
+            const title = titleMap[column.id] || column.id
+            
             return (
               <DropdownMenuCheckboxItem
                 key={column.id}
@@ -47,7 +55,7 @@ export function DataTableViewOptions<TData>({
                 checked={column.getIsVisible()}
                 onCheckedChange={(value) => column.toggleVisibility(!!value)}
               >
-                {column.id}
+                {title}
               </DropdownMenuCheckboxItem>
             )
           })}

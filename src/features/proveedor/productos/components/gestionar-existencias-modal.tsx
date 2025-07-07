@@ -209,7 +209,7 @@ export function GestionarExistenciasModal({
                               className="text-blue-600 hover:underline text-sm truncate block"
                               title={stock.url}
                             >
-                              Enlace
+                              {stock.url}
                             </a>
                           ) : (
                             'N/A'

@@ -15,7 +15,7 @@ const disponibilidadProductoSchema = z.union([
 
 // Esquema para producto base
 const productoBaseSchema = z.object({
-  id: z.string(),
+  id: z.number(),
   nombre: z.string().min(1, 'El nombre es requerido'),
   descripcion: z.string().nullable(),
   informacion: z.string().nullable(),
@@ -30,8 +30,6 @@ const productoBaseSchema = z.object({
   tiempo_uso: z.number().min(0, 'El tiempo de uso debe ser mayor o igual a 0'),
   a_pedido: z.boolean(),
   nuevo: z.boolean(),
-  destacado: z.boolean(),
-  mas_vendido: z.boolean(),
   descripcion_completa: z.string().nullable(),
   disponibilidad: disponibilidadProductoSchema,
   renovable: z.boolean(),
@@ -60,7 +58,7 @@ const productoWithRelationsSchema = productoBaseSchema.extend({
 
 // Esquema para producto mapeado
 const mappedProductoSchema = z.object({
-  id: z.string(),
+  id: z.number(),
   nombre: z.string(),
   descripcion: z.string().nullable(),
   informacion: z.string().nullable(),
@@ -82,8 +80,6 @@ const mappedProductoSchema = z.object({
   tiempoUso: z.number(),
   aPedido: z.boolean(),
   nuevo: z.boolean(),
-  destacado: z.boolean(),
-  masVendido: z.boolean(),
   descripcionCompleta: z.string().nullable(),
   disponibilidad: disponibilidadProductoSchema,
   renovable: z.boolean(),
@@ -106,8 +102,6 @@ const filtroProductoSchema = z.object({
   proveedor_id: z.string().optional(),
   disponibilidad: disponibilidadProductoSchema.optional(),
   nuevo: z.boolean().optional(),
-  destacado: z.boolean().optional(),
-  mas_vendido: z.boolean().optional(),
   busqueda: z.string().optional(),
 })
 
@@ -157,8 +151,6 @@ export function mapSupabaseProductoToComponent(producto: ProductoWithRelations):
   // Generar etiquetas
   const etiquetas: string[] = []
   if (producto.nuevo) etiquetas.push('Nuevo')
-  if (producto.destacado) etiquetas.push('Destacado')
-  if (producto.mas_vendido) etiquetas.push('Más Vendido')
   if (producto.renovable) etiquetas.push('Renovable')
   if (producto.a_pedido) etiquetas.push('A Pedido')
 
@@ -185,8 +177,6 @@ export function mapSupabaseProductoToComponent(producto: ProductoWithRelations):
     tiempoUso: producto.tiempo_uso,
     aPedido: producto.a_pedido,
     nuevo: producto.nuevo,
-    destacado: producto.destacado,
-    masVendido: producto.mas_vendido,
     descripcionCompleta: producto.descripcion_completa,
     disponibilidad: producto.disponibilidad,
     renovable: producto.renovable,
@@ -217,8 +207,6 @@ const createProductoSchema = z.object({
   tiempo_uso: z.number().min(0, 'El tiempo de uso debe ser mayor o igual a 0').optional(),
   a_pedido: z.boolean().optional(),
   nuevo: z.boolean().optional(),
-  destacado: z.boolean().optional(),
-  mas_vendido: z.boolean().optional(),
   descripcion_completa: z.string().nullable().optional(),
   disponibilidad: disponibilidadProductoSchema,
   renovable: z.boolean().optional(),

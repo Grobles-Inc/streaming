@@ -98,7 +98,7 @@ export default function Home() {
 
       {/* Los más vendidos */}
       <div className="md:px-8 px-4 pt-12 pb-12">
-        <h2 className="text-2xl font-bold mb-4">Los más vendidos</h2>
+        <h2 className="text-2xl font-bold mb-4">Productos Nuevos</h2>
         <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-6 md:gap-6 gap-4">
           {loadingProductos ? (
             // Skeleton loading para productos
@@ -114,7 +114,7 @@ export default function Home() {
               ))
           ) : (
             <div className="col-span-full text-center py-8 text-muted-foreground">
-              No hay productos más vendidos disponibles
+              No hay productos nuevos disponibles
             </div>
           )}
         </div>

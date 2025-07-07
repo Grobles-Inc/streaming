@@ -101,26 +101,7 @@ export function DataTableToolbar<TData>({
               ]}
             />
           )}
-          {table.getColumn('destacado') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('destacado')}
-              title='Destacado'
-              options={[
-                { label: 'Destacado', value: true },
-                { label: 'No Destacado', value: false },
-              ]}
-            />
-          )}
-          {table.getColumn('mas_vendido') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('mas_vendido')}
-              title='Más Vendido'
-              options={[
-                { label: 'Más Vendido', value: true },
-                { label: 'Normal', value: false },
-              ]}
-            />
-          )}
+
         </div>
         
         <div className='flex items-center space-x-2'>

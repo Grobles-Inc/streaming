@@ -28,8 +28,6 @@ export type Producto = {
   tiempo_uso: number
   a_pedido: boolean
   nuevo: boolean
-  destacado: boolean
-  mas_vendido: boolean
   descripcion_completa: string | null
   disponibilidad: 'en_stock' | 'a_pedido' | 'activacion'
   renovable: boolean

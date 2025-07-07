@@ -31,8 +31,6 @@ export const productoSchema = z.object({
   informacion: z.string().optional(),
   condiciones: z.string().optional(),
   imagen_url: z.string().optional(),
-  destacado: z.boolean(),
-  mas_vendido: z.boolean(),
   descripcion_completa: z.string().optional(),
   solicitud: z.string().optional(),
   muestra_disponibilidad_stock: z.boolean(),
@@ -41,7 +39,7 @@ export const productoSchema = z.object({
 
 // Schema completo que incluye todos los campos de la BD (para uso interno)
 export const productoCompleteSchema = z.object({
-  id: z.string(),
+  id: z.number(),
   proveedor_id: z.string(),
   created_at: z.string(),
   updated_at: z.string(),
@@ -59,8 +57,6 @@ export const productoCompleteSchema = z.object({
   informacion: z.string().nullable().transform(val => val ?? '').optional(),
   condiciones: z.string().nullable().transform(val => val ?? '').optional(),
   imagen_url: z.string().optional(),
-  destacado: z.boolean().nullable().transform(val => val ?? false),
-  mas_vendido: z.boolean().nullable().transform(val => val ?? false),
   descripcion_completa: z.string().nullable().transform(val => val ?? '').optional(),
   solicitud: z.string().nullable().transform(val => val ?? '').optional(),
   muestra_disponibilidad_stock: z.boolean().nullable().transform(val => val ?? false),

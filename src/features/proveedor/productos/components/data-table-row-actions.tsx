@@ -78,7 +78,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button
             variant='ghost'
@@ -135,8 +135,6 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           informacion: producto.informacion ?? '',
           condiciones: producto.condiciones ?? '',
           imagen_url: producto.imagen_url ?? '',
-          destacado: producto.destacado,
-          mas_vendido: producto.mas_vendido,
           descripcion_completa: producto.descripcion_completa ?? '',
           solicitud: producto.solicitud ?? '',
           muestra_disponibilidad_stock: producto.muestra_disponibilidad_stock,

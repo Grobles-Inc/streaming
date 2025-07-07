@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Package, TrendingUp, Star, Zap, Archive, ShoppingCart } from 'lucide-react'
+import { Package, TrendingUp, Zap, Archive, ShoppingCart } from 'lucide-react'
 import { useProductos } from '../../productos/hooks/use-productos'
 
 export function EstadisticasProductosCard() {
@@ -71,22 +71,7 @@ export function EstadisticasProductosCard() {
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
     },
-    {
-      title: 'Destacados',
-      value: estadisticas?.destacados || 0,
-      description: 'Productos promocionados',
-      icon: Star,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-    },
-    {
-      title: 'Más vendidos',
-      value: estadisticas?.masVendidos || 0,
-      description: 'Top productos',
-      icon: TrendingUp,
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-50',
-    },
+
     {
       title: 'Nuevos',
       value: estadisticas?.nuevos || 0,
@@ -148,11 +133,9 @@ export function EstadisticasProductosCard() {
           <h4 className="text-sm font-medium mb-3">Características especiales</h4>
           <div className="flex flex-wrap gap-2">
             <Badge variant="outline" className="border-purple-200 text-purple-700">
-              ⭐ Destacados: {estadisticas?.destacados || 0}
+      
             </Badge>
-            <Badge variant="outline" className="border-indigo-200 text-indigo-700">
-              🔥 Más vendidos: {estadisticas?.masVendidos || 0}
-            </Badge>
+
             <Badge variant="outline" className="border-teal-200 text-teal-700">
               ✨ Nuevos: {estadisticas?.nuevos || 0}
             </Badge>

@@ -28,21 +28,6 @@ const disponibilidadLabels = {
 }
 
 export const columns: ColumnDef<Producto>[] = [
-  // Columna oculta para evitar errores de tabla
-  {
-    accessorKey: 'destacado',
-    header: 'Destacado',
-    enableHiding: true,
-    meta: { className: 'hidden' },
-    cell: () => null,
-  },
-  {
-    accessorKey: 'mas_vendido',
-    header: 'Más vendido',
-    enableHiding: true,
-    meta: { className: 'hidden' },
-    cell: () => null,
-  },
   {
     id: 'select',
     header: ({ table }) => (
@@ -74,18 +59,15 @@ export const columns: ColumnDef<Producto>[] = [
     enableHiding: false,
   },
   {
-    id: 'numero',
+    accessorKey: 'id',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='ID' />
     ),
-    cell: ({ row, table }) => {
-      const pageIndex = table.getState().pagination.pageIndex
-      const pageSize = table.getState().pagination.pageSize
-      const rowIndex = row.index
-      const numero = pageIndex * pageSize + rowIndex + 1
+    cell: ({ row }) => {
+      const id = row.getValue('id') as number
       
       return (
-        <div className='w-12 font-mono text-sm text-left'>{numero}</div>
+        <div className='w-12 font-mono text-sm text-left'>{id}</div>
       )
     },
     meta: {

@@ -233,18 +233,7 @@ export function ProductoDetailsModal({
                       {producto.nuevo ? 'Sí' : 'No'}
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Destacado:</span>
-                    <Badge variant={producto.destacado ? 'default' : 'secondary'} className="text-xs">
-                      {producto.destacado ? 'Sí' : 'No'}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Más Vendido:</span>
-                    <Badge variant={producto.masVendido ? 'default' : 'secondary'} className="text-xs">
-                      {producto.masVendido ? 'Sí' : 'No'}
-                    </Badge>
-                  </div>
+
                 </div>
               </div>
             </div>

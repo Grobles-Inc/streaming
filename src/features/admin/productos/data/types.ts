@@ -19,8 +19,6 @@ export type SupabaseProducto = {
   tiempo_uso: number
   a_pedido: boolean
   nuevo: boolean
-  destacado: boolean
-  mas_vendido: boolean
   descripcion_completa: string | null
   disponibilidad: DisponibilidadProducto
   renovable: boolean
@@ -46,8 +44,6 @@ export type CreateProductoData = {
   tiempo_uso?: number
   a_pedido?: boolean
   nuevo?: boolean
-  destacado?: boolean
-  mas_vendido?: boolean
   descripcion_completa?: string | null
   disponibilidad: DisponibilidadProducto
   renovable?: boolean
@@ -90,8 +86,6 @@ export type FiltroProducto = {
   proveedor_id?: string
   disponibilidad?: DisponibilidadProducto
   nuevo?: boolean
-  destacado?: boolean
-  mas_vendido?: boolean
   busqueda?: string
 }
 
@@ -104,8 +98,6 @@ export type EstadisticasProductos = {
   aPedido: number
   activacion: number
   nuevos: number
-  destacados: number
-  masVendidos: number
 }
 
 // Producto mapeado para el componente
@@ -132,8 +124,6 @@ export type MappedProducto = {
   tiempoUso: number
   aPedido: boolean
   nuevo: boolean
-  destacado: boolean
-  masVendido: boolean
   descripcionCompleta: string | null
   disponibilidad: DisponibilidadProducto
   renovable: boolean

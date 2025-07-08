@@ -128,7 +128,7 @@ export const useUpdateProducto = () => {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: ({ id, updates }: { id: number; updates: Database['public']['Tables']['productos']['Update'] }) => 
+    mutationFn: ({ id, updates }: { id: number; updates: Omit<Database['public']['Tables']['productos']['Update'], 'id'> }) => 
       productosService.updateProducto(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['productos'] })

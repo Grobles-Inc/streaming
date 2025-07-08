@@ -7,12 +7,14 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { IconLoader } from '@tabler/icons-react'
+import { IconLoader, IconCurrencyDollar, IconCheck } from '@tabler/icons-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { SoporteCompra } from '../data/types'
-import { useUpdateSoporteStatus } from '../queries'
+import { useUpdateSoporteStatus, useProcesarReembolso } from '../queries'
 import { toast } from 'sonner'
+import { useAuth } from '@/stores/authStore'
+import { useState } from 'react'
 
 const estadoOptions = [
   { value: 'activo', label: 'Problema Resuelto', color: 'bg-green-400 text-green-800' },
@@ -36,6 +38,9 @@ interface SoporteModalProps {
 
 export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteModalProps) {
   const { mutate: updateStatus, isPending } = useUpdateSoporteStatus()
+  const { mutate: procesarReembolso, isPending: isPendingReembolso } = useProcesarReembolso()
+  const { user } = useAuth()
+  const [showReembolsoConfirm, setShowReembolsoConfirm] = useState(false)
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -44,6 +49,21 @@ export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteMod
       estado: compra.stock_productos?.soporte_stock_producto || 'activo',
     },
   })
+
+  // Extraer el monto del reembolso del mensaje del vendedor
+  const extraerMontoReembolso = (mensaje: string): number => {
+    const regex = /Monto a reembolsar:\s*\$\s*([\d,]+\.?\d*)/i
+    const match = mensaje.match(regex)
+    if (match) {
+      const montoStr = match[1].replace(/,/g, '')
+      return parseFloat(montoStr) || 0
+    }
+    return 0
+  }
+
+  const montoReembolso = compra.soporte_mensaje ? extraerMontoReembolso(compra.soporte_mensaje) : 0
+  const esReembolso = compra.soporte_asunto === 'reembolso'
+  const reembolsoYaProcesado = compra.estado === 'reembolsado'
 
   async function onSubmit(data: FormData) {
     // Proceder directamente con la actualización
@@ -73,9 +93,38 @@ export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteMod
     }
   }
 
+  const handleProcesarReembolso = async () => {
+    if (!compra.vendedor_id || !user?.id || montoReembolso <= 0) {
+      toast.error('Error: Datos insuficientes para procesar el reembolso')
+      return
+    }
+
+    procesarReembolso({
+      compraId: compra.id,
+      proveedorId: user.id,
+      vendedorId: compra.vendedor_id,
+      montoReembolso: montoReembolso
+    }, {
+      onSuccess: (result) => {
+        if (result.success) {
+          toast.success('Reembolso procesado exitosamente. Puedes enviar un mensaje de respuesta al vendedor.')
+          setShowReembolsoConfirm(false)
+          // No cerramos el modal para permitir enviar mensaje de respuesta
+        } else {
+          toast.error(result.error || 'Error al procesar el reembolso')
+        }
+      },
+      onError: (error) => {
+        console.error('Error procesando reembolso:', error)
+        toast.error('Error al procesar el reembolso')
+      }
+    })
+  }
+
   const handleClose = () => {
     onOpenChange(false)
     form.reset()
+    setShowReembolsoConfirm(false)
   }
 
   const asuntoMap: Record<string, string> = {
@@ -129,6 +178,91 @@ export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteMod
                 )}
               </div>
             </div>
+
+            {/* Sección de Reembolso */}
+            {esReembolso && montoReembolso > 0 && (
+              <>
+                {reembolsoYaProcesado ? (
+                  // Reembolso ya procesado
+                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-md border border-green-200 dark:border-green-700">
+                    <h4 className="font-semibold text-sm text-green-800 dark:text-green-200 uppercase tracking-wide mb-2 flex items-center gap-2">
+                      <IconCheck className="h-4 w-4" />
+                      Reembolso Realizado
+                    </h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-green-600 dark:text-green-300">Monto reembolsado:</span>
+                        <span className="font-mono font-semibold text-green-800 dark:text-green-200">
+                          ${montoReembolso.toFixed(2)} USD
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 bg-green-100 dark:bg-green-900/30 p-2 rounded-md">
+                        <IconCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        <p className="text-xs text-green-700 dark:text-green-300 font-medium">
+                          El reembolso ha sido procesado exitosamente. Los fondos fueron transferidos al vendedor.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // Solicitud de reembolso pendiente
+                  <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-md border border-red-200 dark:border-red-700">
+                    <h4 className="font-semibold text-sm text-red-800 dark:text-red-200 uppercase tracking-wide mb-2 flex items-center gap-2">
+                      <IconCurrencyDollar className="h-4 w-4" />
+                      Solicitud de Reembolso
+                    </h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-red-600 dark:text-red-300">Monto solicitado:</span>
+                        <span className="font-mono font-semibold text-red-800 dark:text-red-200">
+                          ${montoReembolso.toFixed(2)} USD
+                        </span>
+                      </div>
+                      <p className="text-xs text-red-600 dark:text-red-300">
+                        Este monto se descontará de tu billetera y se transferirá al vendedor.
+                      </p>
+                      {!showReembolsoConfirm ? (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setShowReembolsoConfirm(true)}
+                          className="w-full mt-2"
+                        >
+                          <IconCurrencyDollar className="mr-2 h-4 w-4" />
+                          Procesar Reembolso
+                        </Button>
+                      ) : (
+                        <div className="space-y-2 mt-2">
+                          <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                            ¿Estás seguro de procesar este reembolso?
+                          </p>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={handleProcesarReembolso}
+                              disabled={isPendingReembolso}
+                              className="flex-1"
+                            >
+                              {isPendingReembolso && <IconLoader className="mr-2 h-4 w-4 animate-spin" />}
+                              Confirmar Reembolso
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setShowReembolsoConfirm(false)}
+                              className="flex-1"
+                            >
+                              Cancelar
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
 
             {compra.stock_productos && (
               <div>

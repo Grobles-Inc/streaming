@@ -7,6 +7,8 @@ export type Usuario = Database['public']['Tables']['usuarios']['Row']
 export type Producto = Database['public']['Tables']['productos']['Row']
 export type CompraUpdate = Database['public']['Tables']['compras']['Update']
 export type StockProducto = Database['public']['Tables']['stock_productos']['Row']
+export type SupabasePedido = Database['public']['Tables']['compras']['Row']
+export type PedidoUpdate = Database['public']['Tables']['compras']['Update']
 
 // Get compras by proveedor ID (pedidos/ventas del proveedor)
 export const getComprasByProveedorId = async (proveedorId: string): Promise<Compra[]> => {
@@ -217,5 +219,133 @@ export const updateStockProductoAccountData = async (
   }
 
   return data
+}
+
+// Nuevo servicio para procesar reembolso
+export const procesarReembolsoProveedor = async (
+  compraId: string,
+  proveedorId: string,
+  vendedorId: string,
+  montoReembolso: number
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    console.log('🔄 Procesando reembolso del proveedor:', {
+      compraId,
+      proveedorId,
+      vendedorId,
+      montoReembolso
+    })
+
+    // 1. Obtener billeteras
+    const { data: billeteraProveedor, error: errorBilleteraProveedor } = await supabase
+      .from('billeteras')
+      .select('*')
+      .eq('usuario_id', proveedorId)
+      .single()
+
+    if (errorBilleteraProveedor || !billeteraProveedor) {
+      return { success: false, error: 'No se encontró la billetera del proveedor' }
+    }
+
+    const { data: billeteraVendedor, error: errorBilleteraVendedor } = await supabase
+      .from('billeteras')
+      .select('*')
+      .eq('usuario_id', vendedorId)
+      .single()
+
+    if (errorBilleteraVendedor || !billeteraVendedor) {
+      return { success: false, error: 'No se encontró la billetera del vendedor' }
+    }
+
+    // 2. Verificar que el proveedor tenga saldo suficiente
+    if (billeteraProveedor.saldo < montoReembolso) {
+      return { 
+        success: false, 
+        error: `Saldo insuficiente. Tienes $${billeteraProveedor.saldo.toFixed(2)} pero necesitas $${montoReembolso.toFixed(2)}` 
+      }
+    }
+
+    // 3. Realizar transferencia de fondos
+    const nuevoSaldoProveedor = billeteraProveedor.saldo - montoReembolso
+    const nuevoSaldoVendedor = billeteraVendedor.saldo + montoReembolso
+
+    // Actualizar billetera del proveedor
+    const { error: errorProveedor } = await supabase
+      .from('billeteras')
+      .update({ 
+        saldo: nuevoSaldoProveedor, 
+        updated_at: new Date().toISOString() 
+      })
+      .eq('usuario_id', proveedorId)
+
+    if (errorProveedor) {
+      console.error('Error actualizando billetera del proveedor:', errorProveedor)
+      return { success: false, error: 'Error al descontar fondos del proveedor' }
+    }
+
+    // Actualizar billetera del vendedor
+    const { error: errorVendedor } = await supabase
+      .from('billeteras')
+      .update({ 
+        saldo: nuevoSaldoVendedor, 
+        updated_at: new Date().toISOString() 
+      })
+      .eq('usuario_id', vendedorId)
+
+    if (errorVendedor) {
+      console.error('Error actualizando billetera del vendedor:', errorVendedor)
+      // Revertir cambio en billetera del proveedor
+      await supabase
+        .from('billeteras')
+        .update({ 
+          saldo: billeteraProveedor.saldo, 
+          updated_at: new Date().toISOString() 
+        })
+        .eq('usuario_id', proveedorId)
+      
+      return { success: false, error: 'Error al transferir fondos al vendedor' }
+    }
+
+    // 4. Actualizar el estado de la compra a "reembolsado"
+    const { error: errorCompra } = await supabase
+      .from('compras')
+      .update({
+        estado: 'reembolsado',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', compraId)
+
+    if (errorCompra) {
+      console.error('Error actualizando estado de compra:', errorCompra)
+      // Revertir transferencias si falla la actualización de la compra
+      await supabase
+        .from('billeteras')
+        .update({ saldo: billeteraProveedor.saldo })
+        .eq('usuario_id', proveedorId)
+      
+      await supabase
+        .from('billeteras')
+        .update({ saldo: billeteraVendedor.saldo })
+        .eq('usuario_id', vendedorId)
+      
+      return { success: false, error: 'Error al actualizar el estado de la compra' }
+    }
+
+    console.log('✅ Reembolso procesado exitosamente:', {
+      proveedorAntes: billeteraProveedor.saldo,
+      proveedorDespues: nuevoSaldoProveedor,
+      vendedorAntes: billeteraVendedor.saldo,
+      vendedorDespues: nuevoSaldoVendedor
+    })
+
+    return { success: true }
+
+  } catch (error) {
+    console.error('❌ Error al procesar reembolso:', error)
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Error desconocido' 
+    }
+  }
 } 
 

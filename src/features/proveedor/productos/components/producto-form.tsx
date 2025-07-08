@@ -219,7 +219,7 @@ export function ProductoFormDialog({
     }
 
     updateProducto({
-      id: productId!,
+      id: parseInt(productId!, 10),
       updates: productoData
     }, {
       onSuccess: () => {

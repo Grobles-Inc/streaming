@@ -39,7 +39,7 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
   const isMobile = useIsMobile()
   const { user } = useAuth()
   const { mutate: crearRecarga, isPending } = useCreateRecarga()
-  
+
   // Obtener la tasa de conversión de la configuración del sistema
   const { data: configuracion } = useConfiguracionSistema()
   const tasaConversion = configuracion?.conversion || 3.7 // Fallback a 3.7 si no hay configuración
@@ -66,7 +66,7 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
     try {
       // Calcular el monto en dólares que se agregará a la billetera
       const montoEnDolares = parseFloat((data.cantidad / tasaConversion).toFixed(2))
-      
+
       await crearRecarga({
         monto: montoEnDolares, // Guardar el valor en dólares
         usuario_id: user.id,
@@ -75,10 +75,10 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
       form.reset()
       onOpenChange(false)
       onSubmit() // Esto disparará la refetch de los datos
-      
+
       // Enviar mensaje de WhatsApp inmediatamente
       RecargaMessage({
-        nombre_cliente: user?.nombres + ' ' + user?.apellidos || '',
+        usuario: user?.usuario || '',
         monto: data.cantidad, // En el mensaje se muestra el monto en soles
         id_cliente: user?.id || '',
       }, '51913190401', isMobile ? 'mobile' : 'web')
@@ -203,8 +203,8 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
               >
                 Cancelar
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isPending}
                 className="w-full sm:w-auto"
               >

@@ -63,7 +63,7 @@ export function RecargarDialog() {
       form.reset()
       setTimeout(() => {
         RecargaMessage({
-          nombre_cliente: user?.nombres + ' ' + user?.apellidos || '',
+          usuario: user?.usuario || '',
           monto: data.amount,
           id_cliente: user?.id || '',
         }, '51913190401', isMobile ? 'mobile' : 'web')

@@ -229,7 +229,7 @@ export const procesarReembolsoProveedor = async (
   montoReembolso: number
 ): Promise<{ success: boolean; error?: string }> => {
   try {
-    console.log('🔄 Procesando reembolso del proveedor:', {
+    console.log('Procesando reembolso del proveedor:', {
       compraId,
       proveedorId,
       vendedorId,
@@ -342,6 +342,47 @@ export const procesarReembolsoProveedor = async (
 
   } catch (error) {
     console.error('❌ Error al procesar reembolso:', error)
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Error desconocido' 
+    }
+  }
+} 
+
+// Completar soporte - solo actualiza el estado del stock y respuesta
+export const completarSoporte = async (
+  compraId: string,
+  stockProductoId: number,
+  respuesta?: string
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    // 1. Actualizar el estado del stock producto a 'activo'
+    const { error: errorStock } = await supabase
+      .from('stock_productos')
+      .update({ soporte_stock_producto: 'activo' })
+      .eq('id', stockProductoId)
+
+    if (errorStock) {
+      console.error('Error updating stock producto status:', errorStock)
+      return { success: false, error: 'Error al actualizar el estado del stock' }
+    }
+
+    // 2. Actualizar la respuesta de soporte si se proporciona
+    if (respuesta) {
+      const { error: errorCompra } = await supabase
+        .from('compras')
+        .update({ soporte_respuesta: respuesta })
+        .eq('id', compraId)
+
+      if (errorCompra) {
+        console.error('Error updating compra response:', errorCompra)
+        return { success: false, error: 'Error al actualizar la respuesta de soporte' }
+      }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error completando soporte:', error)
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Error desconocido' 

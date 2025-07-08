@@ -14,7 +14,7 @@ import { IconTrash, IconPlus, IconPackage } from '@tabler/icons-react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useCreateStockProducto, useProductosByProveedor, useStockProductosByProductoId } from '../queries'
+import { useCreateStockProducto, useProductosByProveedor, useStockProductosByProductoId } from '../../productos/queries'
 import { useAuth } from '@/stores/authStore'
 
 // Schema básico sin validación compleja por ahora
@@ -37,30 +37,18 @@ const stockFormSchema = z.object({
 
 type StockFormData = z.infer<typeof stockFormSchema>
 
-interface AgregarStockModalProps {
+interface AgregarStockStockModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  productoId?: number
 }
 
-export function AgregarStockModal({ 
+export function AgregarStockStockModal({ 
   open, 
-  onOpenChange, 
-  productoId 
-}: AgregarStockModalProps) {
+  onOpenChange
+}: AgregarStockStockModalProps) {
   const { user } = useAuth()
   const { data: productos } = useProductosByProveedor(user?.id ?? '')
   const createStockMutation = useCreateStockProducto()
-
-  // Obtener el producto específico si se pasa un productoId
-  const productoSeleccionado = productoId ? productos?.find(p => p.id === productoId) : null
-
-  // Obtener stock existente para determinar si el tipo debe estar bloqueado
-  const { data: stockExistente } = useStockProductosByProductoId(productoId || 0)
-  
-  // Determinar si ya existe stock y cuál es el tipo
-  const tipoExistente = stockExistente && stockExistente.length > 0 ? stockExistente[0].tipo : null
-  const debeBloquearTipo = stockExistente && stockExistente.length > 0
 
   const {
     register,
@@ -73,11 +61,23 @@ export function AgregarStockModal({
   } = useForm<StockFormData>({
     resolver: zodResolver(stockFormSchema),
     defaultValues: {
-      producto_id: productoId || 0,
+      producto_id: 0,
       tipo: 'cuenta',
       perfiles: [{ email: '', clave: '', url: '', perfil: '', pin: '' }]
     }
   })
+
+  // Obtener el ID del producto seleccionado para consultar stock existente
+  const productoIdSeleccionado = watch('producto_id')
+  
+  // Obtener stock existente para determinar si el tipo debe estar bloqueado
+  const { data: stockExistente } = useStockProductosByProductoId(
+    productoIdSeleccionado && productoIdSeleccionado > 0 ? productoIdSeleccionado : 0
+  )
+  
+  // Determinar si ya existe stock y cuál es el tipo
+  const tipoExistente = stockExistente && stockExistente.length > 0 ? stockExistente[0].tipo : null
+  const debeBloquearTipo = Boolean(stockExistente && stockExistente.length > 0)
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -89,10 +89,9 @@ export function AgregarStockModal({
   // Resetear formulario cuando se abre el modal
   useEffect(() => {
     if (open) {
-      const tipoAUsar = tipoExistente || 'cuenta'
       reset({
-        producto_id: productoId || 0,
-        tipo: tipoAUsar as 'cuenta' | 'perfiles' | 'combo',
+        producto_id: 0,
+        tipo: 'cuenta',
         email: '',
         clave: '',
         url: '',
@@ -101,7 +100,14 @@ export function AgregarStockModal({
         perfiles: [{ email: '', clave: '', url: '', perfil: '', pin: '' }]
       })
     }
-  }, [open, productoId, tipoExistente, reset])
+  }, [open, reset])
+
+  // Actualizar tipo cuando se selecciona un producto con stock existente
+  useEffect(() => {
+    if (tipoExistente && productoIdSeleccionado > 0) {
+      setValue('tipo', tipoExistente as 'cuenta' | 'perfiles' | 'combo')
+    }
+  }, [tipoExistente, productoIdSeleccionado, setValue])
 
   // Limpiar campos no necesarios cuando cambia el tipo
   useEffect(() => {
@@ -229,32 +235,21 @@ export function AgregarStockModal({
             <Label htmlFor="producto_id">
               Producto <span className="text-red-500">*</span>
             </Label>
-            {productoId ? (
-              // Campo de solo lectura cuando se pasa un productoId específico
-              <Input
-                value={productoSeleccionado?.nombre || 'Cargando...'}
-                readOnly
-                className="bg-gray-50 text-gray-700 cursor-not-allowed"
-                placeholder="Producto seleccionado"
-              />
-            ) : (
-              // Select normal cuando no se pasa productoId
-              <Select 
-                value={watch('producto_id')?.toString()} 
-                onValueChange={(value) => setValue('producto_id', parseInt(value))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un producto" />
-                </SelectTrigger>
-                <SelectContent>
-                  {productos?.map((producto) => (
-                    <SelectItem key={producto.id} value={producto.id.toString()}>
-                      {producto.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+            <Select 
+              value={productoIdSeleccionado > 0 ? productoIdSeleccionado.toString() : ""} 
+              onValueChange={(value) => setValue('producto_id', parseInt(value))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona un producto" />
+              </SelectTrigger>
+              <SelectContent>
+                {productos?.map((producto) => (
+                  <SelectItem key={producto.id} value={producto.id.toString()}>
+                    {producto.nombre}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {errors.producto_id && (
               <p className="text-sm text-red-500">{errors.producto_id.message}</p>
             )}
@@ -487,8 +482,6 @@ export function AgregarStockModal({
               </div>
             </div>
           )}
-
-
 
           {/* Botones de acción */}
           <div className="flex justify-end gap-2 pt-4">

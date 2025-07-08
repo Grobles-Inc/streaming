@@ -9,7 +9,7 @@ const pedidoEstadoSchema = z.union([
 ])
 
 export const pedidoSchema = z.object({
-  id: z.string().optional(),
+  id: z.number().optional(),
   proveedor_id: z.string().optional(),
   producto_id: z.number().optional(),
   vendedor_id: z.string().optional(),

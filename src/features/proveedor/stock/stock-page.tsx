@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { IconPlus, IconRefresh } from '@tabler/icons-react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
-import { AgregarStockModal } from '../productos/components/agregar-stock-modal'
+import { AgregarStockStockModal } from './components/agregar-stock-stock-modal'
 import { EditarStockModal } from '../productos/components/editar-stock-modal'
 import { 
   useStockProductosByProveedor, 
@@ -264,7 +264,7 @@ export function StockPage() {
       />
 
       {/* Modal para agregar nuevo stock */}
-      <AgregarStockModal
+      <AgregarStockStockModal
         open={showAgregarStockDialog}
         onOpenChange={setShowAgregarStockDialog}
       />

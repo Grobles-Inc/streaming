@@ -79,11 +79,6 @@ export function DataTableToolbar<TData>({
               options={estados}
             />
           )}
-          
-          {/* Información de resultados */}
-          <div className='text-sm text-muted-foreground'>
-            {table.getFilteredRowModel().rows.length} de {table.getCoreRowModel().rows.length} pedido(s)
-          </div>
         </div>
 
         <DataTableViewOptions table={table} />

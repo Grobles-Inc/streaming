@@ -1,7 +1,14 @@
 import { Button } from '@/components/ui/button'
 import { Row } from '@tanstack/react-table'
-import { IconHeadset, IconEdit } from '@tabler/icons-react'
+import { IconHeadset, IconEdit, IconDots } from '@tabler/icons-react'
 import { useState } from 'react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { SoporteModal } from './soporte-modal'
 import { EditAccountModal } from './edit-account-modal'
 import { Pedido } from '../data/schema'
@@ -68,32 +75,34 @@ export function DataTableRowActions<TData>({
 
   return (
     <>
-      <div className="flex items-center space-x-2">
-        <Button
-          variant='ghost'
-          size='sm'
-          className='h-8 w-8 p-0'
-          onClick={handleSoporteClick}
-          title="Gestionar soporte"
-        >
-          <IconHeadset className='h-4 w-4' />
-          <span className='sr-only'>Gestionar soporte</span>
-        </Button>
-
-        {/* Solo mostrar botón de edición si tiene stock_producto_id */}
-        {pedido.stock_producto_id && (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
           <Button
-            variant='ghost'
-            size='sm'
-            className='h-8 w-8 p-0'
-            onClick={handleEditClick}
-            title="Editar datos de cuenta"
+            variant="ghost"
+            className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
           >
-            <IconEdit className='h-4 w-4' />
-            <span className='sr-only'>Editar datos de cuenta</span>
+            <IconDots className="h-4 w-4" />
+            <span className="sr-only">Abrir menú</span>
           </Button>
-        )}
-      </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[160px]">
+          <DropdownMenuItem onClick={handleSoporteClick}>
+            <IconHeadset className="mr-2 h-4 w-4" />
+            Gestionar soporte
+          </DropdownMenuItem>
+          
+          {/* Solo mostrar opción de edición si tiene stock_producto_id */}
+          {pedido.stock_producto_id && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleEditClick}>
+                <IconEdit className="mr-2 h-4 w-4" />
+                Editar cuenta
+              </DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       {/* Modal de soporte */}
       <SoporteModal

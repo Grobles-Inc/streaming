@@ -19,6 +19,7 @@ interface PublicacionMessage {
   metodo: string
   id_cliente: string
   id_producto: number
+  comision: number
 }
 
 interface CompraMessage {
@@ -108,7 +109,7 @@ export async function PublicacionMessage(
 - *Cliente:* ${message.nombre_cliente}
 - *Producto:* ${message.nombre_producto}
 - *Método:* ${message.metodo}
-- *Comisión:* S/. 5.00
+- *Comisión:* ${message.comision}
 - *ID Cliente:* ${message.id_cliente}
 - *ID Producto:* ${message.id_producto}`
 

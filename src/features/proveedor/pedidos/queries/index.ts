@@ -157,11 +157,39 @@ export const useProcesarReembolso = () => {
     }) => pedidosService.procesarReembolsoProveedor(compraId, proveedorId, vendedorId, montoReembolso),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
-      queryClient.invalidateQueries({ queryKey: ['billetera'] })
+      queryClient.invalidateQueries({ queryKey: ['billeteras'] })
       toast.success('Reembolso procesado correctamente')
     },
     onError: (error) => {
       const errorMessage = error instanceof Error ? error.message : 'Error al procesar el reembolso'
+      toast.error(errorMessage)
+    },
+  })
+} 
+
+export const useCompletarSoporte = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: ({ 
+      compraId, 
+      stockProductoId, 
+      respuesta 
+    }: { 
+      compraId: string
+      stockProductoId: number
+      respuesta?: string
+    }) => pedidosService.completarSoporte(compraId, stockProductoId, respuesta),
+    onSuccess: (result) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+        toast.success('Soporte brindado correctamente')
+      } else {
+        toast.error(result.error || 'Error al completar el soporte')
+      }
+    },
+    onError: (error) => {
+      const errorMessage = error instanceof Error ? error.message : 'Error al completar el soporte'
       toast.error(errorMessage)
     },
   })

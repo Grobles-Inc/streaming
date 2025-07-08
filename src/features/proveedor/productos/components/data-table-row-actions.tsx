@@ -196,7 +196,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         title={esDespublicadoPorVencimiento ? "¿Renovar producto?" : "¿Publicar producto?"}
         desc={esDespublicadoPorVencimiento 
           ? "Se cobrará la comisión de renovación de tu billetera y el producto será renovado por 30 días más."
-          : "Se cobrará la comisión de publicación de tu billetera. Una vez publicado, el producto estará disponible para la venta."
+          : "Se cobrará la comisión de publicación de tu billetera. Una vez publicado, el producto estará disponible para la venta por 30 días."
         }
         confirmText={esDespublicadoPorVencimiento ? "Renovar y cobrar comisión" : "Publicar y cobrar comisión"}
         handleConfirm={confirmPublish}

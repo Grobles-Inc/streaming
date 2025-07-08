@@ -57,7 +57,7 @@ function ProductosTableActions({
           Ver detalles
         </DropdownMenuItem>
         
-        <DropdownMenuItem onClick={() => onDuplicar(producto.id)}>
+        <DropdownMenuItem onClick={() => onDuplicar(producto.id.toString())}>
           <IconCopy className="mr-2 h-4 w-4" />
           Duplicar
         </DropdownMenuItem>
@@ -66,7 +66,7 @@ function ProductosTableActions({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem 
-              onClick={() => onEliminar(producto.id)}
+              onClick={() => onEliminar(producto.id.toString())}
               className="text-red-600 focus:text-red-600"
             >
               <IconTrash className="mr-2 h-4 w-4" />

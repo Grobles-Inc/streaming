@@ -9,17 +9,14 @@ export type CreateRetiroData = Database['public']['Tables']['retiros']['Insert']
 // Tipo para actualizar un retiro
 export type UpdateRetiroData = Database['public']['Tables']['retiros']['Update']
 
-// Tipo de retiro con información del usuario y billetera
+// Tipo de retiro con información del usuario (estructura real de Supabase)
 export type RetiroWithUser = SupabaseRetiro & {
-  usuario?: {
+  usuarios?: {
     id: string
     nombres: string
     apellidos: string
     telefono: string | null
-    billeteras?: {
-      id: string
-      saldo: number
-    }[]
+    billetera_id: string
   }
 }
 

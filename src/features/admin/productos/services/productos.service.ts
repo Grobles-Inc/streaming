@@ -80,23 +80,23 @@ export class ProductosService {
   }
 
   // Obtener producto por ID
-  static async getProductoById(id: string): Promise<ProductoWithRelations | null> {
+  static async getProductoById(id: number): Promise<ProductoWithRelations | null> {
     const { data, error } = await supabase
       .from('productos')
       .select(`
         *,
-        categoria:categorias!productos_categoria_id_fkey (
+        categoria:categorias!categoria_id (
           id,
           nombre,
           descripcion
         ),
-        proveedor:usuarios!productos_proveedor_id_fkey (
+        proveedor:usuarios!proveedor_id (
           id,
           nombres,
           apellidos,
           email
         ),
-        stock_productos!productos_stock_producto_id_fkey (
+        stock_productos!producto_id (
           id,
           estado
         )
@@ -136,7 +136,7 @@ export class ProductosService {
   }
 
   // Actualizar un producto
-  static async updateProducto(id: string, productoData: Partial<UpdateProductoData>): Promise<SupabaseProducto> {
+  static async updateProducto(id: number, productoData: Partial<UpdateProductoData>): Promise<SupabaseProducto> {
     const { data, error } = await supabase
       .from('productos')
       .update({
@@ -156,7 +156,7 @@ export class ProductosService {
   }
 
   // Eliminar un producto
-  static async deleteProducto(id: string): Promise<void> {
+  static async deleteProducto(id: number): Promise<void> {
     const { error } = await supabase
       .from('productos')
       .delete()
@@ -169,7 +169,7 @@ export class ProductosService {
   }
 
   // Cambiar estado de un producto
-  static async cambiarEstadoProducto(id: string, nuevoEstado: EstadoProducto): Promise<SupabaseProducto> {
+  static async cambiarEstadoProducto(id: number, nuevoEstado: EstadoProducto): Promise<SupabaseProducto> {
     // Obtener el producto actual para verificar el estado anterior
     const productoActual = await this.getProductoById(id)
     if (!productoActual) {
@@ -260,7 +260,7 @@ export class ProductosService {
   }
 
   // Duplicar un producto
-  static async duplicarProducto(id: string): Promise<SupabaseProducto> {
+  static async duplicarProducto(id: number): Promise<SupabaseProducto> {
     const productoOriginal = await this.getProductoById(id)
     if (!productoOriginal) {
       throw new Error('Producto no encontrado')
@@ -272,7 +272,6 @@ export class ProductosService {
       informacion: productoOriginal.informacion,
       condiciones: productoOriginal.condiciones,
       precio_publico: productoOriginal.precio_publico,
-      stock: 0, // Empezar con stock 0
       categoria_id: productoOriginal.categoria_id,
       proveedor_id: productoOriginal.proveedor_id,
       imagen_url: productoOriginal.imagen_url,

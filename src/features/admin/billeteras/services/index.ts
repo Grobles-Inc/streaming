@@ -8,7 +8,7 @@ export class BilleterasService {
       .from('billeteras')
       .select(`
         *,
-        usuario:usuarios!billeteras_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -33,7 +33,7 @@ export class BilleterasService {
       .from('billeteras')
       .select(`
         *,
-        usuario:usuarios!billeteras_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -59,7 +59,7 @@ export class BilleterasService {
       .from('recargas')
       .select(`
         *,
-        usuario:usuarios!recargas_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -84,7 +84,7 @@ export class BilleterasService {
       .from('recargas')
       .select(`
         *,
-        usuario:usuarios!recargas_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -110,7 +110,7 @@ export class BilleterasService {
       .from('retiros')
       .select(`
         *,
-        usuario:usuarios!retiros_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -135,7 +135,7 @@ export class BilleterasService {
       .from('retiros')
       .select(`
         *,
-        usuario:usuarios!retiros_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -166,7 +166,7 @@ export class BilleterasService {
       }])
       .select(`
         *,
-        usuario:usuarios!recargas_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -196,7 +196,7 @@ export class BilleterasService {
       }])
       .select(`
         *,
-        usuario:usuarios!retiros_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -223,7 +223,7 @@ export class BilleterasService {
       .eq('id', recargaId)
       .select(`
         *,
-        usuario:usuarios!recargas_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -250,7 +250,7 @@ export class BilleterasService {
       .eq('id', retiroId)
       .select(`
         *,
-        usuario:usuarios!retiros_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,

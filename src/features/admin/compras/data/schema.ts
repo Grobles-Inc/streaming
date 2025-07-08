@@ -11,9 +11,9 @@ const estadoCompraSchema = z.union([
 
 // Esquema para compra base
 const compraBaseSchema = z.object({
-  id: z.string(),
+  id: z.number(),
   proveedor_id: z.string(),
-  producto_id: z.string(),
+  producto_id: z.number(),
   vendedor_id: z.string().nullable(),
   stock_producto_id: z.number().nullable(),
   nombre_cliente: z.string(),
@@ -37,14 +37,8 @@ const compraWithRelationsSchema = compraBaseSchema.extend({
     apellidos: z.string(),
     telefono: z.string().nullable(),
   }).optional(),
-  vendedor: z.object({
-    id: z.string(),
-    nombres: z.string(),
-    apellidos: z.string(),
-    telefono: z.string().nullable(),
-  }).optional(),
   producto: z.object({
-    id: z.string(),
+    id: z.number(),
     nombre: z.string(),
     descripcion: z.string().nullable(),
     precio_publico: z.number(),
@@ -63,16 +57,16 @@ const compraWithRelationsSchema = compraBaseSchema.extend({
 
 // Esquema para compra mapeada
 const mappedCompraSchema = z.object({
-  id: z.string(),
+  id: z.number(),
   proveedorId: z.string(),
   proveedorNombre: z.string(),
   vendedorId: z.string().nullable(),
-  vendedorNombre: z.string(),
-  productoId: z.string(),
+  vendedorNombre: z.string().optional(),
+  productoId: z.number(),
   productoNombre: z.string(),
   stockProductoId: z.number().nullable(),
-  emailCuenta: z.string(),
-  claveCuenta: z.string(),
+  emailCuenta: z.string().optional(),
+  claveCuenta: z.string().optional(),
   pinCuenta: z.string().nullable(),
   perfilUsuario: z.string().nullable(),
   nombreCliente: z.string(),
@@ -100,7 +94,7 @@ const filtroCompraSchema = z.object({
   fechaHasta: z.string().optional(),
   proveedorId: z.string().optional(),
   vendedorId: z.string().optional(),
-  productoId: z.string().optional(),
+  productoId: z.number().optional(),
 })
 
 // Tipos exportados
@@ -115,9 +109,10 @@ export function mapSupabaseCompraToComponent(compra: CompraWithRelations): Mappe
     ? `${compra.proveedor.nombres} ${compra.proveedor.apellidos}`.trim()
     : 'Proveedor no encontrado'
   
-  const vendedorNombre = compra.vendedor 
-    ? `${compra.vendedor.nombres} ${compra.vendedor.apellidos}`.trim()
-    : 'Sin vendedor asignado'
+  // Ya no tenemos la relación vendedor en la consulta, pero podemos usar el campo vendedor_id
+  const vendedorNombre = compra.vendedor_id 
+    ? `Vendedor: ${compra.vendedor_id}`
+    : undefined
 
   const productoNombre = compra.producto?.nombre || 'Producto no encontrado'
 
@@ -162,8 +157,8 @@ export function mapSupabaseCompraToComponent(compra: CompraWithRelations): Mappe
     productoId: compra.producto_id,
     productoNombre,
     stockProductoId: compra.stock_producto_id,
-    emailCuenta: compra.stock_producto?.email || 'Sin email',
-    claveCuenta: compra.stock_producto?.clave || 'Sin clave',
+    emailCuenta: compra.stock_producto?.email || undefined,
+    claveCuenta: compra.stock_producto?.clave || undefined,
     pinCuenta: compra.stock_producto?.pin || null,
     perfilUsuario: compra.stock_producto?.perfil || null,
     nombreCliente: compra.nombre_cliente,

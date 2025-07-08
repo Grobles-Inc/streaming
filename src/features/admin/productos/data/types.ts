@@ -2,15 +2,14 @@
 export type EstadoProducto = 'borrador' | 'publicado'
 export type DisponibilidadProducto = 'en_stock' | 'a_pedido' | 'activacion'
 
-// Tipo base de producto desde Supabase
+// Tipo base de producto desde Supabase (actualizado según la nueva estructura)
 export type SupabaseProducto = {
-  id: string
+  id: number  // Cambiado de string a number
   nombre: string
   descripcion: string | null
   informacion: string | null
   condiciones: string | null
   precio_publico: number
-  stock: number
   categoria_id: string
   proveedor_id: string
   imagen_url: string | null
@@ -28,16 +27,26 @@ export type SupabaseProducto = {
   precio_vendedor: number
   precio_renovacion: number | null
   estado: EstadoProducto
+  fecha_expiracion: string | null  // Nuevo campo
+  // Campos relacionales
+  usuarios?: {
+    nombres: string
+    apellidos: string
+    billetera_id: string
+    usuario: string
+  }
+  stock_de_productos?: {
+    id: number
+  }[]
 }
 
-// Tipo para crear un nuevo producto
+// Tipo para crear un nuevo producto (actualizado)
 export type CreateProductoData = {
   nombre: string
   descripcion?: string | null
   informacion?: string | null
   condiciones?: string | null
   precio_publico: number
-  stock?: number
   categoria_id: string
   proveedor_id: string
   imagen_url?: string | null
@@ -53,11 +62,12 @@ export type CreateProductoData = {
   precio_vendedor: number
   precio_renovacion?: number | null
   estado?: EstadoProducto
+  fecha_expiracion?: string | null  // Nuevo campo
 }
 
 // Tipo para actualizar un producto
 export type UpdateProductoData = Partial<CreateProductoData> & {
-  id: string
+  id: number  // Cambiado de string a number
 }
 
 // Tipo de producto con información relacionada
@@ -100,9 +110,9 @@ export type EstadisticasProductos = {
   nuevos: number
 }
 
-// Producto mapeado para el componente
+// Producto mapeado para el componente (actualizado)
 export type MappedProducto = {
-  id: string
+  id: number  // Cambiado de string a number
   nombre: string
   descripcion: string | null
   informacion: string | null
@@ -113,7 +123,6 @@ export type MappedProducto = {
   precioVendedorFormateado: string
   precioRenovacion: number | null
   precioRenovacionFormateado: string | null
-  stock: number
   categoriaId: string
   categoriaNombre: string
   proveedorId: string
@@ -121,6 +130,7 @@ export type MappedProducto = {
   imagenUrl: string | null
   fechaCreacion: Date
   fechaActualizacion: Date
+  fechaExpiracion: Date | null  // Nuevo campo
   tiempoUso: number
   aPedido: boolean
   nuevo: boolean
@@ -137,5 +147,6 @@ export type MappedProducto = {
   puedeEditar: boolean
   puedeEliminar: boolean
   tiempoUsoFormateado: string
+  fechaExpiracionFormateada: string | null  // Nuevo campo formateado
   etiquetas: string[]
 }

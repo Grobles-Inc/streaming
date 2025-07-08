@@ -49,8 +49,20 @@ export function useRetiros(filtrosIniciales?: FiltroRetiro) {
 
   // Cargar datos iniciales
   useEffect(() => {
-    loadRetiros()
-    loadEstadisticas()
+    const loadData = async () => {
+      // Primero probar la conexión
+      try {
+        await RetirosService.testConnection()
+      } catch (err) {
+        console.error('Connection test failed:', err)
+      }
+      
+      // Luego cargar los datos
+      await loadRetiros()
+      await loadEstadisticas()
+    }
+    
+    loadData()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Aprobar retiro

@@ -45,7 +45,7 @@ export default function RecargasPage() {
 
   // Manejar aprobación individual
   const handleAprobar = async (id: string) => {
-    const success = await aprobarRecarga(id)
+    const success = await aprobarRecarga(parseInt(id))
     if (success) {
       toast.success('Recarga aprobada exitosamente')
     } else {
@@ -55,7 +55,7 @@ export default function RecargasPage() {
 
   // Manejar rechazo individual
   const handleRechazar = async (id: string) => {
-    const success = await rechazarRecarga(id)
+    const success = await rechazarRecarga(parseInt(id))
     if (success) {
       toast.success('Recarga rechazada exitosamente')
     } else {
@@ -65,7 +65,7 @@ export default function RecargasPage() {
 
   // Manejar aprobación masiva
   const handleAprobarSeleccionadas = async (ids: string[]) => {
-    const success = await aprobarRecargas(ids)
+    const success = await aprobarRecargas(ids.map(id => parseInt(id)))
     if (success) {
       toast.success(`${ids.length} recarga(s) aprobada(s) exitosamente`)
     } else {
@@ -75,7 +75,7 @@ export default function RecargasPage() {
 
   // Manejar rechazo masivo
   const handleRechazarSeleccionadas = async (ids: string[]) => {
-    const success = await rechazarRecargas(ids)
+    const success = await rechazarRecargas(ids.map(id => parseInt(id)))
     if (success) {
       toast.success(`${ids.length} recarga(s) rechazada(s) exitosamente`)
     } else {

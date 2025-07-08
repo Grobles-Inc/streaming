@@ -66,8 +66,10 @@ export class ComisionesService {
           new Date(config.updated_at) <= new Date(producto.updated_at)
         ) || configuraciones?.[configuraciones.length - 1]
 
-        const porcentajeComision = configVigente?.comision_publicacion_producto || 0
-        const montoComision = (producto.precio_publico * porcentajeComision) / 100
+        // La comision_publicacion_producto debe ser el monto en dólares, no porcentaje
+        const montoComisionEnDolares = configVigente?.comision_publicacion_producto || 0
+        // Calcular el porcentaje para referencia (opcional)
+        const porcentajeComision = producto.precio_publico > 0 ? (montoComisionEnDolares / producto.precio_publico) * 100 : 0
         const usuarioData = Array.isArray(producto.usuarios) ? producto.usuarios[0] : producto.usuarios
 
         return {
@@ -75,7 +77,7 @@ export class ComisionesService {
           producto_id: producto.id,
           proveedor_id: producto.proveedor_id,
           admin_id: adminId,
-          monto_comision: montoComision,
+          monto_comision: montoComisionEnDolares,
           porcentaje_comision: porcentajeComision,
           fecha_publicacion: producto.updated_at,
           producto: {

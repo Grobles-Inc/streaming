@@ -48,7 +48,9 @@ function ComisionesPublicacionTableActions({
 
 export const getComisionesPublicacionColumns = (
   onVer: (comision: ComisionPublicacion) => void
-): ColumnDef<ComisionPublicacion>[] => [
+): ColumnDef<ComisionPublicacion>[] => {
+  
+  return [
   {
     id: 'select',
     header: ({ table }) => (
@@ -118,10 +120,12 @@ export const getComisionesPublicacionColumns = (
   },
   {
     accessorKey: 'monto_comision',
-    header: 'Comisión',
+    header: 'Comisión (USD)',
     cell: ({ row }) => {
       const monto = row.original.monto_comision
-      const porcentaje = row.original.porcentaje_comision
+      // Usar una tasa de cambio fija por ahora (esto debería venir de configuración)
+      const tasaCambio = 3.75
+      const montoEnSoles = monto * tasaCambio
       
       return (
         <div className="text-right">
@@ -129,7 +133,7 @@ export const getComisionesPublicacionColumns = (
             ${monto.toFixed(2)}
           </p>
           <p className="text-xs text-muted-foreground">
-            {porcentaje}%
+            S/. {montoEnSoles.toFixed(2)}
           </p>
         </div>
       )
@@ -184,3 +188,4 @@ export const getComisionesPublicacionColumns = (
     enableSorting: false,
   },
 ]
+}

@@ -68,7 +68,7 @@ export function useProductos() {
   }
 
   // Actualizar producto
-  const actualizarProducto = async (id: string, productoData: Partial<UpdateProductoData>): Promise<boolean> => {
+  const actualizarProducto = async (id: number, productoData: Partial<UpdateProductoData>): Promise<boolean> => {
     try {
       setError(null)
       console.log('✏️ Updating producto:', id, productoData)
@@ -86,7 +86,7 @@ export function useProductos() {
   }
 
   // Eliminar producto
-  const eliminarProducto = async (id: string): Promise<boolean> => {
+  const eliminarProducto = async (id: number): Promise<boolean> => {
     try {
       setError(null)
       console.log('🗑️ Deleting producto:', id)
@@ -104,7 +104,7 @@ export function useProductos() {
   }
 
   // Cambiar estado del producto
-  const cambiarEstadoProducto = async (id: string, nuevoEstado: EstadoProducto): Promise<boolean> => {
+  const cambiarEstadoProducto = async (id: number, nuevoEstado: EstadoProducto): Promise<boolean> => {
     try {
       setError(null)
       console.log('🔄 Changing producto state:', id, nuevoEstado)
@@ -122,7 +122,7 @@ export function useProductos() {
   }
 
   // Duplicar producto
-  const duplicarProducto = async (id: string): Promise<boolean> => {
+  const duplicarProducto = async (id: number): Promise<boolean> => {
     try {
       setError(null)
       console.log('📋 Duplicating producto:', id)
@@ -150,7 +150,7 @@ export function useProductos() {
   }
 
   // Obtener producto por ID
-  const obtenerProductoPorId = async (id: string): Promise<MappedProducto | null> => {
+  const obtenerProductoPorId = async (id: number): Promise<MappedProducto | null> => {
     try {
       const supabaseProducto = await ProductosService.getProductoById(id)
       if (!supabaseProducto) return null

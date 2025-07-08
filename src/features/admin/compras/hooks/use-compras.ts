@@ -54,7 +54,7 @@ export function useCompras(filtrosIniciales?: FiltroCompra) {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cambiar estado de compra
-  const cambiarEstadoCompra = async (id: string, nuevoEstado: EstadoCompra): Promise<{
+  const cambiarEstadoCompra = async (id: number, nuevoEstado: EstadoCompra): Promise<{
     success: boolean
     reembolsoProcessed?: boolean
     reembolsoAmount?: number
@@ -76,28 +76,28 @@ export function useCompras(filtrosIniciales?: FiltroCompra) {
   }
 
   // Métodos específicos para cada estado
-  const marcarComoResuelto = async (id: string) => {
+  const marcarComoResuelto = async (id: number) => {
     return await cambiarEstadoCompra(id, 'resuelto')
   }
 
-  const marcarComoVencido = async (id: string) => {
+  const marcarComoVencido = async (id: number) => {
     return await cambiarEstadoCompra(id, 'vencido')
   }
 
-  const enviarASoporte = async (id: string) => {
+  const enviarASoporte = async (id: number) => {
     return await cambiarEstadoCompra(id, 'soporte')
   }
 
-  const procesarReembolso = async (id: string) => {
+  const procesarReembolso = async (id: number) => {
     return await cambiarEstadoCompra(id, 'reembolsado')
   }
 
-  const marcarComoPedidoEntregado = async (id: string) => {
+  const marcarComoPedidoEntregado = async (id: number) => {
     return await cambiarEstadoCompra(id, 'pedido_entregado')
   }
 
   // Cambiar estado masivo
-  const cambiarEstadoMasivo = async (ids: string[], nuevoEstado: EstadoCompra): Promise<{
+  const cambiarEstadoMasivo = async (ids: number[], nuevoEstado: EstadoCompra): Promise<{
     success: number
     failed: number
     reembolsoTotal?: number
@@ -137,7 +137,7 @@ export function useCompras(filtrosIniciales?: FiltroCompra) {
   const clearError = () => setError(null)
 
   // Ver detalles de una compra
-  const verDetallesCompra = async (id: string): Promise<MappedCompra | null> => {
+  const verDetallesCompra = async (id: number): Promise<MappedCompra | null> => {
     try {
       const compra = await ComprasService.getCompraById(id)
       if (compra) {

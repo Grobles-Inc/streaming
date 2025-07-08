@@ -85,14 +85,14 @@ export function RecargasTable({
 
   const handleAprobarSeleccionadas = async () => {
     if (selectedPendientes.length > 0 && onAprobarSeleccionadas) {
-      await onAprobarSeleccionadas(selectedPendientes.map(r => r.id))
+      await onAprobarSeleccionadas(selectedPendientes.map(r => r.id.toString()))
       setRowSelection({})
     }
   }
 
   const handleRechazarSeleccionadas = async () => {
     if (selectedPendientes.length > 0 && onRechazarSeleccionadas) {
-      await onRechazarSeleccionadas(selectedPendientes.map(r => r.id))
+      await onRechazarSeleccionadas(selectedPendientes.map(r => r.id.toString()))
       setRowSelection({})
     }
   }

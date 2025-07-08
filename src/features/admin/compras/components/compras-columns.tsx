@@ -72,11 +72,11 @@ function getEstadoBadge(estado: string) {
 // Props para las acciones
 interface ComprasTableActionsProps {
   compra: MappedCompra
-  onMarcarResuelto: (id: string) => Promise<void>
-  onMarcarVencido: (id: string) => Promise<void>
-  onEnviarASoporte: (id: string) => Promise<void>
-  onProcesarReembolso: (id: string) => Promise<void>
-  onMarcarComoPedidoEntregado: (id: string) => Promise<void>
+  onMarcarResuelto: (id: number) => Promise<void>
+  onMarcarVencido: (id: number) => Promise<void>
+  onEnviarASoporte: (id: number) => Promise<void>
+  onProcesarReembolso: (id: number) => Promise<void>
+  onMarcarComoPedidoEntregado: (id: number) => Promise<void>
   onVer: (compra: MappedCompra) => void | Promise<void>
 }
 
@@ -161,11 +161,11 @@ function ComprasTableActions({
 
 // Definir las columnas
 export function createComprasColumns(
-  onMarcarResuelto: (id: string) => Promise<void>,
-  onMarcarVencido: (id: string) => Promise<void>,
-  onEnviarASoporte: (id: string) => Promise<void>,
-  onProcesarReembolso: (id: string) => Promise<void>,
-  onMarcarComoPedidoEntregado: (id: string) => Promise<void>,
+  onMarcarResuelto: (id: number) => Promise<void>,
+  onMarcarVencido: (id: number) => Promise<void>,
+  onEnviarASoporte: (id: number) => Promise<void>,
+  onProcesarReembolso: (id: number) => Promise<void>,
+  onMarcarComoPedidoEntregado: (id: number) => Promise<void>,
   onVer: (compra: MappedCompra) => void | Promise<void>
 ): ColumnDef<MappedCompra>[] {
   return [
@@ -197,10 +197,10 @@ export function createComprasColumns(
       accessorKey: 'id',
       header: 'ID',
       cell: ({ row }) => {
-        const id = row.getValue('id') as string
+        const id = row.getValue('id') as number
         return (
           <div className=" text-xs">
-            {id.slice(0, 8)}...
+            {id.toString()}
           </div>
         )
       },

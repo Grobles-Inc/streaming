@@ -157,10 +157,6 @@ export function ProductoDetailsModal({
               </h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Stock Total:</span>
-                  <span className="font-mono font-medium">{producto.stock}</span>
-                </div>
-                <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Stock Disponible:</span>
                   <span className="font-mono text-green-600 font-medium">{producto.stockDisponible}</span>
                 </div>

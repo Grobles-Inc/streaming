@@ -40,7 +40,7 @@ export async function testSupabaseConnection() {
       .from('retiros')
       .select(`
         *,
-        usuario:usuarios!retiros_usuario_id_fkey (
+        usuario:usuarios!usuario_id (
           id,
           nombres,
           apellidos,

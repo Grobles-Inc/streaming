@@ -98,7 +98,7 @@ export class ReportesGlobalesService {
       .from('recargas')
       .select(`
         *,
-        usuarios!recargas_usuario_id_fkey(nombres, apellidos)
+        usuarios!usuario_id(nombres, apellidos)
       `)
       .order('created_at', { ascending: false })
     

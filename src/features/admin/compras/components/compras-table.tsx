@@ -47,7 +47,7 @@ interface ComprasTableProps {
   data: MappedCompra[]
   columns: ColumnDef<MappedCompra>[]
   loading?: boolean
-  onCambiarEstadoMasivo?: (ids: string[], estado: EstadoCompra) => Promise<void>
+  onCambiarEstadoMasivo?: (ids: number[], estado: EstadoCompra) => Promise<void>
 }
 
 export function ComprasTable({ 

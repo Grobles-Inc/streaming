@@ -44,7 +44,7 @@ export type EstadisticasRecargas = {
 
 // Recarga mapeada para el componente
 export type MappedRecarga = {
-  id: string
+  id: number  // Cambiado de string a number
   usuarioId: string
   usuarioNombre: string
   usuarioNombres: string

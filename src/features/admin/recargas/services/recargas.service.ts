@@ -15,7 +15,7 @@ export class RecargasService {
       .from('recargas')
       .select(`
         *,
-        usuario:usuarios!recargas_usuario_id_fkey (
+        usuario:usuarios!usuario_id (
           id,
           nombres,
           apellidos,
@@ -58,12 +58,12 @@ export class RecargasService {
   }
 
   // Obtener recarga por ID
-  static async getRecargaById(id: string): Promise<RecargaWithUser | null> {
+  static async getRecargaById(id: number): Promise<RecargaWithUser | null> {
     const { data, error } = await supabase
       .from('recargas')
       .select(`
         *,
-        usuario:usuarios!recargas_usuario_id_fkey (
+        usuario:usuarios!usuario_id (
           id,
           nombres,
           apellidos,
@@ -88,7 +88,7 @@ export class RecargasService {
   }
 
   // Actualizar recarga
-  static async updateRecarga(id: string, updates: UpdateRecargaData): Promise<SupabaseRecarga> {
+  static async updateRecarga(id: number, updates: UpdateRecargaData): Promise<SupabaseRecarga> {
     const { data, error } = await supabase
       .from('recargas')
       .update({
@@ -108,12 +108,12 @@ export class RecargasService {
   }
 
   // Aprobar recarga
-  static async aprobarRecarga(id: string): Promise<SupabaseRecarga> {
+  static async aprobarRecarga(id: number): Promise<SupabaseRecarga> {
     return this.updateRecarga(id, { estado: 'aprobado' })
   }
 
   // Rechazar recarga
-  static async rechazarRecarga(id: string): Promise<SupabaseRecarga> {
+  static async rechazarRecarga(id: number): Promise<SupabaseRecarga> {
     return this.updateRecarga(id, { estado: 'rechazado' })
   }
 
@@ -145,7 +145,7 @@ export class RecargasService {
   }
 
   // Aprobar múltiples recargas
-  static async aprobarRecargas(ids: string[]): Promise<SupabaseRecarga[]> {
+  static async aprobarRecargas(ids: number[]): Promise<SupabaseRecarga[]> {
     const { data, error } = await supabase
       .from('recargas')
       .update({ 
@@ -164,7 +164,7 @@ export class RecargasService {
   }
 
   // Rechazar múltiples recargas
-  static async rechazarRecargas(ids: string[]): Promise<SupabaseRecarga[]> {
+  static async rechazarRecargas(ids: number[]): Promise<SupabaseRecarga[]> {
     const { data, error } = await supabase
       .from('recargas')
       .update({ 

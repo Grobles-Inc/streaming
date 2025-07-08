@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { RetiroWithUser } from './types'
 
 // Esquema para estado de retiro
 const estadoRetiroSchema = z.union([
@@ -16,20 +17,6 @@ const retiroBaseSchema = z.object({
   estado: estadoRetiroSchema,
   created_at: z.string(),
   updated_at: z.string(),
-})
-
-// Esquema para retiro con usuario y billetera
-const retiroWithUserSchema = retiroBaseSchema.extend({
-  usuario: z.object({
-    id: z.string(),
-    nombres: z.string(),
-    apellidos: z.string(),
-    telefono: z.string().nullable(),
-    billeteras: z.array(z.object({
-      id: z.string(),
-      saldo: z.number(),
-    })).optional(),
-  }).optional(),
 })
 
 // Esquema para retiro mapeado
@@ -62,14 +49,16 @@ const filtroRetiroSchema = z.object({
 
 // Tipos exportados
 export type RetiroBase = z.infer<typeof retiroBaseSchema>
-export type RetiroWithUser = z.infer<typeof retiroWithUserSchema>
 export type MappedRetiro = z.infer<typeof mappedRetiroSchema>
 export type FiltroRetiro = z.infer<typeof filtroRetiroSchema>
 
 // Función para mapear retiro de Supabase a componente
 export function mapSupabaseRetiroToComponent(retiro: RetiroWithUser): MappedRetiro {
-  const nombreCompleto = retiro.usuario 
-    ? `${retiro.usuario.nombres} ${retiro.usuario.apellidos}`.trim()
+  // Usar la estructura usuarios del servicio
+  const usuario = retiro.usuarios
+  
+  const nombreCompleto = usuario 
+    ? `${usuario.nombres} ${usuario.apellidos}`.trim()
     : 'Usuario no encontrado'
   
   const montoFormateado = new Intl.NumberFormat('es-PE', {
@@ -78,9 +67,10 @@ export function mapSupabaseRetiroToComponent(retiro: RetiroWithUser): MappedReti
     minimumFractionDigits: 2,
   }).format(retiro.monto)
 
-  // Obtener saldo de la billetera
-  const saldoBilletera = retiro.usuario?.billeteras?.[0]?.saldo || 0
-  const billeteraId = retiro.usuario?.billeteras?.[0]?.id || null
+  // Para obtener el saldo, necesitamos hacer una consulta separada o pasar el saldo como parámetro
+  // Por ahora asumimos 0 y marcamos que no se puede aprobar hasta validar
+  const saldoBilletera = 0 // Se validará en tiempo real al aprobar
+  const billeteraId = usuario?.billetera_id || null
   
   const saldoFormateado = new Intl.NumberFormat('es-PE', {
     style: 'currency',
@@ -88,16 +78,16 @@ export function mapSupabaseRetiroToComponent(retiro: RetiroWithUser): MappedReti
     minimumFractionDigits: 2,
   }).format(saldoBilletera)
 
-  // Validar si se puede aprobar (saldo suficiente)
-  const puedeAprobar = saldoBilletera >= retiro.monto
+  // La validación del saldo se hará en el servicio al momento de aprobar
+  const puedeAprobar = retiro.estado === 'pendiente'
 
   return {
     id: retiro.id,
     usuarioId: retiro.usuario_id,
     usuarioNombre: nombreCompleto,
-    usuarioNombres: retiro.usuario?.nombres || '',
-    usuarioApellidos: retiro.usuario?.apellidos || '',
-    usuarioTelefono: retiro.usuario?.telefono || null,
+    usuarioNombres: usuario?.nombres || '',
+    usuarioApellidos: usuario?.apellidos || '',
+    usuarioTelefono: usuario?.telefono || null,
     saldoBilletera,
     billeteraId,
     monto: retiro.monto,

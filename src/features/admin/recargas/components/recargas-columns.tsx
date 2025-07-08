@@ -73,14 +73,14 @@ function RecargasTableActions({ recarga, onAprobar, onRechazar, onVer }: Recarga
         {puedeModificar && (
           <>
             <DropdownMenuItem
-              onClick={() => onAprobar(recarga.id)}
+              onClick={() => onAprobar(recarga.id.toString())}
               className="text-green-600 focus:text-green-600"
             >
               <IconCheck className="mr-2 h-4 w-4" />
               Aprobar
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => onRechazar(recarga.id)}
+              onClick={() => onRechazar(recarga.id.toString())}
               className="text-red-600 focus:text-red-600"
             >
               <IconX className="mr-2 h-4 w-4" />

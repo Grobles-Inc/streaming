@@ -12,7 +12,6 @@ import {
   useStockProductosByProveedor, 
   useDeleteStockProducto,
   useUpdateStockProducto,
-  useProductosByProveedor
 } from './queries/index'
 import { useAuth } from '@/stores/authStore'
 import type { Database } from '@/types/supabase'
@@ -41,7 +40,6 @@ export function StockPage() {
   const [selectedStock, setSelectedStock] = useState<StockProducto | null>(null)
   // Queries
   const { data: stockItems, isLoading, error } = useStockProductosByProveedor(user?.id ?? '')
-  const { data: productos } = useProductosByProveedor(user?.id ?? '')
   const deleteStockMutation = useDeleteStockProducto()
   const updateStockMutation = useUpdateStockProducto()
 
@@ -125,7 +123,7 @@ export function StockPage() {
         selectedIds.map(id => 
           deleteStockMutation.mutateAsync({ 
             id, 
-            productoId: selectedStockItems?.find(item => item.id === id)?.producto_id || '' 
+            productoId: parseInt(String(selectedStockItems?.find(item => item.id === id)?.producto_id || '0'), 10) 
           })
         )
       ).then(() => {
@@ -226,7 +224,6 @@ export function StockPage() {
             <StockTable 
               columns={columns} 
               data={stockItems} 
-              productos={productos}
               onAgregarStock={() => setShowAgregarStockDialog(true)}
               onDeleteSelected={handleDeleteSelected}
               onTogglePublishedSelected={handleTogglePublishedSelected}

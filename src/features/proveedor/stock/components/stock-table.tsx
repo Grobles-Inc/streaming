@@ -30,15 +30,11 @@ type StockProducto = Database['public']['Tables']['stock_productos']['Row'] & {
   }
 }
 
-type Producto = {
-  id: string
-  nombre: string
-}
+
 
 interface StockTableProps {
   columns: ColumnDef<StockProducto>[]
   data: StockProducto[]
-  productos?: Producto[]
   onAgregarStock: () => void
   onDeleteSelected?: (selectedIds: number[]) => void
   onTogglePublishedSelected?: (selectedIds: number[], published: boolean) => void

@@ -12,11 +12,13 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Compra } from '../data/schema'
 import { useUpdateCompraStatus, useUpdateStockProductoStatus } from '../queries'
+import { Input } from '@/components/ui/input'
 
 const subjectOptions = [
   { value: 'correo', label: 'Correo' },
   { value: 'clave', label: 'Clave' },
   { value: 'pago', label: 'Pago' },
+  { value: 'reembolso', label: 'Reembolso' },
   { value: 'geo', label: 'Geo' },
   { value: 'codigo', label: 'Código' },
   { value: 'otros', label: 'Otros' },
@@ -40,6 +42,9 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
   const isMobile = useIsMobile()
   const { mutate: updateCompraStatus, isPending } = useUpdateCompraStatus()
   const { mutate: updateStockProductoStatus } = useUpdateStockProductoStatus()
+  const precio_por_dia = (currentRow.precio || 0) / (currentRow.productos?.tiempo_uso || 1)
+  const dias_restantes = currentRow.fecha_expiracion ? Math.ceil((new Date(currentRow.fecha_expiracion).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
+  const monto_reembolso = precio_por_dia * dias_restantes
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -57,7 +62,7 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
       await updateCompraStatus({
         id: currentRow.id,
         status: "soporte",
-        message: data.message,
+        message: data.subject === 'reembolso' ? data.message + `\n\nMonto a reembolsar: $ ${(monto_reembolso <= 0 ? 0 : monto_reembolso).toFixed(2)} USD ` : data.message,
         subject: data.subject,
       })
       updateStockProductoStatus({
@@ -138,7 +143,28 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
                 </FormItem>
               )}
             />
-
+            {
+              form.watch('subject') === 'reembolso' && (
+                <FormField
+                  control={form.control}
+                  name="message"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className='mb-2 text-muted-foreground'>Monto a Reembolsar</FormLabel>
+                      <FormControl>
+                        <Input
+                          disabled
+                          {...field}
+                          value={`$ ${(monto_reembolso <= 0 ? 0 : monto_reembolso).toFixed(2)} USD `}
+                          readOnly
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )
+            }
             <FormField
               control={form.control}
               name="message"
@@ -156,6 +182,7 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
                 </FormItem>
               )}
             />
+
             {
               currentRow.soporte_asunto && (
                 <FormField

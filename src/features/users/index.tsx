@@ -40,7 +40,7 @@ function UsersContent() {
           <div>
             <h2 className='text-2xl font-bold tracking-tight'>Usuarios</h2>
             <p className='text-muted-foreground'>
-              Gestiona los usuarios y sus roles desde Supabase.
+              Gestiona los usuarios y sus roles.
             </p>
           </div>
           <UsersPrimaryButtons />

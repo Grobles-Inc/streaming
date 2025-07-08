@@ -6,7 +6,7 @@ export class CategoriasService {
     const { data, error } = await supabase
       .from('categorias')
       .select('*')
-      .order('created_at', { ascending: false })
+      .order('orden', { ascending: true })
     
     if (error) {
       console.error('Error fetching categorías:', error)
@@ -16,10 +16,32 @@ export class CategoriasService {
     return data || []
   }
 
-  static async createCategoria(categoriaData: CategoriaFormData): Promise<Categoria> {
+  static async getNextOrden(): Promise<number> {
     const { data, error } = await supabase
       .from('categorias')
-      .insert(categoriaData)
+      .select('orden')
+      .order('orden', { ascending: false })
+      .limit(1)
+    
+    if (error) {
+      console.error('Error fetching next orden:', error)
+      throw error
+    }
+    
+    const maxOrden = data?.[0]?.orden || 0
+    return maxOrden + 1
+  }
+
+  static async createCategoria(categoriaData: CategoriaFormData): Promise<Categoria> {
+    // Obtener el siguiente número de orden disponible
+    const nextOrden = await this.getNextOrden()
+    
+    const { data, error } = await supabase
+      .from('categorias')
+      .insert({
+        ...categoriaData,
+        orden: nextOrden
+      })
       .select()
       .single()
     
@@ -45,6 +67,23 @@ export class CategoriasService {
     }
     
     return data
+  }
+
+  static async updateCategoriasOrden(categorias: { id: string; orden: number }[]): Promise<void> {
+    // Actualizar el orden de múltiples categorías en una transacción
+    const updates = categorias.map(({ id, orden }) => 
+      supabase
+        .from('categorias')
+        .update({ orden })
+        .eq('id', id)
+    )
+    
+    try {
+      await Promise.all(updates)
+    } catch (error) {
+      console.error('Error actualizando orden de categorías:', error)
+      throw error
+    }
   }
 
   static async deleteCategoria(id: string): Promise<void> {

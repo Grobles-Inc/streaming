@@ -53,6 +53,11 @@ export function UsersTable({ columns, data }: DataTableProps) {
       rowSelection,
       columnFilters,
     },
+    initialState: {
+      pagination: {
+        pageSize: 200,
+      },
+    },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,

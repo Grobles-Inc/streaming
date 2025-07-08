@@ -10,7 +10,6 @@ interface CategoriasTableProps {
   itemsPerPage?: number
   onEdit: (categoria: Categoria) => void
   onDelete: (id: string) => void
-  onSelect: (categoria: Categoria) => void
   onPageChange: (page: number) => void
 }
 
@@ -20,7 +19,6 @@ export function CategoriasTable({
   itemsPerPage = 10,
   onEdit,
   onDelete,
-  onSelect,
   onPageChange
 }: CategoriasTableProps) {
   const startIndex = currentPage * itemsPerPage
@@ -45,8 +43,7 @@ export function CategoriasTable({
           {paginatedCategorias.map(categoria => (
             <tr
               key={categoria.id}
-              className="border-b cursor-pointer hover:bg-secondary/10"
-              onClick={() => onSelect(categoria)}
+              className="border-b hover:bg-secondary/10"
             >
               <td className="pr-4 py-4 text-left font-medium">{categoria.nombre}</td>
               <td className="px-4 py-4">{categoria.descripcion || 'Sin descripción'}</td>
@@ -56,7 +53,7 @@ export function CategoriasTable({
                 {categoria.imagen_url && (
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+                      <Button variant="ghost" size="icon">
                         <IconEye />
                       </Button>
                     </DialogTrigger>
@@ -72,23 +69,17 @@ export function CategoriasTable({
               </td>
               <td className="px-4 py-4">
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenuTrigger asChild>
                     <Button size="sm" variant="outline">
                       <IconMenu2 />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem onClick={(e) => {
-                      e.stopPropagation()
-                      onEdit(categoria)
-                    }}>
+                    <DropdownMenuItem onClick={() => onEdit(categoria)}>
                       <IconEdit className="mr-2" /> Editar
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onDelete(categoria.id)
-                      }}
+                      onClick={() => onDelete(categoria.id)}
                       className="text-red-600"
                     >
                       <IconTrash className="mr-2" /> Eliminar

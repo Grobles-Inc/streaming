@@ -279,6 +279,7 @@ export interface Database {
           imagen_url: string | null
           created_at: string
           updated_at: string
+          orden: number
         }
         Insert: {
           id?: string
@@ -287,6 +288,7 @@ export interface Database {
           imagen_url?: string | null
           created_at?: string
           updated_at?: string
+          orden?: number
         }
         Update: {
           id?: string
@@ -295,6 +297,7 @@ export interface Database {
           imagen_url?: string | null
           created_at?: string
           updated_at?: string
+          orden?: number
         }
         Relationships: []
       }

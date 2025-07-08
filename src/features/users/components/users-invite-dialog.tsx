@@ -30,7 +30,7 @@ import { toast } from 'sonner'
 import { useReferralValidation } from '../hooks/use-referral-validation'
 
 const formSchema = z.object({
-  referralCode: z.string().min(1, { message: 'Código de referido es requerido.' }),
+  referralCode: z.string().optional(),
 })
 type UserInviteForm = z.infer<typeof formSchema>
 
@@ -40,10 +40,14 @@ interface Props {
 }
 
 // Función para generar el link de invitación con código y rol encriptados
-function generateInviteLink(referralCode: string): string {
+function generateInviteLink(referralCode?: string): string {
   const baseUrl = window.location.origin
-  const encryptedData = encryptReferralData(referralCode, 'registered')
-  return `${baseUrl}/register?data=${encryptedData}`
+  if (referralCode) {
+    const encryptedData = encryptReferralData(referralCode, 'registered')
+    return `${baseUrl}/register?data=${encryptedData}`
+  } else {
+    return `${baseUrl}/register`
+  }
 }
 
 export function UsersInviteDialog({ open, onOpenChange }: Props) {
@@ -57,30 +61,36 @@ export function UsersInviteDialog({ open, onOpenChange }: Props) {
   })
 
   const watchedReferralCode = form.watch('referralCode')
+  const hasReferralCode = watchedReferralCode && watchedReferralCode.trim() !== ''
 
   // Validar código y generar link cuando cambie
   useEffect(() => {
-    if (watchedReferralCode) {
+    if (hasReferralCode) {
       const timeoutId = setTimeout(() => {
-        validateCode(watchedReferralCode)
+        validateCode(watchedReferralCode!)
       }, 500) // Debounce de 500ms
 
       return () => clearTimeout(timeoutId)
     } else {
       reset()
-      setInviteLink('')
-    }
-  }, [watchedReferralCode, validateCode, reset])
-
-  // Generar link cuando el código sea válido
-  useEffect(() => {
-    if (isValid && watchedReferralCode) {
-      const link = generateInviteLink(watchedReferralCode)
+      // Generar link sin código de referido
+      const link = generateInviteLink()
       setInviteLink(link)
-    } else {
+    }
+  }, [watchedReferralCode, hasReferralCode, validateCode, reset])
+
+  // Generar link cuando el código sea válido o cuando no hay código
+  useEffect(() => {
+    if (hasReferralCode && isValid) {
+      const link = generateInviteLink(watchedReferralCode!)
+      setInviteLink(link)
+    } else if (!hasReferralCode) {
+      const link = generateInviteLink()
+      setInviteLink(link)
+    } else if (hasReferralCode && !isValid) {
       setInviteLink('')
     }
-  }, [isValid, watchedReferralCode])
+  }, [isValid, watchedReferralCode, hasReferralCode])
 
   const handleCopyLink = async () => {
     if (inviteLink) {
@@ -102,7 +112,7 @@ export function UsersInviteDialog({ open, onOpenChange }: Props) {
   }
 
   const onSubmit = () => {
-    if (!isValid) {
+    if (hasReferralCode && !isValid) {
       form.setError('referralCode', {
         message: 'Código de referido inválido'
       })
@@ -130,10 +140,10 @@ export function UsersInviteDialog({ open, onOpenChange }: Props) {
         <DialogHeader className='text-left'>
           <DialogTitle className='flex items-center gap-2'>
             <IconMailPlus className="h-5 w-5" />
-            Generar Link de Invitación con Referido
+            Generar Link de Invitación
           </DialogTitle>
           <DialogDescription>
-            Crea un link personalizado que incluya un código de referido.
+            Crea un link personalizado para invitar usuarios. El código de referido es opcional.
             El nuevo usuario se registrará automáticamente con rol de "registered".
           </DialogDescription>
         </DialogHeader>
@@ -148,34 +158,39 @@ export function UsersInviteDialog({ open, onOpenChange }: Props) {
               name='referralCode'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Código de referido</FormLabel>
+                  <FormLabel>Código de referido (opcional)</FormLabel>
                   <FormControl>
                     <div className="relative">
                       <Input
-                        placeholder='Ej: ABC123'
+                        placeholder='Ej: ABC123 (opcional)'
                         {...field}
                         className={`pr-10 ${
-                          isValid === true 
+                          hasReferralCode && isValid === true 
                             ? 'border-green-500 focus:border-green-500' 
-                            : isValid === false 
+                            : hasReferralCode && isValid === false 
                             ? 'border-red-500 focus:border-red-500' 
                             : ''
                         }`}
                       />
                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        {isLoading ? (
+                        {hasReferralCode && isLoading ? (
                           <IconLoader className="h-4 w-4 text-gray-400 animate-spin" />
-                        ) : isValid === true ? (
+                        ) : hasReferralCode && isValid === true ? (
                           <IconCheck className="h-4 w-4 text-green-500" />
-                        ) : isValid === false ? (
+                        ) : hasReferralCode && isValid === false ? (
                           <IconX className="h-4 w-4 text-red-500" />
                         ) : null}
                       </div>
                     </div>
                   </FormControl>
-                  {referentName && isValid && (
+                  {referentName && isValid && hasReferralCode && (
                     <p className="text-sm text-green-600">
                       Referente: {referentName}
+                    </p>
+                  )}
+                  {!hasReferralCode && (
+                    <p className="text-sm text-blue-600">
+                      Sin código de referido - Invitación general
                     </p>
                   )}
                   <FormMessage />
@@ -227,15 +242,24 @@ export function UsersInviteDialog({ open, onOpenChange }: Props) {
                     </div>
                     
                     <div className="flex gap-2 text-sm text-muted-foreground">
-                      <Badge variant="outline" className="text-xs">
-                        Código: {watchedReferralCode}
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        Rol: registered
-                      </Badge>
-                      {referentName && (
-                        <Badge variant="default" className="text-xs">
-                          Por: {referentName}
+                      {hasReferralCode && (
+                        <>
+                          <Badge variant="outline" className="text-xs">
+                            Código: {watchedReferralCode}
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            Rol: registered
+                          </Badge>
+                          {referentName && (
+                            <Badge variant="default" className="text-xs">
+                              Por: {referentName}
+                            </Badge>
+                          )}
+                        </>
+                      )}
+                      {!hasReferralCode && (
+                        <Badge variant="secondary" className="text-xs">
+                          Invitación general - Sin referido
                         </Badge>
                       )}
                     </div>
@@ -253,7 +277,7 @@ export function UsersInviteDialog({ open, onOpenChange }: Props) {
             <Button 
               type='submit' 
               form='user-invite-form'
-              disabled={!isValid || isLoading}
+              disabled={hasReferralCode && !isValid || isLoading}
             >
               <IconCheck className="mr-2 h-4 w-4" />
               Confirmar

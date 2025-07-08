@@ -7,14 +7,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { IconPlus } from '@tabler/icons-react'
 import { useState } from 'react'
-import { CategoriaModal, CategoriasTable, ProductosPorCategoria } from './components'
+import { CategoriaModal, CategoriasTableDnd } from './components'
 import { CategoriaFilters } from './components/categoria-filters'
-import type { Categoria, Producto } from './data/types'
-import { useCategorias, useProductosByCategoria } from './queries'
+import type { Categoria } from './data/types'
+import { useCategorias } from './queries'
 
 export default function CategoriasPage() {
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<Categoria | null>(null)
-  const [categoriaPagina, setCategoriaPagina] = useState(0)
   const [editandoCategoria, setEditandoCategoria] = useState<Categoria | null>(null)
   const [categoriasFiltradas, setCategoriasFiltradas] = useState<Categoria[]>([])
   const [modalOpen, setModalOpen] = useState(false)
@@ -26,16 +24,11 @@ export default function CategoriasPage() {
     error: errorCategorias,
     createCategoria,
     updateCategoria,
+    updateCategoriasOrden,
+    moveToFirst,
+    moveToLast,
     deleteCategoria
   } = useCategorias()
-
-  const {
-    productos: productosPorCategoria,
-    loading: loadingProductos,
-    error: errorProductos,
-    updateProducto,
-    deleteProducto
-  } = useProductosByCategoria(categoriaSeleccionada?.id || null)
 
   // Función para manejar la creación o actualización de categorías
   const handleSubmitCategoria = async (data: { nombre: string; descripcion: string; imagen_url: string }) => {
@@ -72,33 +65,24 @@ export default function CategoriasPage() {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta categoría?')) {
       try {
         await deleteCategoria(id)
-        if (categoriaSeleccionada?.id === id) {
-          setCategoriaSeleccionada(null)
-        }
       } catch (error) {
         console.error('Error al eliminar categoría:', error)
       }
     }
   }
 
-  // Función para seleccionar una categoría
-  const handleSelectCategoria = (categoria: Categoria) => {
-    setCategoriaSeleccionada(categoria)
-  }
-
-  // Función para manejar la actualización de productos
-  const handleProductoUpdate = (productoActualizado: Producto) => {
-    updateProducto(productoActualizado)
-  }
-
-  // Función para manejar la eliminación de productos
-  const handleProductoDelete = (id: string) => {
-    deleteProducto(id)
-  }
-
   // Función para manejar el filtrado de categorías
   const handleCategoriaFilter = (filteredCategorias: Categoria[]) => {
     setCategoriasFiltradas(filteredCategorias)
+  }
+
+  // Función para manejar el reordenamiento de categorías
+  const handleReorderCategorias = async (reorderedCategorias: Categoria[]) => {
+    try {
+      await updateCategoriasOrden(reorderedCategorias)
+    } catch (error) {
+      console.error('Error al reordenar categorías:', error)
+    }
   }
 
   // Categorías a mostrar (filtradas o todas)
@@ -152,36 +136,14 @@ export default function CategoriasPage() {
           onFilter={handleCategoriaFilter}
           className="mb-6"
         />
-        <CategoriasTable
+        <CategoriasTableDnd
           categorias={categoriasAMostrar}
-          currentPage={categoriaPagina}
           onEdit={handleEditCategoria}
           onDelete={handleDeleteCategoria}
-          onSelect={handleSelectCategoria}
-          onPageChange={setCategoriaPagina}
+          onReorder={handleReorderCategorias}
+          onMoveToFirst={moveToFirst}
+          onMoveToLast={moveToLast}
         />
-
-
-        {categoriaSeleccionada && (
-          <>
-            {loadingProductos && (
-              <div className="mt-4 p-4 text-center">Cargando productos...</div>
-            )}
-
-            {errorProductos && (
-              <div className="mt-4 p-4 text-center text-red-600">Error: {errorProductos}</div>
-            )}
-
-            {!loadingProductos && !errorProductos && (
-              <ProductosPorCategoria
-                categoria={categoriaSeleccionada}
-                productos={productosPorCategoria}
-                onProductoUpdate={handleProductoUpdate}
-                onProductoDelete={handleProductoDelete}
-              />
-            )}
-          </>
-        )}
 
         <CategoriaModal
           open={modalOpen}

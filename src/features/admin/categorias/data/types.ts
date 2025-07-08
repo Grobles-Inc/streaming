@@ -5,6 +5,7 @@ export type Categoria = {
   imagen_url: string | null
   created_at: string
   updated_at: string
+  orden: number
 }
 
 export type Producto = {

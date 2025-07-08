@@ -46,6 +46,67 @@ export function useCategorias() {
     }
   }
 
+  const updateCategoriasOrden = async (reorderedCategorias: Categoria[]) => {
+    try {
+      // Actualizar el estado local inmediatamente para mejor UX
+      setCategorias(reorderedCategorias)
+      
+      // Preparar los datos para la actualización en la base de datos
+      const ordenUpdates = reorderedCategorias.map(categoria => ({
+        id: categoria.id,
+        orden: categoria.orden
+      }))
+      
+      // Actualizar en la base de datos
+      await CategoriasService.updateCategoriasOrden(ordenUpdates)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al actualizar orden de categorías')
+      // Revertir los cambios en caso de error
+      await fetchCategorias()
+      throw err
+    }
+  }
+
+  const moveToFirst = async (categoria: Categoria) => {
+    try {
+      // Crear una copia de las categorías ordenadas por orden
+      const sortedCategorias = [...categorias].sort((a, b) => a.orden - b.orden)
+      
+      // Filtrar la categoría a mover
+      const otherCategorias = sortedCategorias.filter(cat => cat.id !== categoria.id)
+      
+      // Crear el nuevo arreglo con la categoría al principio
+      const reorderedCategorias = [
+        { ...categoria, orden: 1 },
+        ...otherCategorias.map((cat, index) => ({ ...cat, orden: index + 2 }))
+      ]
+      
+      await updateCategoriasOrden(reorderedCategorias)
+    } catch (err) {
+      console.error('Error al mover al principio:', err)
+    }
+  }
+
+  const moveToLast = async (categoria: Categoria) => {
+    try {
+      // Crear una copia de las categorías ordenadas por orden
+      const sortedCategorias = [...categorias].sort((a, b) => a.orden - b.orden)
+      
+      // Filtrar la categoría a mover
+      const otherCategorias = sortedCategorias.filter(cat => cat.id !== categoria.id)
+      
+      // Crear el nuevo arreglo con la categoría al final
+      const reorderedCategorias = [
+        ...otherCategorias.map((cat, index) => ({ ...cat, orden: index + 1 })),
+        { ...categoria, orden: otherCategorias.length + 1 }
+      ]
+      
+      await updateCategoriasOrden(reorderedCategorias)
+    } catch (err) {
+      console.error('Error al mover al final:', err)
+    }
+  }
+
   const deleteCategoria = async (id: string) => {
     try {
       await CategoriasService.deleteCategoria(id)
@@ -62,6 +123,9 @@ export function useCategorias() {
     error,
     createCategoria,
     updateCategoria,
+    updateCategoriasOrden,
+    moveToFirst,
+    moveToLast,
     deleteCategoria,
     refetch: fetchCategorias
   }

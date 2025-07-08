@@ -1,1 +1,1 @@
-export { useCategorias, useProductosByCategoria, useProveedores } from './use-categorias'
+export { useCategorias, useProveedores } from './use-categorias'

@@ -138,4 +138,31 @@ export const useUpdateStockProductoAccountData = () => {
       toast.error('Error al actualizar los datos de la cuenta')
     },
   })
+}
+
+export const useProcesarReembolso = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: ({ 
+      compraId, 
+      proveedorId, 
+      vendedorId, 
+      montoReembolso 
+    }: { 
+      compraId: string
+      proveedorId: string
+      vendedorId: string
+      montoReembolso: number
+    }) => pedidosService.procesarReembolsoProveedor(compraId, proveedorId, vendedorId, montoReembolso),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+      queryClient.invalidateQueries({ queryKey: ['billetera'] })
+      toast.success('Reembolso procesado correctamente')
+    },
+    onError: (error) => {
+      const errorMessage = error instanceof Error ? error.message : 'Error al procesar el reembolso'
+      toast.error(errorMessage)
+    },
+  })
 } 

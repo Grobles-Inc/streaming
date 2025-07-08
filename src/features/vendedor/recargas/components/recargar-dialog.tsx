@@ -43,14 +43,14 @@ export function RecargarDialog() {
   const isMobile = useIsMobile()
   const { user } = useAuth()
   const [dialogOpen, setDialogOpen] = React.useState(false)
-  if (!user?.id) {
-    return null
-  }
   const { mutate: crearRecarga, isPending } = useCreateRecarga()
   const { data: configuracion } = useConfiguracionSistema()
   const form = useForm<{ amount: number }>({
     defaultValues: undefined,
   })
+  if (!user?.id) {
+    return null
+  }
 
   async function onSubmit(data: { amount: number }) {
     const dollarAmount = data.amount / (configuracion?.conversion ?? 1)

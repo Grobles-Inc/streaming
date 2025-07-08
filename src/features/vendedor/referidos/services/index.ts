@@ -1,11 +1,13 @@
 import { supabase } from '@/lib/supabase'
-import { Referido } from '../data/schema'
+import { Database } from '@/types/supabase'
 
+
+export type Referido = Database['public']['Tables']['usuarios']['Row']
 
 export const getReferidosByVendedorId = async (vendedorId: string): Promise<Referido[]> => {
   const { data, error } = await supabase
     .from('usuarios')
-    .select('id, nombres, apellidos, telefono')
+    .select('*, usuarios:referido_id(codigo_referido)')
     .eq('referido_id', vendedorId)
     .order('created_at', { ascending: false })
 
@@ -14,10 +16,5 @@ export const getReferidosByVendedorId = async (vendedorId: string): Promise<Refe
     return []
   }
 
-  return (data || []).map(user => ({
-    id: user.id || '',
-    nombres: user.nombres || '',
-    apellidos: user.apellidos || '',
-    telefono: user.telefono || ''
-  }))
+  return data || []
 }

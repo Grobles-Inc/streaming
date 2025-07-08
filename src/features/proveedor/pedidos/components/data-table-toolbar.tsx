@@ -21,9 +21,9 @@ export function DataTableToolbar<TData>({
           <IconHash className='absolute left-2 top-2.5 h-4 w-4 text-muted-foreground' />
           <Input
             placeholder='Buscar por ID...'
-            value={(table.getColumn('numero')?.getFilterValue() as string) ?? ''}
+            value={(table.getColumn('id')?.getFilterValue() as string) ?? ''}
             onChange={(event) =>
-              table.getColumn('numero')?.setFilterValue(event.target.value)
+              table.getColumn('id')?.setFilterValue(event.target.value)
             }
             className='h-9 w-[140px] pl-8'
           />

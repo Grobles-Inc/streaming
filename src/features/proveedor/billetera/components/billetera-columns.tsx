@@ -1,17 +1,36 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useConfiguracionSistema } from '@/features/proveedor/productos/queries'
 
-// Tipo para transacciones combinadas (recargas + retiros)
+// Declaración de extensión removida para evitar conflictos de tipos
+
+// Tipo para transacciones combinadas (recargas + retiros + compras)
 type TransaccionCompleta = {
   id: string
-  usuario_id: string
+  usuario_id?: string
+  proveedor_id?: string
+  vendedor_id?: string | null
   monto: number
+  precio?: number
   estado: string
   created_at: string
   updated_at: string
-  tipo: 'recarga' | 'retiro'
+  tipo: 'recarga' | 'retiro' | 'compra'
+  // Propiedades específicas para compras
+  nombre_cliente?: string
+  telefono_cliente?: string
+  productos?: {
+    nombre: string
+    precio_publico: number
+  }
+  usuarios?: {
+    nombres: string
+    apellidos: string
+    email: string
+    telefono: string | null
+  } | null
 }
 
 // Componente para mostrar el monto con conversión
@@ -34,42 +53,145 @@ const MontoCell = ({ transaccion }: { transaccion: TransaccionCompleta }) => {
     minimumFractionDigits: 2,
   }).format(parseFloat(valorEnSoles))
   
-  // Color diferente según el tipo
-  const colorClass = transaccion.tipo === 'recarga' ? 'text-green-600' : 'text-red-600'
-  const signo = transaccion.tipo === 'recarga' ? '+' : '-'
+  // Color y signo según el tipo
+  let colorClass = ''
+  let signo = ''
+  let descripcion = ''
+  
+  switch (transaccion.tipo) {
+    case 'recarga':
+      colorClass = 'text-green-600'
+      signo = '+'
+      descripcion = 'Dólares: '
+      break
+    case 'retiro':
+      colorClass = 'text-red-600'
+      signo = '-'
+      descripcion = 'Dólares: '
+      break
+    case 'compra':
+      colorClass = 'text-blue-600'
+      signo = '+'
+      descripcion = 'Venta: '
+      break
+    default:
+      colorClass = 'text-gray-600'
+      descripcion = 'Dólares: '
+  }
   
   return (
-    <div className="text-left font-medium">
+    <div className="text-left font-medium space-y-1">
       <span className={`${colorClass}`}>
-        {signo}Dólares: {formattedDolares}
+        {signo}{descripcion}{formattedDolares}
       </span>
-      <br />
-      <span className='text-muted-foreground text-sm'>
+      <div className='text-muted-foreground text-sm'>
         Equivale a {formattedSoles}
-      </span>
+      </div>
+      {transaccion.tipo === 'compra' && transaccion.nombre_cliente && (
+        <div className='text-muted-foreground text-xs'>
+          Cliente: {transaccion.nombre_cliente}
+        </div>
+      )}
     </div>
   )
 }
 
 export const columns: ColumnDef<TransaccionCompleta>[] = [
   {
+    id: 'select',
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Seleccionar todas"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Seleccionar fila"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    id: 'id',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="ID" />
+    ),
+    cell: ({ row }) => {
+      // Usar el índice absoluto + 1 como ID secuencial
+      const sequentialId = row.index + 1
+      
+      return (
+        <div className="w-[80px] font-medium">
+          {sequentialId}
+        </div>
+      )
+    },
+    enableSorting: false,
+    filterFn: (row, value) => {
+      // Usar el índice absoluto + 1 como ID secuencial
+      const sequentialId = row.index + 1
+      return sequentialId.toString().includes(value)
+    },
+  },
+  {
+    id: 'tipo',
     accessorKey: 'tipo',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Tipo" />
     ),
     cell: ({ row }) => {
       const tipo = row.getValue('tipo') as string
+      const transaccion = row.original
+      
+      // Configurar colores y texto según el tipo
+      let variant: 'default' | 'secondary' | 'outline' = 'default'
+      let className = ''
+      let texto = ''
+      
+      switch (tipo) {
+        case 'recarga':
+          variant = 'default'
+          className = 'bg-green-100 text-green-800'
+          texto = 'Recarga'
+          break
+        case 'retiro':
+          variant = 'secondary'
+          className = 'bg-red-100 text-red-800'
+          texto = 'Retiro'
+          break
+        case 'compra':
+          variant = 'outline'
+          className = 'bg-blue-100 text-blue-800'
+          texto = 'Venta'
+          break
+        default:
+          texto = tipo
+      }
+      
       return (
-        <Badge 
-          variant={tipo === 'recarga' ? 'default' : 'secondary'}
-          className={tipo === 'recarga' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
-        >
-          {tipo === 'recarga' ? 'Recarga' : 'Retiro'}
-        </Badge>
+        <div className="space-y-1">
+          <Badge variant={variant} className={className}>
+            {texto}
+          </Badge>
+          {tipo === 'compra' && transaccion.productos && (
+            <div className="text-xs text-muted-foreground">
+              {transaccion.productos.nombre}
+            </div>
+          )}
+        </div>
       )
     },
   },
   {
+    id: 'created_at',
     accessorKey: 'created_at',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Fecha" />
@@ -91,6 +213,7 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
     },
   },
   {
+    id: 'monto',
     accessorKey: 'monto',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Monto" />
@@ -101,6 +224,44 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
     },
   },
   {
+    id: 'detalles',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Detalles" />
+    ),
+    cell: ({ row }) => {
+      const transaccion = row.original
+      
+      switch (transaccion.tipo) {
+        case 'compra':
+          return (
+            <div className="space-y-1">
+              {transaccion.usuarios && (
+                <div className="text-sm">
+                  <span className="font-medium">Vendedor:</span> {transaccion.usuarios.nombres} {transaccion.usuarios.apellidos}
+                </div>
+              )}
+              {transaccion.usuarios?.telefono && (
+                <div className="text-xs text-muted-foreground">
+                  Tel: {transaccion.usuarios.telefono}
+                </div>
+              )}
+            </div>
+          )
+        case 'recarga':
+        case 'retiro':
+          return (
+            <div className="text-sm text-muted-foreground">
+              Transacción de {transaccion.tipo}
+            </div>
+          )
+        default:
+          return null
+      }
+    },
+    enableSorting: false,
+  },
+  {
+    id: 'estado',
     accessorKey: 'estado',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Estado" />
@@ -110,7 +271,7 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
       return (
         <Badge 
           variant={
-            estado === 'aprobado' ? 'default' : 
+            estado === 'aprobado' || estado === 'completado' ? 'default' : 
             estado === 'pendiente' ? 'secondary' : 
             'destructive'
           }

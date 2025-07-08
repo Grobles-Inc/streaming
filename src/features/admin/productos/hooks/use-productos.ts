@@ -177,7 +177,7 @@ export function useProductos() {
   const cantidadPublicados = productos.filter(p => p.estado === 'publicado').length
   const cantidadBorradores = productos.filter(p => p.estado === 'borrador').length
   const cantidadNuevos = productos.filter(p => p.nuevo).length
-  const cantidadDestacados = productos.filter(p => p.destacado).length
+
 
   return {
     // Estado
@@ -190,7 +190,7 @@ export function useProductos() {
     cantidadPublicados,
     cantidadBorradores,
     cantidadNuevos,
-    cantidadDestacados,
+
     
     // Acciones CRUD
     crearProducto,

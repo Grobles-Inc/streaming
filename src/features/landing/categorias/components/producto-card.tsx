@@ -6,15 +6,18 @@ import { useState } from 'react'
 import { Producto } from '../../services'
 import ComprarProductoModal from './comprar-producto-modal'
 import ProductoInfoModal from './producto-info-modal'
+import { useAuth } from '@/stores/authStore'
 
 
 
 export default function ProductoCard({ producto }: { producto: Producto }) {
   const [open, setOpen] = useState(false)
+  const { user } = useAuth()
   const [infoModalOpen, setInfoModalOpen] = useState(false)
   const [infoModalType, setInfoModalType] = useState<'informacion' | 'descripcion' | 'condiciones'>('informacion')
   const isAgotado = producto?.stock_de_productos?.length === 0
   const tasaDeConversion = 3.7
+  const precio_producto = user ? producto.precio_vendedor : producto.precio_publico
   return (
     <>
       <Card className='relative overflow-hidden max-w-sm gap-4 flex flex-col h-full'>
@@ -91,11 +94,11 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
           </div>
         )}
         <CardContent className='flex flex-col px-4 flex-grow'>
-          <span className="text-xs text-gray-500 font-semibold  mb-1">{producto.usuarios.nombres.toUpperCase()}</span>
+          <span className="text-xs text-gray-500 font-semibold  mb-1">{producto.usuarios.usuario.toUpperCase()}</span>
           <span className="font-bold md:text-lg mb-1 hidden md:block  leading-tight">{producto.nombre}</span>
           <span className="font-bold md:text-lg text-sm mb-1 md:hidden truncate  leading-tight">{producto.nombre}</span>
           <div className="md:flex flex-row hidden justify-between items-center w-full mb-2">
-            <span className="text-xs text-green-600 ">Renovable: <span className="font-bold">${producto.precio_publico.toFixed(2)}</span></span>
+            <span className="text-xs text-green-600 ">Renovable: <strong>$ {producto.precio_renovacion?.toFixed(2)}</strong></span>
           </div>
 
 
@@ -104,7 +107,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
             <Badge className='hidden md:block'>Stock: {producto.stock_de_productos.length} </Badge>
 
             <div className='flex md:flex-col flex-row-reverse justify-between md:justify-start items-center'>
-              <span className="font-bold md:text-xl text-foreground">     ${producto.precio_publico.toFixed(2)}</span><span className="text-xs text-muted-foreground">S/.{(producto.precio_publico * tasaDeConversion).toFixed(2)} </span>
+              <span className="font-bold md:text-xl text-foreground">     ${precio_producto.toFixed(2)}</span><span className="text-xs text-muted-foreground">S/.{(precio_producto * tasaDeConversion).toFixed(2)} </span>
             </div>
           </div>
 

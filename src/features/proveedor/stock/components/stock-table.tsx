@@ -49,7 +49,7 @@ export function StockTable({
   data, 
   onAgregarStock, 
   onDeleteSelected, 
-  onTogglePublishedSelected 
+  onTogglePublishedSelected
 }: StockTableProps) {
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})

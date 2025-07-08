@@ -8,7 +8,7 @@ export type StockProducto = Database['public']['Tables']['stock_productos']['Row
 export type SoporteCompra = {
   id: string
   proveedor_id: string
-  producto_id: string
+  producto_id: number
   vendedor_id: string | null
   stock_producto_id: number | null
   nombre_cliente: string

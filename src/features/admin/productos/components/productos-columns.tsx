@@ -150,18 +150,7 @@ export function createProductosColumns(
                     Nuevo
                   </Badge>
                 )}
-                {producto.destacado && (
-                  <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
-                    <IconStar className="mr-1 h-2 w-2" />
-                    Destacado
-                  </Badge>
-                )}
-                {producto.masVendido && (
-                  <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                    <IconStar className="mr-1 h-2 w-2" />
-                    Más Vendido
-                  </Badge>
-                )}
+
               </div>
             </div>
           </div>

@@ -79,7 +79,7 @@ export function ResumenComprasPieChart({ timeFilter }: ResumenComprasPieChartPro
     })
   }
 
-  const filteredCompras = filterComprasByTime(compras || [], timeFilter)
+  const filteredCompras = filterComprasByTime(compras?.data || [], timeFilter)
 
   // Group recargas by status
   const comprasByStatus = filteredCompras.reduce((acc, recarga) => {

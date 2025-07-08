@@ -45,22 +45,18 @@ export const columns: ColumnDef<Pedido>[] = [
     enableHiding: false,
   },
   {
-    id: 'numero',
+    accessorKey: 'id',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='ID' />
     ),
-    cell: ({ row, table }) => {
-      const pageIndex = table.getState().pagination.pageIndex
-      const pageSize = table.getState().pagination.pageSize
-      const rowIndex = row.index
-      const numero = pageIndex * pageSize + rowIndex + 1
+    cell: ({ row }) => {
+      const id = row.getValue('id') as string
       
-      return <div className='flex justify-center w-[80px] font-mono text-sm'>{numero}</div>
+      return <div className='flex justify-center w-[80px] font-mono text-sm'>{id}</div>
     },
     filterFn: (row, _id, value) => {
-      // Calcular el número de la fila para el filtro
-      const numero = row.index + 1
-      return numero.toString().includes(value)
+      const id = row.getValue('id') as string
+      return id.toString().includes(value)
     },
     enableSorting: false,
     enableHiding: false,
@@ -337,7 +333,7 @@ export const columns: ColumnDef<Pedido>[] = [
   },
   {
     id: 'actions',
-    header: 'Soporte',
+    header: 'Acciones',
     cell: ({ row }) => <DataTableRowActions row={row} />,
     enableSorting: false,
     enableHiding: false,

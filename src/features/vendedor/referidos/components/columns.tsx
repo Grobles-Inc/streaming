@@ -33,9 +33,21 @@ export const columns: ColumnDef<Referido>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='ID ' />
     ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'usuarios',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Código de referido' />
+    ),
     cell: ({ row }) => {
-      const id = row.getValue('id') as string
-      return <div className='w-[80px]'>Ref-{id.slice(0, 6)}</div>
+      const { usuarios } = row.original
+      if (!usuarios) return null
+      return (
+        <div className='flex items-center'>
+          <span>{usuarios.codigo_referido}</span>
+        </div>
+      )
     },
     enableSorting: false,
   },
@@ -44,13 +56,7 @@ export const columns: ColumnDef<Referido>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Nombres' />
     ),
-    cell: ({ row }) => {
-      return (
-        <div className='flex items-center'>
-          <span>{row.getValue('nombres')}</span>
-        </div>
-      )
-    },
+    enableSorting: false,
 
   },
   {
@@ -58,13 +64,6 @@ export const columns: ColumnDef<Referido>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Apellidos' />
     ),
-    cell: ({ row }) => {
-      return (
-        <div className='flex items-center'>
-          <span>{row.getValue('apellidos')}</span>
-        </div>
-      )
-    },
     enableSorting: false,
   },
 

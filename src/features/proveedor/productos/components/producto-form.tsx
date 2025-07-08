@@ -53,6 +53,7 @@ export function ProductoFormDialog({
 }: ProductoFormDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Usar estado controlado si se proporciona, sino usar estado interno
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen
@@ -66,7 +67,7 @@ export function ProductoFormDialog({
   const { data: configuracion, isLoading: loadingConfiguracion } = useConfiguracionSistema()
   const { data: billetera, isLoading: loadingBilletera } = useBilleteraByUsuario(user?.id ?? '')
 
-  const isPending = isCreating || isUpdating
+  const isPending = isCreating || isUpdating || isSubmitting
   const isEditing = !!productId
 
   // Información de comisión
@@ -125,8 +126,6 @@ export function ProductoFormDialog({
       tiempo_uso: 0,
       a_pedido: false,
       nuevo: false,
-      destacado: false,
-      mas_vendido: false,
       ...defaultValues,
     },
   })
@@ -137,14 +136,25 @@ export function ProductoFormDialog({
       return
     }
 
-    // Para edición, proceder normalmente sin cobrar comisión
-    if (isEditing) {
-      await procesarFormularioEdicion(data)
+    // Prevenir doble envío
+    if (isSubmitting) {
       return
     }
 
-    // Para creación, simplemente crear como borrador (sin comisión)
-    await procesarFormularioCreacion(data)
+    setIsSubmitting(true)
+
+    try {
+      // Para edición, proceder normalmente sin cobrar comisión
+      if (isEditing) {
+        await procesarFormularioEdicion(data)
+        return
+      }
+
+      // Para creación, simplemente crear como borrador (sin comisión)
+      await procesarFormularioCreacion(data)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const procesarFormularioCreacion = async (data: ProductoFormData) => {
@@ -220,8 +230,16 @@ export function ProductoFormDialog({
     })
   }
 
+  const handleOpenChange = (newOpen: boolean) => {
+    // Si se está cerrando el modal, resetear estados
+    if (!newOpen) {
+      setIsSubmitting(false)
+    }
+    setOpen(newOpen)
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
@@ -597,36 +615,7 @@ export function ProductoFormDialog({
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="destacado"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-sm font-medium">¿Destacado?</FormLabel>
-                            <div className="text-xs text-muted-foreground">Mostrar en productos destacados</div>
-                          </div>
-                          <FormControl>
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="mas_vendido"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-sm font-medium">¿Más vendido?</FormLabel>
-                            <div className="text-xs text-muted-foreground">Mostrar en más vendidos</div>
-                          </div>
-                          <FormControl>
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+
                   </div>
                 </div>
               </div>

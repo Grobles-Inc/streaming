@@ -99,11 +99,12 @@ export interface Database {
       }
       productos: {
         Row: {
-          id: string
+          id: number
           usuarios: {
             nombres: string
             apellidos: string
             billetera_id: string
+            usuario: string
           }
           nombre: string
           descripcion: string | null
@@ -118,8 +119,6 @@ export interface Database {
           tiempo_uso: number
           a_pedido: boolean
           nuevo: boolean
-          destacado: boolean
-          mas_vendido: boolean
           descripcion_completa: string | null
           disponibilidad: 'en_stock' | 'a_pedido' | 'activacion'
           renovable: boolean
@@ -129,12 +128,13 @@ export interface Database {
           precio_vendedor: number
           precio_renovacion: number | null
           estado: 'borrador' | 'publicado'
+          fecha_expiracion: string | null
           stock_de_productos: {
             id: number
           }[]
         }
         Insert: {
-          id?: string
+          id?: number
           nombre: string
           descripcion?: string | null
           informacion?: string | null
@@ -146,8 +146,6 @@ export interface Database {
           tiempo_uso?: number
           a_pedido?: boolean
           nuevo?: boolean
-          destacado?: boolean
-          mas_vendido?: boolean
           descripcion_completa?: string | null
           disponibilidad: 'en_stock' | 'a_pedido' | 'activacion'
           renovable?: boolean
@@ -157,12 +155,13 @@ export interface Database {
           precio_vendedor: number
           precio_renovacion?: number | null
           estado?: 'borrador' | 'publicado'
+          fecha_expiracion?: string | null
           stock_de_productos?: {
             id: number
           }[]
         }
         Update: {
-          id?: string
+          id?: number
           nombre?: string
           descripcion?: string | null
           informacion?: string | null
@@ -176,8 +175,6 @@ export interface Database {
           tiempo_uso?: number
           a_pedido?: boolean
           nuevo?: boolean
-          destacado?: boolean
-          mas_vendido?: boolean
           descripcion_completa?: string | null
           disponibilidad?: 'en_stock' | 'a_pedido' | 'activacion'
           renovable?: boolean
@@ -187,6 +184,7 @@ export interface Database {
           precio_vendedor?: number
           precio_renovacion?: number | null
           estado?: 'borrador' | 'publicado'
+          fecha_expiracion?: string | null
           stock_de_productos?: {
             id: number
           }[]
@@ -216,7 +214,7 @@ export interface Database {
           clave: string | null
           pin: string | null
           perfil: string | null
-          producto_id: string
+          producto_id: number
           tipo: 'cuenta' | 'perfiles' | 'combo'
           url: string | null
           created_at: string
@@ -231,7 +229,7 @@ export interface Database {
           clave?: string | null
           pin?: string | null
           perfil?: string | null
-          producto_id: string
+          producto_id: number
           tipo: 'cuenta' | 'perfiles' | 'combo'
           url?: string | null
           created_at?: string
@@ -246,7 +244,7 @@ export interface Database {
           clave?: string | null
           pin?: string | null
           perfil?: string | null
-          producto_id?: string
+          producto_id?: number
           tipo?: 'cuenta' | 'perfiles' | 'combo'
           url?: string | null
           created_at?: string
@@ -303,9 +301,9 @@ export interface Database {
       }
       compras: {
         Row: {
-          id: string
+          id: number
           proveedor_id: string
-          producto_id: string
+          producto_id: number
           vendedor_id: string | null
           stock_producto_id: number | null
           fecha_expiracion: string | null
@@ -321,12 +319,13 @@ export interface Database {
           updated_at: string
         }
         Insert: {
-          id?: string
+          id?: number
           proveedor_id: string
-          producto_id: string
+          producto_id: number
           vendedor_id?: string | null
           stock_producto_id?: number | null
           fecha_expiracion?: string | null
+          fecha_inicio?: string | null
           nombre_cliente: string
           telefono_cliente: string
           precio: number
@@ -339,12 +338,13 @@ export interface Database {
           updated_at?: string
         }
         Update: {
-          id?: string
+          id?: number
           proveedor_id?: string
-          producto_id?: string
+          producto_id?: number
           vendedor_id?: string | null
           stock_producto_id?: number | null
           fecha_expiracion?: string | null
+          fecha_inicio?: string | null
           nombre_cliente?: string
           telefono_cliente?: string
           precio?: number
@@ -382,7 +382,7 @@ export interface Database {
       }
       recargas: {
         Row: {
-          id: string
+          id: number
           usuario_id: string
           monto: number
           estado: "aprobado" | "pendiente" | "rechazado"
@@ -390,7 +390,7 @@ export interface Database {
           updated_at: string
         }
         Insert: {
-          id?: string
+          id?: number
           usuario_id: string
           monto: number
           estado?: "aprobado" | "pendiente" | "rechazado"
@@ -398,7 +398,7 @@ export interface Database {
           updated_at?: string
         }
         Update: {
-          id?: string
+          id?: number
           usuario_id?: string
           monto?: number
           estado?: "aprobado" | "pendiente" | "rechazado"

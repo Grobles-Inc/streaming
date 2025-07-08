@@ -16,6 +16,7 @@ export const getProductosByCategoria = async (categoriaId: string): Promise<Prod
       usuarios:proveedor_id(nombres, apellidos, billetera_id)
     `)
     .eq('categoria_id', categoriaId)
+    .order('created_at', { ascending: true })
 
   if (error) {
     console.error('Error fetching productos:', error)
@@ -69,7 +70,7 @@ export const getProductos = async (): Promise<Producto[]> => {
 // Get productos with pagination
 export const getProductosPaginated = async (
   page: number = 1,
-  pageSize: number = 10
+  pageSize: number = 20
 ): Promise<{ data: Producto[]; count: number }> => {
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
@@ -79,9 +80,10 @@ export const getProductosPaginated = async (
     .select(`
       *,
       categorias:categoria_id(nombre),
-      usuarios:proveedor_id(nombres)
+      usuarios:proveedor_id(usuario)
     `, { count: 'exact' })
     .range(from, to)
+    .eq('estado', 'publicado')
     .order('created_at', { ascending: false })
 
   if (error) {

@@ -60,7 +60,7 @@ export function ProductosTable({ productos, loading }: ProductosTableProps) {
                 <th className="px-4 py-2 text-left">Precio Vendedor</th>
                 <th className="px-4 py-2 text-left">Stock</th>
                 <th className="px-4 py-2 text-left">Disponibilidad</th>
-                <th className="px-4 py-2 text-left">Destacado</th>
+  
                 <th className="px-4 py-2 text-left">Acciones</th>
               </tr>
             </thead>
@@ -96,14 +96,8 @@ export function ProductosTable({ productos, loading }: ProductosTableProps) {
                     </td>
                     <td className="px-4 py-2 border-r">
                       <div className="flex gap-1">
-                        {producto.destacado && (
-                          <Badge variant="secondary" className="text-xs">Destacado</Badge>
-                        )}
                         {producto.nuevo && (
                           <Badge variant="outline" className="text-xs">Nuevo</Badge>
-                        )}
-                        {producto.mas_vendido && (
-                          <Badge variant="default" className="text-xs">+ Vendido</Badge>
                         )}
                       </div>
                     </td>

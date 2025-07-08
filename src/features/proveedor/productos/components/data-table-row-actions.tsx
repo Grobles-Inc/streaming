@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { Row } from '@tanstack/react-table'
-import { IconEdit, IconTrash, IconEye, IconPackage } from '@tabler/icons-react'
+import { IconEdit, IconTrash, IconEye, IconPackage, IconRefresh } from '@tabler/icons-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -16,8 +16,9 @@ import { ProductoFormDialog } from './producto-form'
 import { GestionarExistenciasModal } from './gestionar-existencias-modal'
 
 import type { Producto } from '../data/schema'
-import { useDeleteProducto, usePublicarProductoWithCommission, useVerificarProductoTieneCuentas } from '../queries'
+import { useDeleteProducto, usePublicarProductoWithCommission, useVerificarProductoTieneCuentas, useRenovarProducto } from '../queries'
 import { useAuth } from '@/stores/authStore'
+import { calcularEstadoExpiracion } from '../utils/expiracion'
 
 interface DataTableRowActionsProps {
   row: Row<Producto>
@@ -27,14 +28,29 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showPublishDialog, setShowPublishDialog] = useState(false)
+  const [showRenovarDialog, setShowRenovarDialog] = useState(false)
   const [showExistenciasDialog, setShowExistenciasDialog] = useState(false)
   
   const deleteProducto = useDeleteProducto()
   const publicarProducto = usePublicarProductoWithCommission()
+  const renovarProducto = useRenovarProducto()
   const { user } = useAuth()
   
   const producto = row.original
   const esBorrador = producto.estado === 'borrador'
+  const esPublicado = producto.estado === 'publicado'
+  const infoExpiracion = calcularEstadoExpiracion(producto.estado, producto.fecha_expiracion || null)
+  const puedeRenovar = esPublicado && (infoExpiracion.estado === 'vencido' || infoExpiracion.estado === 'por_vencer')
+  
+  // Verificar si es un producto despublicado por vencimiento
+  const esDespublicadoPorVencimiento = esBorrador && producto.fecha_expiracion && (() => {
+    const ahora = new Date()
+    const fechaExp = new Date(producto.fecha_expiracion)
+    return fechaExp < ahora
+  })()
+  
+  // Determinar texto del botón de publicación/renovación
+  const textoBotonPublicar = esDespublicadoPorVencimiento ? 'Renovar producto' : 'Publicar producto'
   
   // Verificar si el producto tiene cuentas asociadas
   const { data: tieneCuentas, isLoading: verificandoCuentas } = useVerificarProductoTieneCuentas(producto.id)
@@ -53,6 +69,10 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
 
   const handleGestionarExistencias = () => {
     setShowExistenciasDialog(true)
+  }
+
+  const handleRenovar = () => {
+    setShowRenovarDialog(true)
   }
 
   const confirmDelete = () => {
@@ -76,9 +96,22 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
     )
   }
 
+  const confirmRenovar = () => {
+    if (!user?.id) return
+    
+    renovarProducto.mutate(
+      { productoId: producto.id, proveedorId: user.id },
+      {
+        onSuccess: () => {
+          setShowRenovarDialog(false)
+        }
+      }
+    )
+  }
+
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button
             variant='ghost'
@@ -93,7 +126,16 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             <>
               <DropdownMenuItem onClick={handlePublish}>
                 <IconEye className='mr-2 h-4 w-4' />
-                Publicar producto
+                {textoBotonPublicar}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
+          {puedeRenovar && (
+            <>
+              <DropdownMenuItem onClick={handleRenovar}>
+                <IconRefresh className='mr-2 h-4 w-4' />
+                Renovar producto
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
@@ -135,8 +177,6 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           informacion: producto.informacion ?? '',
           condiciones: producto.condiciones ?? '',
           imagen_url: producto.imagen_url ?? '',
-          destacado: producto.destacado,
-          mas_vendido: producto.mas_vendido,
           descripcion_completa: producto.descripcion_completa ?? '',
           solicitud: producto.solicitud ?? '',
           muestra_disponibilidad_stock: producto.muestra_disponibilidad_stock,
@@ -144,7 +184,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         }}
         title='Editar Producto'
         description='Modifica la información del producto.'
-        productId={producto.id}
+        productId={producto.id.toString()}
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
       />
@@ -153,11 +193,25 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
       <ConfirmDialog
         open={showPublishDialog}
         onOpenChange={setShowPublishDialog}
-        title="¿Publicar producto?"
-        desc="Se cobrará la comisión de publicación de tu billetera. Una vez publicado, el producto estará disponible para la venta."
-        confirmText="Publicar y cobrar comisión"
+        title={esDespublicadoPorVencimiento ? "¿Renovar producto?" : "¿Publicar producto?"}
+        desc={esDespublicadoPorVencimiento 
+          ? "Se cobrará la comisión de renovación de tu billetera y el producto será renovado por 30 días más."
+          : "Se cobrará la comisión de publicación de tu billetera. Una vez publicado, el producto estará disponible para la venta."
+        }
+        confirmText={esDespublicadoPorVencimiento ? "Renovar y cobrar comisión" : "Publicar y cobrar comisión"}
         handleConfirm={confirmPublish}
         isLoading={publicarProducto.isPending}
+      />
+
+      {/* Modal de confirmación de renovación */}
+      <ConfirmDialog
+        open={showRenovarDialog}
+        onOpenChange={setShowRenovarDialog}
+        title="¿Renovar producto?"
+        desc={`Se cobrará la comisión de renovación de tu billetera y el producto será renovado por 30 días más. Estado actual: ${infoExpiracion.mensaje}`}
+        confirmText="Renovar y cobrar comisión"
+        handleConfirm={confirmRenovar}
+        isLoading={renovarProducto.isPending}
       />
 
       {/* Modal de confirmación de eliminación */}

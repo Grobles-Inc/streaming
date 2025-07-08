@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui/button'
 import { Row } from '@tanstack/react-table'
-import { IconHeadset } from '@tabler/icons-react'
+import { IconHeadset, IconEdit } from '@tabler/icons-react'
 import { useState } from 'react'
 import { SoporteModal } from './soporte-modal'
+import { EditAccountModal } from './edit-account-modal'
 import { Pedido } from '../data/schema'
 import { SoporteCompra } from '../data/types'
 
@@ -14,13 +15,14 @@ export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
   const [showSoporteModal, setShowSoporteModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const pedido = row.original as Pedido
 
   // Convertir Pedido a SoporteCompra para el modal
   const soporteCompra: SoporteCompra = {
-    id: pedido.id || '',
+    id: String(pedido.id || ''),
     proveedor_id: pedido.proveedor_id || '',
-    producto_id: pedido.producto_id || '',
+    producto_id: Number(pedido.producto_id || 0),
     vendedor_id: pedido.vendedor_id || null,
     stock_producto_id: pedido.stock_producto_id || null,
     nombre_cliente: pedido.nombre_cliente || '',
@@ -34,7 +36,7 @@ export function DataTableRowActions<TData>({
     created_at: pedido.created_at || '',
     updated_at: new Date().toISOString(),
     stock_productos: pedido.stock_productos ? {
-      id: pedido.stock_productos.id || 0,
+      id: Number(pedido.stock_productos.id || 0),
       email: pedido.stock_productos.email,
       clave: pedido.stock_productos.clave,
       pin: pedido.stock_productos.pin,
@@ -56,18 +58,42 @@ export function DataTableRowActions<TData>({
     setShowSoporteModal(false)
   }
 
+  const handleEditClick = () => {
+    setShowEditModal(true)
+  }
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false)
+  }
+
   return (
     <>
-      <Button
-        variant='ghost'
-        size='sm'
-        className='h-8 w-8 p-0'
-        onClick={handleSoporteClick}
-        title="Gestionar soporte"
-      >
-        <IconHeadset className='h-4 w-4' />
-        <span className='sr-only'>Gestionar soporte</span>
-      </Button>
+      <div className="flex items-center space-x-2">
+        <Button
+          variant='ghost'
+          size='sm'
+          className='h-8 w-8 p-0'
+          onClick={handleSoporteClick}
+          title="Gestionar soporte"
+        >
+          <IconHeadset className='h-4 w-4' />
+          <span className='sr-only'>Gestionar soporte</span>
+        </Button>
+
+        {/* Solo mostrar botón de edición si tiene stock_producto_id */}
+        {pedido.stock_producto_id && (
+          <Button
+            variant='ghost'
+            size='sm'
+            className='h-8 w-8 p-0'
+            onClick={handleEditClick}
+            title="Editar datos de cuenta"
+          >
+            <IconEdit className='h-4 w-4' />
+            <span className='sr-only'>Editar datos de cuenta</span>
+          </Button>
+        )}
+      </div>
 
       {/* Modal de soporte */}
       <SoporteModal
@@ -76,6 +102,23 @@ export function DataTableRowActions<TData>({
         compra={soporteCompra}
         onClose={handleCloseSoporteModal}
       />
+
+      {/* Modal de edición de cuenta */}
+      {pedido.stock_producto_id && (
+        <EditAccountModal
+          open={showEditModal}
+          onOpenChange={setShowEditModal}
+          stockProductoId={pedido.stock_producto_id}
+          currentData={{
+            email: pedido.stock_productos?.email,
+            clave: pedido.stock_productos?.clave,
+            pin: pedido.stock_productos?.pin,
+            perfil: pedido.stock_productos?.perfil,
+            url: pedido.stock_productos?.url
+          }}
+          onClose={handleCloseEditModal}
+        />
+      )}
     </>
   )
 } 

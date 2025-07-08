@@ -19,7 +19,7 @@ import { useAuth } from '@/stores/authStore'
 
 // Schema básico sin validación compleja por ahora
 const stockFormSchema = z.object({
-  producto_id: z.string().min(1, 'Selecciona un producto'),
+  producto_id: z.number().min(1, 'Selecciona un producto'),
   tipo: z.enum(['cuenta', 'perfiles', 'combo']),
   email: z.string().optional(),
   clave: z.string().optional(), 
@@ -39,7 +39,7 @@ type StockFormData = z.infer<typeof stockFormSchema>
 interface AgregarStockModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  productoId?: string
+  productoId?: number
 }
 
 export function AgregarStockModal({ 
@@ -65,7 +65,7 @@ export function AgregarStockModal({
   } = useForm<StockFormData>({
     resolver: zodResolver(stockFormSchema),
     defaultValues: {
-      producto_id: productoId || '',
+      producto_id: productoId || 0,
       tipo: 'cuenta',
       perfiles: [{ email: '', clave: '', perfil: '', pin: '' }]
     }
@@ -82,7 +82,7 @@ export function AgregarStockModal({
   useEffect(() => {
     if (open) {
       reset({
-        producto_id: productoId || '',
+        producto_id: productoId || 0,
         tipo: 'cuenta',
         email: '',
         clave: '',
@@ -231,15 +231,15 @@ export function AgregarStockModal({
             ) : (
               // Select normal cuando no se pasa productoId
               <Select 
-                value={watch('producto_id')} 
-                onValueChange={(value) => setValue('producto_id', value)}
+                value={watch('producto_id')?.toString()} 
+                onValueChange={(value) => setValue('producto_id', parseInt(value))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecciona un producto" />
                 </SelectTrigger>
                 <SelectContent>
                   {productos?.map((producto) => (
-                    <SelectItem key={producto.id} value={producto.id}>
+                    <SelectItem key={producto.id} value={producto.id.toString()}>
                       {producto.nombre}
                     </SelectItem>
                   ))}

@@ -4,7 +4,14 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { IconPlus, IconEdit, IconTrash, IconPackage, IconEye, IconEyeOff } from '@tabler/icons-react'
+import { IconPlus, IconEdit, IconTrash, IconPackage, IconEye, IconEyeOff, IconDots } from '@tabler/icons-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { AgregarStockModal } from './agregar-stock-modal'
 import { EditarStockModal } from './editar-stock-modal'
@@ -39,9 +46,12 @@ export function GestionarExistenciasModal({
   producto 
 }: GestionarExistenciasModalProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showPublicarDialog, setShowPublicarDialog] = useState(false)
+  const [showDespublicarDialog, setShowDespublicarDialog] = useState(false)
   const [showAgregarStockDialog, setShowAgregarStockDialog] = useState(false)
   const [showEditarStockDialog, setShowEditarStockDialog] = useState(false)
   const [selectedStock, setSelectedStock] = useState<StockProducto | null>(null)
+  const [modalPrincipalCerrado, setModalPrincipalCerrado] = useState(false)
 
   const { data: stockItems, isLoading, error } = useStockProductosByProductoId(producto.id)
   const deleteStockMutation = useDeleteStockProducto()
@@ -49,12 +59,22 @@ export function GestionarExistenciasModal({
 
   const handleDelete = (stock: StockProducto) => {
     setSelectedStock(stock)
+    setModalPrincipalCerrado(true)
+    onOpenChange(false) // Cerrar modal principal
     setShowDeleteDialog(true)
   }
 
   const handleEdit = (stock: StockProducto) => {
     setSelectedStock(stock)
+    setModalPrincipalCerrado(true)
+    onOpenChange(false) // Cerrar modal principal
     setShowEditarStockDialog(true)
+  }
+
+  const handleAgregarStock = () => {
+    setModalPrincipalCerrado(true)
+    onOpenChange(false) // Cerrar modal principal
+    setShowAgregarStockDialog(true)
   }
 
   const confirmDelete = () => {
@@ -66,15 +86,59 @@ export function GestionarExistenciasModal({
         onSuccess: () => {
           setShowDeleteDialog(false)
           setSelectedStock(null)
+          // Reabrir modal principal
+          setModalPrincipalCerrado(false)
+          onOpenChange(true)
         }
       }
     )
   }
 
-  const togglePublicado = (stock: StockProducto) => {
+  const handleCloseSubModals = () => {
+    setShowDeleteDialog(false)
+    setShowAgregarStockDialog(false)
+    setShowEditarStockDialog(false)
+    setSelectedStock(null)
+    // Reabrir modal principal
+    setModalPrincipalCerrado(false)
+    onOpenChange(true)
+  }
+
+  const handlePublicar = (stock: StockProducto) => {
+    setSelectedStock(stock)
+    setShowPublicarDialog(true)
+  }
+
+  const handleDespublicar = (stock: StockProducto) => {
+    setSelectedStock(stock)
+    setShowDespublicarDialog(true)
+  }
+
+  const confirmPublicar = () => {
+    if (!selectedStock) return
+
     updateStockMutation.mutate({
-      id: stock.id,
-      updates: { publicado: !stock.publicado }
+      id: selectedStock.id,
+      updates: { publicado: true }
+    }, {
+      onSuccess: () => {
+        setShowPublicarDialog(false)
+        setSelectedStock(null)
+      }
+    })
+  }
+
+  const confirmDespublicar = () => {
+    if (!selectedStock) return
+
+    updateStockMutation.mutate({
+      id: selectedStock.id,
+      updates: { publicado: false }
+    }, {
+      onSuccess: () => {
+        setShowDespublicarDialog(false)
+        setSelectedStock(null)
+      }
     })
   }
 
@@ -124,7 +188,7 @@ export function GestionarExistenciasModal({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open && !modalPrincipalCerrado} onOpenChange={onOpenChange}>
         <DialogContent className="!max-w-[90vw] !max-h-[150vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -135,7 +199,7 @@ export function GestionarExistenciasModal({
           <div className="flex-1 overflow-hidden flex flex-col">
             {/* Botón para agregar nuevo stock */}
             <div className="mb-4">
-              <Button onClick={() => setShowAgregarStockDialog(true)}>
+              <Button onClick={handleAgregarStock}>
                 <IconPlus size={16} className="mr-2" />
                 Agregar Stock
               </Button>
@@ -222,41 +286,59 @@ export function GestionarExistenciasModal({
                           {getSoporteBadge(stock.soporte_stock_producto)}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => togglePublicado(stock)}
-                            disabled={updateStockMutation.isPending}
-                          >
-                            {stock.publicado ? (
-                              <IconEye size={16} className="text-green-600" />
-                            ) : (
-                              <IconEyeOff size={16} className="text-gray-400" />
+                          <Badge 
+                            variant="outline" 
+                            className={cn(
+                              'text-xs',
+                              stock.publicado 
+                                ? 'bg-green-50 text-green-700 border-green-200' 
+                                : 'bg-red-50 text-red-700 border-red-200'
                             )}
-                          </Button>
+                          >
+                            {stock.publicado ? 'Publicado' : 'Sin Publicar'}
+                          </Badge>
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {new Date(stock.created_at).toLocaleDateString('es-ES')}
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              onClick={() => handleEdit(stock)}
-                            >
-                              <IconEdit size={14} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                              onClick={() => handleDelete(stock)}
-                            >
-                              <IconTrash size={14} />
-                            </Button>
-                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                              >
+                                <IconDots className="h-4 w-4" />
+                                <span className="sr-only">Abrir menú</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-[160px]">
+                              {stock.publicado ? (
+                                <DropdownMenuItem onClick={() => handleDespublicar(stock)} disabled={updateStockMutation.isPending}>
+                                  <IconEyeOff className="mr-2 h-4 w-4" />
+                                  Despublicar
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem onClick={() => handlePublicar(stock)} disabled={updateStockMutation.isPending}>
+                                  <IconEye className="mr-2 h-4 w-4" />
+                                  Publicar
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleEdit(stock)}>
+                                <IconEdit className="mr-2 h-4 w-4" />
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                onClick={() => handleDelete(stock)}
+                              >
+                                <IconTrash className="mr-2 h-4 w-4" />
+                                Eliminar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -283,7 +365,9 @@ export function GestionarExistenciasModal({
       {/* Modal de confirmación de eliminación */}
       <ConfirmDialog
         open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}
+        onOpenChange={(open) => {
+          if (!open) handleCloseSubModals()
+        }}
         title={stockEstaVendido ? "No se puede eliminar" : "¿Eliminar existencia?"}
         desc={
           stockEstaVendido 
@@ -299,7 +383,9 @@ export function GestionarExistenciasModal({
       {/* Modal para agregar nuevo stock */}
       <AgregarStockModal
         open={showAgregarStockDialog}
-        onOpenChange={setShowAgregarStockDialog}
+        onOpenChange={(open) => {
+          if (!open) handleCloseSubModals()
+        }}
         productoId={producto.id}
       />
 
@@ -307,10 +393,37 @@ export function GestionarExistenciasModal({
       <EditarStockModal
         open={showEditarStockDialog}
         onOpenChange={(open) => {
-          setShowEditarStockDialog(open)
-          if (!open) setSelectedStock(null)
+          if (!open) handleCloseSubModals()
         }}
         stock={selectedStock}
+      />
+
+      {/* Modal de confirmación para publicar */}
+      <ConfirmDialog
+        open={showPublicarDialog}
+        onOpenChange={(open) => {
+          setShowPublicarDialog(open)
+          if (!open) setSelectedStock(null)
+        }}
+        title="¿Publicar existencia?"
+        desc={`¿Estás seguro de que deseas publicar esta existencia? Aparecerá en el conteo de stock disponible para los clientes.`}
+        confirmText="Publicar"
+        handleConfirm={confirmPublicar}
+        isLoading={updateStockMutation.isPending}
+      />
+
+      {/* Modal de confirmación para despublicar */}
+      <ConfirmDialog
+        open={showDespublicarDialog}
+        onOpenChange={(open) => {
+          setShowDespublicarDialog(open)
+          if (!open) setSelectedStock(null)
+        }}
+        title="¿Despublicar existencia?"
+        desc={`¿Estás seguro de que deseas despublicar esta existencia? Se ocultará del conteo de stock disponible para los clientes.`}
+        confirmText="Despublicar"
+        handleConfirm={confirmDespublicar}
+        isLoading={updateStockMutation.isPending}
       />
     </>
   )

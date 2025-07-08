@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/supabase'
+import { calcularNuevaFechaExpiracion } from '../utils/expiracion'
 
 export type Producto = Database['public']['Tables']['productos']['Row']
 export type Usuario = Database['public']['Tables']['usuarios']['Row']
@@ -100,7 +101,7 @@ export const getProductosByProveedorId = async (proveedorId: string): Promise<(P
 }
 
 // Get producto by ID
-export const getProductoById = async (id: string): Promise<Producto | null> => {
+export const getProductoById = async (id: number): Promise<Producto | null> => {
   const { data, error } = await supabase
     .from('productos')
     .select(`
@@ -124,7 +125,7 @@ export const getProductoById = async (id: string): Promise<Producto | null> => {
 }
 
 // Update producto
-export const updateProducto = async (id: string, updates: ProductoUpdate): Promise<Producto | null> => {
+export const updateProducto = async (id: number, updates: ProductoUpdate): Promise<Producto | null> => {
   const { data, error } = await supabase
     .from('productos')
     .update(updates)
@@ -149,7 +150,7 @@ export const updateProducto = async (id: string, updates: ProductoUpdate): Promi
 }
 
 // Verificar si un producto tiene cuentas de stock asociadas
-export const verificarProductoTieneCuentas = async (productoId: string): Promise<boolean> => {
+export const verificarProductoTieneCuentas = async (productoId: number): Promise<boolean> => {
   const { data, error } = await supabase
     .from('stock_productos')
     .select('id')
@@ -165,7 +166,7 @@ export const verificarProductoTieneCuentas = async (productoId: string): Promise
 }
 
 // Delete producto
-export const deleteProducto = async (id: string): Promise<boolean> => {
+export const deleteProducto = async (id: number): Promise<boolean> => {
   const { error } = await supabase
     .from('productos')
     .delete()
@@ -273,7 +274,7 @@ export const getCategorias = async (): Promise<Categoria[]> => {
 export const getProductosStatsByProveedor = async (proveedorId: string) => {
   const { data, error } = await supabase
     .from('productos')
-    .select('disponibilidad, destacado, mas_vendido')
+          .select('disponibilidad')
     .eq('proveedor_id', proveedorId)
 
   if (error) {
@@ -281,8 +282,6 @@ export const getProductosStatsByProveedor = async (proveedorId: string) => {
     return {
       total: 0,
       enStock: 0,
-      destacados: 0,
-      masVendidos: 0,
       stockTotal: 0
     }
   }
@@ -299,8 +298,6 @@ export const getProductosStatsByProveedor = async (proveedorId: string) => {
   const stats = {
     total: data.length,
     enStock: data.filter(p => p.disponibilidad === 'en_stock').length,
-    destacados: data.filter(p => p.destacado).length,
-    masVendidos: data.filter(p => p.mas_vendido).length,
     stockTotal
   }
 
@@ -527,7 +524,7 @@ export const verificarSaldoSuficiente = async (
 
 // Nueva función para publicar productos existentes cobrando comisión
 export const publicarProductoWithCommission = async (
-  { productoId, proveedorId }: { productoId: string, proveedorId: string }
+  { productoId, proveedorId }: { productoId: number, proveedorId: string }
 ): Promise<Producto> => {
   console.log('🔄 Iniciando publicación de producto con comisión...', { productoId, proveedorId })
   
@@ -563,10 +560,17 @@ export const publicarProductoWithCommission = async (
 
     console.log('✅ Comisión procesada correctamente')
 
-    // 4. Actualizar estado del producto a publicado
+    // 4. Calcular fecha de expiración inicial (30 días desde ahora)
+    const fechaExpiracion = calcularNuevaFechaExpiracion(null, 30)
+
+    // 5. Actualizar estado del producto a publicado y establecer fecha de expiración
     const { data: productoPublicado, error: errorActualizacion } = await supabase
       .from('productos')
-      .update({ estado: 'publicado', updated_at: new Date().toISOString() })
+      .update({ 
+        estado: 'publicado', 
+        fecha_expiracion: fechaExpiracion,
+        updated_at: new Date().toISOString() 
+      })
       .eq('id', productoId)
       .select(`
         *,
@@ -582,7 +586,7 @@ export const publicarProductoWithCommission = async (
 
     console.log('✅ Producto publicado correctamente:', productoPublicado.id)
 
-    // 5. Retornar el producto publicado
+    // 6. Retornar el producto publicado
     return productoPublicado as Producto
   } catch (error) {
     console.error('❌ Error en publicarProductoWithCommission:', error)
@@ -593,14 +597,15 @@ export const publicarProductoWithCommission = async (
 // === FUNCIONES PARA GESTIÓN DE STOCK ===
 
 // Función auxiliar para actualizar stock_de_productos en la tabla productos
-export const updateStockDeProductos = async (productoId: string) => {
+export const updateStockDeProductos = async (productoId: number) => {
   try {
-    // Obtener todos los IDs de stock_productos para este producto
+    // Obtener todos los IDs de stock_productos para este producto que estén disponibles Y publicados
     const { data: stockItems, error: stockError } = await supabase
       .from('stock_productos')
       .select('id')
       .eq('producto_id', productoId)
       .eq('estado', 'disponible')
+      .eq('publicado', true)
 
     if (stockError) {
       console.error('Error fetching stock items:', stockError)
@@ -619,7 +624,7 @@ export const updateStockDeProductos = async (productoId: string) => {
     if (updateError) {
       console.error('Error updating stock_de_productos:', updateError)
     } else {
-      console.log(`✅ stock_de_productos actualizado para producto ${productoId}:`, stockDeProductos.length, 'items')
+      console.log(`✅ stock_de_productos actualizado para producto ${productoId}:`, stockDeProductos.length, 'items (disponibles y publicados)')
     }
   } catch (error) {
     console.error('Error in updateStockDeProductos:', error)
@@ -627,7 +632,7 @@ export const updateStockDeProductos = async (productoId: string) => {
 }
 
 // Get stock productos by producto ID
-export const getStockProductosByProductoId = async (productoId: string) => {
+export const getStockProductosByProductoId = async (productoId: number) => {
   const { data, error } = await supabase
     .from('stock_productos')
     .select('*')
@@ -675,8 +680,8 @@ export const updateStockProducto = async (id: number, updates: Database['public'
     throw new Error(`Error al actualizar stock: ${error.message}`)
   }
 
-  // Si se actualiza el estado, sincronizar stock_de_productos
-  if (updates.estado !== undefined) {
+  // Si se actualiza el estado o el campo publicado, sincronizar stock_de_productos
+  if (updates.estado !== undefined || updates.publicado !== undefined) {
     await updateStockDeProductos(data.producto_id)
   }
 
@@ -722,4 +727,224 @@ export const deleteStockProducto = async (id: number) => {
   await updateStockDeProductos(stockItem.producto_id)
 
   return true
+}
+
+// === FUNCIONES PARA RENOVACIÓN DE PRODUCTOS ===
+
+/**
+ * Renovar un producto - extiende la fecha de expiración por 30 días más
+ * y cobra la comisión de renovación (igual a la de publicación)
+ */
+export const renovarProducto = async (
+  { productoId, proveedorId }: { productoId: number, proveedorId: string }
+): Promise<{ success: boolean; error?: string; producto?: Producto }> => {
+  console.log('🔄 Iniciando renovación de producto...', { productoId, proveedorId })
+  
+  try {
+    // 1. Verificar que el producto existe y está publicado
+    const { data: producto, error: errorProducto } = await supabase
+      .from('productos')
+      .select('*')
+      .eq('id', productoId)
+      .eq('proveedor_id', proveedorId)
+      .eq('estado', 'publicado') // Solo productos publicados pueden renovarse
+      .single()
+
+    if (errorProducto || !producto) {
+      console.error('❌ Error al obtener producto:', errorProducto)
+      return { 
+        success: false, 
+        error: 'Producto no encontrado o no está publicado' 
+      }
+    }
+
+    // 2. Verificar saldo suficiente para la renovación
+    const saldoInfo = await verificarSaldoSuficiente(proveedorId)
+    if (!saldoInfo.suficiente) {
+      const comisionFormateada = new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0,
+      }).format(saldoInfo.comisionRequerida)
+      
+      return { 
+        success: false, 
+        error: `Saldo insuficiente. Necesitas ${comisionFormateada} para renovar este producto` 
+      }
+    }
+
+    // 3. Procesar comisión de renovación (igual a la de publicación)
+    const resultadoComision = await procesarComisionPublicacion(proveedorId)
+    if (!resultadoComision.success) {
+      return { 
+        success: false, 
+        error: resultadoComision.error || 'Error al procesar la comisión de renovación' 
+      }
+    }
+
+    console.log('✅ Comisión de renovación procesada correctamente')
+
+    // 4. Calcular nueva fecha de expiración
+    const nuevaFechaExpiracion = calcularNuevaFechaExpiracion(producto.fecha_expiracion, 30)
+
+    // 5. Actualizar producto con nueva fecha de expiración
+    const { data: productoRenovado, error: errorActualizacion } = await supabase
+      .from('productos')
+      .update({ 
+        fecha_expiracion: nuevaFechaExpiracion,
+        updated_at: new Date().toISOString() 
+      })
+      .eq('id', productoId)
+      .select(`
+        *,
+        categorias:categoria_id(nombre, descripcion),
+        usuarios:proveedor_id(nombres, apellidos)
+      `)
+      .single()
+
+    if (errorActualizacion) {
+      console.error('❌ Error al renovar producto:', errorActualizacion)
+      return { 
+        success: false, 
+        error: 'Error al actualizar la fecha de expiración del producto' 
+      }
+    }
+
+    console.log('✅ Producto renovado correctamente:', productoRenovado.id)
+
+    return { 
+      success: true, 
+      producto: productoRenovado as Producto 
+    }
+  } catch (error) {
+    console.error('❌ Error en renovarProducto:', error)
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Error desconocido al renovar producto' 
+    }
+  }
+}
+
+/**
+ * Actualiza la fecha de expiración cuando un producto se publica por primera vez
+ * Esta función se debe llamar al cambiar un producto de borrador a publicado
+ */
+export const establecerFechaExpiracionInicial = async (productoId: number): Promise<void> => {
+  try {
+    const fechaExpiracion = calcularNuevaFechaExpiracion(null, 30) // 30 días desde ahora
+    
+    const { error } = await supabase
+      .from('productos')
+      .update({ 
+        fecha_expiracion: fechaExpiracion,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', productoId)
+
+    if (error) {
+      console.error('❌ Error al establecer fecha de expiración inicial:', error)
+      throw new Error('Error al establecer fecha de expiración')
+    }
+
+    console.log('✅ Fecha de expiración inicial establecida para producto:', productoId)
+  } catch (error) {
+    console.error('❌ Error en establecerFechaExpiracionInicial:', error)
+    throw error
+  }
+}
+
+/**
+ * Verifica y actualiza automáticamente productos vencidos a estado "borrador"
+ * Esta función se ejecuta automáticamente al cargar productos
+ */
+export const verificarYActualizarProductosVencidos = async (
+  proveedorId: string
+): Promise<{ productosActualizados: number; error?: string }> => {
+  
+  try {
+    const ahora = new Date().toISOString()
+    
+    // 1. Buscar productos publicados que ya vencieron
+    const { data: productosVencidos, error: errorBusqueda } = await supabase
+      .from('productos')
+      .select('id, nombre, fecha_expiracion')
+      .eq('proveedor_id', proveedorId)
+      .eq('estado', 'publicado')
+      .not('fecha_expiracion', 'is', null)
+      .lt('fecha_expiracion', ahora)
+
+    if (errorBusqueda) {
+      console.error('❌ Error al buscar productos vencidos:', errorBusqueda)
+      return { productosActualizados: 0, error: errorBusqueda.message }
+    }
+
+    if (!productosVencidos || productosVencidos.length === 0) {
+      return { productosActualizados: 0 }
+    }
+
+    console.log(`📋 Encontrados ${productosVencidos.length} productos vencidos:`, 
+                productosVencidos.map(p => `${p.nombre} (ID: ${p.id})`))
+
+    // 2. Actualizar productos vencidos a estado "borrador"
+    const idsProductosVencidos = productosVencidos.map(p => p.id)
+    
+    const { data: productosActualizados, error: errorActualizacion } = await supabase
+      .from('productos')
+      .update({ 
+        estado: 'borrador',
+        updated_at: new Date().toISOString()
+      })
+      .in('id', idsProductosVencidos)
+      .select('id, nombre')
+
+    if (errorActualizacion) {
+      console.error('❌ Error al actualizar productos vencidos:', errorActualizacion)
+      return { productosActualizados: 0, error: errorActualizacion.message }
+    }
+
+    const cantidadActualizada = productosActualizados?.length || 0
+    console.log(`✅ ${cantidadActualizada} productos actualizados a borrador por vencimiento`)
+    
+    if (cantidadActualizada > 0) {
+      console.log('📝 Productos despublicados:', 
+                  productosActualizados?.map(p => `${p.nombre} (ID: ${p.id})`))
+    }
+
+    return { productosActualizados: cantidadActualizada }
+  } catch (error) {
+    console.error('❌ Error en verificarYActualizarProductosVencidos:', error)
+    return { 
+      productosActualizados: 0, 
+      error: error instanceof Error ? error.message : 'Error desconocido' 
+    }
+  }
+}
+
+/**
+ * Obtiene productos con verificación automática de vencimiento
+ * Esta función reemplaza getProductosByProveedorId para incluir verificación automática
+ */
+export const getProductosByProveedorConVerificacion = async (
+  proveedorId: string
+): Promise<(Producto & { categorias?: Categoria })[]> => {
+  try {
+    // 1. Primero verificar y actualizar productos vencidos
+    const resultadoVerificacion = await verificarYActualizarProductosVencidos(proveedorId)
+    
+    if (resultadoVerificacion.error) {
+      console.warn('⚠️ Error en verificación de vencimientos:', resultadoVerificacion.error)
+      // Continuar con la carga normal aunque haya error en verificación
+    }
+
+    if (resultadoVerificacion.productosActualizados > 0) {
+      console.log(`🔄 ${resultadoVerificacion.productosActualizados} productos despublicados automáticamente`)
+    }
+
+    // 2. Cargar productos con datos actualizados
+    return await getProductosByProveedorId(proveedorId)
+  } catch (error) {
+    console.error('❌ Error en getProductosByProveedorConVerificacion:', error)
+    // Fallback: cargar productos sin verificación
+    return await getProductosByProveedorId(proveedorId)
+  }
 }

@@ -6,7 +6,7 @@ import { useProductoById } from '../queries'
 type ComprasProductoDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  id: string
+  id: number
 }
 
 export default function ComprasProductoDialog({ open, onOpenChange, id }: ComprasProductoDialogProps) {

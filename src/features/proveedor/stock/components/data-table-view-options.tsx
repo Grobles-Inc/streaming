@@ -24,7 +24,7 @@ interface DataTableViewOptionsProps {
 
 export function DataTableViewOptions({ table }: DataTableViewOptionsProps) {
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           variant='outline'

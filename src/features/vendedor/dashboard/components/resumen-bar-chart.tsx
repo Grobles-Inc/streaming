@@ -13,7 +13,7 @@ export function ResumenBarChart() {
   const { data: recargas } = useRecargasByVendedor(user.id)
   const { data: compras } = useComprasByVendedor(user.id)
   const totalRecargas = recargas?.reduce((acc, recarga) => acc + recarga.monto, 0) || 0
-  const totalCompras = compras?.reduce((acc, compra) => acc + compra.precio, 0) || 0
+  const totalCompras = compras?.count || 0
   const data = [
     {
       name: 'Resumen',

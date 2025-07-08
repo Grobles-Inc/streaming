@@ -1,16 +1,12 @@
 import Logo from '@/assets/logo.png'
-import { useCategorias } from '@/features/landing/queries'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useBilleteraByUsuario } from '@/queries'
 import { useAuth } from '@/stores/authStore'
 import { useSearch } from '@/stores/searchStore'
-import { IconLayoutDashboard, IconMenu, IconPackage, IconShoppingBag, IconUser, IconWallet } from '@tabler/icons-react'
+import { IconLayoutDashboard, IconPackage, IconShoppingBag, IconUser, IconWallet } from '@tabler/icons-react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
-import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from '../ui/sheet'
-import { Categoria } from '@/features/landing/services'
 
 const rolRedirect = {
   admin: '/admin/reportes-globales',
@@ -25,9 +21,6 @@ export default function LandingHeader() {
   const { data: billetera } = useBilleteraByUsuario(user?.id || '')
   const { searchInput, setSearchInput } = useSearch()
   const isMobile = useIsMobile()
-  const [isOpen, setIsOpen] = useState(false)
-  const { data: categorias } = useCategorias()
-  const [activeTab, setActiveTab] = useState<string | null>(null)
   const redirectRoute = rolRedirect[user?.rol as keyof typeof rolRedirect] || '/dashboard'
   return (
     <nav className="flex flex-col md:flex-row md:items-center md:justify-between md:px-6 px-4 py-4 gap-4 bg-base-100 shadow">
@@ -54,16 +47,20 @@ export default function LandingHeader() {
                 user?.rol === 'admin' ? (
                   <Button onClick={() => navigate({ to: '/admin/reportes-globales' })} size="lg">
                     <IconLayoutDashboard />
-                    Dashboard </Button>
+                    Admin </Button>
                 ) : user?.rol === 'provider' ? (
                   <Button onClick={() => navigate({ to: '/proveedor/productos' })} size="lg">
                     <IconPackage />
-                    Productos </Button>
+                    Admin </Button>
                 ) : user?.rol === 'registered' ? null : (
                   <div className='flex items-center gap-2'>
-                    <Button variant="ghost" className='text-xl font-bold' onClick={() => navigate({ to: '/dashboard' })} size="lg">
+                    <div className='text-xl flex flex-col gap-0 items-center mx-4 font-bold' >
                       $ {billetera?.saldo.toFixed(2)}
-                    </Button>
+                      <div className='flex gap-1 items-center'>
+                        <IconUser size={16} />
+                        <span className='text-xs font-normal font-mono'>  {user.usuario}</span>
+                      </div>
+                    </div>
                     <Button variant="secondary" onClick={() => navigate({ to: '/compras' })} className='flex items-center gap-2'>
                       <IconShoppingBag />
                       Compras</Button>
@@ -82,56 +79,12 @@ export default function LandingHeader() {
           )}
         </div>
         {isMobile && (
-          <div className='flex items-center gap-2'>
-            {
-              user && user.rol !== 'registered' && (
-                <Button variant="outline" size="icon" onClick={() => navigate({ to: redirectRoute })}>
-                  <IconUser />
-                </Button>
-              )
-            }
-            <div className="sm:hidden">
-              <Sheet open={isOpen} onOpenChange={setIsOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <IconMenu />
-                  </Button>
-
-                </SheetTrigger>
-                <SheetContent className='p-4' side="left">
-                  <SheetTitle>
-                    <Link to="/">
-                      <div className="flex items-center gap-2 ">
-                        <img src={Logo} alt="ML+" className='w-auto md:20 h-14 dark:invert' />
-                      </div>
-                    </Link>
-                  </SheetTitle>
-                  <SheetDescription>
-                    Selecciona una categoría para ver los productos disponibles.
-                  </SheetDescription>
-                  <div className="flex flex-col gap-2 mt-8">
-                    {categorias?.map((categoria: Categoria) => (
-                      <Button
-                        key={categoria.id}
-                        variant={activeTab === categoria.id ? 'default' : 'ghost'}
-                        className="justify-start"
-                        onClick={() => {
-                          setActiveTab(categoria.id)
-                          navigate({ to: '/categoria/$name', params: { name: categoria.nombre.toLowerCase() } })
-                          setIsOpen(false)
-                        }}
-                      >
-                        {categoria.nombre}
-                      </Button>
-                    ))}
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
-
-          </div>
+          user && user.rol !== 'registered' && (
+            <Button size="icon" onClick={() => navigate({ to: redirectRoute })}>
+              <IconUser />
+            </Button>
+          )
         )}
-
       </div>
       <div className="flex-1 md:hidden md:mx-8">
         <Input

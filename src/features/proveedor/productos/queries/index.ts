@@ -8,8 +8,9 @@ type ProductoInsert = Database['public']['Tables']['productos']['Insert']
 export const useProductosByProveedor = (proveedorId: string) => {
   return useQuery({
     queryKey: ['productos', 'proveedor', proveedorId],
-    queryFn: () => productosService.getProductosByProveedorId(proveedorId),
+    queryFn: () => productosService.getProductosByProveedorConVerificacion(proveedorId),
     enabled: !!proveedorId,
+    staleTime: 1000 * 30, // 30 segundos - para verificar vencimientos frecuentemente
   })
 }
 
@@ -25,7 +26,7 @@ export const useProductosPaginatedByProveedor = (
   })
 }
 
-export const useProductoById = (id: string) => {
+export const useProductoById = (id: number) => {
   return useQuery({
     queryKey: ['productos', id],
     queryFn: () => productosService.getProductoById(id),
@@ -108,7 +109,7 @@ export const usePublicarProductoWithCommission = () => {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: ({ productoId, proveedorId }: { productoId: string, proveedorId: string }) => 
+    mutationFn: ({ productoId, proveedorId }: { productoId: number, proveedorId: string }) => 
       productosService.publicarProductoWithCommission({ productoId, proveedorId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['productos'] })
@@ -127,7 +128,7 @@ export const useUpdateProducto = () => {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Database['public']['Tables']['productos']['Update'] }) => 
+    mutationFn: ({ id, updates }: { id: number; updates: Database['public']['Tables']['productos']['Update'] }) => 
       productosService.updateProducto(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['productos'] })
@@ -140,7 +141,7 @@ export const useUpdateProducto = () => {
 }
 
 // Hook para verificar si un producto tiene cuentas asociadas
-export const useVerificarProductoTieneCuentas = (productoId: string) => {
+export const useVerificarProductoTieneCuentas = (productoId: number) => {
   return useQuery({
     queryKey: ['verificar-cuentas', productoId],
     queryFn: () => productosService.verificarProductoTieneCuentas(productoId),
@@ -153,7 +154,7 @@ export const useDeleteProducto = () => {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: (id: string) => productosService.deleteProducto(id),
+    mutationFn: (id: number) => productosService.deleteProducto(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['productos'] })
       toast.success('Producto eliminado correctamente')
@@ -166,7 +167,7 @@ export const useDeleteProducto = () => {
 
 // === HOOKS PARA GESTIÓN DE STOCK ===
 
-export const useStockProductosByProductoId = (productoId: string) => {
+export const useStockProductosByProductoId = (productoId: number) => {
   return useQuery({
     queryKey: ['stock-productos', productoId],
     queryFn: () => productosService.getStockProductosByProductoId(productoId),
@@ -181,7 +182,11 @@ export const useCreateStockProducto = () => {
     mutationFn: (stockData: Database['public']['Tables']['stock_productos']['Insert']) => 
       productosService.createStockProducto(stockData),
     onSuccess: (data) => {
+      // Invalidar queries específicas del producto
       queryClient.invalidateQueries({ queryKey: ['stock-productos', data.producto_id] })
+      // Invalidar queries del proveedor (para la tabla principal de stock)
+      queryClient.invalidateQueries({ queryKey: ['stock-productos', 'proveedor'] })
+      // Invalidar productos
       queryClient.invalidateQueries({ queryKey: ['productos'] })
       toast.success('Stock agregado correctamente')
     },
@@ -198,7 +203,11 @@ export const useUpdateStockProducto = () => {
     mutationFn: ({ id, updates }: { id: number; updates: Database['public']['Tables']['stock_productos']['Update'] }) => 
       productosService.updateStockProducto(id, updates),
     onSuccess: (data) => {
+      // Invalidar queries específicas del producto
       queryClient.invalidateQueries({ queryKey: ['stock-productos', data.producto_id] })
+      // Invalidar queries del proveedor (para la tabla principal de stock)
+      queryClient.invalidateQueries({ queryKey: ['stock-productos', 'proveedor'] })
+      // Invalidar productos
       queryClient.invalidateQueries({ queryKey: ['productos'] })
       toast.success('Stock actualizado correctamente')
     },
@@ -212,10 +221,14 @@ export const useDeleteStockProducto = () => {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: ({ id }: { id: number; productoId: string }) => 
+    mutationFn: ({ id }: { id: number; productoId: number }) => 
       productosService.deleteStockProducto(id),
     onSuccess: (_, variables) => {
+      // Invalidar queries específicas del producto
       queryClient.invalidateQueries({ queryKey: ['stock-productos', variables.productoId] })
+      // Invalidar queries del proveedor (para la tabla principal de stock)
+      queryClient.invalidateQueries({ queryKey: ['stock-productos', 'proveedor'] })
+      // Invalidar productos
       queryClient.invalidateQueries({ queryKey: ['productos'] })
       toast.success('Stock eliminado correctamente')
     },
@@ -242,6 +255,60 @@ export const useSincronizarStockDeProductos = () => {
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Error al sincronizar stock')
+    },
+  })
+}
+
+// === HOOKS PARA RENOVACIÓN DE PRODUCTOS ===
+
+export const useRenovarProducto = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: ({ productoId, proveedorId }: { productoId: number, proveedorId: string }) => 
+      productosService.renovarProducto({ productoId, proveedorId }),
+    onSuccess: (result) => {
+      if (result.success) {
+        queryClient.invalidateQueries({ queryKey: ['productos'] })
+        queryClient.invalidateQueries({ queryKey: ['billetera'] })
+        queryClient.invalidateQueries({ queryKey: ['verificar-saldo'] })
+        toast.success('Producto renovado exitosamente por 30 días más')
+      } else {
+        toast.error(result.error || 'Error al renovar producto')
+      }
+    },
+    onError: (error: Error) => {
+      console.error('❌ Error al renovar producto:', error)
+      toast.error(error.message || 'Error al renovar producto')
+    },
+  })
+}
+
+// === HOOKS PARA VERIFICACIÓN DE VENCIMIENTOS ===
+
+export const useVerificarProductosVencidos = () => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: (proveedorId: string) => 
+      productosService.verificarYActualizarProductosVencidos(proveedorId),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['productos'] })
+      
+      if (result.productosActualizados > 0) {
+        toast.success(
+          `${result.productosActualizados} producto(s) vencido(s) despublicado(s) automáticamente`,
+          { duration: 5000 }
+        )
+      }
+      
+      if (result.error) {
+        toast.error(`Error en verificación: ${result.error}`)
+      }
+    },
+    onError: (error: Error) => {
+      console.error('❌ Error al verificar productos vencidos:', error)
+      toast.error(error.message || 'Error al verificar productos vencidos')
     },
   })
 } 

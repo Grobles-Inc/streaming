@@ -36,7 +36,7 @@ export function StockToolbar({
   table, 
   onAgregarStock, 
   onDeleteSelected, 
-  onTogglePublishedSelected 
+  onTogglePublishedSelected
 }: StockToolbarProps) {
   const globalFilter = table.getState().globalFilter ?? ''
   const selectedRows = table.getFilteredSelectedRowModel().rows

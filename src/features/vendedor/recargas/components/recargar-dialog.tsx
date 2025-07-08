@@ -17,7 +17,7 @@ import { IconPlus } from '@tabler/icons-react'
 import { Loader2 } from 'lucide-react'
 import * as React from 'react'
 import { useForm } from 'react-hook-form'
-import { useCreateRecarga } from '../queries'
+import { useConfiguracionSistema, useCreateRecarga } from '../queries'
 import YapeQRImage from '@/assets/YapeQR.jpg'
 
 const steps = [
@@ -41,23 +41,23 @@ const steps = [
 
 export function RecargarDialog() {
   const isMobile = useIsMobile()
-  const tasaConversion = 3.7
   const { user } = useAuth()
   const [dialogOpen, setDialogOpen] = React.useState(false)
   if (!user?.id) {
     return null
   }
   const { mutate: crearRecarga, isPending } = useCreateRecarga()
-
+  const { data: configuracion } = useConfiguracionSistema()
   const form = useForm<{ amount: number }>({
     defaultValues: undefined,
   })
 
   async function onSubmit(data: { amount: number }) {
+    const dollarAmount = data.amount / (configuracion?.conversion ?? 1)
     try {
       setDialogOpen(false)
       await crearRecarga({
-        monto: data.amount,
+        monto: Number(dollarAmount.toFixed(2)),
         usuario_id: user?.id as string,
       })
       form.reset()
@@ -119,7 +119,7 @@ export function RecargarDialog() {
                         </div>
                         <div className='flex justify-between items-center'>
 
-                          <span className='text-sm text-gray-500'>TC: {tasaConversion} -  {((field.value || 0) / tasaConversion).toFixed(2)} USD</span>
+                          <span className='text-sm text-gray-500'>TC: {configuracion?.conversion} -  {((field.value || 0) / (configuracion?.conversion ?? 1)).toFixed(2)} USD</span>
                           <a href="https://wa.me/51913190401" target="_blank" className='flex items-center gap-1 '>
                             <img src="https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000" className='size-5' />
                             <span className='text-green-500 underline text-xs'>913190401</span>

@@ -4,6 +4,7 @@ import { Database } from '@/types/supabase'
 export type Recarga = Database['public']['Tables']['recargas']['Row']
 export type RecargaInsert = Database['public']['Tables']['recargas']['Insert']
 export type RecargaUpdate = Database['public']['Tables']['recargas']['Update']
+export type ConfiguracionRow = Database['public']['Tables']['configuracion']['Row']
 
 // Create a new recarga
 export const createRecarga = async (recarga: RecargaInsert): Promise<Recarga | null> => {
@@ -122,4 +123,21 @@ export const getRecargasPaginated = async (
   }
 
   return { data: data || [], count: count || 0 }
+}
+
+
+export const getConfiguracionActual = async (): Promise<ConfiguracionRow | null> => {
+  const { data, error } = await supabase
+    .from('configuracion')
+    .select('*')
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (error) {
+    console.error('Error obteniendo configuración:', error)
+    return null
+  }
+
+  return data
 }

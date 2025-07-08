@@ -51,7 +51,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
 
   const tasaDeConversion = configuracion?.conversion || 1
   const monto = billetera?.saldo
-  const randomIndex = Math.floor(Math.random() * (stockProductosIds?.length || 0)) 
+  const randomIndex = Math.floor(Math.random() * (stockProductosIds?.length || 0))
   const stock_producto_id = stockProductosIds?.[randomIndex] || 0
   const fecha_expiracion = new Date(Date.now() + producto.tiempo_uso * 24 * 60 * 60 * 1000).toISOString()
   const precio_producto = user ? producto.precio_vendedor : producto.precio_publico

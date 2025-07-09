@@ -36,17 +36,17 @@ interface RetirarFondosModalProps {
   saldoDisponible: number
 }
 
-export function RetirarFondosModal({ 
-  open, 
-  onOpenChange, 
+export function RetirarFondosModal({
+  open,
+  onOpenChange,
   onSubmit,
-  saldoDisponible 
+  saldoDisponible
 }: RetirarFondosModalProps) {
   const { user } = useAuth()
   const { data: configuracion } = useConfiguracionSistema()
   const { mutate: crearRetiro, isPending } = useCreateRetiro()
   const isMobile = useIsMobile()
-  
+
   // Obtener tasa de conversión y comisión de la configuración del sistema
   const tasaConversion = configuracion?.conversion || 3.7
   const comisionPorcentaje = configuracion?.comision || 10 // Comisión del administrador en %
@@ -60,7 +60,7 @@ export function RetirarFondosModal({
 
   // Observar el valor de cantidad en soles para calcular USD y comisiones
   const cantidadSolesValue = form.watch('cantidad')
-  
+
   // Cálculos
   const calculosRetiro = useMemo(() => {
     if (!cantidadSolesValue || cantidadSolesValue <= 0) {
@@ -71,7 +71,7 @@ export function RetirarFondosModal({
         suficienteSaldo: true
       }
     }
-    
+
     const valorEnDolares = parseFloat((cantidadSolesValue / tasaConversion).toFixed(2))
     const comisionDolares = parseFloat((valorEnDolares * (comisionPorcentaje / 100)).toFixed(2))
     const montoNetoUsuario = parseFloat((valorEnDolares - comisionDolares).toFixed(2))
@@ -99,14 +99,14 @@ export function RetirarFondosModal({
         monto_soles: data.cantidad,
         comision_admin: calculosRetiro.comisionDolares
       })
-      
+
       form.reset()
       onOpenChange(false)
       onSubmit() // Esto disparará la refetch de los datos
-      
+
       // Enviar mensaje de WhatsApp inmediatamente
       RetiroMessage({
-        nombre_cliente: user?.nombres + ' ' + user?.apellidos || '',
+        usuario: user?.usuario || '',
         monto_soles: data.cantidad,
         monto_dolares: calculosRetiro.valorEnDolares,
         monto_neto: calculosRetiro.montoNetoUsuario,
@@ -311,8 +311,8 @@ export function RetirarFondosModal({
               >
                 Cancelar
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isPending || calculosRetiro.valorEnDolares <= 0 || !calculosRetiro.suficienteSaldo}
                 variant="destructive"
                 className="w-full sm:w-auto"

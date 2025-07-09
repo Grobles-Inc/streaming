@@ -183,6 +183,7 @@ export const getComprasByVendedorId = async (vendedorId: string, page: number = 
       stock_productos:stock_producto_id (email, perfil, pin, clave)
     `, { count: 'exact' })
     .eq('vendedor_id', vendedorId)
+    .neq('estado', 'reembolsado')
     .range(from, to)
     .order('created_at', { ascending: false })
 

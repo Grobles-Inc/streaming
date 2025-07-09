@@ -42,8 +42,9 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
   const isMobile = useIsMobile()
   const { mutate: updateCompraStatus, isPending } = useUpdateCompraStatus()
   const { mutate: updateStockProductoStatus } = useUpdateStockProductoStatus()
-  const precio_por_dia = (currentRow.precio || 0) / (currentRow.productos?.tiempo_uso || 1)
-  const dias_restantes = currentRow.fecha_expiracion ? Math.ceil((new Date(currentRow.fecha_expiracion).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
+  const { fecha_expiracion, productos } = currentRow
+  const precio_por_dia = (productos?.precio_renovacion || 0) / (productos?.tiempo_uso || 1)
+  const dias_restantes = fecha_expiracion ? Math.ceil((new Date(fecha_expiracion).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
   const monto_reembolso = precio_por_dia * dias_restantes
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),

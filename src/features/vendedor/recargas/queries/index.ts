@@ -25,6 +25,14 @@ export const useRecargaById = (id: string) => {
   })
 }
 
+export const useConfiguracionSistema = () => {
+  return useQuery({
+    queryKey: ['configuracion-sistema'],
+    queryFn: () => recargasService.getConfiguracionActual(),
+    staleTime: 1000 * 60 * 5, // 5 minutos
+  })
+}
+
 export const useRecargasAprobadasByVendedor = (vendedorId: string) => {
   return useQuery({
     queryKey: ['recargas', 'vendedor', vendedorId, 'aprobadas'],

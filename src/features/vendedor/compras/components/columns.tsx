@@ -440,13 +440,15 @@ export const columns: ColumnDef<Compra>[] = [
     ),
     enableSorting: false,
     cell: ({ row }) => {
-      const precio_por_dia = (row.original.precio || 0) / (row.original.productos?.tiempo_uso || 1)
-      const dias_restantes = row.original.fecha_expiracion ? Math.ceil((new Date(row.original.fecha_expiracion).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
+      const { fecha_expiracion, productos } = row.original
+      const precio_por_dia = (productos?.precio_renovacion || 0) / (productos?.tiempo_uso || 1)
+      const dias_restantes = fecha_expiracion ? Math.ceil((new Date(fecha_expiracion).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 0
       const monto_reembolso = precio_por_dia * dias_restantes
 
       return (
         <div className='flex flex-col justify-center'>
           <span>$ {(monto_reembolso <= 0 ? 0 : monto_reembolso).toFixed(2)}</span>
+
         </div>
       )
     },

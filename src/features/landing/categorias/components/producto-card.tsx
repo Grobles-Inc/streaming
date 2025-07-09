@@ -7,6 +7,7 @@ import { Producto } from '../../services'
 import ComprarProductoModal from './comprar-producto-modal'
 import ProductoInfoModal from './producto-info-modal'
 import { useAuth } from '@/stores/authStore'
+import { useConfiguracionSistema } from '../../queries'
 
 
 
@@ -16,7 +17,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
   const [infoModalOpen, setInfoModalOpen] = useState(false)
   const [infoModalType, setInfoModalType] = useState<'informacion' | 'descripcion' | 'condiciones'>('informacion')
   const isAgotado = producto?.stock_de_productos?.length === 0
-  const tasaDeConversion = 3.7
+  const { data: configuracion } = useConfiguracionSistema()
   const precio_producto = user ? producto.precio_vendedor : producto.precio_publico
   return (
     <>
@@ -107,7 +108,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
             <Badge className='hidden md:block'>Stock: {producto.stock_de_productos.length} </Badge>
 
             <div className='flex md:flex-col flex-row-reverse justify-between md:justify-start items-center'>
-              <span className="font-bold md:text-xl text-foreground">     ${precio_producto.toFixed(2)}</span><span className="text-xs text-muted-foreground">S/.{(precio_producto * tasaDeConversion).toFixed(2)} </span>
+              <span className="font-bold md:text-xl text-foreground">${precio_producto.toFixed(2)}</span><span className="text-xs text-muted-foreground">S/.{(precio_producto * (configuracion?.conversion ?? 1)).toFixed(2)}</span>
             </div>
           </div>
 

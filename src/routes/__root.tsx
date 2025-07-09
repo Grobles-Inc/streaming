@@ -22,6 +22,20 @@ export const Route = createRootRouteWithContext<{
             <TanStackRouterDevtools position='bottom-right' />
           </>
         )}
+        <footer className="text-center text-sm text-muted-foreground py-6 border-t bg-background">
+          <p>
+            © {new Date().getFullYear()} <strong>ML Streaming</strong> . Todos los derechos reservados.
+            <span className="mx-2">|</span>
+            <a
+              href="https://groblesolutions.netlify.app"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Sitio Desarrollado por <span className="font-bold underline text-yellow-500 transition-colors">Grobles</span>
+            </a>
+
+          </p>
+        </footer>
       </>
     )
   },

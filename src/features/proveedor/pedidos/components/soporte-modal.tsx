@@ -1,28 +1,23 @@
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { IconLoader } from '@tabler/icons-react'
+import { IconLoader, IconCurrencyDollar, IconCheck } from '@tabler/icons-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { SoporteCompra } from '../data/types'
-import { useUpdateSoporteStatus } from '../queries'
+import { useProcesarReembolso, useCompletarSoporte } from '../queries'
 import { toast } from 'sonner'
+import { useAuth } from '@/stores/authStore'
+import { useState } from 'react'
 
-const estadoOptions = [
-  { value: 'activo', label: 'Problema Resuelto', color: 'bg-green-400 text-green-800' },
-  { value: 'soporte', label: 'Soporte', color: 'bg-orange-400 text-orange-800' },
-  { value: 'vencido', label: 'Cuenta Vencida', color: 'bg-red-400 text-red-800' },
-]
 
 const formSchema = z.object({
   respuesta: z.string().optional(),
-  estado: z.enum(['activo', 'soporte', 'vencido']),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -35,47 +30,90 @@ interface SoporteModalProps {
 }
 
 export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteModalProps) {
-  const { mutate: updateStatus, isPending } = useUpdateSoporteStatus()
+  const { mutate: procesarReembolso, isPending: isPendingReembolso } = useProcesarReembolso()
+  const { mutate: completarSoporte, isPending: isPendingCompletarSoporte } = useCompletarSoporte()
+  const { user } = useAuth()
+  const [showReembolsoConfirm, setShowReembolsoConfirm] = useState(false)
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       respuesta: '',
-      estado: compra.stock_productos?.soporte_stock_producto || 'activo',
     },
   })
 
-  async function onSubmit(data: FormData) {
-    // Proceder directamente con la actualización
-    await executeUpdate(data)
+  // Extraer el monto del reembolso del mensaje del vendedor
+  const extraerMontoReembolso = (mensaje: string): number => {
+    const regex = /Monto a reembolsar:\s*\$\s*([\d,]+\.?\d*)/i
+    const match = mensaje.match(regex)
+    if (match) {
+      const montoStr = match[1].replace(/,/g, '')
+      return parseFloat(montoStr) || 0
+    }
+    return 0
   }
 
-  async function executeUpdate(data: FormData) {
-    try {
-      if (!compra.stock_productos?.id) {
-        toast.error('Error: No se encontró el ID del stock de producto')
-        return
-      }
+  const montoReembolso = compra.soporte_mensaje ? extraerMontoReembolso(compra.soporte_mensaje) : 0
+  const esReembolso = compra.soporte_asunto === 'reembolso'
+  const reembolsoYaProcesado = compra.estado === 'reembolsado'
+  
+  // Verificar si ya hubo alguna interacción previa
+  const yaHuboInteraccion = !!compra.soporte_respuesta || reembolsoYaProcesado
 
-      await updateStatus({
-        stockProductoId: compra.stock_productos.id,
-        estado: data.estado,
-        respuesta: data.respuesta || undefined,
-      })
-
-      toast.success('Estado de soporte actualizado correctamente')
-      
-      form.reset()
-      onClose()
-    } catch (error) {
-      console.error('Error:', error)
-      toast.error('Error al actualizar el estado de soporte')
+  const handleCompletarSoporte = async () => {
+    const data = form.getValues()
+    
+    if (!compra.stock_productos?.id) {
+      toast.error('Error: No se encontró el ID del stock de producto')
+      return
     }
+
+    completarSoporte({
+      compraId: compra.id,
+      stockProductoId: compra.stock_productos.id,
+      respuesta: data.respuesta || undefined,
+    }, {
+      onSuccess: (result) => {
+        if (result.success) {
+          form.reset()
+          onClose()
+        }
+      }
+    })
+  }
+
+  const handleProcesarReembolso = async () => {
+    if (!compra.vendedor_id || !user?.id || montoReembolso <= 0) {
+      toast.error('Error: Datos insuficientes para procesar el reembolso')
+      return
+    }
+
+    procesarReembolso({
+      compraId: compra.id,
+      proveedorId: user.id,
+      vendedorId: compra.vendedor_id,
+      montoReembolso: montoReembolso
+    }, {
+      onSuccess: (result) => {
+        if (result.success) {
+          toast.success('Reembolso procesado exitosamente. Puedes enviar un mensaje de respuesta al vendedor.')
+          setShowReembolsoConfirm(false)
+          // No cerramos el modal para permitir enviar mensaje de respuesta
+        } else {
+          toast.error(result.error || 'Error al procesar el reembolso')
+        }
+      },
+      onError: (error) => {
+        console.error('Error procesando reembolso:', error)
+        toast.error('Error al procesar el reembolso')
+      }
+    })
   }
 
   const handleClose = () => {
     onOpenChange(false)
     form.reset()
+    setShowReembolsoConfirm(false)
   }
 
   const asuntoMap: Record<string, string> = {
@@ -130,6 +168,100 @@ export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteMod
               </div>
             </div>
 
+            {/* Sección de Reembolso */}
+            {esReembolso && montoReembolso > 0 && (
+              <>
+                {reembolsoYaProcesado ? (
+                  // Reembolso ya procesado
+                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-md border border-green-200 dark:border-green-700">
+                    <h4 className="font-semibold text-sm text-green-800 dark:text-green-200 uppercase tracking-wide mb-2 flex items-center gap-2">
+                      <IconCheck className="h-4 w-4" />
+                      Reembolso Realizado
+                    </h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-green-600 dark:text-green-300">Monto reembolsado:</span>
+                        <span className="font-mono font-semibold text-green-800 dark:text-green-200">
+                          ${montoReembolso.toFixed(2)} USD
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 bg-green-100 dark:bg-green-900/30 p-2 rounded-md">
+                        <IconCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        <p className="text-xs text-green-700 dark:text-green-300 font-medium">
+                          El reembolso ha sido procesado exitosamente. Los fondos fueron transferidos al vendedor.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  // Solicitud de reembolso pendiente
+                  <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-md border border-red-200 dark:border-red-700">
+                    <h4 className="font-semibold text-sm text-red-800 dark:text-red-200 uppercase tracking-wide mb-2 flex items-center gap-2">
+                      <IconCurrencyDollar className="h-4 w-4" />
+                      Solicitud de Reembolso
+                    </h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-red-600 dark:text-red-300">Monto solicitado:</span>
+                        <span className="font-mono font-semibold text-red-800 dark:text-red-200">
+                          ${montoReembolso.toFixed(2)} USD
+                        </span>
+                      </div>
+                      <p className="text-xs text-red-600 dark:text-red-300">
+                        Este monto se descontará de tu billetera y se transferirá al vendedor.
+                      </p>
+                      {compra.soporte_respuesta && (
+                        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded-md border border-yellow-200 dark:border-yellow-700 mt-2">
+                          <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                            ⚠️ No se puede procesar reembolso porque ya se brindó soporte técnico para este caso.
+                          </p>
+                        </div>
+                      )}
+                      {!showReembolsoConfirm ? (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setShowReembolsoConfirm(true)}
+                          className="w-full mt-2"
+                          disabled={!!compra.soporte_respuesta}
+                          title={compra.soporte_respuesta ? "Ya se brindó soporte para este caso" : ""}
+                        >
+                          <IconCurrencyDollar className="mr-2 h-4 w-4" />
+                          {compra.soporte_respuesta ? "Soporte Ya Brindado" : "Procesar Reembolso"}
+                        </Button>
+                      ) : (
+                        <div className="space-y-2 mt-2">
+                          <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                            ¿Estás seguro de procesar este reembolso?
+                          </p>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={handleProcesarReembolso}
+                              disabled={isPendingReembolso || !!compra.soporte_respuesta}
+                              className="flex-1"
+                            >
+                              {isPendingReembolso && <IconLoader className="mr-2 h-4 w-4 animate-spin" />}
+                              Confirmar Reembolso
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setShowReembolsoConfirm(false)}
+                              className="flex-1"
+                            >
+                              Cancelar
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
             {compra.stock_productos && (
               <div>
                 <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-2">
@@ -150,37 +282,24 @@ export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteMod
             )}
             <Separator />
 
+            {/* Mensaje cuando ya se brindó soporte */}
+            {yaHuboInteraccion && (
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md border border-blue-200 dark:border-blue-700">
+                <div className="flex items-center gap-2">
+                  <IconCheck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">
+                    {reembolsoYaProcesado 
+                      ? "Este caso ya fue resuelto con un reembolso procesado."
+                      : "Ya se ha brindado soporte para este caso anteriormente."
+                    }
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Formulario de respuesta */}
             <Form {...form}>
               <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="estado"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Estado del Soporte</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona el estado" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {estadoOptions.map((estado) => (
-                            <SelectItem key={estado.value} value={estado.value}>
-                              <div className="flex items-center gap-2">
-                                <div className={`w-2 h-2 rounded-full ${estado.color}`} />
-                                {estado.label}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <FormField
                   control={form.control}
                   name="respuesta"
@@ -191,6 +310,7 @@ export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteMod
                         <Textarea
                           placeholder="Escribe tu respuesta para el cliente. Este mensaje se enviará al vendedor para que lo reenvíe..."
                           className="min-h-[100px]"
+                          disabled={yaHuboInteraccion}
                           {...field}
                         />
                       </FormControl>
@@ -207,9 +327,13 @@ export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteMod
             <Button type="button" variant="outline" onClick={handleClose}>
               Cancelar
             </Button>
-            <Button onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
-              {isPending && <IconLoader className="mr-2 h-4 w-4 animate-spin" />}
-              Actualizar Soporte
+            <Button 
+              onClick={() => handleCompletarSoporte()} 
+              disabled={isPendingCompletarSoporte || yaHuboInteraccion}
+              title={yaHuboInteraccion ? "Ya se ha brindado soporte para este caso" : ""}
+            >
+              {isPendingCompletarSoporte && <IconLoader className="mr-2 h-4 w-4 animate-spin" />}
+              {yaHuboInteraccion ? "Soporte Ya Brindado" : "Brindar Soporte"}
             </Button>
           </div>
         </DialogContent>

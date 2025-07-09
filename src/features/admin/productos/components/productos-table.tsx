@@ -67,12 +67,12 @@ export function ProductosTable() {
     },
     async (id: string) => {
       if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-        await eliminarProducto(id)
+        await eliminarProducto(parseInt(id))
         await refreshProductos()
       }
     },
     async (id: string) => {
-      await duplicarProducto(id)
+      await duplicarProducto(parseInt(id))
       await refreshProductos()
     }
   )

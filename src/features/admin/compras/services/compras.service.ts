@@ -17,20 +17,20 @@ export class ComprasService {
       .from('compras')
       .select(`
         *,
-        proveedor:usuarios!compras_proveedor_id_fkey (
+        proveedor:usuarios!proveedor_id (
           id,
           nombres,
           apellidos,
           telefono
         ),
-        producto:productos!compras_producto_id_fkey (
+        producto:productos!producto_id (
           id,
           nombre,
           descripcion,
           precio_publico,
           imagen_url
         ),
-        stock_producto:stock_productos!compras_stock_producto_id_fkey (
+        stock_producto:stock_productos!stock_producto_id (
           id,
           email,
           clave,
@@ -83,38 +83,31 @@ export class ComprasService {
     return (data || []).map(compra => ({
       ...compra,
       proveedor: compra.proveedor || null,
-      vendedor: compra.vendedor || null,
       producto: compra.producto || null,
       stock_producto: compra.stock_producto || null
     })) as CompraWithRelations[]
   }
 
   // Obtener compra por ID
-  static async getCompraById(id: string): Promise<CompraWithRelations | null> {
+  static async getCompraById(id: number): Promise<CompraWithRelations | null> {
     const { data, error } = await supabase
       .from('compras')
       .select(`
         *,
-        proveedor:usuarios!compras_proveedor_id_fkey (
+        proveedor:usuarios!proveedor_id (
           id,
           nombres,
           apellidos,
           telefono
         ),
-        vendedor:usuarios!compras_vendedor_id_fkey (
-          id,
-          nombres,
-          apellidos,
-          telefono
-        ),
-        producto:productos!compras_producto_id_fkey (
+        producto:productos!producto_id (
           id,
           nombre,
           descripcion,
           precio_publico,
           imagen_url
         ),
-        stock_producto:stock_productos!compras_stock_producto_id_fkey (
+        stock_producto:stock_productos!stock_producto_id (
           id,
           email,
           clave,
@@ -138,14 +131,13 @@ export class ComprasService {
     return {
       ...data,
       proveedor: data.proveedor || null,
-      vendedor: data.vendedor || null,
       producto: data.producto || null,
       stock_producto: data.stock_producto || null
     } as CompraWithRelations
   }
 
   // Actualizar compra
-  static async updateCompra(id: string, updates: UpdateCompraData): Promise<SupabaseCompra> {
+  static async updateCompra(id: number, updates: UpdateCompraData): Promise<SupabaseCompra> {
     const { data, error } = await supabase
       .from('compras')
       .update({
@@ -165,7 +157,7 @@ export class ComprasService {
   }
 
   // Cambiar estado de compra con lógica especial para reembolsos
-  static async cambiarEstadoCompra(id: string, nuevoEstado: EstadoCompra): Promise<{
+  static async cambiarEstadoCompra(id: number, nuevoEstado: EstadoCompra): Promise<{
     compra: SupabaseCompra
     reembolsoProcessed?: boolean
     reembolsoAmount?: number
@@ -234,23 +226,23 @@ export class ComprasService {
   }
 
   // Métodos específicos para cada estado
-  static async marcarComoResuelto(id: string) {
+  static async marcarComoResuelto(id: number) {
     return this.cambiarEstadoCompra(id, 'resuelto')
   }
 
-  static async marcarComoVencido(id: string) {
+  static async marcarComoVencido(id: number) {
     return this.cambiarEstadoCompra(id, 'vencido')
   }
 
-  static async enviarASoporte(id: string) {
+  static async enviarASoporte(id: number) {
     return this.cambiarEstadoCompra(id, 'soporte')
   }
 
-  static async procesarReembolso(id: string) {
+  static async procesarReembolso(id: number) {
     return this.cambiarEstadoCompra(id, 'reembolsado')
   }
 
-  static async marcarComoPedidoEntregado(id: string) {
+  static async marcarComoPedidoEntregado(id: number) {
     return this.cambiarEstadoCompra(id, 'pedido_entregado')
   }
 
@@ -283,7 +275,7 @@ export class ComprasService {
   }
 
   // Cambiar estado masivo
-  static async cambiarEstadoMasivo(ids: string[], nuevoEstado: EstadoCompra): Promise<{
+  static async cambiarEstadoMasivo(ids: number[], nuevoEstado: EstadoCompra): Promise<{
     success: number
     failed: number
     reembolsoTotal?: number

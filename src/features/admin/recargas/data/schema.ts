@@ -10,7 +10,7 @@ export type EstadoRecarga = z.infer<typeof estadoRecargaSchema>
 
 // Esquema para recarga base
 const recargaBaseSchema = z.object({
-  id: z.string(),
+  id: z.number(),  // Cambiado de string a number
   usuario_id: z.string(),
   monto: z.number().min(0),
   estado: estadoRecargaSchema,
@@ -30,7 +30,7 @@ const recargaWithUserSchema = recargaBaseSchema.extend({
 
 // Esquema para recarga mapeada
 const mappedRecargaSchema = z.object({
-  id: z.string(),
+  id: z.number(),  // Cambiado de string a number
   usuarioId: z.string(),
   usuarioNombre: z.string(),
   usuarioNombres: z.string(),
@@ -71,7 +71,7 @@ export function mapSupabaseRecargaToComponent(recarga: RecargaWithUser): MappedR
   }).format(recarga.monto)
 
   return {
-    id: recarga.id,
+    id: recarga.id,  // Ahora es number
     usuarioId: recarga.usuario_id,
     usuarioNombre: nombreCompleto,
     usuarioNombres: recarga.usuario?.nombres || '',

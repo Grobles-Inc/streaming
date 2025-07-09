@@ -49,12 +49,24 @@ export function useRetiros(filtrosIniciales?: FiltroRetiro) {
 
   // Cargar datos iniciales
   useEffect(() => {
-    loadRetiros()
-    loadEstadisticas()
+    const loadData = async () => {
+      // Primero probar la conexión
+      try {
+        await RetirosService.testConnection()
+      } catch (err) {
+        console.error('Connection test failed:', err)
+      }
+      
+      // Luego cargar los datos
+      await loadRetiros()
+      await loadEstadisticas()
+    }
+    
+    loadData()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Aprobar retiro
-  const aprobarRetiro = async (id: string): Promise<boolean> => {
+  const aprobarRetiro = async (id: number): Promise<boolean> => {
     try {
       await RetirosService.aprobarRetiro(id)
       // Recargar todos los retiros en lugar de intentar actualizar individualmente
@@ -69,7 +81,7 @@ export function useRetiros(filtrosIniciales?: FiltroRetiro) {
   }
 
   // Rechazar retiro
-  const rechazarRetiro = async (id: string): Promise<boolean> => {
+  const rechazarRetiro = async (id: number): Promise<boolean> => {
     try {
       await RetirosService.rechazarRetiro(id)
       // Recargar todos los retiros en lugar de intentar actualizar individualmente
@@ -84,7 +96,7 @@ export function useRetiros(filtrosIniciales?: FiltroRetiro) {
   }
 
   // Actualizar estado de retiro (genérica para el modal)
-  const updateEstadoRetiro = async (id: string, estado: EstadoRetiro): Promise<boolean> => {
+  const updateEstadoRetiro = async (id: number, estado: EstadoRetiro): Promise<boolean> => {
     if (estado === 'aprobado') {
       return await aprobarRetiro(id)
     } else if (estado === 'rechazado') {
@@ -106,7 +118,7 @@ export function useRetiros(filtrosIniciales?: FiltroRetiro) {
   }
 
   // Aprobar múltiples retiros
-  const aprobarRetiros = async (ids: string[]): Promise<boolean> => {
+  const aprobarRetiros = async (ids: number[]): Promise<boolean> => {
     try {
       await RetirosService.aprobarRetiros(ids)
       // Recargar todos los retiros
@@ -121,7 +133,7 @@ export function useRetiros(filtrosIniciales?: FiltroRetiro) {
   }
 
   // Rechazar múltiples retiros
-  const rechazarRetiros = async (ids: string[]): Promise<boolean> => {
+  const rechazarRetiros = async (ids: number[]): Promise<boolean> => {
     try {
       await RetirosService.rechazarRetiros(ids)
       // Recargar todos los retiros
@@ -158,7 +170,7 @@ export function useRetiros(filtrosIniciales?: FiltroRetiro) {
   const clearError = () => setError(null)
 
   // Ver detalles de un retiro
-  const verDetallesRetiro = async (id: string): Promise<MappedRetiro | null> => {
+  const verDetallesRetiro = async (id: number): Promise<MappedRetiro | null> => {
     try {
       const retiro = await RetirosService.getRetiroById(id)
       if (retiro) {

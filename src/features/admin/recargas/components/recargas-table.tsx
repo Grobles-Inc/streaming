@@ -35,7 +35,8 @@ import {
   IconChevronsRight,
   IconSearch,
   IconCheck,
-  IconX
+  IconX,
+  IconTrash
 } from '@tabler/icons-react'
 import { Badge } from '@/components/ui/badge'
 import type { MappedRecarga } from '../data/types'
@@ -46,6 +47,7 @@ interface RecargasTableProps {
   loading?: boolean
   onAprobarSeleccionadas?: (ids: string[]) => Promise<void>
   onRechazarSeleccionadas?: (ids: string[]) => Promise<void>
+  onEliminarSeleccionadas?: (ids: string[]) => Promise<void>
 }
 
 export function RecargasTable({ 
@@ -53,7 +55,8 @@ export function RecargasTable({
   columns, 
   loading = false,
   onAprobarSeleccionadas,
-  onRechazarSeleccionadas 
+  onRechazarSeleccionadas,
+  onEliminarSeleccionadas
 }: RecargasTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -82,17 +85,25 @@ export function RecargasTable({
   const selectedRows = table.getFilteredSelectedRowModel().rows
   const selectedRecargas = selectedRows.map(row => row.original)
   const selectedPendientes = selectedRecargas.filter(r => r.estado === 'pendiente')
+  const selectedRechazadas = selectedRecargas.filter(r => r.estado === 'rechazado')
 
   const handleAprobarSeleccionadas = async () => {
     if (selectedPendientes.length > 0 && onAprobarSeleccionadas) {
-      await onAprobarSeleccionadas(selectedPendientes.map(r => r.id))
+      await onAprobarSeleccionadas(selectedPendientes.map(r => r.id.toString()))
       setRowSelection({})
     }
   }
 
   const handleRechazarSeleccionadas = async () => {
     if (selectedPendientes.length > 0 && onRechazarSeleccionadas) {
-      await onRechazarSeleccionadas(selectedPendientes.map(r => r.id))
+      await onRechazarSeleccionadas(selectedPendientes.map(r => r.id.toString()))
+      setRowSelection({})
+    }
+  }
+
+  const handleEliminarSeleccionadas = async () => {
+    if (selectedRechazadas.length > 0 && onEliminarSeleccionadas) {
+      await onEliminarSeleccionadas(selectedRechazadas.map(r => r.id.toString()))
       setRowSelection({})
     }
   }
@@ -174,6 +185,24 @@ export function RecargasTable({
             >
               <IconX className="mr-2 h-4 w-4" />
               Rechazar
+            </Button>
+          </div>
+        )}
+
+        {/* Acciones masivas para recargas rechazadas */}
+        {selectedRechazadas.length > 0 && (
+          <div className="flex items-center space-x-2">
+            <Badge variant="destructive">
+              {selectedRechazadas.length} rechazada(s) seleccionada(s)
+            </Badge>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={handleEliminarSeleccionadas}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              <IconTrash className="mr-2 h-4 w-4" />
+              Eliminar
             </Button>
           </div>
         )}

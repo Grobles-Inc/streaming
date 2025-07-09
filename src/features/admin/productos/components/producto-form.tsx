@@ -54,7 +54,6 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
       informacion: '',
       condiciones: '',
       precio_publico: 0,
-      stock: 0,
       categoria_id: '',
       proveedor_id: '',
       imagen_url: '',
@@ -81,7 +80,6 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
       informacion: producto.informacion || '',
       condiciones: producto.condiciones || '',
       precio_publico: producto.precio_publico || 0,
-      stock: producto.stock || 0,
       categoria_id: producto.categoria_id || '',
       proveedor_id: producto.proveedor_id || '', // Mantener el proveedor original
       imagen_url: producto.imagen_url || '',
@@ -261,25 +259,6 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
                         {...field}
                         value={field.value || ''}
                         onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="stock"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Stock inicial</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="0"
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                       />
                     </FormControl>
                     <FormMessage />

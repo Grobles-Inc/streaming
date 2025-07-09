@@ -15,7 +15,7 @@ export type Billetera = {
 }
 
 export type Recarga = {
-  id: string
+  id: number
   usuario_id: string
   monto: number
   estado: 'aprobado' | 'pendiente' | 'rechazado'
@@ -32,7 +32,7 @@ export type Recarga = {
 }
 
 export type Retiro = {
-  id: string
+  id: number
   usuario_id: string
   monto: number
   estado: 'aprobado' | 'pendiente' | 'rechazado'
@@ -49,7 +49,7 @@ export type Retiro = {
 }
 
 export type MovimientoBilletera = {
-  id: string
+  id: number
   tipo: 'recarga' | 'retiro'
   monto: number
   estado: 'aprobado' | 'pendiente' | 'rechazado'

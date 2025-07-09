@@ -21,6 +21,7 @@ import {
 } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/authStore'
+import { supabase } from '@/lib/supabase'
 import { ComisionesService } from '../services'
 import { ComisionesStats } from './comisiones-stats'
 import { ComisionesFiltros } from './comisiones-filtros'
@@ -40,6 +41,7 @@ export function ComisionesContent() {
   const [comisionesPublicacion, setComisionesPublicacion] = useState<ComisionPublicacion[]>([])
   const [comisionesRetiro, setComisionesRetiro] = useState<ComisionRetiro[]>([])
   const [comisionesGenerales, setComisionesGenerales] = useState<ComisionGeneral[]>([])
+  const [conversion, setConversion] = useState<number>(3.75) // Valor por defecto
   const [estadisticas, setEstadisticas] = useState<EstadisticasComisiones>({
     totalComisionesPublicacion: 0,
     totalComisionesRetiro: 0,
@@ -63,6 +65,18 @@ export function ComisionesContent() {
     
     try {
       setLoading(true)
+      
+      // Obtener tasa de conversión de la configuración
+      const { data: configData } = await supabase
+        .from('configuracion')
+        .select('conversion')
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (configData?.conversion) {
+        setConversion(configData.conversion)
+      }
       
       const [publicacion, retiro, general, stats] = await Promise.all([
         ComisionesService.getComisionesPublicacion(user.id, filtros),
@@ -292,11 +306,12 @@ export function ComisionesContent() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-sm text-muted-foreground">Porcentaje de Comisión</h4>
-                  <p className="font-medium">{detalleComisionPub.porcentaje_comision}%</p>
+                  <p className="font-medium">{detalleComisionPub.porcentaje_comision.toFixed(2)}%</p>
                 </div>
                 <div>
                   <h4 className="font-semibold text-sm text-muted-foreground">Monto de Comisión</h4>
                   <p className="font-bold text-green-600">${detalleComisionPub.monto_comision.toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">S/. {(detalleComisionPub.monto_comision * conversion).toFixed(2)}</p>
                 </div>
               </div>
             </div>
@@ -343,6 +358,7 @@ export function ComisionesContent() {
                 <div>
                   <h4 className="font-semibold text-sm text-muted-foreground">Monto de Comisión</h4>
                   <p className="font-bold text-green-600">${detalleComisionRet.monto_comision.toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">S/. {(detalleComisionRet.monto_comision * conversion).toFixed(2)}</p>
                 </div>
                 <div>
                   <h4 className="font-semibold text-sm text-muted-foreground">ID del Retiro</h4>
@@ -397,8 +413,9 @@ export function ComisionesContent() {
                   <p className="font-medium">${detalleComisionGen.monto_base.toFixed(2)}</p>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-sm text-muted-foreground">Comisión ({detalleComisionGen.porcentaje_comision}%)</h4>
+                  <h4 className="font-semibold text-sm text-muted-foreground">Comisión ({detalleComisionGen.porcentaje_comision.toFixed(2)}%)</h4>
                   <p className="font-bold text-green-600">${detalleComisionGen.monto_comision.toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">S/. {(detalleComisionGen.monto_comision * conversion).toFixed(2)}</p>
                 </div>
                 {detalleComisionGen.producto && (
                   <div className="col-span-2">

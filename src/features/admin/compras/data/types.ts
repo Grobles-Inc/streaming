@@ -4,9 +4,9 @@ export type EstadoCompra = 'resuelto' | 'vencido' | 'soporte' | 'reembolsado' | 
 
 // Tipo base de compra desde Supabase (basado en el schema actualizado)
 export type SupabaseCompra = {
-  id: string
+  id: number
   proveedor_id: string
-  producto_id: string
+  producto_id: number
   vendedor_id: string | null
   stock_producto_id: number | null
   nombre_cliente: string
@@ -25,7 +25,7 @@ export type SupabaseCompra = {
 // Tipo para crear una nueva compra
 export type CreateCompraData = {
   proveedor_id: string
-  producto_id: string
+  producto_id: number
   vendedor_id?: string | null
   stock_producto_id?: number | null
   nombre_cliente: string
@@ -41,9 +41,9 @@ export type CreateCompraData = {
 
 // Tipo para actualizar una compra
 export type UpdateCompraData = {
-  id?: string
+  id?: number
   proveedor_id?: string
-  producto_id?: string
+  producto_id?: number
   vendedor_id?: string | null
   stock_producto_id?: number | null
   nombre_cliente?: string
@@ -65,14 +65,8 @@ export type CompraWithRelations = SupabaseCompra & {
     apellidos: string
     telefono: string | null
   }
-  vendedor?: {
-    id: string
-    nombres: string
-    apellidos: string
-    telefono: string | null
-  }
   producto?: {
-    id: string
+    id: number
     nombre: string
     descripcion: string | null
     precio_publico: number
@@ -96,7 +90,7 @@ export type FiltroCompra = {
   fechaHasta?: string
   proveedorId?: string
   vendedorId?: string
-  productoId?: string
+  productoId?: number
 }
 
 // Estadísticas de compras
@@ -114,16 +108,16 @@ export type EstadisticasCompras = {
 
 // Compra mapeada para el componente
 export type MappedCompra = {
-  id: string
+  id: number
   proveedorId: string
   proveedorNombre: string
   vendedorId: string | null
-  vendedorNombre: string
-  productoId: string
+  vendedorNombre?: string
+  productoId: number
   productoNombre: string
   stockProductoId: number | null
-  emailCuenta: string
-  claveCuenta: string
+  emailCuenta?: string
+  claveCuenta?: string
   pinCuenta: string | null
   perfilUsuario: string | null
   nombreCliente: string

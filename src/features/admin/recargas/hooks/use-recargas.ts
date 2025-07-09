@@ -49,7 +49,7 @@ export function useRecargas(filtrosIniciales?: FiltroRecarga) {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Aprobar recarga
-  const aprobarRecarga = async (id: string): Promise<boolean> => {
+  const aprobarRecarga = async (id: number): Promise<boolean> => {
     try {
       await RecargasService.aprobarRecarga(id)
       // Recargar todas las recargas en lugar de intentar actualizar individualmente
@@ -64,7 +64,7 @@ export function useRecargas(filtrosIniciales?: FiltroRecarga) {
   }
 
   // Rechazar recarga
-  const rechazarRecarga = async (id: string): Promise<boolean> => {
+  const rechazarRecarga = async (id: number): Promise<boolean> => {
     try {
       await RecargasService.rechazarRecarga(id)
       // Recargar todas las recargas en lugar de intentar actualizar individualmente
@@ -79,7 +79,7 @@ export function useRecargas(filtrosIniciales?: FiltroRecarga) {
   }
 
   // Actualizar estado de recarga (genérica para el modal)
-  const updateEstadoRecarga = async (id: string, estado: EstadoRecarga): Promise<boolean> => {
+  const updateEstadoRecarga = async (id: number, estado: EstadoRecarga): Promise<boolean> => {
     if (estado === 'aprobado') {
       return await aprobarRecarga(id)
     } else if (estado === 'rechazado') {
@@ -101,7 +101,7 @@ export function useRecargas(filtrosIniciales?: FiltroRecarga) {
   }
 
   // Aprobar múltiples recargas
-  const aprobarRecargas = async (ids: string[]): Promise<boolean> => {
+  const aprobarRecargas = async (ids: number[]): Promise<boolean> => {
     try {
       await RecargasService.aprobarRecargas(ids)
       // Recargar todas las recargas
@@ -116,7 +116,7 @@ export function useRecargas(filtrosIniciales?: FiltroRecarga) {
   }
 
   // Rechazar múltiples recargas
-  const rechazarRecargas = async (ids: string[]): Promise<boolean> => {
+  const rechazarRecargas = async (ids: number[]): Promise<boolean> => {
     try {
       await RecargasService.rechazarRecargas(ids)
       // Recargar todas las recargas
@@ -126,6 +126,36 @@ export function useRecargas(filtrosIniciales?: FiltroRecarga) {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al rechazar recargas')
       console.error('Error rejecting recargas:', err)
+      return false
+    }
+  }
+
+  // Eliminar recarga (solo si está rechazada)
+  const eliminarRecarga = async (id: number): Promise<boolean> => {
+    try {
+      await RecargasService.eliminarRecarga(id)
+      // Recargar todas las recargas
+      await loadRecargas()
+      await loadEstadisticas()
+      return true
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al eliminar recarga')
+      console.error('Error deleting recarga:', err)
+      return false
+    }
+  }
+
+  // Eliminar múltiples recargas rechazadas
+  const eliminarRecargas = async (ids: number[]): Promise<boolean> => {
+    try {
+      await RecargasService.eliminarRecargas(ids)
+      // Recargar todas las recargas
+      await loadRecargas()
+      await loadEstadisticas()
+      return true
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al eliminar recargas')
+      console.error('Error deleting recargas:', err)
       return false
     }
   }
@@ -153,7 +183,7 @@ export function useRecargas(filtrosIniciales?: FiltroRecarga) {
   const clearError = () => setError(null)
 
   // Ver detalles de una recarga
-  const verDetallesRecarga = async (id: string): Promise<MappedRecarga | null> => {
+  const verDetallesRecarga = async (id: number): Promise<MappedRecarga | null> => {
     try {
       const recarga = await RecargasService.getRecargaById(id)
       if (recarga) {
@@ -178,6 +208,8 @@ export function useRecargas(filtrosIniciales?: FiltroRecarga) {
     updateEstadoRecarga,
     aprobarRecargas,
     rechazarRecargas,
+    eliminarRecarga,
+    eliminarRecargas,
     aplicarFiltros,
     limpiarFiltros,
     refreshRecargas,

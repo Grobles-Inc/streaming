@@ -44,8 +44,8 @@ interface RetirosTableProps {
   data: MappedRetiro[]
   columns: ColumnDef<MappedRetiro>[]
   loading?: boolean
-  onAprobarSeleccionados?: (ids: string[]) => Promise<void>
-  onRechazarSeleccionados?: (ids: string[]) => Promise<void>
+  onAprobarSeleccionados?: (ids: number[]) => Promise<void>
+  onRechazarSeleccionados?: (ids: number[]) => Promise<void>
 }
 
 export function RetirosTable({ 

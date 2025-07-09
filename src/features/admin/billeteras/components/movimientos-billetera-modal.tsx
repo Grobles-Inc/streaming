@@ -13,7 +13,7 @@ interface MovimientosBilleteraModalProps {
   billetera: Billetera | null
   open: boolean
   onClose: () => void
-  onUpdateEstado?: (tipo: 'recarga' | 'retiro', id: string, estado: 'aprobado' | 'pendiente' | 'rechazado') => void
+  onUpdateEstado?: (tipo: 'recarga' | 'retiro', id: number, estado: 'aprobado' | 'pendiente' | 'rechazado') => void
 }
 
 export function MovimientosBilleteraModal({ billetera, open, onClose }: MovimientosBilleteraModalProps) {

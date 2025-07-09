@@ -161,7 +161,7 @@ export const getComisionesRetiroColumns = (
       const retiroId = row.original.retiro_id
       return (
         <Badge variant="outline" className="font-mono text-xs">
-          {retiroId.slice(0, 8)}...
+          #{retiroId}
         </Badge>
       )
     },

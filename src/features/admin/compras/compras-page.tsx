@@ -39,7 +39,7 @@ export function ComprasPage() {
       compra.nombreCliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
       compra.productoNombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       compra.proveedorNombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      compra.vendedorNombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (compra.vendedorNombre && compra.vendedorNombre.toLowerCase().includes(searchTerm.toLowerCase())) ||
       compra.telefonoCliente.includes(searchTerm)
 
     const matchesStatus = selectedStatus === 'all' || compra.estado === selectedStatus
@@ -48,7 +48,7 @@ export function ComprasPage() {
   })
 
   // Manejar acciones
-  const handleMarcarResuelto = async (id: string) => {
+  const handleMarcarResuelto = async (id: number) => {
     try {
       const result = await marcarComoResuelto(id)
       if (result.success) {
@@ -63,7 +63,7 @@ export function ComprasPage() {
     }
   }
 
-  const handleMarcarVencido = async (id: string) => {
+  const handleMarcarVencido = async (id: number) => {
     try {
       const result = await marcarComoVencido(id)
       if (result.success) {
@@ -78,7 +78,7 @@ export function ComprasPage() {
     }
   }
 
-  const handleEnviarASoporte = async (id: string) => {
+  const handleEnviarASoporte = async (id: number) => {
     try {
       const result = await enviarASoporte(id)
       if (result.success) {
@@ -93,7 +93,7 @@ export function ComprasPage() {
     }
   }
 
-  const handleProcesarReembolso = async (id: string) => {
+  const handleProcesarReembolso = async (id: number) => {
     try {
       const result = await procesarReembolso(id)
       if (result.success) {
@@ -110,7 +110,7 @@ export function ComprasPage() {
     }
   }
 
-  const handleMarcarComoPedidoEntregado = async (id: string) => {
+  const handleMarcarComoPedidoEntregado = async (id: number) => {
     try {
       const result = await marcarComoPedidoEntregado(id)
       if (result.success) {

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { IconMailPlus, IconCopy, IconCheck, IconEye, IconLink } from '@tabler/icons-react'
+import { IconMailPlus, IconCopy, IconCheck, IconEye, IconLink, IconLoader, IconRefresh } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -35,10 +35,11 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import { useUsersContext } from '../context/users-context'
 import { encryptReferralData } from '@/lib/encryption'
+import { ConfigurationService } from '@/services/configuration.service'
 
 const formSchema = z.object({
   referralUserId: z.string().min(1, { message: 'Debe seleccionar un usuario para referido.' }),
-  role: z.enum(['registrado', 'provider', 'seller'], { message: 'Debe seleccionar un rol válido.' }),
+  role: z.enum(['registered', 'provider', 'seller'], { message: 'Debe seleccionar un rol válido.' }),
 })
 
 type InviteForm = z.infer<typeof formSchema>
@@ -48,11 +49,28 @@ interface Props {
   onOpenChange: (open: boolean) => void
 }
 
-// Función para generar el link de invitación con código y rol encriptados
-function generateInviteLink(referralCode: string, role: string): string {
-  const baseUrl = window.location.origin
-  const encryptedData = encryptReferralData(referralCode, role)
-  return `${baseUrl}/register?data=${encryptedData}`
+// Función para generar el link de invitación seguro con token de validación
+async function generateSecureInviteLink(referralCode: string, role: string): Promise<string | null> {
+  try {
+    // Generar token de validación único
+    const validationToken = ConfigurationService.generateRegistrationToken()
+    
+    // Almacenar el token en la base de datos
+    const tokenStored = await ConfigurationService.storeRegistrationToken(validationToken)
+    
+    if (!tokenStored) {
+      throw new Error('No se pudo almacenar el token de validación')
+    }
+
+    const baseUrl = window.location.origin
+    // Encriptar con código de referido, rol y token de validación
+    const encryptedData = encryptReferralData(referralCode, role, validationToken)
+
+    return `${baseUrl}/register?token=${encryptedData}`
+  } catch (error) {
+    console.error('Error generando link seguro:', error)
+    return null
+  }
 }
 
 export function UsersInviteWithReferralDialog({ open, onOpenChange }: Props) {
@@ -60,12 +78,13 @@ export function UsersInviteWithReferralDialog({ open, onOpenChange }: Props) {
   const [inviteLink, setInviteLink] = useState<string>('')
   const [copied, setCopied] = useState(false)
   const [selectedUser, setSelectedUser] = useState<any>(null)
+  const [generatingLink, setGeneratingLink] = useState(false)
 
   const form = useForm<InviteForm>({
     resolver: zodResolver(formSchema),
     defaultValues: { 
       referralUserId: '', 
-      role: 'registrado' 
+      role: 'registered' 
     },
   })
 
@@ -73,17 +92,23 @@ export function UsersInviteWithReferralDialog({ open, onOpenChange }: Props) {
 
   // Generar el link cuando cambien los valores
   useEffect(() => {
-    if (watchedValues.referralUserId && watchedValues.role) {
-      const user = users.find(u => u.id === watchedValues.referralUserId)
-      if (user) {
-        setSelectedUser(user)
-        const link = generateInviteLink(user.codigo_referido, watchedValues.role)
-        setInviteLink(link)
+    const generateLink = async () => {
+      if (watchedValues.referralUserId && watchedValues.role) {
+        const user = users.find(u => u.id === watchedValues.referralUserId)
+        if (user) {
+          setSelectedUser(user)
+          setGeneratingLink(true)
+          const link = await generateSecureInviteLink(user.codigo_referido, watchedValues.role)
+          setInviteLink(link || '')
+          setGeneratingLink(false)
+        }
+      } else {
+        setInviteLink('')
+        setSelectedUser(null)
       }
-    } else {
-      setInviteLink('')
-      setSelectedUser(null)
     }
+
+    generateLink()
   }, [watchedValues.referralUserId, watchedValues.role, users])
 
   const handleCopyLink = async () => {
@@ -129,7 +154,7 @@ export function UsersInviteWithReferralDialog({ open, onOpenChange }: Props) {
   }, [open, adminUser, form])
 
   const roleOptions = [
-    { value: 'registrado', label: 'Registrado', description: 'Usuario básico con acceso limitado al sistema' },
+    { value: 'registered', label: 'Registrado', description: 'Usuario básico con acceso limitado al sistema' },
     { value: 'provider', label: 'Proveedor', description: 'Puede crear y gestionar productos' },
     { value: 'seller', label: 'Vendedor', description: 'Puede vender productos existentes' },
   ]
@@ -276,7 +301,7 @@ export function UsersInviteWithReferralDialog({ open, onOpenChange }: Props) {
             )} */}
 
             {/* Link generado */}
-            {inviteLink && (
+            {(generatingLink || inviteLink) && (
               <div className="space-y-4">
                 <Separator />
                 <div>
@@ -286,48 +311,96 @@ export function UsersInviteWithReferralDialog({ open, onOpenChange }: Props) {
                   </h4>
                   <Card>
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-base">Link de Registro</CardTitle>
+                      <CardTitle className="text-base">Link de Registro Seguro</CardTitle>
                       <CardDescription>
-                        Comparte este link con la persona que quieres invitar
+                        Comparte este link con la persona que quieres invitar. El link incluye un token de seguridad.
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="flex items-center gap-2">
-                        <Input
-                          value={inviteLink}
-                          readOnly
-                          className="font-mono text-sm"
-                        />
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={handleCopyLink}
-                          className="flex items-center gap-1"
-                        >
-                          {copied ? (
-                            <IconCheck className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <IconCopy className="h-4 w-4" />
-                          )}
-                          {copied ? 'Copiado' : 'Copiar'}
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={handleOpenLink}
-                          className="flex items-center gap-1"
-                        >
-                          <IconEye className="h-4 w-4" />
-                          Ver
-                        </Button>
-                      </div>
-                      
-                      <div className="text-sm text-muted-foreground space-y-1">
-                        <p><strong>Código de referido:</strong> {selectedUser?.codigo_referido}</p>
-                        <p><strong>Rol asignado:</strong> {roleOptions.find(r => r.value === watchedValues.role)?.label}</p>
-                      </div>
+                      {generatingLink ? (
+                        <div className="flex items-center justify-center py-4">
+                          <IconLoader className="h-5 w-5 animate-spin mr-2" />
+                          <span className="text-sm text-muted-foreground">Generando link seguro...</span>
+                        </div>
+                      ) : (
+                        <>
+                          {/* Link input y acciones principales */}
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <Input
+                                value={inviteLink}
+                                readOnly
+                                className="font-mono text-sm flex-1"
+                                placeholder="Generando link seguro..."
+                              />
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={handleCopyLink}
+                                className="flex items-center gap-1 shrink-0"
+                                disabled={!inviteLink || generatingLink}
+                              >
+                                {copied ? (
+                                  <IconCheck className="h-4 w-4 text-green-600" />
+                                ) : (
+                                  <IconCopy className="h-4 w-4" />
+                                )}
+                                {copied ? 'Copiado' : 'Copiar'}
+                              </Button>
+                            </div>
+                            
+                            {/* Botones secundarios */}
+                            <div className="flex items-center gap-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={handleOpenLink}
+                                className="flex items-center gap-1"
+                                disabled={!inviteLink || generatingLink}
+                              >
+                                <IconEye className="h-4 w-4" />
+                                Ver Link
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="destructive"                              onClick={async () => {
+                                setGeneratingLink(true)
+                                setInviteLink('')
+                                setCopied(false)
+                                if (selectedUser && watchedValues.role) {
+                                  const link = await generateSecureInviteLink(selectedUser.codigo_referido, watchedValues.role)
+                                  setInviteLink(link || '')
+                                }
+                                setGeneratingLink(false)
+                              }}
+                                className="flex items-center gap-1"
+                                disabled={generatingLink}
+                              >
+                                <IconRefresh className="h-4 w-4" />
+                                Regenerar Token
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          {/* Información del link generado */}
+                          <div className="space-y-2">
+                            <div className="grid grid-cols-2 gap-2">
+                              <Badge variant="outline" className="text-xs justify-center py-1">
+                                Código: {selectedUser?.codigo_referido}
+                              </Badge>
+                              <Badge variant="secondary" className="text-xs justify-center py-1">
+                                Rol: {roleOptions.find(r => r.value === watchedValues.role)?.label}
+                              </Badge>
+                            </div>
+                            <Badge variant="destructive" className="text-xs w-full justify-center py-1">
+                              🔒 Link Seguro con Token Encriptado
+                            </Badge>
+                          </div>
+                        </>
+                      )}
                     </CardContent>
                   </Card>
                 </div>
@@ -340,7 +413,7 @@ export function UsersInviteWithReferralDialog({ open, onOpenChange }: Props) {
           <DialogClose asChild>
             <Button variant='outline'>Cerrar</Button>
           </DialogClose>
-          {inviteLink && (
+          {inviteLink && !generatingLink && (
             <Button type='submit' form='invite-referral-form'>
               <IconCheck className="h-4 w-4 mr-2" />
               Confirmar Invitación

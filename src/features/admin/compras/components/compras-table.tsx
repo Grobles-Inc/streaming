@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
+import { Label } from '@/components/ui/label'
 import { 
   IconChevronDown, 
   IconChevronLeft, 
@@ -38,7 +39,8 @@ import {
   IconCheck,
   IconX,
   IconClock,
-  IconCash
+  IconCash,
+  IconFilterX
 } from '@tabler/icons-react'
 import { Badge } from '@/components/ui/badge'
 import type { MappedCompra, EstadoCompra } from '../data/types'
@@ -47,7 +49,7 @@ interface ComprasTableProps {
   data: MappedCompra[]
   columns: ColumnDef<MappedCompra>[]
   loading?: boolean
-  onCambiarEstadoMasivo?: (ids: string[], estado: EstadoCompra) => Promise<void>
+  onCambiarEstadoMasivo?: (ids: number[], estado: EstadoCompra) => Promise<void>
 }
 
 export function ComprasTable({ 
@@ -58,11 +60,33 @@ export function ComprasTable({
 }: ComprasTableProps) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    // Ocultar por defecto las columnas especificadas
+    nombreCliente: false,
+    stockProductoId: false,
+    perfilUsuario: false,
+  })
   const [rowSelection, setRowSelection] = useState({})
 
-  const table = useReactTable({
-    data,
+  // Estados para filtros adicionales
+  const [filtroId, setFiltroId] = useState('')
+  const [filtroProveedor, setFiltroProveedor] = useState('')
+  const [filtroCuenta, setFiltroCuenta] = useState('')
+
+  // Aplicar filtros adicionales
+  const filteredData = data.filter(compra => {
+    const matchesId = !filtroId || compra.id.toString().includes(filtroId)
+    const matchesProveedor = !filtroProveedor || 
+      compra.proveedorNombre.toLowerCase().includes(filtroProveedor.toLowerCase())
+    const matchesCuenta = !filtroCuenta || 
+      (compra.emailCuenta?.toLowerCase().includes(filtroCuenta.toLowerCase()) ?? false)
+    
+    return matchesId && matchesProveedor && matchesCuenta
+  })
+
+  // Usar los datos filtrados en lugar de la tabla original
+  const finalTable = useReactTable({
+    data: filteredData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -72,6 +96,11 @@ export function ComprasTable({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    initialState: {
+      pagination: {
+        pageSize: 200,
+      },
+    },
     state: {
       sorting,
       columnFilters,
@@ -80,10 +109,17 @@ export function ComprasTable({
     },
   })
 
-  const selectedRows = table.getFilteredSelectedRowModel().rows
+  const selectedRows = finalTable.getFilteredSelectedRowModel().rows
   const selectedCompras = selectedRows.map(row => row.original)
   const selectedModificables = selectedCompras.filter(c => c.puedeModificar)
   const selectedParaReembolso = selectedCompras.filter(c => c.estado === 'soporte' && c.montoReembolso > 0)
+
+  const limpiarFiltros = () => {
+    setFiltroId('')
+    setFiltroProveedor('')
+    setFiltroCuenta('')
+    finalTable.getColumn('nombreCliente')?.setFilterValue('')
+  }
 
   const handleCambiarEstadoMasivo = async (estado: EstadoCompra) => {
     if (selectedModificables.length > 0 && onCambiarEstadoMasivo) {
@@ -114,6 +150,54 @@ export function ComprasTable({
 
   return (
     <div className="w-full space-y-4">
+      {/* Filtros avanzados */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
+        <div className="space-y-2">
+          <Label htmlFor="filtro-id">ID de Compra</Label>
+          <Input
+            id="filtro-id"
+            placeholder="Buscar por ID..."
+            value={filtroId}
+            onChange={(e) => setFiltroId(e.target.value)}
+            className="h-9"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="filtro-proveedor">Proveedor</Label>
+          <Input
+            id="filtro-proveedor"
+            placeholder="Buscar por proveedor..."
+            value={filtroProveedor}
+            onChange={(e) => setFiltroProveedor(e.target.value)}
+            className="h-9"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="filtro-cuenta">Cuenta (Email)</Label>
+          <Input
+            id="filtro-cuenta"
+            placeholder="Buscar por cuenta..."
+            value={filtroCuenta}
+            onChange={(e) => setFiltroCuenta(e.target.value)}
+            className="h-9"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>&nbsp;</Label>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={limpiarFiltros}
+              className="flex items-center gap-1"
+            >
+              <IconFilterX className="h-4 w-4" />
+              Limpiar
+            </Button>
+          </div>
+        </div>
+      </div>
+
       {/* Barra de herramientas */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
@@ -121,9 +205,9 @@ export function ComprasTable({
             <IconSearch className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por cliente..."
-              value={(table.getColumn('nombreCliente')?.getFilterValue() as string) ?? ''}
+              value={(finalTable.getColumn('nombreCliente')?.getFilterValue() as string) ?? ''}
               onChange={(event) =>
-                table.getColumn('nombreCliente')?.setFilterValue(event.target.value)
+                finalTable.getColumn('nombreCliente')?.setFilterValue(event.target.value)
               }
               className="pl-8 max-w-sm"
             />
@@ -135,7 +219,7 @@ export function ComprasTable({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {table
+              {finalTable
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
                 .map((column) => {
@@ -169,6 +253,13 @@ export function ComprasTable({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
+                  <DropdownMenuItem 
+                    onClick={() => handleCambiarEstadoMasivo('reembolsado')}
+                    className="text-purple-600"
+                  >
+                    <IconCash className="mr-2 h-4 w-4" />
+                    Procesar reembolso
+                  </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => handleCambiarEstadoMasivo('resuelto')}
                     className="text-green-600"
@@ -213,7 +304,7 @@ export function ComprasTable({
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {finalTable.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
@@ -231,8 +322,8 @@ export function ComprasTable({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+            {finalTable.getRowModel().rows?.length ? (
+              finalTable.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
@@ -265,20 +356,20 @@ export function ComprasTable({
       {/* Paginación */}
       <div className="flex items-center justify-between space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} de{' '}
-          {table.getFilteredRowModel().rows.length} fila(s) seleccionada(s).
+          {finalTable.getFilteredSelectedRowModel().rows.length} de{' '}
+          {finalTable.getFilteredRowModel().rows.length} fila(s) seleccionada(s).
         </div>
         <div className="flex items-center space-x-6 lg:space-x-8">
           <div className="flex items-center space-x-2">
             <p className="text-sm font-medium">Filas por página</p>
             <select
-              value={table.getState().pagination.pageSize}
+              value={finalTable.getState().pagination.pageSize}
               onChange={(e) => {
-                table.setPageSize(Number(e.target.value))
+                finalTable.setPageSize(Number(e.target.value))
               }}
-              className="h-8 w-[70px] rounded border border-input bg-background px-3 py-1 text-sm"
+              className="h-8 w-[80px] rounded border border-input bg-background px-3 py-1 text-sm"
             >
-              {[10, 20, 30, 40, 50].map((pageSize) => (
+              {[10, 20, 50, 100, 200].map((pageSize) => (
                 <option key={pageSize} value={pageSize}>
                   {pageSize}
                 </option>
@@ -286,15 +377,15 @@ export function ComprasTable({
             </select>
           </div>
           <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-            Página {table.getState().pagination.pageIndex + 1} de{' '}
-            {table.getPageCount()}
+            Página {finalTable.getState().pagination.pageIndex + 1} de{' '}
+            {finalTable.getPageCount()}
           </div>
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
               className="hidden h-8 w-8 p-0 lg:flex"
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
+              onClick={() => finalTable.setPageIndex(0)}
+              disabled={!finalTable.getCanPreviousPage()}
             >
               <span className="sr-only">Ir a la primera página</span>
               <IconChevronsLeft className="h-4 w-4" />
@@ -302,8 +393,8 @@ export function ComprasTable({
             <Button
               variant="outline"
               className="h-8 w-8 p-0"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
+              onClick={() => finalTable.previousPage()}
+              disabled={!finalTable.getCanPreviousPage()}
             >
               <span className="sr-only">Ir a la página anterior</span>
               <IconChevronLeft className="h-4 w-4" />
@@ -311,8 +402,8 @@ export function ComprasTable({
             <Button
               variant="outline"
               className="h-8 w-8 p-0"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
+              onClick={() => finalTable.nextPage()}
+              disabled={!finalTable.getCanNextPage()}
             >
               <span className="sr-only">Ir a la página siguiente</span>
               <IconChevronRight className="h-4 w-4" />
@@ -320,8 +411,8 @@ export function ComprasTable({
             <Button
               variant="outline"
               className="hidden h-8 w-8 p-0 lg:flex"
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
+              onClick={() => finalTable.setPageIndex(finalTable.getPageCount() - 1)}
+              disabled={!finalTable.getCanNextPage()}
             >
               <span className="sr-only">Ir a la última página</span>
               <IconChevronsRight className="h-4 w-4" />

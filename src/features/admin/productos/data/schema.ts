@@ -13,7 +13,7 @@ const disponibilidadProductoSchema = z.union([
   z.literal('activacion'),
 ])
 
-// Esquema para producto base
+// Esquema para producto base (actualizado según Supabase)
 const productoBaseSchema = z.object({
   id: z.number(),
   nombre: z.string().min(1, 'El nombre es requerido'),
@@ -21,7 +21,6 @@ const productoBaseSchema = z.object({
   informacion: z.string().nullable(),
   condiciones: z.string().nullable(),
   precio_publico: z.number().min(0, 'El precio público debe ser mayor a 0'),
-  stock: z.number().min(0, 'El stock debe ser mayor o igual a 0'),
   categoria_id: z.string().min(1, 'La categoría es requerida'),
   proveedor_id: z.string().min(1, 'El proveedor es requerido'),
   imagen_url: z.string().nullable(),
@@ -39,9 +38,10 @@ const productoBaseSchema = z.object({
   precio_vendedor: z.number().min(0, 'El precio de vendedor debe ser mayor a 0'),
   precio_renovacion: z.number().min(0, 'El precio de renovación debe ser mayor a 0').nullable(),
   estado: estadoProductoSchema,
+  fecha_expiracion: z.string().nullable(), // Nuevo campo
 })
 
-// Esquema para producto con relaciones
+// Esquema para producto con relaciones (actualizado)
 const productoWithRelationsSchema = productoBaseSchema.extend({
   categorias: z.object({
     id: z.string(),
@@ -49,14 +49,17 @@ const productoWithRelationsSchema = productoBaseSchema.extend({
     descripcion: z.string().nullable(),
   }).nullable().optional(),
   usuarios: z.object({
-    id: z.string(),
     nombres: z.string(),
     apellidos: z.string(),
-    email: z.string(),
+    billetera_id: z.string(),
+    usuario: z.string(),
   }).nullable().optional(),
+  stock_de_productos: z.array(z.object({
+    id: z.number(),
+  })).nullable().optional(),
 })
 
-// Esquema para producto mapeado
+// Esquema para producto mapeado (actualizado)
 const mappedProductoSchema = z.object({
   id: z.number(),
   nombre: z.string(),
@@ -69,7 +72,6 @@ const mappedProductoSchema = z.object({
   precioVendedorFormateado: z.string(),
   precioRenovacion: z.number().nullable(),
   precioRenovacionFormateado: z.string().nullable(),
-  stock: z.number(),
   categoriaId: z.string(),
   categoriaNombre: z.string(),
   proveedorId: z.string(),
@@ -77,6 +79,7 @@ const mappedProductoSchema = z.object({
   imagenUrl: z.string().nullable(),
   fechaCreacion: z.date(),
   fechaActualizacion: z.date(),
+  fechaExpiracion: z.date().nullable(), // Nuevo campo
   tiempoUso: z.number(),
   aPedido: z.boolean(),
   nuevo: z.boolean(),
@@ -92,6 +95,7 @@ const mappedProductoSchema = z.object({
   puedeEditar: z.boolean(),
   puedeEliminar: z.boolean(),
   tiempoUsoFormateado: z.string(),
+  fechaExpiracionFormateada: z.string().nullable(), // Nuevo campo formateado
   etiquetas: z.array(z.string()),
 })
 
@@ -111,7 +115,7 @@ export type ProductoWithRelations = z.infer<typeof productoWithRelationsSchema>
 export type MappedProducto = z.infer<typeof mappedProductoSchema>
 export type FiltroProducto = z.infer<typeof filtroProductoSchema>
 
-// Función para mapear producto de Supabase a componente
+// Función para mapear producto de Supabase a componente (actualizada)
 export function mapSupabaseProductoToComponent(producto: ProductoWithRelations): MappedProducto {
   const categoriaNombre = producto.categorias?.nombre || 'Sin categoría'
   const proveedorNombre = producto.usuarios 
@@ -138,15 +142,21 @@ export function mapSupabaseProductoToComponent(producto: ProductoWithRelations):
 
   const fechaCreacion = new Date(producto.created_at)
   const fechaActualizacion = new Date(producto.updated_at)
+  const fechaExpiracion = producto.fecha_expiracion ? new Date(producto.fecha_expiracion) : null
 
-  // Para simplificar, usamos el stock del producto directamente
-  const stockDisponible = producto.stock
+  // Calcular stock desde los productos de stock
+  const stockDisponible = producto.stock_de_productos?.length || 0
   const stockVendido = 0 // Por ahora, no tenemos esta información
 
   // Formatear tiempo de uso
   const tiempoUsoFormateado = producto.tiempo_uso > 0 
     ? `${producto.tiempo_uso} día(s)`
     : 'Indefinido'
+
+  // Formatear fecha de expiración
+  const fechaExpiracionFormateada = fechaExpiracion 
+    ? fechaExpiracion.toLocaleDateString('es-PE')
+    : null
 
   // Generar etiquetas
   const etiquetas: string[] = []
@@ -166,7 +176,6 @@ export function mapSupabaseProductoToComponent(producto: ProductoWithRelations):
     precioVendedorFormateado,
     precioRenovacion: producto.precio_renovacion,
     precioRenovacionFormateado,
-    stock: producto.stock,
     categoriaId: producto.categoria_id,
     categoriaNombre,
     proveedorId: producto.proveedor_id,
@@ -174,6 +183,7 @@ export function mapSupabaseProductoToComponent(producto: ProductoWithRelations):
     imagenUrl: producto.imagen_url,
     fechaCreacion,
     fechaActualizacion,
+    fechaExpiracion,
     tiempoUso: producto.tiempo_uso,
     aPedido: producto.a_pedido,
     nuevo: producto.nuevo,
@@ -189,18 +199,18 @@ export function mapSupabaseProductoToComponent(producto: ProductoWithRelations):
     puedeEditar: true, // Los admins pueden editar todos los productos
     puedeEliminar: stockVendido === 0, // Solo se puede eliminar si no tiene ventas
     tiempoUsoFormateado,
+    fechaExpiracionFormateada,
     etiquetas,
   }
 }
 
-// Esquemas para operaciones CRUD
+// Esquemas para operaciones CRUD (actualizados)
 const createProductoSchema = z.object({
   nombre: z.string().min(1, 'El nombre es requerido'),
   descripcion: z.string().nullable().optional(),
   informacion: z.string().nullable().optional(),
   condiciones: z.string().nullable().optional(),
   precio_publico: z.number().min(0, 'El precio público debe ser mayor a 0'),
-  stock: z.number().min(0, 'El stock debe ser mayor o igual a 0').optional(),
   categoria_id: z.string().min(1, 'La categoría es requerida'),
   proveedor_id: z.string().min(1, 'El proveedor es requerido'),
   imagen_url: z.string().nullable().optional(),
@@ -216,10 +226,11 @@ const createProductoSchema = z.object({
   precio_vendedor: z.number().min(0, 'El precio de vendedor debe ser mayor a 0'),
   precio_renovacion: z.number().min(0, 'El precio de renovación debe ser mayor a 0').nullable().optional(),
   estado: estadoProductoSchema.optional(),
+  fecha_expiracion: z.string().nullable().optional(), // Nuevo campo
 })
 
 const updateProductoSchema = createProductoSchema.partial().extend({
-  id: z.string().min(1, 'El ID es requerido')
+  id: z.number().min(1, 'El ID es requerido') // Cambiado de string a number
 })
 
 export type CreateProductoData = z.infer<typeof createProductoSchema>

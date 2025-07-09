@@ -15,7 +15,7 @@ export class RecargasService {
       .from('recargas')
       .select(`
         *,
-        usuario:usuarios!recargas_usuario_id_fkey (
+        usuario:usuarios!usuario_id (
           id,
           nombres,
           apellidos,
@@ -58,12 +58,12 @@ export class RecargasService {
   }
 
   // Obtener recarga por ID
-  static async getRecargaById(id: string): Promise<RecargaWithUser | null> {
+  static async getRecargaById(id: number): Promise<RecargaWithUser | null> {
     const { data, error } = await supabase
       .from('recargas')
       .select(`
         *,
-        usuario:usuarios!recargas_usuario_id_fkey (
+        usuario:usuarios!usuario_id (
           id,
           nombres,
           apellidos,
@@ -88,7 +88,7 @@ export class RecargasService {
   }
 
   // Actualizar recarga
-  static async updateRecarga(id: string, updates: UpdateRecargaData): Promise<SupabaseRecarga> {
+  static async updateRecarga(id: number, updates: UpdateRecargaData): Promise<SupabaseRecarga> {
     const { data, error } = await supabase
       .from('recargas')
       .update({
@@ -108,12 +108,12 @@ export class RecargasService {
   }
 
   // Aprobar recarga
-  static async aprobarRecarga(id: string): Promise<SupabaseRecarga> {
+  static async aprobarRecarga(id: number): Promise<SupabaseRecarga> {
     return this.updateRecarga(id, { estado: 'aprobado' })
   }
 
   // Rechazar recarga
-  static async rechazarRecarga(id: string): Promise<SupabaseRecarga> {
+  static async rechazarRecarga(id: number): Promise<SupabaseRecarga> {
     return this.updateRecarga(id, { estado: 'rechazado' })
   }
 
@@ -145,7 +145,7 @@ export class RecargasService {
   }
 
   // Aprobar múltiples recargas
-  static async aprobarRecargas(ids: string[]): Promise<SupabaseRecarga[]> {
+  static async aprobarRecargas(ids: number[]): Promise<SupabaseRecarga[]> {
     const { data, error } = await supabase
       .from('recargas')
       .update({ 
@@ -164,7 +164,7 @@ export class RecargasService {
   }
 
   // Rechazar múltiples recargas
-  static async rechazarRecargas(ids: string[]): Promise<SupabaseRecarga[]> {
+  static async rechazarRecargas(ids: number[]): Promise<SupabaseRecarga[]> {
     const { data, error } = await supabase
       .from('recargas')
       .update({ 
@@ -180,5 +180,68 @@ export class RecargasService {
     }
 
     return data as SupabaseRecarga[]
+  }
+
+  // Eliminar recarga (solo si está rechazada)
+  static async eliminarRecarga(id: number): Promise<boolean> {
+    // Verificar que la recarga esté rechazada antes de eliminar
+    const { data: recarga, error: fetchError } = await supabase
+      .from('recargas')
+      .select('id, estado')
+      .eq('id', id)
+      .single()
+
+    if (fetchError) {
+      console.error('Error fetching recarga for deletion:', fetchError)
+      throw fetchError
+    }
+
+    if (!recarga || recarga.estado !== 'rechazado') {
+      throw new Error('Solo se pueden eliminar recargas rechazadas')
+    }
+
+    const { error } = await supabase
+      .from('recargas')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('Error deleting recarga:', error)
+      throw error
+    }
+
+    return true
+  }
+
+  // Eliminar múltiples recargas rechazadas
+  static async eliminarRecargas(ids: number[]): Promise<boolean> {
+    // Verificar que todas las recargas estén rechazadas antes de eliminar
+    const { data: recargas, error: fetchError } = await supabase
+      .from('recargas')
+      .select('id, estado')
+      .in('id', ids)
+
+    if (fetchError) {
+      console.error('Error fetching recargas for deletion:', fetchError)
+      throw fetchError
+    }
+
+    const recargasNoRechazadas = recargas?.filter(r => r.estado !== 'rechazado') || []
+    
+    if (recargasNoRechazadas.length > 0) {
+      throw new Error('Solo se pueden eliminar recargas rechazadas')
+    }
+
+    const { error } = await supabase
+      .from('recargas')
+      .delete()
+      .in('id', ids)
+
+    if (error) {
+      console.error('Error deleting recargas:', error)
+      throw error
+    }
+
+    return true
   }
 }

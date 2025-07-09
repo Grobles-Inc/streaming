@@ -8,7 +8,7 @@ export class BilleterasService {
       .from('billeteras')
       .select(`
         *,
-        usuario:usuarios!billeteras_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -33,7 +33,7 @@ export class BilleterasService {
       .from('billeteras')
       .select(`
         *,
-        usuario:usuarios!billeteras_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -59,7 +59,7 @@ export class BilleterasService {
       .from('recargas')
       .select(`
         *,
-        usuario:usuarios!recargas_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -84,7 +84,7 @@ export class BilleterasService {
       .from('recargas')
       .select(`
         *,
-        usuario:usuarios!recargas_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -110,7 +110,7 @@ export class BilleterasService {
       .from('retiros')
       .select(`
         *,
-        usuario:usuarios!retiros_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -135,7 +135,7 @@ export class BilleterasService {
       .from('retiros')
       .select(`
         *,
-        usuario:usuarios!retiros_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -166,7 +166,7 @@ export class BilleterasService {
       }])
       .select(`
         *,
-        usuario:usuarios!recargas_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -196,7 +196,7 @@ export class BilleterasService {
       }])
       .select(`
         *,
-        usuario:usuarios!retiros_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -216,14 +216,14 @@ export class BilleterasService {
   }
 
   // Actualizar estado de recarga
-  static async updateRecargaEstado(recargaId: string, estado: 'aprobado' | 'pendiente' | 'rechazado'): Promise<Recarga> {
+  static async updateRecargaEstado(recargaId: number, estado: 'aprobado' | 'pendiente' | 'rechazado'): Promise<Recarga> {
     const { data, error } = await supabase
       .from('recargas')
       .update({ estado })
       .eq('id', recargaId)
       .select(`
         *,
-        usuario:usuarios!recargas_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,
@@ -243,14 +243,14 @@ export class BilleterasService {
   }
 
   // Actualizar estado de retiro
-  static async updateRetiroEstado(retiroId: string, estado: 'aprobado' | 'pendiente' | 'rechazado'): Promise<Retiro> {
+  static async updateRetiroEstado(retiroId: number, estado: 'aprobado' | 'pendiente' | 'rechazado'): Promise<Retiro> {
     const { data, error } = await supabase
       .from('retiros')
       .update({ estado })
       .eq('id', retiroId)
       .select(`
         *,
-        usuario:usuarios!retiros_usuario_id_fkey(
+        usuario:usuarios!usuario_id(
           id,
           nombres,
           apellidos,

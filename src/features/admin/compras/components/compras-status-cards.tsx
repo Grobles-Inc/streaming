@@ -20,7 +20,7 @@ import type { MappedCompra, EstadoCompra } from '../data/types'
 
 interface ComprasStatusCardsProps {
   compras: MappedCompra[]
-  onCambiarEstado: (id: string, nuevoEstado: EstadoCompra) => Promise<{ success: boolean }>
+  onCambiarEstado: (id: number, nuevoEstado: EstadoCompra) => Promise<{ success: boolean }>
   loading?: boolean
 }
 
@@ -86,7 +86,7 @@ const estadosDisponibles: { value: EstadoCompra; label: string }[] = [
 
 interface CompraCardProps {
   compra: MappedCompra
-  onCambiarEstado: (id: string, nuevoEstado: EstadoCompra) => Promise<{ success: boolean }>
+  onCambiarEstado: (id: number, nuevoEstado: EstadoCompra) => Promise<{ success: boolean }>
 }
 
 function CompraCard({ compra, onCambiarEstado }: CompraCardProps) {

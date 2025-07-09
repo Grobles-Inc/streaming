@@ -10,80 +10,152 @@ import type {
 } from '../data/types'
 
 export class RetirosService {
+  // Función de prueba para verificar la conectividad
+  static async testConnection(): Promise<void> {
+    console.log('🔍 Testing database connection...')
+    
+    // Test tabla retiros
+    const { data: retirosData, error: retirosError, count: retirosCount } = await supabase
+      .from('retiros')
+      .select('*', { count: 'exact' })
+      .limit(1)
+    
+    console.log('📊 Retiros table test:', {
+      count: retirosCount,
+      error: retirosError,
+      hasData: !!retirosData?.length,
+      sampleData: retirosData?.[0] || null
+    })
+
+    // Test tabla usuarios
+    const { data: usuariosData, error: usuariosError, count: usuariosCount } = await supabase
+      .from('usuarios')
+      .select('id, nombres, apellidos', { count: 'exact' })
+      .limit(1)
+    
+    console.log('📊 Usuarios table test:', {
+      count: usuariosCount,
+      error: usuariosError,
+      hasData: !!usuariosData?.length,
+      sampleData: usuariosData?.[0] || null
+    })
+
+    // Si no hay retiros, informar
+    if (retirosCount === 0) {
+      console.log('ℹ️ No retiros found in database. This might be expected if no retiros have been created yet.')
+    }
+
+    // Si no hay usuarios, informar
+    if (usuariosCount === 0) {
+      console.log('⚠️ No usuarios found in database. This might be a problem.')
+    }
+  }
+
   // Obtener todos los retiros con información del usuario y billetera
   static async getRetiros(filtros?: FiltroRetiro): Promise<RetiroWithUser[]> {
     console.log('🔍 RetirosService.getRetiros called with filters:', filtros)
     
-    let query = supabase
-      .from('retiros')
-      .select(`
-        *,
-        usuario:usuarios!retiros_usuario_id_fkey (
-          id,
-          nombres,
-          apellidos,
-          telefono,
-          billeteras!billeteras_usuario_id_fkey (
-            id,
-            saldo
-          )
-        )
-      `)
-      .order('created_at', { ascending: false })
+    try {
+      // Primero probemos la conexión básica
+      await this.testConnection()
+      
+      // Consulta más simple sin filtros primero
+      console.log('📊 Executing basic query to retiros table...')
+      const { data: retirosBasicos, error: errorBasico } = await supabase
+        .from('retiros')
+        .select('*')
+        .order('created_at', { ascending: false })
 
-    // Aplicar filtros
-    if (filtros?.estado) {
-      query = query.eq('estado', filtros.estado)
-    }
-    
-    if (filtros?.fechaDesde) {
-      query = query.gte('created_at', filtros.fechaDesde)
-    }
-    
-    if (filtros?.fechaHasta) {
-      query = query.lte('created_at', filtros.fechaHasta)
-    }
-    
-    if (filtros?.usuarioId) {
-      query = query.eq('usuario_id', filtros.usuarioId)
-    }
+      if (errorBasico) {
+        console.error('❌ Error fetching basic retiros:', errorBasico)
+        throw errorBasico
+      }
 
-    console.log('📊 Executing query to retiros table...')
-    const { data, error } = await query
+      console.log('✅ Basic retiros data from Supabase:', {
+        count: retirosBasicos?.length || 0,
+        sample: retirosBasicos?.[0] || 'No data',
+        all: retirosBasicos
+      })
 
-    if (error) {
-      console.error('❌ Error fetching retiros:', error)
+      if (!retirosBasicos || retirosBasicos.length === 0) {
+        console.log('⚠️ No retiros found in database')
+        return []
+      }
+
+      // Aplicar filtros después si los hay
+      let retirosFiltrados = retirosBasicos
+      
+      if (filtros?.estado) {
+        retirosFiltrados = retirosFiltrados.filter(r => r.estado === filtros.estado)
+        console.log(`🔍 Filtered by estado '${filtros.estado}': ${retirosFiltrados.length} results`)
+      }
+      
+      if (filtros?.usuarioId) {
+        retirosFiltrados = retirosFiltrados.filter(r => r.usuario_id === filtros.usuarioId)
+        console.log(`� Filtered by usuarioId '${filtros.usuarioId}': ${retirosFiltrados.length} results`)
+      }
+      
+      if (filtros?.fechaDesde) {
+        retirosFiltrados = retirosFiltrados.filter(r => new Date(r.created_at) >= new Date(filtros.fechaDesde!))
+        console.log(`🔍 Filtered by fechaDesde '${filtros.fechaDesde}': ${retirosFiltrados.length} results`)
+      }
+      
+      if (filtros?.fechaHasta) {
+        retirosFiltrados = retirosFiltrados.filter(r => new Date(r.created_at) <= new Date(filtros.fechaHasta!))
+        console.log(`🔍 Filtered by fechaHasta '${filtros.fechaHasta}': ${retirosFiltrados.length} results`)
+      }
+
+      // Ahora obtengamos los datos de usuarios para cada retiro filtrado
+      const retirosConUsuarios: RetiroWithUser[] = []
+      
+      for (const retiro of retirosFiltrados) {
+        try {
+          const { data: usuario, error: errorUsuario } = await supabase
+            .from('usuarios')
+            .select('id, nombres, apellidos, telefono, billetera_id')
+            .eq('id', retiro.usuario_id)
+            .single()
+
+          if (errorUsuario) {
+            console.warn(`⚠️ Could not fetch user for retiro ${retiro.id}:`, errorUsuario)
+            retirosConUsuarios.push({
+              ...retiro,
+              usuarios: undefined
+            })
+          } else {
+            retirosConUsuarios.push({
+              ...retiro,
+              usuarios: usuario
+            })
+          }
+        } catch (err) {
+          console.warn(`⚠️ Error fetching user for retiro ${retiro.id}:`, err)
+          retirosConUsuarios.push({
+            ...retiro,
+            usuarios: undefined
+          })
+        }
+      }
+
+      console.log('✅ Final retiros with users:', {
+        count: retirosConUsuarios.length,
+        withUsers: retirosConUsuarios.filter(r => r.usuarios).length,
+        withoutUsers: retirosConUsuarios.filter(r => !r.usuarios).length
+      })
+
+      return retirosConUsuarios
+    } catch (error) {
+      console.error('💥 Fatal error in getRetiros:', error)
       throw error
     }
-
-    console.log('✅ Raw retiros data from Supabase:', {
-      count: data?.length || 0,
-      data: JSON.stringify(data, null, 2)
-    })
-
-    return (data || []).map(retiro => ({
-      ...retiro,
-      usuario: retiro.usuario || null
-    })) as RetiroWithUser[]
   }
 
   // Obtener retiro por ID con información de usuario y billetera
-  static async getRetiroById(id: string): Promise<RetiroWithUser | null> {
-    const { data, error } = await supabase
+  static async getRetiroById(id: number): Promise<RetiroWithUser | null> {
+    // Primero obtener el retiro básico
+    const { data: retiro, error } = await supabase
       .from('retiros')
-      .select(`
-        *,
-        usuario:usuarios!retiros_usuario_id_fkey (
-          id,
-          nombres,
-          apellidos,
-          telefono,
-          billeteras!billeteras_usuario_id_fkey (
-            id,
-            saldo
-          )
-        )
-      `)
+      .select('*')
       .eq('id', id)
       .single()
 
@@ -95,14 +167,33 @@ export class RetirosService {
       throw error
     }
 
-    return {
-      ...data,
-      usuario: data.usuario || null
-    } as RetiroWithUser
+    if (!retiro) {
+      return null
+    }
+
+    // Obtener información del usuario
+    try {
+      const { data: usuario, error: errorUsuario } = await supabase
+        .from('usuarios')
+        .select('id, nombres, apellidos, telefono, billetera_id')
+        .eq('id', retiro.usuario_id)
+        .single()
+
+      return {
+        ...retiro,
+        usuarios: errorUsuario ? undefined : usuario
+      } as RetiroWithUser
+    } catch (err) {
+      console.warn(`⚠️ Error fetching user for retiro ${id}:`, err)
+      return {
+        ...retiro,
+        usuarios: undefined
+      } as RetiroWithUser
+    }
   }
 
   // Actualizar retiro
-  static async updateRetiro(id: string, updates: UpdateRetiroData): Promise<SupabaseRetiro> {
+  static async updateRetiro(id: number, updates: UpdateRetiroData): Promise<SupabaseRetiro> {
     const { data, error } = await supabase
       .from('retiros')
       .update({
@@ -122,15 +213,30 @@ export class RetirosService {
   }
 
   // Aprobar retiro (con validación de saldo y procesamiento de fondos)
-  static async aprobarRetiro(id: string): Promise<SupabaseRetiro> {
-    // Primero obtener el retiro con información de la billetera
+  static async aprobarRetiro(id: number): Promise<SupabaseRetiro> {
+    // Primero obtener el retiro con información del usuario
     const retiroWithUser = await this.getRetiroById(id)
     if (!retiroWithUser) {
       throw new Error('Retiro no encontrado')
     }
 
+    // Obtener saldo de la billetera del usuario
+    if (!retiroWithUser.usuarios?.billetera_id) {
+      throw new Error('Usuario no tiene billetera asociada')
+    }
+
+    const { data: billetera, error: billeteraError } = await supabase
+      .from('billeteras')
+      .select('saldo')
+      .eq('id', retiroWithUser.usuarios.billetera_id)
+      .single()
+
+    if (billeteraError || !billetera) {
+      throw new Error('Error al obtener información de la billetera')
+    }
+
     // Validar que el usuario tenga saldo suficiente
-    const saldoBilletera = retiroWithUser.usuario?.billeteras?.[0]?.saldo || 0
+    const saldoBilletera = billetera.saldo || 0
     if (saldoBilletera < retiroWithUser.monto) {
       throw new Error(`Saldo insuficiente. Saldo disponible: $ ${saldoBilletera.toFixed(2)}, Monto solicitado: $ ${retiroWithUser.monto.toFixed(2)}`)
     }
@@ -148,7 +254,7 @@ export class RetirosService {
   }
 
   // Rechazar retiro
-  static async rechazarRetiro(id: string): Promise<SupabaseRetiro> {
+  static async rechazarRetiro(id: number): Promise<SupabaseRetiro> {
     return this.updateRetiro(id, { estado: 'rechazado' })
   }
 
@@ -180,9 +286,9 @@ export class RetirosService {
   }
 
   // Aprobar múltiples retiros (con validación de saldo y procesamiento de fondos)
-  static async aprobarRetiros(ids: string[]): Promise<SupabaseRetiro[]> {
+  static async aprobarRetiros(ids: number[]): Promise<SupabaseRetiro[]> {
     // Validar cada retiro antes de aprobar
-    const retirosValidados: string[] = []
+    const retirosValidados: number[] = []
     const errores: string[] = []
 
     for (const id of ids) {
@@ -193,7 +299,24 @@ export class RetirosService {
           continue
         }
 
-        const saldoBilletera = retiroWithUser.usuario?.billeteras?.[0]?.saldo || 0
+        // Obtener saldo de la billetera del usuario
+        if (!retiroWithUser.usuarios?.billetera_id) {
+          errores.push(`Retiro ${id}: Usuario no tiene billetera asociada`)
+          continue
+        }
+
+        const { data: billetera, error: billeteraError } = await supabase
+          .from('billeteras')
+          .select('saldo')
+          .eq('id', retiroWithUser.usuarios.billetera_id)
+          .single()
+
+        if (billeteraError || !billetera) {
+          errores.push(`Retiro ${id}: Error al obtener información de la billetera`)
+          continue
+        }
+
+        const saldoBilletera = billetera.saldo || 0
         if (saldoBilletera < retiroWithUser.monto) {
           errores.push(`Retiro ${id}: Saldo insuficiente (${saldoBilletera.toFixed(2)} < ${retiroWithUser.monto.toFixed(2)})`)
           continue
@@ -249,7 +372,7 @@ export class RetirosService {
   }
 
   // Rechazar múltiples retiros
-  static async rechazarRetiros(ids: string[]): Promise<SupabaseRetiro[]> {
+  static async rechazarRetiros(ids: number[]): Promise<SupabaseRetiro[]> {
     const { data, error } = await supabase
       .from('retiros')
       .update({ 

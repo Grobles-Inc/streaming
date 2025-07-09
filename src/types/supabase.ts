@@ -417,7 +417,7 @@ export interface Database {
       }
       retiros: {
         Row: {
-          id: string
+          id: number
           usuario_id: string
           monto: number
           estado: "aprobado" | "pendiente" | "rechazado"
@@ -425,7 +425,7 @@ export interface Database {
           updated_at: string
         }
         Insert: {
-          id?: string
+          id?: number
           usuario_id: string
           monto: number
           estado?: "aprobado" | "pendiente" | "rechazado"
@@ -433,7 +433,7 @@ export interface Database {
           updated_at?: string
         }
         Update: {
-          id?: string
+          id?: number
           usuario_id?: string
           monto?: number
           estado?: "aprobado" | "pendiente" | "rechazado"
@@ -459,6 +459,8 @@ export interface Database {
           email_soporte: string | null
           conversion: number
           comision_publicacion_producto: number
+          comision_retiro: number
+          register_link: string
         }
         Insert: {
           id?: string
@@ -468,6 +470,8 @@ export interface Database {
           email_soporte?: string | null
           conversion?: number
           comision_publicacion_producto?: number
+          comision_retiro?: number
+          register_link: string
         }
         Update: {
           id?: string
@@ -477,6 +481,8 @@ export interface Database {
           email_soporte?: string | null
           conversion?: number
           comision_publicacion_producto?: number
+          comision_retiro?: number
+          register_link: string
         }
       }
     }

@@ -23,7 +23,7 @@ export interface ComisionPublicacion {
 
 export interface ComisionRetiro {
   id: string
-  retiro_id: string
+  retiro_id: number
   usuario_id: string
   admin_id: string
   monto_retiro: number

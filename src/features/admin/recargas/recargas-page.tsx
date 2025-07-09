@@ -35,8 +35,10 @@ export default function RecargasPage() {
     error,
     aprobarRecarga,
     rechazarRecarga,
+    eliminarRecarga,
     aprobarRecargas,
     rechazarRecargas,
+    eliminarRecargas,
     aplicarFiltros,
     refreshRecargas,
     clearError,
@@ -45,7 +47,7 @@ export default function RecargasPage() {
 
   // Manejar aprobación individual
   const handleAprobar = async (id: string) => {
-    const success = await aprobarRecarga(id)
+    const success = await aprobarRecarga(parseInt(id))
     if (success) {
       toast.success('Recarga aprobada exitosamente')
     } else {
@@ -55,7 +57,7 @@ export default function RecargasPage() {
 
   // Manejar rechazo individual
   const handleRechazar = async (id: string) => {
-    const success = await rechazarRecarga(id)
+    const success = await rechazarRecarga(parseInt(id))
     if (success) {
       toast.success('Recarga rechazada exitosamente')
     } else {
@@ -65,7 +67,7 @@ export default function RecargasPage() {
 
   // Manejar aprobación masiva
   const handleAprobarSeleccionadas = async (ids: string[]) => {
-    const success = await aprobarRecargas(ids)
+    const success = await aprobarRecargas(ids.map(id => parseInt(id)))
     if (success) {
       toast.success(`${ids.length} recarga(s) aprobada(s) exitosamente`)
     } else {
@@ -75,11 +77,31 @@ export default function RecargasPage() {
 
   // Manejar rechazo masivo
   const handleRechazarSeleccionadas = async (ids: string[]) => {
-    const success = await rechazarRecargas(ids)
+    const success = await rechazarRecargas(ids.map(id => parseInt(id)))
     if (success) {
       toast.success(`${ids.length} recarga(s) rechazada(s) exitosamente`)
     } else {
       toast.error('Error al rechazar las recargas seleccionadas')
+    }
+  }
+
+  // Manejar eliminación individual
+  const handleEliminar = async (id: string) => {
+    const success = await eliminarRecarga(parseInt(id))
+    if (success) {
+      toast.success('Recarga eliminada exitosamente')
+    } else {
+      toast.error('Error al eliminar la recarga')
+    }
+  }
+
+  // Manejar eliminación masiva
+  const handleEliminarSeleccionadas = async (ids: string[]) => {
+    const success = await eliminarRecargas(ids.map(id => parseInt(id)))
+    if (success) {
+      toast.success(`${ids.length} recarga(s) eliminada(s) exitosamente`)
+    } else {
+      toast.error('Error al eliminar las recargas seleccionadas')
     }
   }
 
@@ -104,6 +126,7 @@ export default function RecargasPage() {
   const columns = createRecargasColumns(
     handleAprobar,
     handleRechazar,
+    handleEliminar,
     handleVerRecarga
   )
 
@@ -190,6 +213,7 @@ export default function RecargasPage() {
           loading={loading}
           onAprobarSeleccionadas={handleAprobarSeleccionadas}
           onRechazarSeleccionadas={handleRechazarSeleccionadas}
+          onEliminarSeleccionadas={handleEliminarSeleccionadas}
         />
 
       </Main>

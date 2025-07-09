@@ -35,8 +35,10 @@ export default function RecargasPage() {
     error,
     aprobarRecarga,
     rechazarRecarga,
+    eliminarRecarga,
     aprobarRecargas,
     rechazarRecargas,
+    eliminarRecargas,
     aplicarFiltros,
     refreshRecargas,
     clearError,
@@ -83,6 +85,26 @@ export default function RecargasPage() {
     }
   }
 
+  // Manejar eliminación individual
+  const handleEliminar = async (id: string) => {
+    const success = await eliminarRecarga(parseInt(id))
+    if (success) {
+      toast.success('Recarga eliminada exitosamente')
+    } else {
+      toast.error('Error al eliminar la recarga')
+    }
+  }
+
+  // Manejar eliminación masiva
+  const handleEliminarSeleccionadas = async (ids: string[]) => {
+    const success = await eliminarRecargas(ids.map(id => parseInt(id)))
+    if (success) {
+      toast.success(`${ids.length} recarga(s) eliminada(s) exitosamente`)
+    } else {
+      toast.error('Error al eliminar las recargas seleccionadas')
+    }
+  }
+
   // Ver detalles de recarga
   const handleVerRecarga = (recarga: MappedRecarga) => {
     setSelectedRecarga(recarga)
@@ -104,6 +126,7 @@ export default function RecargasPage() {
   const columns = createRecargasColumns(
     handleAprobar,
     handleRechazar,
+    handleEliminar,
     handleVerRecarga
   )
 
@@ -190,6 +213,7 @@ export default function RecargasPage() {
           loading={loading}
           onAprobarSeleccionadas={handleAprobarSeleccionadas}
           onRechazarSeleccionadas={handleRechazarSeleccionadas}
+          onEliminarSeleccionadas={handleEliminarSeleccionadas}
         />
 
       </Main>

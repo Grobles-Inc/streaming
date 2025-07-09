@@ -45,7 +45,7 @@ export type EstadisticasRetiros = {
 
 // Retiro mapeado para el componente
 export type MappedRetiro = {
-  id: string
+  id: number
   usuarioId: string
   usuarioNombre: string
   usuarioNombres: string

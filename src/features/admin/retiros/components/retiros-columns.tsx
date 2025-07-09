@@ -46,8 +46,8 @@ function getEstadoBadge(estado: string) {
 // Props para las acciones
 interface RetirosTableActionsProps {
   retiro: MappedRetiro
-  onAprobar: (id: string) => Promise<void>
-  onRechazar: (id: string) => Promise<void>
+  onAprobar: (id: number) => Promise<void>
+  onRechazar: (id: number) => Promise<void>
   onVer: (retiro: MappedRetiro) => void | Promise<void>
 }
 
@@ -103,8 +103,8 @@ function RetirosTableActions({ retiro, onAprobar, onRechazar, onVer }: RetirosTa
 
 // Definir las columnas
 export function createRetirosColumns(
-  onAprobar: (id: string) => Promise<void>,
-  onRechazar: (id: string) => Promise<void>,
+  onAprobar: (id: number) => Promise<void>,
+  onRechazar: (id: number) => Promise<void>,
   onVer: (retiro: MappedRetiro) => void | Promise<void>
 ): ColumnDef<MappedRetiro>[] {
   return [

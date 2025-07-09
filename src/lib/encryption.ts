@@ -21,14 +21,35 @@ function simpleEncrypt(text: string): string {
   return encoded
 }
 
-// Nueva función para encriptar código de referido y rol juntos
-function encryptReferralData(referralCode: string, role: string): string {
+// Nueva función para encriptar código de referido, rol y token de validación
+function encryptReferralData(referralCode: string, role: string, validationToken: string): string {
   // Agregar timestamp y salt para hacer el código único
   const timestamp = Date.now().toString(36)
   const salt = Math.random().toString(36).substring(2, 8)
   
-  // Combinar código de referido, rol, timestamp y salt
-  const combined = `${referralCode}|${role}:${timestamp}:${salt}`
+  // Combinar código de referido, rol, token de validación, timestamp y salt
+  const combined = `${referralCode}|${role}|${validationToken}:${timestamp}:${salt}`
+  
+  // Convertir a base64 y hacer algunas transformaciones
+  let encoded = btoa(combined)
+  
+  // Reemplazar caracteres comunes para hacer menos obvio que es base64
+  encoded = encoded
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '')
+  
+  return encoded
+}
+
+// Nueva función para encriptar solo el token de validación (para registros sin referido)
+function encryptValidationToken(validationToken: string, role: string = 'registered'): string {
+  // Agregar timestamp y salt para hacer el código único
+  const timestamp = Date.now().toString(36)
+  const salt = Math.random().toString(36).substring(2, 8)
+  
+  // Combinar token de validación, rol, timestamp y salt (sin código de referido)
+  const combined = `|${role}|${validationToken}:${timestamp}:${salt}`
   
   // Convertir a base64 y hacer algunas transformaciones
   let encoded = btoa(combined)
@@ -70,8 +91,12 @@ function simpleDecrypt(encryptedText: string): string | null {
   }
 }
 
-// Nueva función para desencriptar datos de referido (código + rol)
-function decryptReferralData(encryptedText: string): { referralCode: string; role: string } | null {
+// Nueva función para desencriptar datos de referido (código + rol + token)
+function decryptReferralData(encryptedText: string): { 
+  referralCode?: string; 
+  role: string; 
+  validationToken: string 
+} | null {
   try {
     // Revertir las transformaciones
     let decoded = encryptedText
@@ -89,12 +114,16 @@ function decryptReferralData(encryptedText: string): { referralCode: string; rol
     // Separar por ':'
     const parts = combined.split(':')
     if (parts.length >= 3) {
-      // La primera parte contiene "referralCode|role"
+      // La primera parte contiene "referralCode|role|validationToken"
       const dataPart = parts[0]
-      const [referralCode, role] = dataPart.split('|')
+      const [referralCode, role, validationToken] = dataPart.split('|')
       
-      if (referralCode && role) {
-        return { referralCode, role }
+      if (role && validationToken) {
+        return { 
+          referralCode: referralCode || undefined, 
+          role, 
+          validationToken 
+        }
       }
     }
     
@@ -105,4 +134,4 @@ function decryptReferralData(encryptedText: string): { referralCode: string; rol
   }
 }
 
-export { simpleEncrypt, simpleDecrypt, encryptReferralData, decryptReferralData }
+export { simpleEncrypt, simpleDecrypt, encryptReferralData, encryptValidationToken, decryptReferralData }

@@ -151,7 +151,7 @@ export class RetirosService {
   }
 
   // Obtener retiro por ID con información de usuario y billetera
-  static async getRetiroById(id: string): Promise<RetiroWithUser | null> {
+  static async getRetiroById(id: number): Promise<RetiroWithUser | null> {
     // Primero obtener el retiro básico
     const { data: retiro, error } = await supabase
       .from('retiros')
@@ -193,7 +193,7 @@ export class RetirosService {
   }
 
   // Actualizar retiro
-  static async updateRetiro(id: string, updates: UpdateRetiroData): Promise<SupabaseRetiro> {
+  static async updateRetiro(id: number, updates: UpdateRetiroData): Promise<SupabaseRetiro> {
     const { data, error } = await supabase
       .from('retiros')
       .update({
@@ -213,7 +213,7 @@ export class RetirosService {
   }
 
   // Aprobar retiro (con validación de saldo y procesamiento de fondos)
-  static async aprobarRetiro(id: string): Promise<SupabaseRetiro> {
+  static async aprobarRetiro(id: number): Promise<SupabaseRetiro> {
     // Primero obtener el retiro con información del usuario
     const retiroWithUser = await this.getRetiroById(id)
     if (!retiroWithUser) {
@@ -254,7 +254,7 @@ export class RetirosService {
   }
 
   // Rechazar retiro
-  static async rechazarRetiro(id: string): Promise<SupabaseRetiro> {
+  static async rechazarRetiro(id: number): Promise<SupabaseRetiro> {
     return this.updateRetiro(id, { estado: 'rechazado' })
   }
 
@@ -286,9 +286,9 @@ export class RetirosService {
   }
 
   // Aprobar múltiples retiros (con validación de saldo y procesamiento de fondos)
-  static async aprobarRetiros(ids: string[]): Promise<SupabaseRetiro[]> {
+  static async aprobarRetiros(ids: number[]): Promise<SupabaseRetiro[]> {
     // Validar cada retiro antes de aprobar
-    const retirosValidados: string[] = []
+    const retirosValidados: number[] = []
     const errores: string[] = []
 
     for (const id of ids) {
@@ -372,7 +372,7 @@ export class RetirosService {
   }
 
   // Rechazar múltiples retiros
-  static async rechazarRetiros(ids: string[]): Promise<SupabaseRetiro[]> {
+  static async rechazarRetiros(ids: number[]): Promise<SupabaseRetiro[]> {
     const { data, error } = await supabase
       .from('retiros')
       .update({ 

@@ -60,7 +60,7 @@ export function useRecargas() {
     }
   }
 
-  const updateRecargaEstado = async (recargaId: string, estado: 'aprobado' | 'pendiente' | 'rechazado') => {
+  const updateRecargaEstado = async (recargaId: number, estado: 'aprobado' | 'pendiente' | 'rechazado') => {
     try {
       const updatedRecarga = await BilleterasService.updateRecargaEstado(recargaId, estado)
       setRecargas(prev => prev.map(recarga => 
@@ -114,7 +114,7 @@ export function useRetiros() {
     }
   }
 
-  const updateRetiroEstado = async (retiroId: string, estado: 'aprobado' | 'pendiente' | 'rechazado') => {
+  const updateRetiroEstado = async (retiroId: number, estado: 'aprobado' | 'pendiente' | 'rechazado') => {
     try {
       const updatedRetiro = await BilleterasService.updateRetiroEstado(retiroId, estado)
       setRetiros(prev => prev.map(retiro => 

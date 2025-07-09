@@ -21,7 +21,7 @@ const retiroBaseSchema = z.object({
 
 // Esquema para retiro mapeado
 const mappedRetiroSchema = z.object({
-  id: z.string(),
+  id: z.number(),
   usuarioId: z.string(),
   usuarioNombre: z.string(),
   usuarioNombres: z.string(),

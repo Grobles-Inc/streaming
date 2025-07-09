@@ -20,7 +20,7 @@ export default function MiBilleteraPage() {
           <div>
             <h2 className='text-2xl font-bold tracking-tight'>Mi Billetera</h2>
             <p className='text-muted-foreground'>
-              Gestiona tu billetera personal como administrador. Consulta retiros y comisiones.
+              Gestiona tu billetera personal como administrador. Consulta retiros, comisiones por publicaciones y retiros.
             </p>
           </div>
         </div>

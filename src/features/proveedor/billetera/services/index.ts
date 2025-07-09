@@ -136,7 +136,7 @@ export const createRetiro = async (retiroData: CreateRetiroData): Promise<Retiro
 }
 
 // Nueva función para procesar el retiro cuando el admin lo apruebe
-export const procesarRetiroAprobado = async (retiroId: string): Promise<boolean> => {
+export const procesarRetiroAprobado = async (retiroId: number): Promise<boolean> => {
   try {
     // 1. Obtener el retiro
     const { data: retiro, error: retiroError } = await supabase

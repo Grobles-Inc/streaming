@@ -216,7 +216,7 @@ export class BilleterasService {
   }
 
   // Actualizar estado de recarga
-  static async updateRecargaEstado(recargaId: string, estado: 'aprobado' | 'pendiente' | 'rechazado'): Promise<Recarga> {
+  static async updateRecargaEstado(recargaId: number, estado: 'aprobado' | 'pendiente' | 'rechazado'): Promise<Recarga> {
     const { data, error } = await supabase
       .from('recargas')
       .update({ estado })
@@ -243,7 +243,7 @@ export class BilleterasService {
   }
 
   // Actualizar estado de retiro
-  static async updateRetiroEstado(retiroId: string, estado: 'aprobado' | 'pendiente' | 'rechazado'): Promise<Retiro> {
+  static async updateRetiroEstado(retiroId: number, estado: 'aprobado' | 'pendiente' | 'rechazado'): Promise<Retiro> {
     const { data, error } = await supabase
       .from('retiros')
       .update({ estado })

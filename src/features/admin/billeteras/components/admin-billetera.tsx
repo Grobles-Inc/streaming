@@ -97,7 +97,7 @@ export function AdminBilletera({ className }: AdminBilleteraProps) {
     }
   }
 
-  const handleUpdateEstado = async (tipo: 'recarga' | 'retiro', id: string, estado: 'aprobado' | 'pendiente' | 'rechazado') => {
+  const handleUpdateEstado = async (tipo: 'recarga' | 'retiro', id: number, estado: 'aprobado' | 'pendiente' | 'rechazado') => {
     try {
       if (tipo === 'recarga') {
         await BilleterasService.updateRecargaEstado(id, estado)

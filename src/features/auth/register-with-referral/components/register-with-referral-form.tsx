@@ -13,11 +13,12 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { UsersService } from '@/features/users/services/users.service'
-import { decryptReferralData } from '@/lib/encryption'
+import { RegistrationTokenValidator } from '@/lib/registration-token-validator'
+import type { RegistrationTokenData } from '@/lib/registration-token-validator'
 import { supabase } from '@/lib/supabase'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, useNavigate } from '@tanstack/react-router'
-import { Loader2 } from 'lucide-react'
+import { Link, useNavigate, useSearch } from '@tanstack/react-router'
+import { Loader2, AlertTriangle, ShieldCheck } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -66,39 +67,43 @@ const registerWithReferralSchema = z
 
 type RegisterFormData = z.infer<typeof registerWithReferralSchema>
 
-interface URLParams {
-  ref?: string // código de referido
-  role?: string // rol asignado
-}
-
 
 export function RegisterWithReferralForm() {
   const [isLoading, setIsLoading] = useState(false)
-  const [urlParams, setUrlParams] = useState<URLParams>({})
+  const [validatingToken, setValidatingToken] = useState(true)
+  const [tokenData, setTokenData] = useState<RegistrationTokenData | null>(null)
+  const [registrationAllowed, setRegistrationAllowed] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string>('')
   const navigate = useNavigate()
+  
+  // Obtener parámetros de URL usando TanStack Router
+  const searchParams = useSearch({ from: '/(auth)/register' }) as { token?: string }
 
-  // Obtener parámetros de la URL
+  // Validar token de registro al cargar el componente
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search)
-    const encryptedData = searchParams.get('data')
+    const validateRegistrationToken = async () => {
+      setValidatingToken(true)
+      
+      const token = searchParams.token
+      
+      // Verificar si el registro está permitido
+      const registrationCheck = await RegistrationTokenValidator.isRegistrationAllowed(token)
+      
+      if (!registrationCheck.allowed) {
+        setRegistrationAllowed(false)
+        setErrorMessage(registrationCheck.reason || 'Acceso no autorizado')
+        setValidatingToken(false)
+        return
+      }
 
-    if (!encryptedData) {
-      toast.error('Link de invitación inválido')
-      navigate({ to: '/sign-up' })
-      return
+      // Si llegamos aquí, el token es válido
+      setTokenData(registrationCheck.data!)
+      setRegistrationAllowed(true)
+      setValidatingToken(false)
     }
 
-    // Desencriptar los datos de referido (código + rol)
-    const decryptedData = decryptReferralData(encryptedData)
-
-    if (!decryptedData) {
-      toast.error('Datos de invitación inválidos')
-      navigate({ to: '/sign-up' })
-      return
-    }
-
-    setUrlParams({ ref: decryptedData.referralCode, role: decryptedData.role })
-  }, [navigate])
+    validateRegistrationToken()
+  }, [searchParams.token])
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerWithReferralSchema),
@@ -110,18 +115,18 @@ export function RegisterWithReferralForm() {
       telefono: '',
       password: '',
       confirmPassword: '',
-      codigoReferido: urlParams.ref || '',
-      rol: (urlParams.role as 'registered' | 'provider' | 'seller') || 'registered',
+      codigoReferido: tokenData?.referralCode || '',
+      rol: (tokenData?.role as 'registered' | 'provider' | 'seller') || 'registered',
     },
   })
 
-  // Actualizar valores cuando cambien los parámetros URL
+  // Actualizar valores cuando cambien los datos del token
   useEffect(() => {
-    if (urlParams.ref && urlParams.role) {
-      form.setValue('codigoReferido', urlParams.ref)
-      form.setValue('rol', urlParams.role as 'registered' | 'provider' | 'seller')
+    if (tokenData?.referralCode && tokenData?.role) {
+      form.setValue('codigoReferido', tokenData.referralCode)
+      form.setValue('rol', tokenData.role as 'registered' | 'provider' | 'seller')
     }
-  }, [urlParams, form])
+  }, [tokenData, form])
 
   const onSubmit = async (values: RegisterFormData) => {
     setIsLoading(true)
@@ -152,6 +157,11 @@ export function RegisterWithReferralForm() {
       )
 
       console.log('Usuario creado exitosamente:', newUser)
+
+      // Invalidar el token de registro después del uso exitoso
+      if (tokenData?.validationToken) {
+        await RegistrationTokenValidator.invalidateToken(tokenData.validationToken)
+      }
 
       // Esperar un poco antes de intentar el login
       await new Promise(resolve => setTimeout(resolve, 1000))
@@ -189,7 +199,7 @@ export function RegisterWithReferralForm() {
         })
 
         // Verificar el rol del usuario para redirigir correctamente
-        const userRole = signInData.user?.user_metadata?.rol || urlParams.role || 'registered'
+        const userRole = signInData.user?.user_metadata?.rol || tokenData?.role || 'registered'
         console.log('Rol del usuario:', userRole)
 
         // Redirigir según el rol del usuario
@@ -216,13 +226,44 @@ export function RegisterWithReferralForm() {
     }
   }
 
-  if (!urlParams.ref || !urlParams.role) {
+  // Mostrar loading mientras se valida el token
+  if (validatingToken) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-muted-foreground">Cargando...</p>
+            <div className="text-center space-y-4">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+              <div>
+                <h3 className="font-semibold">Validando token de registro</h3>
+                <p className="text-sm text-muted-foreground">
+                  Verificando la validez de tu invitación...
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Mostrar error si el registro no está permitido
+  if (!registrationAllowed) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <div className="text-center space-y-4">
+              <AlertTriangle className="h-8 w-8 text-destructive mx-auto" />
+              <div>
+                <h3 className="font-semibold text-destructive">Acceso Denegado</h3>
+                <p className="text-sm text-muted-foreground">
+                  {errorMessage}
+                </p>
+              </div>
+              <Button asChild variant="outline">
+                <Link to="/sign-in">Ir al Login</Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -238,10 +279,34 @@ export function RegisterWithReferralForm() {
           alt="Logo"
           className="h-12 w-auto"
         />
-        <h2 className=" text-xl font-bold">
-          Registro por Invitación
-        </h2>
+        <div className="text-center">
+          <h2 className="text-xl font-bold">
+            Registro por Invitación
+          </h2>
+          <div className="flex items-center justify-center gap-2 mt-2">
+            <ShieldCheck className="h-4 w-4 text-green-600" />
+            <span className="text-xs text-green-600 font-medium">
+              Invitación Verificada
+            </span>
+          </div>
+        </div>
       </div>
+
+      {/* Mostrar información del referido si existe */}
+      {tokenData?.referralCode && (
+        <Card>
+          <CardContent className="pt-4">
+            <div className="text-center space-y-2">
+              <Badge variant="secondary">
+                Código de Referido: {tokenData.referralCode}
+              </Badge>
+              <Badge variant="outline">
+                Rol Asignado: {tokenData.role}
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Form {...form} >
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -343,7 +408,7 @@ export function RegisterWithReferralForm() {
           <div className="flex items-center justify-between">
             <Label>Código de Referido:</Label>
             <Badge className='font-mono'>
-              {urlParams.ref}
+              {tokenData?.referralCode}
             </Badge>
           </div>
           <div className='flex flex-col mt-8'>

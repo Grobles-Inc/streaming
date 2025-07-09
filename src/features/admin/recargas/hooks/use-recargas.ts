@@ -130,6 +130,36 @@ export function useRecargas(filtrosIniciales?: FiltroRecarga) {
     }
   }
 
+  // Eliminar recarga (solo si está rechazada)
+  const eliminarRecarga = async (id: number): Promise<boolean> => {
+    try {
+      await RecargasService.eliminarRecarga(id)
+      // Recargar todas las recargas
+      await loadRecargas()
+      await loadEstadisticas()
+      return true
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al eliminar recarga')
+      console.error('Error deleting recarga:', err)
+      return false
+    }
+  }
+
+  // Eliminar múltiples recargas rechazadas
+  const eliminarRecargas = async (ids: number[]): Promise<boolean> => {
+    try {
+      await RecargasService.eliminarRecargas(ids)
+      // Recargar todas las recargas
+      await loadRecargas()
+      await loadEstadisticas()
+      return true
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al eliminar recargas')
+      console.error('Error deleting recargas:', err)
+      return false
+    }
+  }
+
   // Aplicar filtros
   const aplicarFiltros = async (nuevosFiltros: FiltroRecarga) => {
     setFiltros(nuevosFiltros)
@@ -178,6 +208,8 @@ export function useRecargas(filtrosIniciales?: FiltroRecarga) {
     updateEstadoRecarga,
     aprobarRecargas,
     rechazarRecargas,
+    eliminarRecarga,
+    eliminarRecargas,
     aplicarFiltros,
     limpiarFiltros,
     refreshRecargas,

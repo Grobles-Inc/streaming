@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
-import { IconCheck, IconDots, IconEye, IconX } from '@tabler/icons-react'
+import { IconCheck, IconDots, IconEye, IconX, IconTrash } from '@tabler/icons-react'
 import { ColumnDef } from '@tanstack/react-table'
 import type { MappedRecarga } from '../data/types'
 
@@ -49,12 +49,14 @@ interface RecargasTableActionsProps {
   recarga: MappedRecarga
   onAprobar: (id: string) => Promise<void>
   onRechazar: (id: string) => Promise<void>
+  onEliminar: (id: string) => Promise<void>
   onVer: (recarga: MappedRecarga) => void | Promise<void>
 }
 
 // Componente de acciones
-function RecargasTableActions({ recarga, onAprobar, onRechazar, onVer }: RecargasTableActionsProps) {
+function RecargasTableActions({ recarga, onAprobar, onRechazar, onEliminar, onVer }: RecargasTableActionsProps) {
   const puedeModificar = recarga.estado === 'pendiente'
+  const puedeEliminar = recarga.estado === 'rechazado'
 
   return (
     <DropdownMenu>
@@ -88,6 +90,17 @@ function RecargasTableActions({ recarga, onAprobar, onRechazar, onVer }: Recarga
             </DropdownMenuItem>
           </>
         )}
+        {puedeEliminar && (
+          <>
+            <DropdownMenuItem
+              onClick={() => onEliminar(recarga.id.toString())}
+              className="text-red-600 focus:text-red-600"
+            >
+              <IconTrash className="mr-2 h-4 w-4" />
+              Eliminar
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )
@@ -97,6 +110,7 @@ function RecargasTableActions({ recarga, onAprobar, onRechazar, onVer }: Recarga
 export function createRecargasColumns(
   onAprobar: (id: string) => Promise<void>,
   onRechazar: (id: string) => Promise<void>,
+  onEliminar: (id: string) => Promise<void>,
   onVer: (recarga: MappedRecarga) => void | Promise<void>
 ): ColumnDef<MappedRecarga>[] {
   return [
@@ -212,6 +226,7 @@ export function createRecargasColumns(
           recarga={row.original}
           onAprobar={onAprobar}
           onRechazar={onRechazar}
+          onEliminar={onEliminar}
           onVer={onVer}
         />
       ),

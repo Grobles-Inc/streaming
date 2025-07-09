@@ -224,12 +224,18 @@ export function createComprasColumns(
       header: 'Producto',
       cell: ({ row }) => {
         const producto = row.getValue('productoNombre') as string
-        const proveedor = row.original.proveedorNombre
         return (
-          <div className="space-y-1">
-            <div className="font-medium">{producto}</div>
-            <div className="text-xs text-muted-foreground">por {proveedor}</div>
-          </div>
+          <div className="font-medium">{producto}</div>
+        )
+      },
+    },
+    {
+      accessorKey: 'proveedorNombre',
+      header: 'Proveedor',
+      cell: ({ row }) => {
+        const proveedor = row.getValue('proveedorNombre') as string
+        return (
+          <div className="text-sm text-muted-foreground">{proveedor}</div>
         )
       },
     },

@@ -1,15 +1,27 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { IconPlus, IconWallet, IconTrendingDown, IconMenu2, IconCheck, IconX, IconLoader2 } from '@tabler/icons-react'
-import { BilleterasService } from '@/features/admin/billeteras/services'
+import { 
+  IconPlus, 
+  IconWallet, 
+  IconTrendingDown, 
+  IconMenu2, 
+  IconCheck, 
+  IconX, 
+  IconLoader2,
+  IconPackage,
+  IconCoin,
+  IconRefresh
+} from '@tabler/icons-react'
 import { useAuthStore } from '@/stores/authStore'
-import type { Billetera, Retiro } from '@/features/admin/billeteras/data/types'
+import { toast } from 'sonner'
+import { useMiBilletera } from '../hooks/use-mi-billetera'
 
 interface MiBilleteraContentProps {
   className?: string
@@ -17,70 +29,61 @@ interface MiBilleteraContentProps {
 
 export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
   const { user } = useAuthStore()
-  const [billetera, setBilletera] = useState<Billetera | null>(null)
-  const [retiros, setRetiros] = useState<Retiro[]>([])
-  const [loading, setLoading] = useState(true)
-  const [creating, setCreating] = useState(false)
+  
+  // Usar el hook personalizado que replica el patrón de retiros
+  const {
+    billetera,
+    retiros,
+    comisionesPublicacion,
+    comisionesRetiro,
+    estadisticasComisiones,
+    conversion,
+    loading,
+    createRetiro,
+    updateRetiroEstado,
+    refresh
+  } = useMiBilletera(user?.id)
   
   // Estados para formularios
   const [retiroForm, setRetiroForm] = useState({ monto: '' })
   const [showRetiroModal, setShowRetiroModal] = useState(false)
-
-  useEffect(() => {
-    if (user) {
-      fetchBilleteraData()
-    }
-  }, [user])
-
-  const fetchBilleteraData = async () => {
-    if (!user) return
-
-    try {
-      setLoading(true)
-      const [billeteraData, retirosData] = await Promise.all([
-        BilleterasService.getBilleteraByUsuario(user.id),
-        BilleterasService.getRetirosByUsuario(user.id)
-      ])
-      
-      setBilletera(billeteraData)
-      setRetiros(retirosData)
-    } catch (error) {
-      console.error('Error al cargar datos de billetera:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [creating, setCreating] = useState(false)
 
   const handleCreateRetiro = async () => {
     if (!user || !retiroForm.monto) return
 
     try {
       setCreating(true)
-      await BilleterasService.createRetiro({
-        usuario_id: user.id,
-        monto: parseFloat(retiroForm.monto)
-      })
+      await createRetiro(parseFloat(retiroForm.monto))
       
       setRetiroForm({ monto: '' })
       setShowRetiroModal(false)
-      await fetchBilleteraData()
+      toast.success('Retiro creado exitosamente')
     } catch (error) {
       console.error('Error al crear retiro:', error)
+      toast.error('Error al crear retiro')
     } finally {
       setCreating(false)
     }
   }
 
-  const handleUpdateEstado = async (id: string, estado: 'aprobado' | 'pendiente' | 'rechazado') => {
+  const handleUpdateEstado = async (id: number, estado: 'aprobado' | 'pendiente' | 'rechazado') => {
     try {
-      await BilleterasService.updateRetiroEstado(id, estado)
-      await fetchBilleteraData()
+      await updateRetiroEstado(id, estado)
+      toast.success(`Retiro ${estado} exitosamente`)
     } catch (error) {
       console.error('Error al actualizar estado:', error)
+      toast.error('Error al actualizar estado del retiro')
     }
   }
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number, showSoles: boolean = false) => {
+    if (showSoles) {
+      return new Intl.NumberFormat('es-PE', {
+        style: 'currency',
+        currency: 'PEN'
+      }).format(amount * conversion)
+    }
     return new Intl.NumberFormat('es-PE', {
       style: 'currency',
       currency: 'USD'
@@ -95,6 +98,10 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
       hour: '2-digit',
       minute: '2-digit'
     })
+  }
+
+  const refreshData = async () => {
+    await refresh()
   }
 
   const getEstadoBadge = (estado: string) => {
@@ -129,157 +136,396 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
 
   return (
     <div className={`space-y-6 ${className}`}>
-      {/* Resumen de la billetera */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <IconWallet className="h-5 w-5" />
-            Mi Billetera de Administrador
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Saldo actual</p>
-              <p className="text-3xl font-bold text-green-600">
-                {billetera ? formatCurrency(billetera.saldo) : formatCurrency(0)}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Dialog open={showRetiroModal} onOpenChange={setShowRetiroModal}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-2">
-                    <IconTrendingDown className="h-4 w-4" />
-                    Nuevo Retiro
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Solicitar Retiro</DialogTitle>
-                    <DialogDescription>
-                      Crea una nueva solicitud de retiro de tu billetera.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label className='pb-5' htmlFor="monto-retiro">Monto a retirar</Label>
-                      <Input
-                        id="monto-retiro"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max={billetera?.saldo || 0}
-                        placeholder="0.00"
-                        value={retiroForm.monto}
-                        onChange={(e) => setRetiroForm({ monto: e.target.value })}
-                      />
-                      {billetera && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Saldo disponible: {formatCurrency(billetera.saldo)}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setShowRetiroModal(false)}>
-                      Cancelar
-                    </Button>
-                    <Button 
-                      onClick={handleCreateRetiro}
-                      disabled={creating || !retiroForm.monto || parseFloat(retiroForm.monto) > (billetera?.saldo || 0)}
-                    >
-                      {creating ? (
-                        <>
-                          <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Creando...
-                        </>
-                      ) : (
-                        <>
-                          <IconPlus className="mr-2 h-4 w-4" />
-                          Solicitar Retiro
-                        </>
-                      )}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="billetera" className="space-y-6">
+        <TabsList className="mb-4">
+          <TabsTrigger value="billetera">Mi Billetera</TabsTrigger>
+          <TabsTrigger value="comisiones">Mis Comisiones</TabsTrigger>
+          <TabsTrigger value="publicaciones">
+            Publicaciones ({comisionesPublicacion.length})
+          </TabsTrigger>
+          <TabsTrigger value="retiros-comision">
+            Retiros ({comisionesRetiro.length})
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Historial de movimientos */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Mis Retiros</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead>
-                <tr className="border-b">
-                  <th className="px-4 py-3 font-medium">Monto</th>
-                  <th className="px-4 py-3 font-medium">Estado</th>
-                  <th className="px-4 py-3 font-medium">Fecha</th>
-                  <th className="px-4 py-3 font-medium">Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {retiros.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
-                      No hay retiros registrados
-                    </td>
-                  </tr>
-                ) : (
-                  retiros.map(retiro => (
-                    <tr key={retiro.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <td className="px-4 py-3">
-                        <span className="font-semibold text-red-600">
-                          -{formatCurrency(retiro.monto)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        {getEstadoBadge(retiro.estado)}
-                      </td>
-                      <td className="px-4 py-3 text-gray-500">
-                        {formatDate(retiro.created_at)}
-                      </td>
-                      <td className="px-4 py-3">
-                        {retiro.estado === 'pendiente' && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button size="sm" variant="outline">
-                                <IconMenu2 className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuItem
-                                onClick={() => handleUpdateEstado(retiro.id, 'aprobado')}
-                                className="text-green-600"
-                              >
-                                <IconCheck className="mr-2 h-4 w-4" />
-                                Aprobar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleUpdateEstado(retiro.id, 'rechazado')}
-                                className="text-red-600"
-                              >
-                                <IconX className="mr-2 h-4 w-4" />
-                                Rechazar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
-                      </td>
+        {/* Tab de Mi Billetera */}
+        <TabsContent value="billetera" className="space-y-6">
+          {/* Resumen de la billetera */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <IconWallet className="h-5 w-5" />
+                  Mi Billetera de Administrador
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={refreshData}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <IconLoader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <IconRefresh className="h-4 w-4 mr-2" />
+                  )}
+                  Actualizar
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Saldo actual</p>
+                  <p className="text-3xl font-bold text-green-600">
+                    {billetera ? formatCurrency(billetera.saldo) : formatCurrency(0)}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Dialog open={showRetiroModal} onOpenChange={setShowRetiroModal}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="flex items-center gap-2">
+                        <IconTrendingDown className="h-4 w-4" />
+                        Nuevo Retiro
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Solicitar Retiro</DialogTitle>
+                        <DialogDescription>
+                          Crea una nueva solicitud de retiro de tu billetera.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label className='pb-5' htmlFor="monto-retiro">Monto a retirar</Label>
+                          <Input
+                            id="monto-retiro"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max={billetera?.saldo || 0}
+                            placeholder="0.00"
+                            value={retiroForm.monto}
+                            onChange={(e) => setRetiroForm({ monto: e.target.value })}
+                          />
+                          {billetera && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              Saldo disponible: {formatCurrency(billetera.saldo)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowRetiroModal(false)}>
+                          Cancelar
+                        </Button>
+                        <Button 
+                          onClick={handleCreateRetiro}
+                          disabled={creating || !retiroForm.monto || parseFloat(retiroForm.monto) > (billetera?.saldo || 0)}
+                        >
+                          {creating ? (
+                            <>
+                              <IconLoader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Creando...
+                            </>
+                          ) : (
+                            <>
+                              <IconPlus className="mr-2 h-4 w-4" />
+                              Solicitar Retiro
+                            </>
+                          )}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Historial de movimientos */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Mis Retiros</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-4 py-3 font-medium">Monto</th>
+                      <th className="px-4 py-3 font-medium">Estado</th>
+                      <th className="px-4 py-3 font-medium">Fecha</th>
+                      <th className="px-4 py-3 font-medium">Acciones</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody>
+                    {retiros.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
+                          No hay retiros registrados
+                        </td>
+                      </tr>
+                    ) : (
+                      retiros.map(retiro => (
+                        <tr key={retiro.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <td className="px-4 py-3">
+                            <span className="font-semibold text-red-600">
+                              -{formatCurrency(retiro.monto)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            {getEstadoBadge(retiro.estado)}
+                          </td>
+                          <td className="px-4 py-3 text-gray-500">
+                            {formatDate(retiro.created_at)}
+                          </td>
+                          <td className="px-4 py-3">
+                            {retiro.estado === 'pendiente' && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button size="sm" variant="outline">
+                                    <IconMenu2 className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                  <DropdownMenuItem
+                                    onClick={() => handleUpdateEstado(retiro.id, 'aprobado')}
+                                    className="text-green-600"
+                                  >
+                                    <IconCheck className="mr-2 h-4 w-4" />
+                                    Aprobar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleUpdateEstado(retiro.id, 'rechazado')}
+                                    className="text-red-600"
+                                  >
+                                    <IconX className="mr-2 h-4 w-4" />
+                                    Rechazar
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab de Mis Comisiones - Resumen */}
+        <TabsContent value="comisiones" className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Comisiones</CardTitle>
+                <IconCoin className="h-4 w-4 text-green-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(estadisticasComisiones.totalComisiones)}</div>
+                <div className="text-sm text-muted-foreground">{formatCurrency(estadisticasComisiones.totalComisiones, true)}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {estadisticasComisiones.cantidadPublicaciones + estadisticasComisiones.cantidadRetiros} transacciones
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Comisiones Publicación</CardTitle>
+                <IconPackage className="h-4 w-4 text-blue-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(estadisticasComisiones.totalComisionesPublicacion)}</div>
+                <div className="text-sm text-muted-foreground">{formatCurrency(estadisticasComisiones.totalComisionesPublicacion, true)}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {estadisticasComisiones.cantidadPublicaciones} publicaciones
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Comisiones Retiro</CardTitle>
+                <IconWallet className="h-4 w-4 text-orange-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(estadisticasComisiones.totalComisionesRetiro)}</div>
+                <div className="text-sm text-muted-foreground">{formatCurrency(estadisticasComisiones.totalComisionesRetiro, true)}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {estadisticasComisiones.cantidadRetiros} retiros
+                </p>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Resumen de Comisiones</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Tasa de conversión actual: S/. {conversion.toFixed(2)} por USD
+              </p>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <IconPackage className="h-4 w-4 text-blue-600" />
+                    <span className="font-medium">Promedio por Publicación</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-medium">{formatCurrency(estadisticasComisiones.promedioComisionPublicacion)}</div>
+                    <div className="text-xs text-muted-foreground">{formatCurrency(estadisticasComisiones.promedioComisionPublicacion, true)}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <IconWallet className="h-4 w-4 text-orange-600" />
+                    <span className="font-medium">Promedio por Retiro</span>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-medium">{formatCurrency(estadisticasComisiones.promedioComisionRetiro)}</div>
+                    <div className="text-xs text-muted-foreground">{formatCurrency(estadisticasComisiones.promedioComisionRetiro, true)}</div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab de Publicaciones */}
+        <TabsContent value="publicaciones">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <IconPackage className="h-5 w-5" />
+                Comisiones por Publicación
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-4 py-3 font-medium">Producto</th>
+                      <th className="px-4 py-3 font-medium">Proveedor</th>
+                      <th className="px-4 py-3 font-medium">Precio</th>
+                      <th className="px-4 py-3 font-medium">Comisión (USD)</th>
+                      <th className="px-4 py-3 font-medium">Comisión (PEN)</th>
+                      <th className="px-4 py-3 font-medium">Fecha</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {comisionesPublicacion.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                          No hay comisiones de publicación registradas
+                        </td>
+                      </tr>
+                    ) : (
+                      comisionesPublicacion.map(comision => (
+                        <tr key={comision.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <td className="px-4 py-3 font-medium">{comision.producto.nombre}</td>
+                          <td className="px-4 py-3">
+                            {comision.proveedor.nombres} {comision.proveedor.apellidos}
+                            <div className="text-xs text-muted-foreground">@{comision.proveedor.usuario}</div>
+                          </td>
+                          <td className="px-4 py-3">{formatCurrency(comision.producto.precio_publico)}</td>
+                          <td className="px-4 py-3 font-semibold text-green-600">
+                            {formatCurrency(comision.monto_comision)}
+                          </td>
+                          <td className="px-4 py-3 font-semibold text-green-600">
+                            {formatCurrency(comision.monto_comision, true)}
+                          </td>
+                          <td className="px-4 py-3 text-gray-500">
+                            {new Date(comision.fecha_publicacion).toLocaleDateString('es-PE', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab de Retiros */}
+        <TabsContent value="retiros-comision">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <IconWallet className="h-5 w-5" />
+                Comisiones por Retiro
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-4 py-3 font-medium">Usuario</th>
+                      <th className="px-4 py-3 font-medium">Monto Retiro</th>
+                      <th className="px-4 py-3 font-medium">% Comisión</th>
+                      <th className="px-4 py-3 font-medium">Comisión (USD)</th>
+                      <th className="px-4 py-3 font-medium">Comisión (PEN)</th>
+                      <th className="px-4 py-3 font-medium">Fecha</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {comisionesRetiro.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                          No hay comisiones por retiro registradas
+                        </td>
+                      </tr>
+                    ) : (
+                      comisionesRetiro.map(comision => (
+                        <tr key={comision.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
+                          <td className="px-4 py-3">
+                            {comision.usuario.nombres} {comision.usuario.apellidos}
+                            <div className="text-xs text-muted-foreground">@{comision.usuario.usuario}</div>
+                          </td>
+                          <td className="px-4 py-3">{formatCurrency(comision.monto_retiro)}</td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
+                              {comision.porcentaje_comision.toFixed(1)}%
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 font-semibold text-green-600">
+                            {formatCurrency(comision.monto_comision)}
+                          </td>
+                          <td className="px-4 py-3 font-semibold text-green-600">
+                            {formatCurrency(comision.monto_comision, true)}
+                          </td>
+                          <td className="px-4 py-3 text-gray-500">
+                            {new Date(comision.fecha_retiro).toLocaleDateString('es-PE', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

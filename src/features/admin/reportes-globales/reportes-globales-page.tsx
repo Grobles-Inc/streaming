@@ -21,7 +21,6 @@ import { ComprasStats } from '../compras/components/compras-stats'
 import { EstadisticasRecargasCard } from '../recargas/components/estadisticas-recargas'
 import { EstadisticasRetirosCard } from '../retiros/components/estadisticas-retiros'
 import { EstadisticasProductosCard } from './components/estadisticas-productos'
-import { EstadisticasComisiones } from './components/estadisticas-comisiones'
 
 export default function ReportesGlobalesPage() {
   const { loading: recargasLoading } = useRecargas()
@@ -76,7 +75,6 @@ export default function ReportesGlobalesPage() {
             <TabsTrigger value="recargas">Recargas</TabsTrigger>
             <TabsTrigger value="billeteras">Billeteras</TabsTrigger>
             <TabsTrigger value="retiros">Retiros</TabsTrigger>
-            <TabsTrigger value="comisiones">Comisiones</TabsTrigger>
           </TabsList>
 
           {/* Estadísticas de Productos */}
@@ -178,13 +176,6 @@ export default function ReportesGlobalesPage() {
                 estadisticas={estadisticasRetiros} 
                 loading={loadingCompras} 
               />
-            </div>
-          </TabsContent>
-
-          {/* Estadísticas de Comisiones */}
-          <TabsContent value="comisiones">
-            <div className="space-y-6">
-              <EstadisticasComisiones />
             </div>
           </TabsContent>
         </Tabs>

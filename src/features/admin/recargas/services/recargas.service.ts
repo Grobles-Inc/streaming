@@ -181,4 +181,67 @@ export class RecargasService {
 
     return data as SupabaseRecarga[]
   }
+
+  // Eliminar recarga (solo si está rechazada)
+  static async eliminarRecarga(id: number): Promise<boolean> {
+    // Verificar que la recarga esté rechazada antes de eliminar
+    const { data: recarga, error: fetchError } = await supabase
+      .from('recargas')
+      .select('id, estado')
+      .eq('id', id)
+      .single()
+
+    if (fetchError) {
+      console.error('Error fetching recarga for deletion:', fetchError)
+      throw fetchError
+    }
+
+    if (!recarga || recarga.estado !== 'rechazado') {
+      throw new Error('Solo se pueden eliminar recargas rechazadas')
+    }
+
+    const { error } = await supabase
+      .from('recargas')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('Error deleting recarga:', error)
+      throw error
+    }
+
+    return true
+  }
+
+  // Eliminar múltiples recargas rechazadas
+  static async eliminarRecargas(ids: number[]): Promise<boolean> {
+    // Verificar que todas las recargas estén rechazadas antes de eliminar
+    const { data: recargas, error: fetchError } = await supabase
+      .from('recargas')
+      .select('id, estado')
+      .in('id', ids)
+
+    if (fetchError) {
+      console.error('Error fetching recargas for deletion:', fetchError)
+      throw fetchError
+    }
+
+    const recargasNoRechazadas = recargas?.filter(r => r.estado !== 'rechazado') || []
+    
+    if (recargasNoRechazadas.length > 0) {
+      throw new Error('Solo se pueden eliminar recargas rechazadas')
+    }
+
+    const { error } = await supabase
+      .from('recargas')
+      .delete()
+      .in('id', ids)
+
+    if (error) {
+      console.error('Error deleting recargas:', error)
+      throw error
+    }
+
+    return true
+  }
 }

@@ -44,7 +44,7 @@ export default function RetirosPage() {
   } = useRetiros()
 
   // Manejar aprobación individual
-  const handleAprobar = async (id: string) => {
+  const handleAprobar = async (id: number) => {
     const success = await aprobarRetiro(id)
     if (success) {
       toast.success('Retiro aprobado exitosamente')
@@ -54,7 +54,7 @@ export default function RetirosPage() {
   }
 
   // Manejar rechazo individual
-  const handleRechazar = async (id: string) => {
+  const handleRechazar = async (id: number) => {
     const success = await rechazarRetiro(id)
     if (success) {
       toast.success('Retiro rechazado exitosamente')
@@ -64,7 +64,7 @@ export default function RetirosPage() {
   }
 
   // Manejar aprobación masiva
-  const handleAprobarSeleccionados = async (ids: string[]) => {
+  const handleAprobarSeleccionados = async (ids: number[]) => {
     const success = await aprobarRetiros(ids)
     if (success) {
       toast.success(`${ids.length} retiro(s) aprobado(s) exitosamente`)
@@ -74,7 +74,7 @@ export default function RetirosPage() {
   }
 
   // Manejar rechazo masivo
-  const handleRechazarSeleccionados = async (ids: string[]) => {
+  const handleRechazarSeleccionados = async (ids: number[]) => {
     const success = await rechazarRetiros(ids)
     if (success) {
       toast.success(`${ids.length} retiro(s) rechazado(s) exitosamente`)

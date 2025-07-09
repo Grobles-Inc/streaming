@@ -196,7 +196,7 @@ export default function ConfiguracionSistemaPage() {
             <CardHeader>
               <CardTitle>Comisión Global (%)</CardTitle>
               <CardDescription>
-                Porcentaje de comisión aplicado a las ventas de productos.
+                Porcentaje de comisión aplicado a los retiros de los usuarios.
               </CardDescription>
             </CardHeader>
             <CardContent>

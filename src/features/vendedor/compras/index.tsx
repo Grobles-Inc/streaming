@@ -11,25 +11,30 @@ import { compraSchema } from './data/schema'
 import { useComprasByVendedor } from './queries'
 import { IconRefresh } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
+import { useQueryClient } from '@tanstack/react-query'
+
 
 export default function Compras() {
   const { user } = useAuth()
   const { data: compras, refetch, isRefetching } = useComprasByVendedor(user?.id as string)
   const comprasList = compras?.data.map(compra => compraSchema.parse(compra)) || []
   const totalCompras = compras?.count || 0
+  const queryClient = useQueryClient()
+
   return (
     <ComprasProvider>
       <Header>
         <div className='ml-auto flex items-center space-x-4'>
-          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => refetch()} disabled={isRefetching} >
+          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => {
+            refetch()
+            queryClient.invalidateQueries({ queryKey: ['billeteras'] })
+          }} disabled={isRefetching} >
             <IconRefresh className={`${isRefetching ? 'animate-spin' : ''}`} />
           </Button>
           <ThemeSwitch />
           <ProfileDropdown />
         </div>
       </Header>
-
-
       <Main>
         <div className='mb-2 flex flex-wrap items-center justify-between space-y-2 gap-x-4'>
           <div>

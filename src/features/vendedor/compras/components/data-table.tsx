@@ -42,9 +42,33 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   )
+  const [globalFilter, setGlobalFilter] = React.useState('')
   const { user } = useAuth()
   const { isLoading } = useComprasByVendedor(user?.id as string)
   const [sorting, setSorting] = React.useState<SortingState>([])
+
+  const globalFilterFn = (row: any, _columnId: string, value: string) => {
+    const searchValue = value.toLowerCase()
+    const compra = row.original
+
+    // Search in ID
+    const id = compra.id?.toString() || ''
+    if (id.includes(searchValue)) return true
+
+    // Search in product name
+    const productName = compra.productos?.nombre?.toLowerCase() || ''
+    if (productName.includes(searchValue)) return true
+
+    // Search in email
+    const email = compra.stock_productos?.email?.toLowerCase() || ''
+    if (email.includes(searchValue)) return true
+
+    // Search in provider name
+    const providerName = compra.usuarios?.nombres?.toLowerCase() || ''
+    if (providerName.includes(searchValue)) return true
+
+    return false
+  }
 
   const table = useReactTable({
     data,
@@ -54,6 +78,7 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
       columnFilters,
+      globalFilter,
     },
     initialState: {
       pagination: {
@@ -65,6 +90,8 @@ export function DataTable<TData, TValue>({
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
+    onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),

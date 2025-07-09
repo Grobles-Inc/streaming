@@ -211,28 +211,34 @@ const RenovacionCell = ({ row }: { row: Compra }) => {
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <div className="space-y-2">
-            <Label >Saldo Actual</Label>
-            <Badge variant="outline" className="text-xl font-semibold text-green-600 dark:text-green-400 h-auto py-2">
-              ${billetera?.saldo}
-            </Badge>
-          </div>
-          <div className="space-y-2">
-            <Label>Después de renovar</Label>
-            <Badge
-              variant="outline"
-              className={cn(
-                "text-xl font-semibold h-auto py-2",
-                saldo < 0 ? "text-destructive" : "text-red-600 dark:text-red-400"
-              )}
-            >
-              ${saldo}
-            </Badge>
-            {saldo < 0 && (
-              <p className="text-xs text-destructive">No tienes saldo suficiente para renovar</p>
-            )}
-          </div>
+          <div className='grid grid-cols-2 gap-4'>
+            <div className="space-y-1">
+              <Label>Saldo Actual</Label>
+              <span className="text-xl font-semibold text-green-600 dark:text-green-400 ">
+                $ {billetera?.saldo}
+              </span>
+            </div>
+            <div className="space-y-1">
+              <Label >Costo Renovación</Label>
+              <span className="text-xl font-semibold text-destructive">
+                $ {row.productos?.precio_renovacion}
+              </span>
+            </div>
 
+            <div className="space-y-1">
+              <Label>Después de renovar</Label>
+              <span
+                className=
+                "text-xl font-semibold"
+
+              >
+                $ {saldo}
+              </span>
+              {saldo < 0 && (
+                <p className="text-xs text-destructive">No tienes saldo suficiente para renovar</p>
+              )}
+            </div>
+          </div>
 
           <AlertDialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>

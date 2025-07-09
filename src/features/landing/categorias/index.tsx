@@ -7,10 +7,11 @@ import {
 import { Link } from '@tanstack/react-router'
 import { useCategorias } from '../queries'
 import { ProductsByCategory } from './components/products-by-category'
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
 import { useProductos } from "../queries/productos"
+
 import type { Categoria } from "../services/index"
 
 
@@ -38,6 +39,11 @@ export default function Categoria({ nombre }: { nombre: string }) {
       return acc
     }, {} as Record<string, number>)
   }, [productos?.data])
+
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" })
+  }, [])
 
   return (
     <div className="p-4">

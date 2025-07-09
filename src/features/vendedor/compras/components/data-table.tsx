@@ -47,7 +47,7 @@ export function DataTable<TData, TValue>({
   const { isLoading } = useComprasByVendedor(user?.id as string)
   const [sorting, setSorting] = React.useState<SortingState>([])
 
-  const globalFilterFn = (row: any, columnId: string, value: string) => {
+  const globalFilterFn = (row: any, _columnId: string, value: string) => {
     const searchValue = value.toLowerCase()
     const compra = row.original
 

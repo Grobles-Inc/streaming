@@ -3,10 +3,11 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { useBilleteraByUsuario } from '@/queries'
 import { useAuth } from '@/stores/authStore'
 import { useSearch } from '@/stores/searchStore'
-import { IconLayoutDashboard, IconPackage, IconShoppingBag, IconUser, IconWallet } from '@tabler/icons-react'
+import { IconLayoutDashboard, IconPackage, IconSearch, IconShoppingBag, IconUser, IconWallet } from '@tabler/icons-react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
+import { Label } from '../ui/label'
 
 const rolRedirect = {
   admin: '/admin/reportes-globales',
@@ -25,20 +26,28 @@ export default function LandingHeader() {
   return (
     <nav className="flex flex-col md:flex-row md:items-center md:justify-between md:px-6 px-4 py-4 gap-4 bg-base-100 shadow">
       <div className='flex flex-row justify-between items-center w-full'>
+        <div className='flex justify-between items-center w-full md:w-auto'>
 
-        <Link to="/">
+          <Link to="/">
 
-          <img src={Logo} alt="ML+" className='w-auto md:h-16 h-14 dark:invert' />
+            <img src={Logo} alt="ML+" className='w-auto md:h-16 h-14 dark:invert' />
 
 
-        </Link>
-        <div className=" w-1/2 hidden md:block md:mx-8">
-          <Input
-            type="text"
-            placeholder="¿Qué estás buscando?"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
+          </Link>
+
+          <Button variant="outline" className='md:hidden' size="icon" onClick={() => navigate({ to: user ? redirectRoute : '/sign-in' })}>
+            <IconUser />
+          </Button>
+
+        </div>
+
+        <div className="*:not-first:mt-2 w-1/2 md:block hidden ">
+          <div className="relative">
+            <Input id="search" className="peer pe-9" placeholder="¿Qué estás buscando?" type="email" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
+            <div className="text-muted-foreground/80 pointer-events-none absolute inset-y-0 end-0 flex items-center justify-center pe-3 peer-disabled:opacity-50">
+              <IconSearch size={16} aria-hidden="true" />
+            </div>
+          </div>
         </div>
         <div className="md:flex items-center gap-4 hidden ">
           {user && !isMobile ? (

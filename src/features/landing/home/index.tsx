@@ -56,7 +56,7 @@ export default function Home() {
 
 
 
-      <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-7  gap-4 p-4">
+      <div className="grid grid-cols-4 lg:grid-cols-7  md:gap-4 gap-2 md:p-4 ">
         {loadingCategorias ? (
           // Skeleton loading para categorías
           Array.from({ length: 6 }).map((_, i) => (
@@ -119,6 +119,20 @@ export default function Home() {
           )}
         </div>
       </div>
+      <footer className="text-center text-sm text-muted-foreground my-6 p-6 border-t bg-background">
+        <p>
+          © {new Date().getFullYear()} <strong>ML Streaming</strong> . Todos los derechos reservados.
+          <span className="mx-2">|</span>
+          <a
+            href="https://groblesolutions.netlify.app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Sitio Desarrollado por <span className="font-bold  text-yellow-500 transition-colors">Grobles</span>
+          </a>
+
+        </p>
+      </footer>
     </div>
   )
 }

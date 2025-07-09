@@ -13,6 +13,7 @@ import { z } from 'zod'
 import { Compra } from '../data/schema'
 import { useUpdateCompraStatus, useUpdateStockProductoStatus } from '../queries'
 import { Input } from '@/components/ui/input'
+import { useAuth } from '@/stores/authStore'
 
 const subjectOptions = [
   { value: 'correo', label: 'Correo' },
@@ -40,6 +41,7 @@ interface ComprasSoporteModalProps {
 
 export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasSoporteModalProps) {
   const isMobile = useIsMobile()
+  const { user } = useAuth()
   const { mutate: updateCompraStatus, isPending } = useUpdateCompraStatus()
   const { mutate: updateStockProductoStatus } = useUpdateStockProductoStatus()
   const { fecha_expiracion, productos } = currentRow
@@ -72,7 +74,7 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
       form.reset()
       setTimeout(() => {
         SoporteMessage({
-          nombre_cliente: currentRow.nombre_cliente,
+          usuario: user?.usuario || '',
           asunto: data.subject,
           mensaje: data.message,
           id_producto: currentRow.producto_id,

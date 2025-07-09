@@ -15,7 +15,7 @@ export default function SignIn() {
         <CardHeader>
           <CardTitle className='text-lg tracking-tight'>Inicia Sesión</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className='w-sm md:w-auto'>
           <UserAuthForm />
         </CardContent>
       </Card>

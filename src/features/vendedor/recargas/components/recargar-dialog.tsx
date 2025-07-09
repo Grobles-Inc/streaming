@@ -153,19 +153,35 @@ export function RecargarDialog() {
                 ))}
               </Stepper>
 
-              <div className='flex items-center gap-4'>
-                <img src={YapeQRImage} alt="Yape" className='md:size-36 size-28' />
+              <div className='flex items-center justify-between'>
+                <img src={YapeQRImage} alt="Yape" className='md:size-52 size-28' />
                 <div className='flex flex-col gap-4 md:p-4 p-2 justify-between rounded-sm bg-white text-black'>
-                  <div className='flex flex-col  gap-4'>
-                    <div className='flex items-center gap-2 '>
+                  <div className='flex flex-col  gap-2'>
+                    <div className='flex items-center gap-2'>
                       <img src="https://images.seeklogo.com/logo-png/38/1/yape-logo-png_seeklogo-381640.png" alt="Yape" className="md:size-14 size-10" />
-                      <img src="https://images.seeklogo.com/logo-png/38/1/plin-logo-png_seeklogo-386806.png" alt="Plin" className="md:size-14 size-10" />
+
                     </div>
 
-                    <p className=" text-xs md:text-center  "><strong className='text-base'>913 190 401</strong> <br /> Juan Laura P.</p>
+                    <p className="text-xs"><strong className='text-base'>+51 913 190 401</strong> <br /> Juan Laura P.</p>
+
                   </div>
+                  <div className='flex flex-row items-center md:gap-2'>
+                    <div className=''>
+
+                      <p className=" font-bold">Binance</p>
+                      <p className=" text-xs">ID: 977731480</p>
+                      <p className=" text-xs">Nombre: Juan M.</p>
+                      <p className=" text-xs">1 USDT = 3.5 soles</p>
+                    </div>
+                    <img src="https://images.seeklogo.com/logo-png/32/1/binance-coin-bnb-logo-png_seeklogo-325081.png" alt="Binance" className="md:size-14 size-10 " />
+                  </div>
+
                 </div>
+
               </div>
+
+
+
 
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>

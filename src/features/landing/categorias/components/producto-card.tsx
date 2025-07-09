@@ -114,7 +114,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
 
         </CardContent>
         <CardFooter className='px-4'>
-          <Button variant={isAgotado ? "destructive" : "default"} className="w-full" onClick={() => setOpen(true)} disabled={isAgotado}>
+          <Button className={`w-full ${isAgotado ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-700 hover:bg-blue-800'}`} onClick={() => setOpen(true)} disabled={isAgotado}>
             {isAgotado ? "Agotado" : "COMPRAR"}
           </Button>
         </CardFooter>

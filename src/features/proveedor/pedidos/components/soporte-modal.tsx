@@ -56,9 +56,6 @@ export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteMod
   const montoReembolso = compra.soporte_mensaje ? extraerMontoReembolso(compra.soporte_mensaje) : 0
   const esReembolso = compra.soporte_asunto === 'reembolso'
   const reembolsoYaProcesado = compra.estado === 'reembolsado'
-  
-  // Verificar si ya hubo alguna interacción previa
-  const yaHuboInteraccion = !!compra.soporte_respuesta || reembolsoYaProcesado
 
   const handleCompletarSoporte = async () => {
     const data = form.getValues()
@@ -282,20 +279,7 @@ export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteMod
             )}
             <Separator />
 
-            {/* Mensaje cuando ya se brindó soporte */}
-            {yaHuboInteraccion && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md border border-blue-200 dark:border-blue-700">
-                <div className="flex items-center gap-2">
-                  <IconCheck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">
-                    {reembolsoYaProcesado 
-                      ? "Este caso ya fue resuelto con un reembolso procesado."
-                      : "Ya se ha brindado soporte para este caso anteriormente."
-                    }
-                  </p>
-                </div>
-              </div>
-            )}
+
 
             {/* Formulario de respuesta */}
             <Form {...form}>
@@ -310,7 +294,6 @@ export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteMod
                         <Textarea
                           placeholder="Escribe tu respuesta para el cliente. Este mensaje se enviará al vendedor para que lo reenvíe..."
                           className="min-h-[100px]"
-                          disabled={yaHuboInteraccion}
                           {...field}
                         />
                       </FormControl>
@@ -329,11 +312,10 @@ export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteMod
             </Button>
             <Button 
               onClick={() => handleCompletarSoporte()} 
-              disabled={isPendingCompletarSoporte || yaHuboInteraccion}
-              title={yaHuboInteraccion ? "Ya se ha brindado soporte para este caso" : ""}
+              disabled={isPendingCompletarSoporte}
             >
               {isPendingCompletarSoporte && <IconLoader className="mr-2 h-4 w-4 animate-spin" />}
-              {yaHuboInteraccion ? "Soporte Ya Brindado" : "Brindar Soporte"}
+              Brindar Soporte
             </Button>
           </div>
         </DialogContent>

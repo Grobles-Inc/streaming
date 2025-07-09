@@ -312,3 +312,13 @@ export const useVerificarProductosVencidos = () => {
     },
   })
 } 
+
+// 🆕 Hook para verificar el estado de un stock después de un reembolso
+export const useVerificarEstadoStockDespuesReembolso = (stockProductoId: number) => {
+  return useQuery({
+    queryKey: ['verificar-estado-stock', stockProductoId],
+    queryFn: () => productosService.verificarEstadoStockDespuesReembolso(stockProductoId),
+    enabled: stockProductoId > 0,
+    staleTime: 0, // Siempre refrescar para obtener datos actuales
+  })
+} 

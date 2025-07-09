@@ -948,3 +948,55 @@ export const getProductosByProveedorConVerificacion = async (
     return await getProductosByProveedorId(proveedorId)
   }
 }
+
+// 🆕 Función utilitaria para verificar el estado de un stock producto después de un reembolso
+export const verificarEstadoStockDespuesReembolso = async (stockProductoId: number) => {
+  try {
+    const { data: stock, error } = await supabase
+      .from('stock_productos')
+      .select(`
+        id,
+        estado,
+        soporte_stock_producto,
+        publicado,
+        producto_id,
+        productos:producto_id (
+          id,
+          nombre,
+          stock_de_productos
+        )
+      `)
+      .eq('id', stockProductoId)
+      .single()
+
+    if (error || !stock) {
+      console.error('Error verificando estado del stock:', error)
+      return null
+    }
+
+    // Ahora productos es un objeto singular, no un array
+    const producto = stock.productos as any
+    const estaEnArray = producto?.stock_de_productos?.some(
+      (item: any) => item.id === stockProductoId
+    ) || false
+
+    return {
+      stockId: stock.id,
+      estado: stock.estado,
+      soporteEstado: stock.soporte_stock_producto,
+      publicado: stock.publicado,
+      productoId: stock.producto_id,
+      productoNombre: producto?.nombre,
+      estaEnArrayStockDeProductos: estaEnArray,
+      totalEnArray: producto?.stock_de_productos?.length || 0,
+      mensaje: stock.estado === 'disponible' && estaEnArray 
+        ? 'Stock correctamente devuelto y disponible'
+        : stock.estado === 'disponible' && !estaEnArray
+        ? 'Stock disponible pero no está en el array (sincronizar requerido)'
+        : 'Stock no está disponible'
+    }
+  } catch (error) {
+    console.error('Error en verificarEstadoStockDespuesReembolso:', error)
+    return null
+  }
+}

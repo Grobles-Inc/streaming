@@ -2,6 +2,9 @@ import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/supabase'
 import {  UpdateSoporteStatusParams } from '../data/types'
 
+// Importar la función para actualizar el array stock_de_productos
+import { updateStockDeProductos } from '../../productos'
+
 export type Compra = Database['public']['Tables']['compras']['Row']
 export type Usuario = Database['public']['Tables']['usuarios']['Row']
 export type Producto = Database['public']['Tables']['productos']['Row']
@@ -236,6 +239,17 @@ export const procesarReembolsoProveedor = async (
       montoReembolso
     })
 
+    // 0. Obtener información de la compra para el stock_producto_id
+    const { data: compra, error: errorCompra } = await supabase
+      .from('compras')
+      .select('stock_producto_id, producto_id')
+      .eq('id', compraId)
+      .single()
+
+    if (errorCompra || !compra) {
+      return { success: false, error: 'No se encontró la compra' }
+    }
+
     // 1. Obtener billeteras
     const { data: billeteraProveedor, error: errorBilleteraProveedor } = await supabase
       .from('billeteras')
@@ -306,8 +320,45 @@ export const procesarReembolsoProveedor = async (
       return { success: false, error: 'Error al transferir fondos al vendedor' }
     }
 
-    // 4. Actualizar el estado de la compra a "reembolsado"
-    const { error: errorCompra } = await supabase
+    // 4. 🆕 DEVOLVER EL STOCK: Cambiar estado del stock_producto de "vendido" a "disponible"
+    if (compra.stock_producto_id) {
+      const { error: errorStock } = await supabase
+        .from('stock_productos')
+        .update({ 
+          estado: 'disponible',
+          soporte_stock_producto: 'activo'
+        })
+        .eq('id', compra.stock_producto_id)
+
+      if (errorStock) {
+        console.error('Error actualizando estado del stock:', errorStock)
+        // Revertir transferencias de billeteras si falla la actualización del stock
+        await supabase
+          .from('billeteras')
+          .update({ saldo: billeteraProveedor.saldo })
+          .eq('usuario_id', proveedorId)
+        
+        await supabase
+          .from('billeteras')
+          .update({ saldo: billeteraVendedor.saldo })
+          .eq('usuario_id', vendedorId)
+        
+        return { success: false, error: 'Error al devolver el stock a disponible' }
+      }
+
+      // 5. 🆕 ACTUALIZAR ARRAY: Sincronizar el array stock_de_productos
+      try {
+        await updateStockDeProductos(compra.producto_id)
+        console.log('✅ Stock devuelto al array stock_de_productos del producto:', compra.producto_id)
+      } catch (stockError) {
+        console.error('Error actualizando stock_de_productos:', stockError)
+        // Nota: No revertimos todo por este error, pero lo registramos
+        console.warn('⚠️ Reembolso procesado pero stock_de_productos no se pudo actualizar. Puede sincronizarse manualmente.')
+      }
+    }
+
+    // 6. Actualizar el estado de la compra a "reembolsado"
+    const { error: errorCompraUpdate } = await supabase
       .from('compras')
       .update({
         estado: 'reembolsado',
@@ -315,9 +366,9 @@ export const procesarReembolsoProveedor = async (
       })
       .eq('id', compraId)
 
-    if (errorCompra) {
-      console.error('Error actualizando estado de compra:', errorCompra)
-      // Revertir transferencias si falla la actualización de la compra
+    if (errorCompraUpdate) {
+      console.error('Error actualizando estado de compra:', errorCompraUpdate)
+      // Revertir todo si falla la actualización de la compra
       await supabase
         .from('billeteras')
         .update({ saldo: billeteraProveedor.saldo })
@@ -327,6 +378,17 @@ export const procesarReembolsoProveedor = async (
         .from('billeteras')
         .update({ saldo: billeteraVendedor.saldo })
         .eq('usuario_id', vendedorId)
+
+      // Revertir estado del stock si existe
+      if (compra.stock_producto_id) {
+        await supabase
+          .from('stock_productos')
+          .update({ 
+            estado: 'vendido',
+            soporte_stock_producto: 'soporte'
+          })
+          .eq('id', compra.stock_producto_id)
+      }
       
       return { success: false, error: 'Error al actualizar el estado de la compra' }
     }
@@ -335,7 +397,8 @@ export const procesarReembolsoProveedor = async (
       proveedorAntes: billeteraProveedor.saldo,
       proveedorDespues: nuevoSaldoProveedor,
       vendedorAntes: billeteraVendedor.saldo,
-      vendedorDespues: nuevoSaldoVendedor
+      vendedorDespues: nuevoSaldoVendedor,
+      stockDevuelto: compra.stock_producto_id ? 'Sí' : 'No'
     })
 
     return { success: true }

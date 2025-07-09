@@ -34,9 +34,12 @@ export default function LandingHeader() {
 
           </Link>
 
-          <Button variant="outline" className='md:hidden' size="icon" onClick={() => navigate({ to: user ? redirectRoute : '/sign-in' })}>
-            <IconUser />
-          </Button>
+          {
+            !user && (
+
+              <Button variant="outline" className='md:hidden' size="icon" onClick={() => navigate({ to: '/sign-in' })}>
+                <IconUser />
+              </Button>)}
 
         </div>
 

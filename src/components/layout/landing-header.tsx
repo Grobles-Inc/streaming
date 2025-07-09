@@ -7,7 +7,6 @@ import { IconLayoutDashboard, IconPackage, IconSearch, IconShoppingBag, IconUser
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
-import { Label } from '../ui/label'
 
 const rolRedirect = {
   admin: '/admin/reportes-globales',

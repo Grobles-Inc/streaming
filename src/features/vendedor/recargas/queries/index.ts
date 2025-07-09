@@ -49,7 +49,7 @@ export const useCreateRecarga = () => {
       queryClient.invalidateQueries({ queryKey: ['recargas'] })
       queryClient.invalidateQueries({ queryKey: ['billetera'] })
       toast.success('Recarga solicitada', {
-        description: 'La comisión de la recarga será reducida de tu saldo una vez aprobada.',
+        description: 'Tu saldo se actualizará una vez validada la transacción.',
       })
     },
     onError: () => {

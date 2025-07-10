@@ -1,5 +1,4 @@
 import { Header } from '@/components/layout/header'
-import { Search } from '@/components/search'
 import { Main } from '@/components/layout/main'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -26,7 +25,7 @@ export function ProductosPage() {
       <>
         <Header>
           <div className='ml-auto flex items-center space-x-4'>
-            <Search />
+  
           </div>
         </Header>
         <Main>

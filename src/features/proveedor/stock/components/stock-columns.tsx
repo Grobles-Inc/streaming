@@ -125,15 +125,6 @@ export const createStockColumns = (
     ),
   },
   {
-    accessorKey: 'pin',
-    header: 'PIN',
-    cell: ({ row }) => (
-      <div className="font-mono text-sm">
-        {row.getValue('pin') || 'N/A'}
-      </div>
-    ),
-  },
-  {
     accessorKey: 'perfil',
     header: 'Perfil',
     cell: ({ row }) => (
@@ -141,6 +132,15 @@ export const createStockColumns = (
         <div className="truncate" title={row.getValue('perfil') || 'N/A'}>
           {row.getValue('perfil') || 'N/A'}
         </div>
+      </div>
+    ),
+  },
+  {
+    accessorKey: 'pin',
+    header: 'PIN',
+    cell: ({ row }) => (
+      <div className="font-mono text-sm">
+        {row.getValue('pin') || 'N/A'}
       </div>
     ),
   },

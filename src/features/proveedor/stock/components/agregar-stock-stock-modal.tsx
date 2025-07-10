@@ -113,16 +113,28 @@ export function AgregarStockStockModal({
   useEffect(() => {
     if (tipoSeleccionado === 'perfiles') {
       // Limpiar campos individuales para perfiles
+      let emailPrelleno = ''
+      let clavePrelleno = ''
+
+      if (stockExistente && stockExistente.length > 0) {
+        const primerPerfil = stockExistente.find(stock => stock.tipo === 'perfiles')
+        if (primerPerfil) {
+          emailPrelleno = primerPerfil.email || ''
+          clavePrelleno = primerPerfil.clave || ''
+        }
+      }
+      
       setValue('email', '')
       setValue('clave', '')
       setValue('url', '')
       setValue('perfil', '')
       setValue('pin', '')
+      setValue('perfiles', [{ email: emailPrelleno, clave: clavePrelleno, url: '', perfil: '', pin: '' }])
     } else {
       // Limpiar array de perfiles para cuenta/combo
       setValue('perfiles', [])
     }
-  }, [tipoSeleccionado, setValue])
+  }, [tipoSeleccionado, stockExistente, setValue])
 
   const onSubmit = async (data: StockFormData) => {
     if (!user?.id) {
@@ -207,7 +219,17 @@ export function AgregarStockStockModal({
   }
 
   const agregarPerfil = () => {
-    append({ email: '', clave: '', url: '', perfil: '', pin: '' })
+    let emailPrelleno = ''
+    let clavePrelleno = ''
+
+    if (stockExistente && stockExistente.length > 0) {
+      const primerPerfil = stockExistente.find(stock => stock.tipo === 'perfiles')
+      if (primerPerfil) {
+        emailPrelleno = primerPerfil.email || ''
+        clavePrelleno = primerPerfil.clave || ''
+      }
+    }
+    append({ email: emailPrelleno, clave: clavePrelleno, url: '', perfil: '', pin: '' })
   }
 
   const eliminarPerfil = (index: number) => {

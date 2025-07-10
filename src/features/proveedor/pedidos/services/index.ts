@@ -19,7 +19,7 @@ export const getComprasByProveedorId = async (proveedorId: string): Promise<Comp
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, precio_publico, tiempo_uso),
+      productos:producto_id (nombre, precio_publico, tiempo_uso, precio_renovacion),
       usuarios:vendedor_id (nombres, apellidos, telefono),
       stock_productos:stock_producto_id (id, email, clave, pin, perfil, url, soporte_stock_producto)
     `)
@@ -40,7 +40,7 @@ export const getCompraById = async (id: string): Promise<Compra | null> => {
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, precio_publico)
+      productos:producto_id (nombre, precio_publico, precio_renovacion)
     `)
     .eq('id', id)
     .single()
@@ -76,7 +76,7 @@ export const getLatestComprasByProveedor = async (proveedorId: string): Promise<
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, precio_publico)
+      productos:producto_id (nombre, precio_publico, precio_renovacion)
     `)
     .eq('proveedor_id', proveedorId)
     .order('created_at', { ascending: false })
@@ -103,7 +103,7 @@ export const getComprasPaginatedByProveedor = async (
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, precio_publico)
+      productos:producto_id (nombre, precio_publico, precio_renovacion)
     `, { count: 'exact' })
     .eq('proveedor_id', proveedorId)
     .range(from, to)
@@ -218,6 +218,72 @@ export const updateStockProductoAccountData = async (
 
   if (error) {
     console.error('Error updating stock producto account data:', error)
+    throw error
+  }
+
+  return data
+}
+
+// Update producto precio renovacion
+export const updateProductoPrecioRenovacion = async (
+  productoId: number,
+  precioRenovacion: number
+): Promise<Producto | null> => {
+  const { data, error } = await supabase
+    .from('productos')
+    .update({ precio_renovacion: precioRenovacion })
+    .eq('id', productoId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating producto precio renovacion:', error)
+    throw error
+  }
+
+  return data
+}
+
+// Update pedido fechas
+export const updatePedidoFechas = async (
+  pedidoId: number,
+  fechaInicio: string | null,
+  fechaExpiracion: string | null
+): Promise<Compra | null> => {
+  const updateData: Database['public']['Tables']['compras']['Update'] = {}
+
+  if (fechaInicio) updateData.fecha_inicio = fechaInicio
+  if (fechaExpiracion) updateData.fecha_expiracion = fechaExpiracion
+
+  const { data, error } = await supabase
+    .from('compras')
+    .update(updateData)
+    .eq('id', pedidoId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating pedido fechas:', error)
+    throw error
+  }
+
+  return data
+}
+
+// Update producto tiempo uso
+export const updateProductoTiempoUso = async (
+  productoId: number,
+  tiempoUso: number
+): Promise<Producto | null> => {
+  const { data, error } = await supabase
+    .from('productos')
+    .update({ tiempo_uso: tiempoUso })
+    .eq('id', productoId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating producto tiempo uso:', error)
     throw error
   }
 
@@ -452,4 +518,3 @@ export const completarSoporte = async (
     }
   }
 } 
-

@@ -41,9 +41,9 @@ export default function CategoriaCard({ categoria }: { categoria: Categoria }) {
           <div className="spin spin-inside"></div>
         </div>
         <div className="card bg-card">
-          <div className='flex flex-col md:justify-center md:items-center gap-2 md:p-4 p-2'>
-            <img src={categoria.imagen_url || ''} alt={categoria.nombre} className='md:size-28 size-20 mix-blend-multiply dark:mix-blend-normal' />
-            <p className='text-xl font-bold text-center hidden md:block text-black dark:text-white'>{categoria.nombre}</p>
+          <div className='flex flex-col justify-center items-center h-full gap-2 md:p-4'>
+            <img src={categoria.imagen_url || ''} alt={categoria.nombre} className='md:size-28 size-16 mix-blend-multiply dark:mix-blend-normal' />
+            <p className='md:text-xl text-[9px] md:font-bold text-center  text-black dark:text-white'>{categoria.nombre}</p>
           </div>
         </div>
       </div>

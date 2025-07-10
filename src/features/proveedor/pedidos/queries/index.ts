@@ -194,3 +194,69 @@ export const useCompletarSoporte = () => {
     },
   })
 } 
+
+export const useUpdateProductoPrecioRenovacion = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      productoId,
+      precioRenovacion
+    } : {
+      productoId: number
+      precioRenovacion: number
+    }) => pedidosService.updateProductoPrecioRenovacion(productoId, precioRenovacion),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+      queryClient.invalidateQueries({ queryKey: ['productos'] })
+    },
+    onError: () => {
+      toast.error('Error al actualizar el precio de renovación')
+    },
+  })
+}
+
+export const useUpdatePedidoFechas = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      pedidoId,
+      fechaInicio,
+      fechaExpiracion
+    } : {
+      pedidoId: number
+      fechaInicio: string | null
+      fechaExpiracion: string | null
+    }) => pedidosService.updatePedidoFechas(pedidoId, fechaInicio, fechaExpiracion),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+      toast.success('Fechas del pedido actualizadas correctamente')
+    },
+    onError: () => {
+      toast.error('Error al actualizar las fechas del pedido')
+    },
+  })
+}
+
+export const useUpdateProductoTiempoUso = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      productoId,
+      tiempoUso
+    } : {
+      productoId: number
+      tiempoUso: number
+    }) => pedidosService.updateProductoTiempoUso(productoId, tiempoUso),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+      queryClient.invalidateQueries({ queryKey: ['productos'] })
+      toast.success('Duración del producto actualizada correctamente')
+    },
+    onError: () => {
+      toast.error('Error al actualizar la duración del producto')
+    },
+  })
+}

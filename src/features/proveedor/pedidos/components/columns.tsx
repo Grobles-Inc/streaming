@@ -171,6 +171,24 @@ export const columns: ColumnDef<Pedido>[] = [
     },
   },
   {
+    accessorKey: 'precio_renovacion',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Precio Renovación' />
+    ),
+    enableSorting: false,
+    cell: ({ row }) => {
+      const precioRenovacion = row.original.productos?.precio_renovacion
+      return (
+        <div className='flex justify-center'>
+          {precioRenovacion !== null && precioRenovacion !== undefined
+            ? `$ ${precioRenovacion.toFixed(2)}`
+            : 'N/A'
+          }
+        </div>
+      )
+    },
+  },
+  {
     accessorKey: 'cuenta_email',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Email Cuenta' />

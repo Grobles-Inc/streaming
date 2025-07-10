@@ -152,7 +152,7 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <p className="text-xs md:text-sm">1. Ingresa el monto a recargar.</p>
-                  <p className="text-xs md:text-sm">2. Yapea, Plinea el importe recargado.</p>
+                  <p className="text-xs md:text-sm">2. Yapeaa el importe recargado.</p>
                   <p className="text-xs md:text-sm mt-4">Para mayor información comunicarse al:</p>
                   <p className="text-xs md:text-sm font-semibold">+51 913 190 401</p>
                 </CardContent>

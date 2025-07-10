@@ -15,10 +15,13 @@ export const pedidoSchema = z.object({
   vendedor_id: z.string().optional(),
   stock_producto_id: z.number().optional(),
   precio: z.number().min(0, 'Precio debe ser positivo.'),
+  fecha_inicio: z.string().nullable().optional(),
+  fecha_expiracion: z.string().nullable().optional(),
   productos: z.object({
     nombre: z.string().optional(),
     precio_publico: z.number().optional(),
     tiempo_uso: z.number().optional(),
+    precio_renovacion: z.number().nullable().optional(),
   }).optional(),
   usuarios: z.object({
     nombres: z.string().optional(),
@@ -28,7 +31,6 @@ export const pedidoSchema = z.object({
   nombre_cliente: z.string().optional(),
   telefono_cliente: z.string().optional(),
   created_at: z.string().optional(),
-  fecha_inicio: z.string().optional(),
   fecha_termino: z.string().optional(),
   monto_reembolso: z.number().optional(),
   estado: pedidoEstadoSchema,

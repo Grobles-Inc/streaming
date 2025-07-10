@@ -90,6 +90,18 @@ export function AgregarStockModal({
   useEffect(() => {
     if (open) {
       const tipoAUsar = tipoExistente || 'cuenta'
+
+      let emailPrelleno = ''
+      let clavePrelleno = ''
+
+      if (tipoAUsar === 'perfiles' && stockExistente && stockExistente.length > 0) {
+        const primerPerfil = stockExistente.find(stock => stock.tipo === 'perfiles')
+        if (primerPerfil) {
+          emailPrelleno = primerPerfil.email || ''
+          clavePrelleno = primerPerfil.clave || ''
+        }
+      }
+     
       reset({
         producto_id: productoId || 0,
         tipo: tipoAUsar as 'cuenta' | 'perfiles' | 'combo',
@@ -98,7 +110,7 @@ export function AgregarStockModal({
         url: '',
         perfil: '',
         pin: '',
-        perfiles: [{ email: '', clave: '', url: '', perfil: '', pin: '' }]
+        perfiles: [{ email: emailPrelleno, clave: clavePrelleno, url: '', perfil: '', pin: '' }]
       })
     }
   }, [open, productoId, tipoExistente, reset])
@@ -201,7 +213,17 @@ export function AgregarStockModal({
   }
 
   const agregarPerfil = () => {
-    append({ email: '', clave: '', url: '', perfil: '', pin: '' })
+    let emailPrelleno = ''
+    let clavePrelleno = ''
+
+    if (stockExistente && stockExistente.length > 0) {
+      const primerPerfil = stockExistente.find(stock => stock.tipo === 'perfiles')
+      if (primerPerfil) {
+        emailPrelleno = primerPerfil.email || ''
+        clavePrelleno = primerPerfil.clave || ''
+      }
+    }
+    append({ email: emailPrelleno, clave: clavePrelleno, url: '', perfil: '', pin: '' })
   }
 
   const eliminarPerfil = (index: number) => {

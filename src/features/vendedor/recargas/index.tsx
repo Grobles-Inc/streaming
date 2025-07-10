@@ -10,16 +10,22 @@ import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Button } from '@/components/ui/button'
 import { IconRefresh } from '@tabler/icons-react'
 import { useAuth } from '@/stores/authStore'
+import { useQueryClient } from '@tanstack/react-query'
 
 export default function Recargas() {
   const { user } = useAuth()
   const { data: recargas, refetch, isRefetching } = useRecargas(user?.id as string)
   const recargasList = recargas?.data.map(recarga => recargaSchema.parse(recarga)) ?? []
+  const queryClient = useQueryClient()
+
   return (
     <RecargasProvider>
       <Header>
         <div className='ml-auto flex items-center space-x-4'>
-          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => refetch()} disabled={isRefetching} >
+          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => {
+            refetch()
+            queryClient.invalidateQueries({ queryKey: ['billeteras'] })
+          }} disabled={isRefetching} >
             <IconRefresh className={`${isRefetching ? 'animate-spin' : ''}`} />
           </Button>
           <ThemeSwitch />

@@ -111,6 +111,7 @@ export const useAuthStore = create<AuthState>((set, _get) => ({
     localStorage.removeItem('currentUserId')
     
     set({ user: null, loading: false })
+    
   },
 
   refreshUser: async () => {

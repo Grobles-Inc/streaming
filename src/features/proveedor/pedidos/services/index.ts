@@ -2,6 +2,9 @@ import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/supabase'
 import {  UpdateSoporteStatusParams } from '../data/types'
 
+// Importar la función para actualizar el array stock_de_productos
+import { updateStockDeProductos } from '../../productos'
+
 export type Compra = Database['public']['Tables']['compras']['Row']
 export type Usuario = Database['public']['Tables']['usuarios']['Row']
 export type Producto = Database['public']['Tables']['productos']['Row']
@@ -16,7 +19,7 @@ export const getComprasByProveedorId = async (proveedorId: string): Promise<Comp
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, precio_publico, tiempo_uso),
+      productos:producto_id (nombre, precio_publico, tiempo_uso, precio_renovacion),
       usuarios:vendedor_id (nombres, apellidos, telefono),
       stock_productos:stock_producto_id (id, email, clave, pin, perfil, url, soporte_stock_producto)
     `)
@@ -37,7 +40,7 @@ export const getCompraById = async (id: string): Promise<Compra | null> => {
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, precio_publico)
+      productos:producto_id (nombre, precio_publico, precio_renovacion)
     `)
     .eq('id', id)
     .single()
@@ -73,7 +76,7 @@ export const getLatestComprasByProveedor = async (proveedorId: string): Promise<
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, precio_publico)
+      productos:producto_id (nombre, precio_publico, precio_renovacion)
     `)
     .eq('proveedor_id', proveedorId)
     .order('created_at', { ascending: false })
@@ -100,7 +103,7 @@ export const getComprasPaginatedByProveedor = async (
     .from('compras')
     .select(`
       *,
-      productos:producto_id (nombre, precio_publico)
+      productos:producto_id (nombre, precio_publico, precio_renovacion)
     `, { count: 'exact' })
     .eq('proveedor_id', proveedorId)
     .range(from, to)
@@ -221,6 +224,72 @@ export const updateStockProductoAccountData = async (
   return data
 }
 
+// Update producto precio renovacion
+export const updateProductoPrecioRenovacion = async (
+  productoId: number,
+  precioRenovacion: number
+): Promise<Producto | null> => {
+  const { data, error } = await supabase
+    .from('productos')
+    .update({ precio_renovacion: precioRenovacion })
+    .eq('id', productoId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating producto precio renovacion:', error)
+    throw error
+  }
+
+  return data
+}
+
+// Update pedido fechas
+export const updatePedidoFechas = async (
+  pedidoId: number,
+  fechaInicio: string | null,
+  fechaExpiracion: string | null
+): Promise<Compra | null> => {
+  const updateData: Database['public']['Tables']['compras']['Update'] = {}
+
+  if (fechaInicio) updateData.fecha_inicio = fechaInicio
+  if (fechaExpiracion) updateData.fecha_expiracion = fechaExpiracion
+
+  const { data, error } = await supabase
+    .from('compras')
+    .update(updateData)
+    .eq('id', pedidoId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating pedido fechas:', error)
+    throw error
+  }
+
+  return data
+}
+
+// Update producto tiempo uso
+export const updateProductoTiempoUso = async (
+  productoId: number,
+  tiempoUso: number
+): Promise<Producto | null> => {
+  const { data, error } = await supabase
+    .from('productos')
+    .update({ tiempo_uso: tiempoUso })
+    .eq('id', productoId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating producto tiempo uso:', error)
+    throw error
+  }
+
+  return data
+}
+
 // Nuevo servicio para procesar reembolso
 export const procesarReembolsoProveedor = async (
   compraId: string,
@@ -235,6 +304,17 @@ export const procesarReembolsoProveedor = async (
       vendedorId,
       montoReembolso
     })
+
+    // 0. Obtener información de la compra para el stock_producto_id
+    const { data: compra, error: errorCompra } = await supabase
+      .from('compras')
+      .select('stock_producto_id, producto_id')
+      .eq('id', compraId)
+      .single()
+
+    if (errorCompra || !compra) {
+      return { success: false, error: 'No se encontró la compra' }
+    }
 
     // 1. Obtener billeteras
     const { data: billeteraProveedor, error: errorBilleteraProveedor } = await supabase
@@ -306,8 +386,45 @@ export const procesarReembolsoProveedor = async (
       return { success: false, error: 'Error al transferir fondos al vendedor' }
     }
 
-    // 4. Actualizar el estado de la compra a "reembolsado"
-    const { error: errorCompra } = await supabase
+    // 4. 🆕 DEVOLVER EL STOCK: Cambiar estado del stock_producto de "vendido" a "disponible"
+    if (compra.stock_producto_id) {
+      const { error: errorStock } = await supabase
+        .from('stock_productos')
+        .update({ 
+          estado: 'disponible',
+          soporte_stock_producto: 'activo'
+        })
+        .eq('id', compra.stock_producto_id)
+
+      if (errorStock) {
+        console.error('Error actualizando estado del stock:', errorStock)
+        // Revertir transferencias de billeteras si falla la actualización del stock
+        await supabase
+          .from('billeteras')
+          .update({ saldo: billeteraProveedor.saldo })
+          .eq('usuario_id', proveedorId)
+        
+        await supabase
+          .from('billeteras')
+          .update({ saldo: billeteraVendedor.saldo })
+          .eq('usuario_id', vendedorId)
+        
+        return { success: false, error: 'Error al devolver el stock a disponible' }
+      }
+
+      // 5. 🆕 ACTUALIZAR ARRAY: Sincronizar el array stock_de_productos
+      try {
+        await updateStockDeProductos(compra.producto_id)
+        console.log('✅ Stock devuelto al array stock_de_productos del producto:', compra.producto_id)
+      } catch (stockError) {
+        console.error('Error actualizando stock_de_productos:', stockError)
+        // Nota: No revertimos todo por este error, pero lo registramos
+        console.warn('⚠️ Reembolso procesado pero stock_de_productos no se pudo actualizar. Puede sincronizarse manualmente.')
+      }
+    }
+
+    // 6. Actualizar el estado de la compra a "reembolsado"
+    const { error: errorCompraUpdate } = await supabase
       .from('compras')
       .update({
         estado: 'reembolsado',
@@ -315,9 +432,9 @@ export const procesarReembolsoProveedor = async (
       })
       .eq('id', compraId)
 
-    if (errorCompra) {
-      console.error('Error actualizando estado de compra:', errorCompra)
-      // Revertir transferencias si falla la actualización de la compra
+    if (errorCompraUpdate) {
+      console.error('Error actualizando estado de compra:', errorCompraUpdate)
+      // Revertir todo si falla la actualización de la compra
       await supabase
         .from('billeteras')
         .update({ saldo: billeteraProveedor.saldo })
@@ -327,6 +444,17 @@ export const procesarReembolsoProveedor = async (
         .from('billeteras')
         .update({ saldo: billeteraVendedor.saldo })
         .eq('usuario_id', vendedorId)
+
+      // Revertir estado del stock si existe
+      if (compra.stock_producto_id) {
+        await supabase
+          .from('stock_productos')
+          .update({ 
+            estado: 'vendido',
+            soporte_stock_producto: 'soporte'
+          })
+          .eq('id', compra.stock_producto_id)
+      }
       
       return { success: false, error: 'Error al actualizar el estado de la compra' }
     }
@@ -335,7 +463,8 @@ export const procesarReembolsoProveedor = async (
       proveedorAntes: billeteraProveedor.saldo,
       proveedorDespues: nuevoSaldoProveedor,
       vendedorAntes: billeteraVendedor.saldo,
-      vendedorDespues: nuevoSaldoVendedor
+      vendedorDespues: nuevoSaldoVendedor,
+      stockDevuelto: compra.stock_producto_id ? 'Sí' : 'No'
     })
 
     return { success: true }
@@ -389,4 +518,3 @@ export const completarSoporte = async (
     }
   }
 } 
-

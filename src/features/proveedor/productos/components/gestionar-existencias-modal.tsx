@@ -227,8 +227,8 @@ export function GestionarExistenciasModal({
                       <TableHead>Tipo</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Clave</TableHead>
-                      <TableHead>PIN</TableHead>
                       <TableHead>Perfil</TableHead>
+                      <TableHead>PIN</TableHead>
                       <TableHead>URL</TableHead>
                       <TableHead>Estado</TableHead>
                       <TableHead>Soporte</TableHead>
@@ -256,13 +256,13 @@ export function GestionarExistenciasModal({
                             {stock.clave || 'N/A'}
                           </div>
                         </TableCell>
-                        <TableCell className="font-mono text-sm">
-                          {stock.pin || 'N/A'}
-                        </TableCell>
                         <TableCell className="max-w-24">
                           <div className="truncate" title={stock.perfil || 'N/A'}>
                             {stock.perfil || 'N/A'}
                           </div>
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {stock.pin || 'N/A'}
                         </TableCell>
                         <TableCell className="max-w-32">
                           {stock.url ? (

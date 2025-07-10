@@ -118,12 +118,18 @@ export function DataTableRowActions<TData>({
           open={showEditModal}
           onOpenChange={setShowEditModal}
           stockProductoId={pedido.stock_producto_id}
+          productoId={pedido.producto_id ?? null}
+          pedidoId={pedido.id ?? null}
           currentData={{
             email: pedido.stock_productos?.email,
             clave: pedido.stock_productos?.clave,
             pin: pedido.stock_productos?.pin,
             perfil: pedido.stock_productos?.perfil,
-            url: pedido.stock_productos?.url
+            url: pedido.stock_productos?.url,
+            precio_renovacion: pedido.productos?.precio_renovacion,
+            fecha_inicio: pedido.fecha_inicio || pedido.created_at,
+            fecha_expiracion: pedido.fecha_expiracion,
+            tiempo_uso: pedido.productos?.tiempo_uso
           }}
           onClose={handleCloseEditModal}
         />

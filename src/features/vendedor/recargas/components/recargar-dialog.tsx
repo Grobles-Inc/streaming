@@ -53,21 +53,20 @@ export function RecargarDialog() {
   }
 
   async function onSubmit(data: { amount: number }) {
-    const dollarAmount = data.amount / (configuracion?.conversion ?? 1)
     try {
+      const amountDollars = (data.amount / (configuracion?.conversion ?? 1)).toFixed(2)
       setDialogOpen(false)
       await crearRecarga({
-        monto: Number(dollarAmount.toFixed(2)),
+        monto: Number(amountDollars),
         usuario_id: user?.id as string,
       })
       form.reset()
-      setTimeout(() => {
-        RecargaMessage({
-          usuario: user?.usuario || '',
-          monto: data.amount,
-          id_cliente: user?.id || '',
-        }, '51913190401', isMobile ? 'mobile' : 'web')
-      }, 3000)
+      setDialogOpen(false)
+      RecargaMessage({
+        usuario: user?.usuario || '',
+        monto: Number(data.amount),
+        id_cliente: user?.id || '',
+      }, '51913190401', isMobile ? 'mobile' : 'web')
     } catch (error) {
       console.error('Error:', error)
     }
@@ -131,59 +130,63 @@ export function RecargarDialog() {
                   </FormItem>
                 )}
               />
-              <div className="space-y-4">
-                <div className="space-y-8 text-center">
-                  <Stepper orientation="vertical" >
-                    {steps.map(({ step, title, checked }) => (
-                      <StepperItem
-                        key={step}
-                        step={step}
-                        completed={checked}
-                        className="relative items-start not-last:flex-1"
-                      >
-                        <StepperTrigger className="items-start rounded pb-4 last:pb-0">
-                          <StepperIndicator />
-                          <div className="mt-0.5 space-y-0.5 px-2 text-left">
-                            <StepperTitle className='text-xs md:text-base'>{title}</StepperTitle>
-                          </div>
-                        </StepperTrigger>
-                        {step < steps.length && (
-                          <StepperSeparator className="absolute inset-y-0 top-[calc(1.5rem+0.125rem)] left-3 -order-1 m-0 -translate-x-1/2 group-data-[orientation=horizontal]/stepper:w-[calc(100%-1.5rem-0.25rem)] group-data-[orientation=horizontal]/stepper:flex-none group-data-[orientation=vertical]/stepper:h-[calc(100%-1.5rem-0.25rem)]" />
-                        )}
-                      </StepperItem>
-                    ))}
-                  </Stepper>
-                </div>
-                <div className='flex items-center justify-between'>
-                  <img src={YapeQRImage} alt="Yape" className='md:size-52 size-28' />
-                  <div className='flex flex-col gap-4 md:p-4 p-2 justify-between rounded-xl bg-white text-black'>
-                    <div className='flex flex-col  gap-2'>
-                      <div className='flex items-center gap-2'>
-                        <img src="https://images.seeklogo.com/logo-png/38/1/yape-logo-png_seeklogo-381640.png" alt="Yape" className="md:size-14 size-10" />
-                        <img src="https://images.seeklogo.com/logo-png/38/1/plin-logo-png_seeklogo-386806.png" alt="Plin" className="md:size-14 size-10" />
-                      </div>
 
-                      <p className=" text-xs  "><strong className='text-base'>+51 913 190 401</strong> <br /> Maiky Lopez Ramirez.</p>
+
+              <Stepper orientation="vertical" >
+                {steps.map(({ step, title, checked }) => (
+                  <StepperItem
+                    key={step}
+                    step={step}
+                    completed={checked}
+                    className="relative items-start not-last:flex-1"
+                  >
+                    <StepperTrigger className="items-start rounded pb-3 last:pb-0">
+                      <StepperIndicator />
+                      <div className="mt-0.5 space-y-0.5 px-2 text-left">
+                        <StepperTitle className='text-xs md:text-base'>{title}</StepperTitle>
+                      </div>
+                    </StepperTrigger>
+                    {step < steps.length && (
+                      <StepperSeparator className="absolute inset-y-0 top-[calc(1.5rem+0.125rem)] left-3 -order-1 m-0 -translate-x-1/2 group-data-[orientation=horizontal]/stepper:w-[calc(100%-1.5rem-0.25rem)] group-data-[orientation=horizontal]/stepper:flex-none group-data-[orientation=vertical]/stepper:h-[calc(100%-1.5rem-0.25rem)]" />
+                    )}
+                  </StepperItem>
+                ))}
+              </Stepper>
+
+              <div className='flex items-center justify-between'>
+                <img src={YapeQRImage} alt="Yape" className='md:size-52 size-28' />
+                <div className='flex flex-col gap-4 md:p-4 p-2 justify-between rounded-sm bg-white text-black'>
+                  <div className='flex flex-col  gap-2'>
+                    <div className='flex items-center gap-2'>
+                      <img src="https://images.seeklogo.com/logo-png/38/1/yape-logo-png_seeklogo-381640.png" alt="Yape" className="md:size-14 size-10" />
 
                     </div>
-                    <div className='flex flex-row items-center md:gap-2'>
-                      <div className=''>
 
-                        <p className=" font-bold">Binance</p>
-                        <p className=" text-xs">ID: 1096171177</p>
-                        <p className=" text-xs">Nombre: Maiky L.</p>
-                        <p className=" text-xs">1 USDT = 3.5 soles</p>
-                      </div>
-                      <img src="https://images.seeklogo.com/logo-png/32/1/binance-coin-bnb-logo-png_seeklogo-325081.png" alt="Binance" className="md:size-14 size-10 " />
+                    <p className="text-xs"><strong className='text-base'>+51 913 190 401</strong> <br /> Juan Laura P.</p>
+
+                  </div>
+                  <div className='flex flex-row items-center md:gap-2'>
+                    <div className=''>
+
+                      <p className=" font-bold">Binance</p>
+                      <p className=" text-xs">ID: 977731480</p>
+                      <p className=" text-xs">Nombre: Juan M.</p>
+                      <p className=" text-xs">1 USDT = 3.5 soles</p>
                     </div>
-
+                    <img src="https://images.seeklogo.com/logo-png/32/1/binance-coin-bnb-logo-png_seeklogo-325081.png" alt="Binance" className="md:size-14 size-10 " />
                   </div>
 
                 </div>
 
-
               </div>
+
+
+
+
               <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                  Cancelar
+                </Button>
                 <Button type="submit" disabled={isPending}>
                   {isPending ? <Loader2 className='size-4 animate-spin' /> : 'Solicitar'}
                 </Button>

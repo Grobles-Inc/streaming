@@ -13,7 +13,7 @@ export const getProductosByCategoria = async (categoriaId: string): Promise<Prod
     .select(`
       *,
       categorias:categoria_id(nombre),
-      usuarios:proveedor_id(nombres, apellidos, billetera_id)
+      usuarios:proveedor_id(nombres, apellidos, billetera_id, usuario)
     `)
     .eq('categoria_id', categoriaId)
     .order('created_at', { ascending: true })
@@ -34,7 +34,7 @@ export const getProductoById = async (id: string): Promise<Producto | null> => {
     .select(`
       *,
       categorias:categoria_id(nombre),
-      usuarios:proveedor_id(nombres)
+      usuarios:proveedor_id(nombres, usuario)
     `)
     .eq('id', id)
     .single()

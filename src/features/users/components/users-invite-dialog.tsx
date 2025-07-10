@@ -796,9 +796,7 @@ export function UsersInviteDialog({ open, onOpenChange }: Props) {
                               )}
                             </div> */}
                             
-                            <p className="text-xs text-muted-foreground mt-2">
-                              Los links de invitación (con o sin código de referido) comparten el mismo token base y permanecerán válidos durante 7 días. Si regeneras el token, todos los links anteriores dejarán de funcionar.
-                            </p>
+                            
                           </div>
                         </>
                       )

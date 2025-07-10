@@ -77,7 +77,7 @@ export const getCategorias = async (): Promise<Categoria[]> => {
   const { data, error } = await supabase
     .from('categorias')
     .select('*')
-    .order('created_at', { ascending: false })
+    .order('orden', { ascending: true })
 
   if (error) {
     console.error('Error fetching categorias:', error)

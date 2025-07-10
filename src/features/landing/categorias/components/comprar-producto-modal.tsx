@@ -14,6 +14,7 @@ import { useRemoveIdFromStockProductos, useStockProductosIds, useUpdateStockProd
 import { Producto } from '../../services'
 import { PhoneInput } from './phone-input'
 import { useConfiguracionSistema } from '../../queries'
+import { useNavigate } from '@tanstack/react-router'
 
 const formSchema = z.object({
   nombre_cliente: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -30,11 +31,13 @@ type ComprarProductoModalProps = {
 
 export default function ComprarProductoModal({ open, onOpenChange, producto }: ComprarProductoModalProps) {
   const { user } = useAuthStore()
+  const productoId = producto?.id || 0
+  const navigate = useNavigate()
   const { mutate: createCompra } = useCreateCompra()
   const { data: billetera } = useBilleteraByUsuario(user?.id || '0')
   const { mutate: actualizarSaldo } = useUpdateBilleteraSaldo()
   const { data: configuracion } = useConfiguracionSistema()
-  const { data: stockProductosIds } = useStockProductosIds(producto?.id || 0)
+  const { data: stockProductosIds } = useStockProductosIds(productoId)
   const { mutate: updateProveedorBilletera } = useUpdateBilleteraProveedorSaldo()
   const { mutate: removeIdFromStockProductos } = useRemoveIdFromStockProductos()
   const { mutate: updateStockProductoStatusVendido } = useUpdateStockProductoStatusVendido()
@@ -95,6 +98,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
               onSuccess: () => {
                 updateStockProductoStatusVendido({ id: stock_producto_id })
                 updateProveedorBilletera({ idBilletera: producto.usuarios.billetera_id, precioProducto: producto?.precio_vendedor })
+                navigate({ to: '/compras' })
               }
             }
           )

@@ -42,7 +42,7 @@ export default function Home() {
 
       {
         searchInput && (
-          <div className="md:px-8 px-4 pt-12">
+          <div className="md:px-8 px-4 pb-12 pt-4">
             <h2 className="text-2xl font-bold mb-4">Resultados de la búsqueda</h2>
             <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-5 md:gap-6 gap-4">
               {filteredProductos?.map((producto) => (

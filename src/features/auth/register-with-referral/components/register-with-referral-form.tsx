@@ -8,22 +8,24 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage
 } from '@/components/ui/form'
+import { UsersService } from '@/features/users/services/users.service'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { UsersService } from '@/features/users/services/users.service'
 import { RegistrationTokenValidator } from '@/lib/registration-token-validator'
 import type { RegistrationTokenData } from '@/lib/registration-token-validator'
 import { supabase } from '@/lib/supabase'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { Loader2, AlertTriangle, ShieldCheck } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { PhoneInput } from './phone-input'
+import { useReferralValidation } from '@/features/users/hooks/use-referral-validation'
 
 // Schema de validación
 const registerWithReferralSchema = z
@@ -77,14 +79,18 @@ export function RegisterWithReferralForm() {
   const navigate = useNavigate()
   
   // Obtener parámetros de URL usando TanStack Router
-  const searchParams = useSearch({ from: '/(auth)/register' }) as { token?: string }
+  const searchParams = useSearch({ from: '/(auth)/register' }) as { token?: string, ref?: string }
 
   // Validar token de registro al cargar el componente
   useEffect(() => {
     const validateRegistrationToken = async () => {
       setValidatingToken(true)
       
+      // Obtener el token y el código de referido de la URL
       const token = searchParams.token
+      const refCode = searchParams.ref
+      
+      console.log("Parámetros recibidos:", { token, refCode });
       
       // Verificar si el registro está permitido
       const registrationCheck = await RegistrationTokenValidator.isRegistrationAllowed(token)
@@ -96,6 +102,28 @@ export function RegisterWithReferralForm() {
         return
       }
 
+      // Si el código de referido viene en la URL, lo agregamos a los datos del token
+      if (refCode) {
+        console.log("Se detectó código de referido en URL:", refCode);
+        
+        // Asignamos el código de referido a los datos del token
+        registrationCheck.data!.referralCode = refCode;
+        console.log("Datos del token actualizados:", registrationCheck.data);
+        
+        // Validar que el código de referido sea válido
+        try {
+          const referidoUsuario = await UsersService.validateReferralCode(refCode);
+          if (referidoUsuario) {
+            console.log("Usuario referido validado:", referidoUsuario);
+          } else {
+            console.warn("Código de referido no válido:", refCode);
+            // Mantenemos el código aunque sea inválido para mostrar el error
+          }
+        } catch (err) {
+          console.error("Error validando código de referido:", err);
+        }
+      }
+
       // Si llegamos aquí, el token es válido
       setTokenData(registrationCheck.data!)
       setRegistrationAllowed(true)
@@ -103,7 +131,7 @@ export function RegisterWithReferralForm() {
     }
 
     validateRegistrationToken()
-  }, [searchParams.token])
+  }, [searchParams.token, searchParams.ref])
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerWithReferralSchema),
@@ -115,16 +143,22 @@ export function RegisterWithReferralForm() {
       telefono: '',
       password: '',
       confirmPassword: '',
-      codigoReferido: tokenData?.referralCode || '',
-      rol: (tokenData?.role as 'registered' | 'provider' | 'seller') || 'registered',
+      codigoReferido: '',
+      rol: 'registered',
     },
   })
 
   // Actualizar valores cuando cambien los datos del token
   useEffect(() => {
-    if (tokenData?.referralCode && tokenData?.role) {
-      form.setValue('codigoReferido', tokenData.referralCode)
+    if (tokenData) {
+      // Actualizar el rol siempre
       form.setValue('rol', tokenData.role as 'registered' | 'provider' | 'seller')
+      
+      // Actualizar el código de referido si existe
+      if (tokenData.referralCode) {
+        console.log("Actualizando formulario con código de referido:", tokenData.referralCode);
+        form.setValue('codigoReferido', tokenData.referralCode)
+      }
     }
   }, [tokenData, form])
 
@@ -405,12 +439,49 @@ export function RegisterWithReferralForm() {
               </FormItem>
             )}
           />
-          <div className="flex items-center justify-between">
-            <Label>Código de Referido:</Label>
-            <Badge className='font-mono'>
-              {tokenData?.referralCode}
-            </Badge>
-          </div>
+          {tokenData?.referralCode ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Código de Referido:</Label>
+                <Badge className='font-mono'>
+                  {tokenData.referralCode}
+                </Badge>
+              </div>
+              {/* Validación del código de referido proporcionado en la URL */}
+              <ReferralCodeValidator code={tokenData.referralCode} />
+              <FormField
+                control={form.control}
+                name="codigoReferido"
+                render={() => (
+                  <input 
+                    type="hidden" 
+                    value={tokenData.referralCode}
+                    {...form.register('codigoReferido')} 
+                  />
+                )}
+              />
+            </div>
+          ) : (
+            <FormField
+              control={form.control}
+              name="codigoReferido"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Código de Referido (opcional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Ej: ABC123 (opcional)"
+                      {...field}
+                    />
+                  </FormControl>
+                  {field.value && field.value.trim() !== '' && (
+                    <OptionalReferralCodeValidator code={field.value} />
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           <div className='flex flex-col mt-8'>
             <Button
               type="submit"
@@ -435,4 +506,112 @@ export function RegisterWithReferralForm() {
 
     </div>
   )
+}
+
+// Componente para validar códigos de referido
+function ReferralCodeValidator({ code }: { code: string }) {
+  const { isValid, isLoading, referentName, validateCode } = useReferralValidation();
+  const [lastValidatedCode, setLastValidatedCode] = useState('');
+  
+  useEffect(() => {
+    if (code && code.trim() !== '' && code.trim() !== lastValidatedCode) {
+      console.log("Validando código de referido:", code.trim());
+      validateCode(code.trim());
+      setLastValidatedCode(code.trim());
+    }
+  }, [code, validateCode, lastValidatedCode]);
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Loader2 className="h-3 w-3 animate-spin" /> 
+        Validando código de referido...
+      </div>
+    );
+  }
+  
+  if (isValid === false) {
+    return (
+      <div className="flex items-center gap-2 text-xs text-red-500">
+        <AlertTriangle className="h-3 w-3" /> 
+        Código de referido no válido
+      </div>
+    );
+  }
+  
+  if (isValid && referentName) {
+    return (
+      <div className="flex items-center gap-2 text-xs text-green-600">
+        <ShieldCheck className="h-3 w-3" /> 
+        Referido por: {referentName}
+      </div>
+    );
+  }
+  
+  return null;
+}
+
+// Componente para validar códigos de referido opcionales con debouncing
+function OptionalReferralCodeValidator({ code }: { code: string }) {
+  const { isValid, isLoading, referentName, validateCode } = useReferralValidation();
+  const [debouncedCode, setDebouncedCode] = useState('');
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounce del código ingresado
+  useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      setDebouncedCode(code.trim());
+    }, 500); // Esperar 500ms después de que deje de escribir
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [code]);
+
+  // Validar cuando cambie el código debounced
+  useEffect(() => {
+    if (debouncedCode && debouncedCode !== '') {
+      console.log("Validando código opcional con debounce:", debouncedCode);
+      validateCode(debouncedCode);
+    }
+  }, [debouncedCode, validateCode]);
+
+  if (!debouncedCode || debouncedCode === '') {
+    return null;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Loader2 className="h-3 w-3 animate-spin" /> 
+        Validando código de referido...
+      </div>
+    );
+  }
+  
+  if (isValid === false) {
+    return (
+      <div className="flex items-center gap-2 text-xs text-red-500">
+        <AlertTriangle className="h-3 w-3" /> 
+        Código de referido no válido
+      </div>
+    );
+  }
+  
+  if (isValid && referentName) {
+    return (
+      <div className="flex items-center gap-2 text-xs text-green-600">
+        <ShieldCheck className="h-3 w-3" /> 
+        Referido por: {referentName}
+      </div>
+    );
+  }
+  
+  return null;
 }

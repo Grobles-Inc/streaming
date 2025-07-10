@@ -1,17 +1,9 @@
+import { useState, useCallback, memo } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
-import {
-  IconDots,
   IconCheck,
   IconX,
   IconEye,
@@ -20,6 +12,16 @@ import {
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import type { MappedCompra } from '../data/types'
+
+/**
+ * Reglas de transición de estados para compras:
+ * 
+ * - soporte → puede cambiar a: reembolsado, resuelto
+ * - reembolsado → puede cambiar a: resuelto
+ * - resuelto → puede cambiar a: soporte
+ * - vencido → puede cambiar a: resuelto
+ * - pedido_entregado → puede cambiar a: soporte, resuelto
+ */
 
 // Función para obtener el badge del estado
 function getEstadoBadge(estado: string) {
@@ -69,103 +71,190 @@ function getEstadoBadge(estado: string) {
   }
 }
 
-// Props para las acciones
+// Función para determinar qué acciones están permitidas según el estado
+function getAccionesPermitidas(estado: string) {
+  switch (estado) {
+    case 'soporte':
+      return {
+        puedeReembolsar: true,
+        puedeMarcarResuelto: true,
+        puedeMarcarVencido: false,
+        puedeEnviarASoporte: false
+      }
+    case 'reembolsado':
+      return {
+        puedeReembolsar: false,
+        puedeMarcarResuelto: true,
+        puedeMarcarVencido: false,
+        puedeEnviarASoporte: false
+      }
+    case 'resuelto':
+      return {
+        puedeReembolsar: false,
+        puedeMarcarResuelto: false,
+        puedeMarcarVencido: false,
+        puedeEnviarASoporte: true
+      }
+    case 'vencido':
+      return {
+        puedeReembolsar: false,
+        puedeMarcarResuelto: true,
+        puedeMarcarVencido: false,
+        puedeEnviarASoporte: false
+      }
+    case 'pedido_entregado':
+      return {
+        puedeReembolsar: false,
+        puedeMarcarResuelto: true,
+        puedeMarcarVencido: false,
+        puedeEnviarASoporte: true
+      }
+    default:
+      return {
+        puedeReembolsar: false,
+        puedeMarcarResuelto: false,
+        puedeMarcarVencido: false,
+        puedeEnviarASoporte: false
+      }
+  }
+}
+
+// Props para las acciones - simplificadas
 interface ComprasTableActionsProps {
   compra: MappedCompra
   onMarcarResuelto: (id: number) => Promise<void>
   onMarcarVencido: (id: number) => Promise<void>
   onEnviarASoporte: (id: number) => Promise<void>
   onProcesarReembolso: (id: number) => Promise<void>
-  onMarcarComoPedidoEntregado: (id: number) => Promise<void>
   onVer: (compra: MappedCompra) => void | Promise<void>
 }
 
-// Componente de acciones
-function ComprasTableActions({
+// Componente de acciones simple y estable
+const ComprasTableActions = memo(function ComprasTableActions({
   compra,
   onMarcarResuelto,
   onMarcarVencido,
   onEnviarASoporte,
   onProcesarReembolso,
-  onMarcarComoPedidoEntregado,
   onVer
 }: ComprasTableActionsProps) {
-  const puedeModificar = compra.puedeModificar
-  const puedeReembolsar = compra.requiereReembolso || ['soporte', 'vencido'].includes(compra.estado)
+  const [isProcessing, setIsProcessing] = useState(false)
+  
+  // Obtener acciones permitidas según el estado actual
+  const acciones = getAccionesPermitidas(compra.estado)
+
+  const handleAction = useCallback(async (action: () => Promise<void>) => {
+    if (isProcessing) return
+    
+    setIsProcessing(true)
+    try {
+      await action()
+    } catch (error) {
+      console.error('Error en acción:', error)
+    } finally {
+      setIsProcessing(false)
+    }
+  }, [isProcessing])
+
+  const handleVer = useCallback(() => {
+    onVer(compra)
+  }, [onVer, compra])
+
+  const handleMarcarResuelto = useCallback(() => {
+    handleAction(() => onMarcarResuelto(compra.id))
+  }, [handleAction, onMarcarResuelto, compra.id])
+
+  const handleMarcarVencido = useCallback(() => {
+    handleAction(() => onMarcarVencido(compra.id))
+  }, [handleAction, onMarcarVencido, compra.id])
+
+  const handleEnviarASoporte = useCallback(() => {
+    handleAction(() => onEnviarASoporte(compra.id))
+  }, [handleAction, onEnviarASoporte, compra.id])
+
+  const handleProcesarReembolso = useCallback(() => {
+    handleAction(() => onProcesarReembolso(compra.id))
+  }, [handleAction, onProcesarReembolso, compra.id])
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Abrir menú</span>
-          <IconDots className="h-4 w-4" />
+    <div className="flex items-center gap-1">
+      {/* Botón Ver siempre disponible */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleVer}
+        className="h-8 w-8 p-0"
+        title="Ver detalles"
+        disabled={isProcessing}
+      >
+        <IconEye className="h-4 w-4" />
+      </Button>
+      
+      {/* Marcar como resuelto */}
+      {acciones.puedeMarcarResuelto && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleMarcarResuelto}
+          className="h-8 w-8 p-0 text-green-600 hover:text-green-700"
+          title="Marcar como resuelto"
+          disabled={isProcessing}
+        >
+          <IconCheck className="h-4 w-4" />
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-        <DropdownMenuItem onClick={() => onVer(compra)}>
-          <IconEye className="mr-2 h-4 w-4" />
-          Ver detalles
-        </DropdownMenuItem>
+      )}
+      
+      {/* Marcar como vencido */}
+      {acciones.puedeMarcarVencido && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleMarcarVencido}
+          className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+          title="Marcar como vencido"
+          disabled={isProcessing}
+        >
+          <IconX className="h-4 w-4" />
+        </Button>
+      )}
+      
+      {/* Enviar a soporte */}
+      {acciones.puedeEnviarASoporte && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleEnviarASoporte}
+          className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
+          title="Enviar a soporte"
+          disabled={isProcessing}
+        >
+          <IconClock className="h-4 w-4" />
+        </Button>
+      )}
 
-        {puedeModificar && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => onMarcarResuelto(compra.id)}
-              className="text-green-600 focus:text-green-600"
-            >
-              <IconCheck className="mr-2 h-4 w-4" />
-              Marcar como resuelto
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onMarcarVencido(compra.id)}
-              className="text-red-600 focus:text-red-600"
-            >
-              <IconX className="mr-2 h-4 w-4" />
-              Marcar como vencido
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onEnviarASoporte(compra.id)}
-              className="text-blue-600 focus:text-blue-600"
-            >
-              <IconClock className="mr-2 h-4 w-4" />
-              Enviar a soporte
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onMarcarComoPedidoEntregado(compra.id)}
-              className="text-emerald-600 focus:text-emerald-600"
-            >
-              <IconCheck className="mr-2 h-4 w-4" />
-              Marcar pedido entregado
-            </DropdownMenuItem>
-          </>
-        )}
-
-        {puedeReembolsar && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => onProcesarReembolso(compra.id)}
-              className="text-purple-600 focus:text-purple-600"
-            >
-              <IconCurrencyDollar className="mr-2 h-4 w-4" />
-              Procesar reembolso
-            </DropdownMenuItem>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      {/* Procesar reembolso */}
+      {acciones.puedeReembolsar && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleProcesarReembolso}
+          className="h-8 w-8 p-0 text-purple-600 hover:text-purple-700"
+          title="Procesar reembolso"
+          disabled={isProcessing}
+        >
+          <IconCurrencyDollar className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
   )
-}
+})
 
-// Definir las columnas
+// Definir las columnas - simplificadas
 export function createComprasColumns(
   onMarcarResuelto: (id: number) => Promise<void>,
   onMarcarVencido: (id: number) => Promise<void>,
   onEnviarASoporte: (id: number) => Promise<void>,
   onProcesarReembolso: (id: number) => Promise<void>,
-  onMarcarComoPedidoEntregado: (id: number) => Promise<void>,
   onVer: (compra: MappedCompra) => void | Promise<void>
 ): ColumnDef<MappedCompra>[] {
   return [
@@ -218,6 +307,7 @@ export function createComprasColumns(
           </div>
         )
       },
+      enableHiding: true
     },
     {
       accessorKey: 'productoNombre',
@@ -236,6 +326,18 @@ export function createComprasColumns(
         const proveedor = row.getValue('proveedorNombre') as string
         return (
           <div className="text-sm text-muted-foreground">{proveedor}</div>
+        )
+      },
+    },
+    {
+      accessorKey: 'vendedorNombre',
+      header: 'Vendedor',
+      cell: ({ row }) => {
+        const vendedor = row.getValue('vendedorNombre') as string | undefined
+        return (
+          <div className="text-sm text-muted-foreground">
+            {vendedor || <span className="text-xs text-muted-foreground">Sin vendedor</span>}
+          </div>
         )
       },
     },
@@ -293,6 +395,7 @@ export function createComprasColumns(
           </div>
         )
       },
+      enableHiding: true
     },
     {
       accessorKey: 'emailCuenta',
@@ -305,6 +408,7 @@ export function createComprasColumns(
           </div>
         )
       },
+      enableHiding: true
     },
     {
       accessorKey: 'perfilUsuario',
@@ -436,6 +540,7 @@ export function createComprasColumns(
           </div>
         )
       },
+      enableHiding: true
     },
     {
       accessorKey: 'montoReembolsoFormateado',
@@ -503,6 +608,7 @@ export function createComprasColumns(
     },
     {
       id: 'actions',
+      header: 'Acciones',
       enableHiding: false,
       cell: ({ row }) => (
         <ComprasTableActions
@@ -511,7 +617,6 @@ export function createComprasColumns(
           onMarcarVencido={onMarcarVencido}
           onEnviarASoporte={onEnviarASoporte}
           onProcesarReembolso={onProcesarReembolso}
-          onMarcarComoPedidoEntregado={onMarcarComoPedidoEntregado}
           onVer={onVer}
         />
       ),

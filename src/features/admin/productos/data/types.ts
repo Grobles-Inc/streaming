@@ -1,5 +1,5 @@
 // Estados y tipos de productos
-export type EstadoProducto = 'borrador' | 'publicado'
+export type EstadoProducto = 'borrador' | 'publicado' | 'pendiente'
 export type DisponibilidadProducto = 'en_stock' | 'a_pedido' | 'activacion'
 
 // Tipo base de producto desde Supabase (actualizado según la nueva estructura)

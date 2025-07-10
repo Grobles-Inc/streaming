@@ -1,4 +1,3 @@
-import { decryptReferralData } from '@/lib/encryption'
 import { ConfigurationService } from '@/services/configuration.service'
 
 export interface RegistrationTokenData {
@@ -14,14 +13,49 @@ export interface RegistrationTokenData {
 export class RegistrationTokenValidator {
   
   /**
-   * Valida un token de registro encriptado
+   * Valida un token de registro
    */
-  static async validateToken(encryptedToken: string): Promise<RegistrationTokenData> {
+  static async validateToken(token: string): Promise<RegistrationTokenData> {
+    console.log("Validando token:", token);
+    
     try {
-      // Desencriptar el token
-      const decryptedData = decryptReferralData(encryptedToken)
+      if (!token) {
+        console.error("Token vacío o nulo");
+        return {
+          role: 'registered',
+          validationToken: '',
+          isValid: false
+        }
+      }
+
+      // Parsear URL para extraer parámetros
+      let validationToken = token;
+      let referralCode = undefined;
       
-      if (!decryptedData) {
+      // Si el token parece ser una URL completa o tiene parámetros
+      if (token.includes('?')) {
+        try {
+          // Intentar crear una URL completa
+          let url;
+          if (token.startsWith('http')) {
+            url = new URL(token);
+          } else {
+            // Si no es una URL completa, crear una ficticia para parsear los parámetros
+            url = new URL(`http://example.com${token.startsWith('/') ? token : `/${token}`}`);
+          }
+          
+          validationToken = url.searchParams.get('token') || '';
+          referralCode = url.searchParams.get('ref') || undefined;
+          
+          console.log("Token extraído de URL:", validationToken);
+          console.log("Código de referido extraído de URL:", referralCode);
+        } catch (e) {
+          console.error("Error parseando token como URL:", e);
+        }
+      }
+      
+      if (!validationToken || validationToken.trim() === '') {
+        console.error("Token de validación vacío o inválido");
         return {
           role: 'registered',
           validationToken: '',
@@ -30,14 +64,15 @@ export class RegistrationTokenValidator {
       }
 
       // Validar el token contra la base de datos
-      const isTokenValid = await ConfigurationService.validateRegistrationToken(
-        decryptedData.validationToken
-      )
+      console.log("Validando token:", validationToken);
+      const isTokenValid = await ConfigurationService.validateRegistrationToken(validationToken);
+      console.log("¿Token válido según la base de datos?", isTokenValid);
 
+      // Para mantener compatibilidad con el resto del sistema
       return {
-        referralCode: decryptedData.referralCode,
-        role: decryptedData.role,
-        validationToken: decryptedData.validationToken,
+        referralCode,
+        role: 'registered', // El rol siempre es 'registered' en el nuevo sistema
+        validationToken,
         isValid: isTokenValid
       }
     } catch (error) {

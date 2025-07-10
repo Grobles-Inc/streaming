@@ -65,6 +65,12 @@ export type CompraWithRelations = SupabaseCompra & {
     apellidos: string
     telefono: string | null
   }
+  vendedor?: {
+    id: string
+    nombres: string
+    apellidos: string
+    telefono: string | null
+  }
   producto?: {
     id: number
     nombre: string

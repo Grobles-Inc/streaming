@@ -71,6 +71,11 @@ export function RetirosTable({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    initialState: {
+      pagination: {
+        pageSize: 200,
+      },
+    },
     state: {
       sorting,
       columnFilters,
@@ -257,9 +262,9 @@ export function RetirosTable({
               onChange={(e) => {
                 table.setPageSize(Number(e.target.value))
               }}
-              className="h-8 w-[70px] rounded border border-input bg-background px-3 py-1 text-sm"
+              className="h-8 w-[80px] rounded border border-input bg-background px-3 py-1 text-sm"
             >
-              {[10, 20, 30, 40, 50].map((pageSize) => (
+              {[10, 20, 50, 100, 200].map((pageSize) => (
                 <option key={pageSize} value={pageSize}>
                   {pageSize}
                 </option>

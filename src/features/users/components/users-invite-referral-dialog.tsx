@@ -386,7 +386,7 @@ export function UsersInviteWithReferralDialog({ open, onOpenChange }: Props) {
                           </div>
                           
                           {/* Información del link generado */}
-                          <div className="space-y-2">
+                          {/* <div className="space-y-2">
                             <div className="grid grid-cols-2 gap-2">
                               <Badge variant="outline" className="text-xs justify-center py-1">
                                 Código: {selectedUser?.codigo_referido}
@@ -395,10 +395,8 @@ export function UsersInviteWithReferralDialog({ open, onOpenChange }: Props) {
                                 Rol: {roleOptions.find(r => r.value === watchedValues.role)?.label}
                               </Badge>
                             </div>
-                            <Badge variant="destructive" className="text-xs w-full justify-center py-1">
-                              🔒 Link Seguro con Token Encriptado
-                            </Badge>
-                          </div>
+                            
+                          </div> */}
                         </>
                       )}
                     </CardContent>

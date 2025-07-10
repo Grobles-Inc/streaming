@@ -10,38 +10,101 @@ export class ConfigurationService {
    * Genera un token único y seguro para links de registro
    */
   static generateRegistrationToken(): string {
-    const timestamp = Date.now().toString(36)
-    const randomBytes = crypto.getRandomValues(new Uint8Array(32))
-    const randomString = Array.from(randomBytes, byte => byte.toString(36)).join('')
-    const combinedToken = `${timestamp}-${randomString}`
+    console.log("Generando nuevo token de registro");
     
-    // Crear hash más complejo para mayor seguridad
-    return btoa(combinedToken)
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '')
-      .substring(0, 64) // Limitar longitud
+    // Usar un formato más simple y directo para evitar problemas de codificación
+    const timestamp = Date.now();
+    const randomPart = Math.random().toString(36).substring(2, 15);
+    
+    const tokenParts = [
+      timestamp.toString(),
+      randomPart,
+      "reg"  // indicador de tipo de token
+    ];
+    
+    const combinedToken = tokenParts.join('_');
+    console.log("Token generado (sin codificar):", combinedToken);
+    
+    // Usar un formato más directo sin base64 para evitar problemas
+    return combinedToken;
   }
 
   /**
    * Almacena un token de registro en la configuración
    */
   static async storeRegistrationToken(token: string): Promise<boolean> {
+    console.log("Almacenando token:", token);
+    
+    if (!token || token.trim() === '') {
+      console.error('Error: intentando almacenar un token vacío');
+      return false;
+    }
+    
     try {
-      const { error } = await supabase
+      // Primero verificamos si ya existe un registro de configuración
+      const { data: existingConfig, error: fetchError } = await supabase
         .from('configuracion')
-        .upsert({
-          id: '1', // ID fijo para configuración global
-          register_link: token,
-          updated_at: new Date().toISOString()
-        })
-
-      if (error) {
-        console.error('Error storing registration token:', error)
-        return false
+        .select('id')
+        .eq('id', '1')
+        .single();
+        
+      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 es "no se encontró ningún registro"
+        console.error('Error verificando configuración existente:', fetchError);
+        return false;
       }
-
-      return true
+      
+      const now = new Date().toISOString();
+      
+      // Si existe, actualizamos. Si no, insertamos.
+      if (existingConfig) {
+        console.log("Actualizando token existente");
+        const { error } = await supabase
+          .from('configuracion')
+          .update({
+            register_link: token,
+            updated_at: now
+          })
+          .eq('id', '1');
+          
+        if (error) {
+          console.error('Error actualizando token de registro:', error);
+          return false;
+        }
+      } else {
+        console.log("Creando registro de configuración nuevo");
+        const { error } = await supabase
+          .from('configuracion')
+          .insert({
+            id: '1', 
+            register_link: token,
+            updated_at: now,
+            mantenimiento: false,
+            comision: 0,
+            conversion: 1,
+            comision_publicacion_producto: 0,
+            comision_retiro: 0
+          });
+          
+        if (error) {
+          console.error('Error creando registro de configuración:', error);
+          return false;
+        }
+      }
+      
+      // Verificamos que se haya guardado correctamente
+      const { data: verifyData, error: verifyError } = await supabase
+        .from('configuracion')
+        .select('register_link')
+        .eq('id', '1')
+        .single();
+        
+      if (verifyError) {
+        console.error('Error verificando almacenamiento del token:', verifyError);
+        return false;
+      }
+      
+      console.log("Token almacenado correctamente:", verifyData.register_link);
+      return verifyData.register_link === token;
     } catch (error) {
       console.error('Error storing registration token:', error)
       return false
@@ -52,6 +115,13 @@ export class ConfigurationService {
    * Valida si un token de registro es válido
    */
   static async validateRegistrationToken(token: string): Promise<boolean> {
+    console.log("Validando token:", token);
+    
+    if (!token || token.trim() === '') {
+      console.error('Token inválido: token vacío');
+      return false;
+    }
+    
     try {
       const { data, error } = await supabase
         .from('configuracion')
@@ -60,22 +130,31 @@ export class ConfigurationService {
         .single()
 
       if (error || !data) {
-        console.error('Error validating registration token:', error)
+        console.error('Error validando token de registro:', error)
         return false
       }
 
+      // Log para depuración
+      console.log('Token almacenado:', data.register_link);
+      console.log('Token recibido:', token);
+      
       // Verificar que el token coincida
-      if (data.register_link !== token) {
-        return false
+      const tokenMatches = data.register_link === token;
+      console.log('¿Los tokens coinciden?', tokenMatches);
+      
+      if (!tokenMatches) {
+        return false;
       }
 
-      // Verificar que el token no sea muy antiguo (24 horas de validez)
+      // Verificar que el token no sea muy antiguo (7 días de validez)
       const tokenDate = new Date(data.updated_at)
       const now = new Date()
       const hoursDiff = (now.getTime() - tokenDate.getTime()) / (1000 * 60 * 60)
       
-      if (hoursDiff > 24) {
-        console.warn('Registration token expired')
+      console.log('Horas desde la creación del token:', hoursDiff);
+      
+      if (hoursDiff > 168) { // 7 días en horas
+        console.warn('Token de registro expirado')
         return false
       }
 

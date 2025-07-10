@@ -37,6 +37,12 @@ const compraWithRelationsSchema = compraBaseSchema.extend({
     apellidos: z.string(),
     telefono: z.string().nullable(),
   }).optional(),
+  vendedor: z.object({
+    id: z.string(),
+    nombres: z.string(),
+    apellidos: z.string(),
+    telefono: z.string().nullable(),
+  }).optional(),
   producto: z.object({
     id: z.number(),
     nombre: z.string(),
@@ -109,9 +115,9 @@ export function mapSupabaseCompraToComponent(compra: CompraWithRelations): Mappe
     ? `${compra.proveedor.nombres} ${compra.proveedor.apellidos}`.trim()
     : 'Proveedor no encontrado'
   
-  // Ya no tenemos la relación vendedor en la consulta, pero podemos usar el campo vendedor_id
-  const vendedorNombre = compra.vendedor_id 
-    ? `Vendedor: ${compra.vendedor_id}`
+  // Mapear correctamente el vendedor usando la relación
+  const vendedorNombre = compra.vendedor 
+    ? `${compra.vendedor.nombres} ${compra.vendedor.apellidos}`.trim()
     : undefined
 
   const productoNombre = compra.producto?.nombre || 'Producto no encontrado'

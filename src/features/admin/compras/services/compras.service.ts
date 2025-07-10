@@ -23,6 +23,12 @@ export class ComprasService {
           apellidos,
           telefono
         ),
+        vendedor:usuarios!vendedor_id (
+          id,
+          nombres,
+          apellidos,
+          telefono
+        ),
         producto:productos!producto_id (
           id,
           nombre,
@@ -100,6 +106,12 @@ export class ComprasService {
           apellidos,
           telefono
         ),
+        vendedor:usuarios!vendedor_id (
+          id,
+          nombres,
+          apellidos,
+          telefono
+        ),
         producto:productos!producto_id (
           id,
           nombre,
@@ -131,6 +143,7 @@ export class ComprasService {
     return {
       ...data,
       proveedor: data.proveedor || null,
+      vendedor: data.vendedor || null,
       producto: data.producto || null,
       stock_producto: data.stock_producto || null
     } as CompraWithRelations

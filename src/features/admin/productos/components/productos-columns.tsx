@@ -15,7 +15,6 @@ import {
   IconDots, 
   IconEye, 
   IconTrash, 
-  IconCopy,
   IconPackage,
   IconClock,
   IconStar,
@@ -32,7 +31,7 @@ interface ProductosTableActionsProps {
   producto: MappedProducto
   onVer: (producto: MappedProducto) => void
   onEliminar: (id: string) => Promise<void>
-  onDuplicar: (id: string) => Promise<void>
+  onCambiarEstado?: (id: string, estado: 'borrador' | 'publicado') => Promise<void>
 }
 
 // Componente de acciones
@@ -40,7 +39,7 @@ function ProductosTableActions({
   producto, 
   onVer, 
   onEliminar,
-  onDuplicar
+  onCambiarEstado
 }: ProductosTableActionsProps) {
   return (
     <DropdownMenu>
@@ -57,10 +56,20 @@ function ProductosTableActions({
           Ver detalles
         </DropdownMenuItem>
         
-        <DropdownMenuItem onClick={() => onDuplicar(producto.id.toString())}>
-          <IconCopy className="mr-2 h-4 w-4" />
-          Duplicar
-        </DropdownMenuItem>
+        {/* Acciones para productos pendientes */}
+        {producto.estado === 'pendiente' && onCambiarEstado && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onCambiarEstado(producto.id.toString(), 'publicado')}>
+              <IconCheck className="mr-2 h-4 w-4 text-green-600" />
+              Publicar
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onCambiarEstado(producto.id.toString(), 'borrador')}>
+              <IconX className="mr-2 h-4 w-4 text-orange-600" />
+              Enviar a borrador
+            </DropdownMenuItem>
+          </>
+        )}
         
         {producto.puedeEliminar && (
           <>
@@ -83,7 +92,7 @@ function ProductosTableActions({
 export function createProductosColumns(
   onVer: (producto: MappedProducto) => void,
   onEliminar: (id: string) => Promise<void>,
-  onDuplicar: (id: string) => Promise<void>
+  onCambiarEstado?: (id: string, estado: 'borrador' | 'publicado') => Promise<void>
 ): ColumnDef<MappedProducto>[] {
   return [
     {
@@ -201,8 +210,60 @@ export function createProductosColumns(
       },
     },
     {
+      accessorKey: 'estado',
+      header: 'Estado',
+      cell: ({ row }) => {
+        const estado = row.getValue('estado') as string
+        const getEstadoBadge = (estado: string) => {
+          switch (estado) {
+            case 'publicado':
+              return {
+                variant: 'default' as const,
+                label: 'Publicado',
+                className: 'bg-green-50 text-green-700 border-green-200',
+                icon: IconCheck
+              }
+            case 'borrador':
+              return {
+                variant: 'secondary' as const,
+                label: 'Borrador',
+                className: 'bg-gray-50 text-gray-700 border-gray-200',
+                icon: IconX
+              }
+            case 'pendiente':
+              return {
+                variant: 'outline' as const,
+                label: 'Pendiente',
+                className: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+                icon: IconClock
+              }
+            default:
+              return {
+                variant: 'outline' as const,
+                label: estado,
+                className: '',
+                icon: IconClock
+              }
+          }
+        }
+        
+        const badge = getEstadoBadge(estado)
+        const Icon = badge.icon
+        
+        return (
+          <div className="flex items-center gap-2">
+            <Badge variant={badge.variant} className={badge.className}>
+              <Icon className="mr-1 h-3 w-3" />
+              {badge.label}
+            </Badge>
+          </div>
+        )
+      },
+    },
+    {
       accessorKey: 'configuracion',
       header: 'Configuración',
+      enableHiding: true,
       cell: ({ row }) => {
         const producto = row.original
         return (
@@ -286,7 +347,7 @@ export function createProductosColumns(
           producto={row.original}
           onVer={onVer}
           onEliminar={onEliminar}
-          onDuplicar={onDuplicar}
+          onCambiarEstado={onCambiarEstado}
         />
       ),
     },

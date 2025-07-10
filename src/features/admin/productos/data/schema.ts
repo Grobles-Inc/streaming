@@ -4,6 +4,7 @@ import { z } from 'zod'
 const estadoProductoSchema = z.union([
   z.literal('borrador'),
   z.literal('publicado'),
+  z.literal('pendiente'),
 ])
 
 // Esquema para disponibilidad de producto

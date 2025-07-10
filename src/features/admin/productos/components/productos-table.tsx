@@ -22,6 +22,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
@@ -34,12 +41,13 @@ import {
   ChevronsLeft,
   ChevronsRight,
   Trash,
-  Search
+  Search,
+  Filter
 } from 'lucide-react'
 import { useProductos } from '../hooks/use-productos'
 import { ProductoDetailsModal } from './producto-details-modal'
 import { createProductosColumns } from './productos-columns'
-import type { MappedProducto, SupabaseProducto } from '../data/types'
+import type { MappedProducto, SupabaseProducto, EstadoProducto } from '../data/types'
 
 export function ProductosTable() {
   const { 
@@ -47,17 +55,30 @@ export function ProductosTable() {
     loading, 
     refreshProductos, 
     eliminarProducto, 
-    duplicarProducto
+    aplicarFiltros,
+    cambiarEstadoProducto
   } = useProductos()
 
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    configuracion: false, // Ocultar columna de configuración por defecto
+  })
   const [rowSelection, setRowSelection] = useState({})
+  const [filtroEstado, setFiltroEstado] = useState<EstadoProducto | 'todos'>('todos')
   
   // Estados para modales
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [selectedProducto, setSelectedProducto] = useState<SupabaseProducto | null>(null)
+
+  // Función para manejar el cambio de filtro de estado
+  const handleFiltroEstadoChange = async (nuevoEstado: EstadoProducto | 'todos') => {
+    setFiltroEstado(nuevoEstado)
+    const filtros = {
+      ...(nuevoEstado !== 'todos' && { estado: nuevoEstado as EstadoProducto })
+    }
+    await aplicarFiltros(filtros)
+  }
 
   // Crear columnas con acciones
   const columns = createProductosColumns(
@@ -71,8 +92,8 @@ export function ProductosTable() {
         await refreshProductos()
       }
     },
-    async (id: string) => {
-      await duplicarProducto(parseInt(id))
+    async (id: string, estado: 'borrador' | 'publicado') => {
+      await cambiarEstadoProducto(parseInt(id), estado)
       await refreshProductos()
     }
   )
@@ -96,7 +117,7 @@ export function ProductosTable() {
     },
     initialState: {
       pagination: {
-        pageSize: 10,
+        pageSize: 200, // Cargar más filas por defecto para mostrar "todas"
       },
     },
   })
@@ -146,6 +167,23 @@ export function ProductosTable() {
               className="pl-8 max-w-sm"
             />
           </div>
+          
+          {/* Filtro de estado */}
+          <Select
+            value={filtroEstado}
+            onValueChange={(value) => handleFiltroEstadoChange(value as EstadoProducto | 'todos')}
+          >
+            <SelectTrigger className="w-[180px]">
+              <Filter className="mr-2 h-4 w-4" />
+              <SelectValue placeholder="Filtrar por estado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos los estados</SelectItem>
+              <SelectItem value="publicado">Publicado</SelectItem>
+              <SelectItem value="borrador">Borrador</SelectItem>
+              <SelectItem value="pendiente">Pendiente</SelectItem>
+            </SelectContent>
+          </Select>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -248,47 +286,67 @@ export function ProductosTable() {
       </div>
 
       {/* Paginación */}
-      <div className="flex items-center justify-between space-x-2 py-4">
+      <div className="flex items-center justify-between px-2">
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} de{' '}
           {table.getFilteredRowModel().rows.length} fila(s) seleccionada(s).
         </div>
-        <div className="flex items-center space-x-2">
-          <p className="text-sm font-medium">
+        <div className="flex items-center space-x-6 lg:space-x-8">
+          <div className="flex items-center space-x-2">
+            <p className="text-sm font-medium">Filas por página</p>
+            <select
+              value={table.getState().pagination.pageSize}
+              onChange={(e) => {
+                table.setPageSize(Number(e.target.value))
+              }}
+              className="h-8 w-[80px] rounded border border-input bg-background px-3 py-1 text-sm"
+            >
+              {[10, 20, 50, 100, 200, 500, 1000].map((pageSize) => (
+                <option key={pageSize} value={pageSize}>
+                  {pageSize}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex w-[100px] items-center justify-center text-sm font-medium">
             Página {table.getState().pagination.pageIndex + 1} de{' '}
             {table.getPageCount()}
-          </p>
+          </div>
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
-              size="sm"
+              className="hidden h-8 w-8 p-0 lg:flex"
               onClick={() => table.setPageIndex(0)}
               disabled={!table.getCanPreviousPage()}
             >
+              <span className="sr-only">Ir a la primera página</span>
               <ChevronsLeft className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
-              size="sm"
+              className="h-8 w-8 p-0"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
+              <span className="sr-only">Ir a la página anterior</span>
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
-              size="sm"
+              className="h-8 w-8 p-0"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
+              <span className="sr-only">Ir a la página siguiente</span>
               <ChevronRight className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
-              size="sm"
+              className="hidden h-8 w-8 p-0 lg:flex"
               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               disabled={!table.getCanNextPage()}
             >
+              <span className="sr-only">Ir a la última página</span>
               <ChevronsRight className="h-4 w-4" />
             </Button>
           </div>

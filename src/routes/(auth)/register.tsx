@@ -4,6 +4,7 @@ import RegisterWithReferralPage from '@/features/auth/register-with-referral'
 
 const registerSearchSchema = z.object({
   token: z.string().optional(),
+  ref: z.string().optional(),
 })
 
 export const Route = createFileRoute('/(auth)/register')({

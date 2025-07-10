@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import {
   IconRefresh
 } from '@tabler/icons-react'
-import { useState } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import { CompraDetailsModal } from './components/compra-details-modal'
 import { createComprasColumns } from './components/compras-columns'
@@ -29,7 +29,6 @@ export function ComprasPage() {
     marcarComoVencido,
     enviarASoporte,
     procesarReembolso,
-    marcarComoPedidoEntregado,
     refreshCompras,
   } = useCompras()
 
@@ -47,8 +46,8 @@ export function ComprasPage() {
     return matchesSearch && matchesStatus
   })
 
-  // Manejar acciones
-  const handleMarcarResuelto = async (id: number) => {
+  // Manejar acciones con useCallback para evitar re-renders
+  const handleMarcarResuelto = useCallback(async (id: number) => {
     try {
       const result = await marcarComoResuelto(id)
       if (result.success) {
@@ -61,9 +60,9 @@ export function ComprasPage() {
         description: 'No se pudo actualizar el estado de la compra.'
       })
     }
-  }
+  }, [marcarComoResuelto])
 
-  const handleMarcarVencido = async (id: number) => {
+  const handleMarcarVencido = useCallback(async (id: number) => {
     try {
       const result = await marcarComoVencido(id)
       if (result.success) {
@@ -76,9 +75,9 @@ export function ComprasPage() {
         description: 'No se pudo actualizar el estado de la compra.'
       })
     }
-  }
+  }, [marcarComoVencido])
 
-  const handleEnviarASoporte = async (id: number) => {
+  const handleEnviarASoporte = useCallback(async (id: number) => {
     try {
       const result = await enviarASoporte(id)
       if (result.success) {
@@ -91,9 +90,9 @@ export function ComprasPage() {
         description: 'No se pudo actualizar el estado de la compra.'
       })
     }
-  }
+  }, [enviarASoporte])
 
-  const handleProcesarReembolso = async (id: number) => {
+  const handleProcesarReembolso = useCallback(async (id: number) => {
     try {
       const result = await procesarReembolso(id)
       if (result.success) {
@@ -108,31 +107,14 @@ export function ComprasPage() {
         description: 'No se pudo procesar el reembolso.'
       })
     }
-  }
+  }, [procesarReembolso])
 
-  const handleMarcarComoPedidoEntregado = async (id: number) => {
-    try {
-      const result = await marcarComoPedidoEntregado(id)
-      if (result.success) {
-        toast.success('Pedido marcado como entregado', {
-          description: 'El estado de la compra ha sido actualizado correctamente.'
-        })
-      }
-    } catch (error) {
-      toast.error('Error al actualizar el estado', {
-        description: 'No se pudo actualizar el estado de la compra.'
-      })
-    }
-  }
-
-
-
-  const handleVerDetalles = (compra: MappedCompra) => {
+  const handleVerDetalles = useCallback((compra: MappedCompra) => {
     setSelectedCompra(compra)
     setShowDetailsModal(true)
-  }
+  }, [])
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     try {
       await refreshCompras()
       toast.success('Datos actualizados', {
@@ -143,17 +125,77 @@ export function ComprasPage() {
         description: 'No se pudieron actualizar los datos.'
       })
     }
-  }
+  }, [refreshCompras])
 
-  // Crear columnas con las acciones
-  const columns = createComprasColumns(
+  // Crear columnas con las acciones usando useMemo
+  const columns = useMemo(() => createComprasColumns(
     handleMarcarResuelto,
     handleMarcarVencido,
     handleEnviarASoporte,
     handleProcesarReembolso,
-    handleMarcarComoPedidoEntregado,
     handleVerDetalles
-  )
+  ), [handleMarcarResuelto, handleMarcarVencido, handleEnviarASoporte, handleProcesarReembolso, handleVerDetalles])
+
+  // Función para verificar si se puede cambiar a un estado específico
+  const puedecambiarAEstado = useCallback((estadoActual: EstadoCompra, estadoNuevo: EstadoCompra): boolean => {
+    switch (estadoActual) {
+      case 'soporte':
+        return ['reembolsado', 'resuelto'].includes(estadoNuevo)
+      case 'reembolsado':
+        return ['resuelto'].includes(estadoNuevo)
+      case 'resuelto':
+        return ['soporte'].includes(estadoNuevo)
+      case 'vencido':
+        return ['resuelto'].includes(estadoNuevo)
+      case 'pedido_entregado':
+        return ['soporte', 'resuelto'].includes(estadoNuevo)
+      default:
+        return false
+    }
+  }, [])
+
+  // Función para cambiar estado masivo
+  const handleCambiarEstadoMasivo = useCallback(async (ids: number[], estado: EstadoCompra) => {
+    try {
+      // Filtrar solo las compras que pueden cambiar al estado solicitado
+      const comprasValidas = compras.filter(compra => 
+        ids.includes(compra.id) && puedecambiarAEstado(compra.estado, estado)
+      )
+      
+      if (comprasValidas.length === 0) {
+        toast.error('Ninguna de las compras seleccionadas puede cambiar a este estado')
+        return
+      }
+      
+      if (comprasValidas.length < ids.length) {
+        toast.warning(`Solo ${comprasValidas.length} de ${ids.length} compras pueden cambiar a este estado`)
+      }
+      
+      const promises = comprasValidas.map(compra => {
+        switch (estado) {
+          case 'resuelto':
+            return marcarComoResuelto(compra.id)
+          case 'vencido':
+            return marcarComoVencido(compra.id)
+          case 'soporte':
+            return enviarASoporte(compra.id)
+          case 'reembolsado':
+            return procesarReembolso(compra.id)
+          default:
+            return Promise.resolve({ success: false })
+        }
+      })
+      
+      const results = await Promise.allSettled(promises)
+      const successCount = results.filter(r => r.status === 'fulfilled').length
+      
+      if (successCount > 0) {
+        toast.success(`${successCount} compras actualizadas exitosamente`)
+      }
+    } catch (error) {
+      toast.error('Error al actualizar las compras')
+    }
+  }, [compras, puedecambiarAEstado, marcarComoResuelto, marcarComoVencido, enviarASoporte, procesarReembolso])
 
   return (
     <>
@@ -199,6 +241,7 @@ export function ComprasPage() {
               data={comprasFiltradas}
               columns={columns}
               loading={loading}
+              onCambiarEstadoMasivo={handleCambiarEstadoMasivo}
             />
           )}
 

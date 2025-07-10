@@ -15,12 +15,12 @@ export function useCompras(filtrosIniciales?: FiltroCompra) {
   const [estadisticas, setEstadisticas] = useState<EstadisticasCompras | null>(null)
   const [filtros, setFiltros] = useState<FiltroCompra>(filtrosIniciales || {})
 
-  // Cargar compras
+  // Cargar compras - función estable
   const loadCompras = useCallback(async (nuevosFiltros?: FiltroCompra) => {
     console.log('🎣 useCompras.loadCompras called with:', nuevosFiltros)
     try {
       setLoading(true)
-      const filtrosAUsar = nuevosFiltros || filtros
+      const filtrosAUsar = nuevosFiltros || {}
       console.log('📋 Loading compras with filters:', filtrosAUsar)
       const supabaseCompras = await ComprasService.getCompras(filtrosAUsar)
       console.log('📊 Received compras from service:', supabaseCompras.length)
@@ -35,7 +35,7 @@ export function useCompras(filtrosIniciales?: FiltroCompra) {
     } finally {
       setLoading(false)
     }
-  }, [filtros])
+  }, [])
 
   // Cargar estadísticas
   const loadEstadisticas = useCallback(async () => {
@@ -51,7 +51,7 @@ export function useCompras(filtrosIniciales?: FiltroCompra) {
   useEffect(() => {
     loadCompras()
     loadEstadisticas()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loadCompras, loadEstadisticas])
 
   // Cambiar estado de compra
   const cambiarEstadoCompra = async (id: number, nuevoEstado: EstadoCompra): Promise<{
@@ -61,7 +61,7 @@ export function useCompras(filtrosIniciales?: FiltroCompra) {
   }> => {
     try {
       const result = await ComprasService.cambiarEstadoCompra(id, nuevoEstado)
-      await loadCompras()
+      await loadCompras(filtros)
       await loadEstadisticas()
       return {
         success: true,
@@ -104,7 +104,7 @@ export function useCompras(filtrosIniciales?: FiltroCompra) {
   }> => {
     try {
       const result = await ComprasService.cambiarEstadoMasivo(ids, nuevoEstado)
-      await loadCompras()
+      await loadCompras(filtros)
       await loadEstadisticas()
       return result
     } catch (err) {
@@ -129,7 +129,7 @@ export function useCompras(filtrosIniciales?: FiltroCompra) {
 
   // Refrescar datos
   const refreshCompras = () => {
-    loadCompras()
+    loadCompras(filtros)
     loadEstadisticas()
   }
 

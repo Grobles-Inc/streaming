@@ -12,6 +12,7 @@ export type Disponibilidad = z.infer<typeof disponibilidadSchema>
 export const estadoProductoSchema = z.union([
   z.literal('borrador'),
   z.literal('publicado'),
+  z.literal('pendiente'),
 ])
 export type EstadoProducto = z.infer<typeof estadoProductoSchema>
 

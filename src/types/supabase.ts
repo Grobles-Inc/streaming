@@ -132,7 +132,6 @@ export interface Database {
           precio_renovacion: number | null
           estado: 'borrador' | 'publicado'
           fecha_expiracion: string | null
-          revisado_id: string | null
           stock_de_productos: {
             id: number
           }[]
@@ -160,7 +159,6 @@ export interface Database {
           precio_renovacion?: number | null
           estado?: 'borrador' | 'publicado'
           fecha_expiracion?: string | null
-          revisado_id?: string | null
           stock_de_productos?: {
             id: number
           }[]
@@ -190,7 +188,6 @@ export interface Database {
           precio_renovacion?: number | null
           estado?: 'borrador' | 'publicado'
           fecha_expiracion?: string | null
-          revisado_id?: string | null
           stock_de_productos?: {
             id: number
           }[]
@@ -202,13 +199,6 @@ export interface Database {
             isOneToOne: false
             referencedRelation: "categorias"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "productos_revisado_id_fkey"
-            columns: ["revisado_id"]
-            isOneToOne: false
-            referencedRelation: "usuarios"
-            referencedColumns: ["id"] 
           },
           {
             foreignKeyName: "productos_proveedor_id_fkey"
@@ -330,7 +320,6 @@ export interface Database {
           monto_reembolso: number
           created_at: string
           updated_at: string
-          revisado_id: string | null
         }
         Insert: {
           id?: number
@@ -350,7 +339,6 @@ export interface Database {
           monto_reembolso?: number
           created_at?: string
           updated_at?: string
-          revisado_id: string | null
         }
         Update: {
           id?: number
@@ -370,19 +358,11 @@ export interface Database {
           monto_reembolso?: number
           created_at?: string
           updated_at?: string
-          revisado_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "compras_proveedor_id_fkey"
             columns: ["proveedor_id"]
-            isOneToOne: false
-            referencedRelation: "usuarios"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "compras_revisado_id_fkey"
-            columns: ["revisado_id"]
             isOneToOne: false
             referencedRelation: "usuarios"
             referencedColumns: ["id"]
@@ -411,7 +391,6 @@ export interface Database {
           estado: "aprobado" | "pendiente" | "rechazado"
           created_at: string
           updated_at: string
-          revisado_id: string | null
         }
         Insert: {
           id?: number
@@ -420,7 +399,6 @@ export interface Database {
           estado?: "aprobado" | "pendiente" | "rechazado"
           created_at?: string
           updated_at?: string
-          revisado_id?: string | null
         }
         Update: {
           id?: number
@@ -429,19 +407,11 @@ export interface Database {
           estado?: "aprobado" | "pendiente" | "rechazado"
           created_at?: string
           updated_at?: string
-          revisado_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "recargas_usuario_id_fkey"
             columns: ["usuario_id"]
-            isOneToOne: false
-            referencedRelation: "usuarios"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "recargas_revisado_id_fkey"
-            columns: ["revisado_id"]
             isOneToOne: false
             referencedRelation: "usuarios"
             referencedColumns: ["id"]
@@ -456,7 +426,6 @@ export interface Database {
           estado: "aprobado" | "pendiente" | "rechazado"
           created_at: string
           updated_at: string
-          revisado_id: string | null
         }
         Insert: {
           id?: number
@@ -465,7 +434,6 @@ export interface Database {
           estado?: "aprobado" | "pendiente" | "rechazado"
           created_at?: string
           updated_at?: string
-          revisado_id?: string | null
         }
         Update: {
           id?: number
@@ -474,19 +442,11 @@ export interface Database {
           estado?: "aprobado" | "pendiente" | "rechazado"
           created_at?: string
           updated_at?: string
-          revisado_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "retiros_usuario_id_fkey"
             columns: ["usuario_id"]
-            isOneToOne: false
-            referencedRelation: "usuarios"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "retiros_revisado_id_fkey"
-            columns: ["revisado_id"]
             isOneToOne: false
             referencedRelation: "usuarios"
             referencedColumns: ["id"]

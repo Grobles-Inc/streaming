@@ -73,12 +73,22 @@ export const columns: ColumnDef<Referido>[] = [
       <DataTableColumnHeader column={column} title='Teléfono' />
     ),
     cell: ({ row }) => {
+      const telefono = row.getValue('telefono') as string | null
+      
+      if (!telefono) {
+        return (
+          <span className='text-gray-400 text-sm'>
+            Sin teléfono
+          </span>
+        )
+      }
+      
       return (
-        <a href={`https://wa.me/${row.getValue('telefono')}?text=Hola, que tal `} target='_blank' rel='noopener noreferrer'>
+        <a href={`https://wa.me/${telefono}?text=Hola, que tal `} target='_blank' rel='noopener noreferrer'>
           <Button variant='ghost' size='icon' className='flex flex-col items-center gap-0'>
             <img src="https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000" className='size-6' />
             <span className='text-green-500 text-[9px]'>
-              {row.getValue('telefono')}
+              {telefono}
             </span>
           </Button>
         </a>

@@ -20,7 +20,9 @@ export function ProfileDropdown() {
       <DropdownMenuTrigger asChild>
         <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
           <Avatar className='h-8 w-8'>
-            <AvatarFallback>{user?.nombres?.charAt(0)}</AvatarFallback>
+            <AvatarFallback className='bg-gradient-to-r from-indigo-500 to-cyan-500 text-white'>
+              {user?.nombres?.charAt(0)}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -28,9 +30,7 @@ export function ProfileDropdown() {
         <DropdownMenuLabel className='font-normal'>
           <div className='flex flex-col space-y-1'>
             <p className='text-sm leading-none font-medium'>{user?.nombres}</p>
-            <p className='text-muted-foreground text-xs leading-none'>
-              vendedor@gmail.com
-            </p>
+            <p className='text-muted-foreground text-xs leading-none'>{user?.email}</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

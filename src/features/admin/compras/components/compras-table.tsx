@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import {
   flexRender,
   getCoreRowModel,
@@ -79,6 +79,10 @@ export function ComprasTable({
   })
   const [rowSelection, setRowSelection] = useState({})
   const [isProcessing, setIsProcessing] = useState(false)
+
+  // Referencias para el scroll sincronizado
+  const topScrollRef = useRef<HTMLDivElement>(null)
+  const tableContainerRef = useRef<HTMLDivElement>(null)
 
   // Estados para filtros adicionales
   const [filtroId, setFiltroId] = useState('')
@@ -166,6 +170,48 @@ export function ComprasTable({
     }
   }, [selectedParaReembolso, onCambiarEstadoMasivo, isProcessing])
 
+  // Efecto para sincronizar el ancho del scroll superior con el contenido de la tabla
+  useEffect(() => {
+    const updateScrollWidth = () => {
+      if (topScrollRef.current && tableContainerRef.current) {
+        const tableScrollWidth = tableContainerRef.current.scrollWidth
+        const tableClientWidth = tableContainerRef.current.clientWidth
+        
+        if (tableScrollWidth > tableClientWidth) {
+          // Crear un div interno con el mismo ancho que el scroll de la tabla
+          const scrollContent = topScrollRef.current.querySelector('.scroll-content') as HTMLDivElement
+          if (scrollContent) {
+            scrollContent.style.width = `${tableScrollWidth}px`
+          }
+        }
+      }
+    }
+
+    // Actualizar cuando cambie el tamaño o los datos
+    updateScrollWidth()
+    window.addEventListener('resize', updateScrollWidth)
+    
+    return () => {
+      window.removeEventListener('resize', updateScrollWidth)
+    }
+  }, [data, columnVisibility])
+
+  // Función para manejar scroll desde la barra superior
+  const handleTopScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLDivElement
+    if (tableContainerRef.current) {
+      tableContainerRef.current.scrollLeft = target.scrollLeft
+    }
+  }, [])
+
+  // Función para manejar scroll desde la tabla
+  const handleTableScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLDivElement
+    if (topScrollRef.current) {
+      topScrollRef.current.scrollLeft = target.scrollLeft
+    }
+  }, [])
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -249,23 +295,19 @@ export function ComprasTable({
         </div>
       </div>
 
-      {/* Scroll horizontal superior */}
+      {/* Scroll horizontal superior mejorado */}
       <div className="relative mb-4">
+        <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
+          <IconSearch className="h-3 w-3" />
+          <span>Scroll horizontal para navegar entre columnas</span>
+        </div>
         <div 
-          className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-          id="top-scroll"
-          onScroll={(e) => {
-            const target = e.target as HTMLDivElement;
-            const table = document.querySelector('.table-container') as HTMLDivElement;
-            if (table) {
-              table.scrollLeft = target.scrollLeft;
-            }
-          }}
+          ref={topScrollRef}
+          className="overflow-x-auto border rounded-md bg-muted/30 h-4 hover:bg-muted/50 transition-colors cursor-pointer"
+          onScroll={handleTopScroll}
         >
-          <div className="min-w-[1200px] bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg h-4 flex items-center justify-center">
-            <div className="text-xs text-muted-foreground font-medium">
-              ← Arrastra para hacer scroll horizontal →
-            </div>
+          <div className="scroll-content h-full min-w-[1200px] bg-gradient-to-r from-blue-100 via-purple-100 to-green-100 rounded">
+            {/* Contenido invisible para generar el scroll */}
           </div>
         </div>
       </div>
@@ -377,17 +419,12 @@ export function ComprasTable({
         )}
       </div>
 
-      {/* Tabla */}
+      {/* Tabla con scroll sincronizado */}
       <div className="rounded-md border">
         <div 
-          className="overflow-x-auto table-container scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-          onScroll={(e) => {
-            const target = e.target as HTMLDivElement;
-            const topScroll = document.querySelector('#top-scroll') as HTMLDivElement;
-            if (topScroll) {
-              topScroll.scrollLeft = target.scrollLeft;
-            }
-          }}
+          ref={tableContainerRef}
+          className="overflow-x-auto"
+          onScroll={handleTableScroll}
         >
           <Table className="min-w-[1200px]">
             <TableHeader>

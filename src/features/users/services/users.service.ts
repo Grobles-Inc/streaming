@@ -12,6 +12,7 @@ export type SupabaseUser = {
   referido_id: string | null
   billetera_id: string | null
   rol: 'provider' | 'admin' | 'seller' | 'registered'
+  estado_habilitado: boolean
   created_at: string
   updated_at: string
 }
@@ -37,8 +38,8 @@ export type UpdateUserData = Partial<Omit<SupabaseUser, 'id' | 'created_at' | 'u
 
 export class UsersService {
   // Obtener todos los usuarios con saldo desde billeteras
-  static async getUsers(): Promise<SupabaseUserWithWallet[]> {
-    const { data, error } = await supabase
+  static async getUsers(includeDisabled: boolean = false): Promise<SupabaseUserWithWallet[]> {
+    let query = supabase
       .from('usuarios')
       .select(`
         *,
@@ -47,10 +48,73 @@ export class UsersService {
           saldo
         )
       `)
-      .order('created_at', { ascending: false })
+
+    // Por defecto filtrar solo usuarios habilitados
+    if (!includeDisabled) {
+      query = query.eq('estado_habilitado', true)
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false })
     
     if (error) {
       console.error('Error fetching users:', error)
+      throw error
+    }
+
+    // Obtener información de usuarios referentes por separado
+    const usersWithReferrals = await Promise.all((data || []).map(async (user) => {
+      let referido_por_nombre: string | null = null
+      
+      if (user.referido_id) {
+        try {
+          const { data: referente, error: referenteError } = await supabase
+            .from('usuarios')
+            .select('nombres, apellidos')
+            .eq('id', user.referido_id)
+            .single()
+          
+          if (!referenteError && referente) {
+            referido_por_nombre = `${referente.nombres} ${referente.apellidos}`.trim()
+          }
+        } catch (err) {
+          console.warn('Error fetching referente for user:', user.id, err)
+        }
+      }
+      
+      return {
+        ...user,
+        saldo_billetera: user.billeteras?.[0]?.saldo || null,
+        billetera_id: user.billeteras?.[0]?.id || null,
+        referido_por_nombre
+      }
+    }))
+
+    return usersWithReferrals
+  }
+
+  // Obtener solo usuarios habilitados
+  static async getEnabledUsers(): Promise<SupabaseUserWithWallet[]> {
+    return this.getUsers(false)
+  }
+
+  // Obtener solo usuarios deshabilitados
+  static async getDisabledUsers(): Promise<SupabaseUserWithWallet[]> {
+    const query = supabase
+      .from('usuarios')
+      .select(`
+        *,
+        billeteras!billeteras_usuario_id_fkey (
+          id,
+          saldo
+        )
+      `)
+      .eq('estado_habilitado', false)
+      .order('created_at', { ascending: false })
+
+    const { data, error } = await query
+    
+    if (error) {
+      console.error('Error fetching disabled users:', error)
       throw error
     }
 
@@ -237,17 +301,46 @@ export class UsersService {
     return data
   }
 
-  // Eliminar usuario
-  static async deleteUser(id: string): Promise<void> {
-    const { error } = await supabase
+  // Deshabilitar usuario (soft delete)
+  static async deleteUser(id: string): Promise<SupabaseUser> {
+    const { data, error } = await supabase
       .from('usuarios')
-      .delete()
+      .update({ 
+        estado_habilitado: false,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', id)
+      .select('*')
+      .single()
     
     if (error) {
-      console.error('Error deleting user:', error)
+      console.error('Error disabling user:', error)
       throw error
     }
+    
+    console.log('User disabled successfully:', data)
+    return data
+  }
+
+  // Habilitar usuario
+  static async enableUser(id: string): Promise<SupabaseUser> {
+    const { data, error } = await supabase
+      .from('usuarios')
+      .update({ 
+        estado_habilitado: true,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select('*')
+      .single()
+    
+    if (error) {
+      console.error('Error enabling user:', error)
+      throw error
+    }
+    
+    console.log('User enabled successfully:', data)
+    return data
   }
 
   // Buscar usuarios por nombre con saldo desde billeteras
@@ -343,7 +436,7 @@ export class UsersService {
     return stats
   }
 
-  // Validar código de referido y obtener usuario referente
+  // Validar código de referido y obtener usuario referente (solo usuarios habilitados)
   static async validateReferralCode(codigo: string): Promise<SupabaseUser | null> {
     if (!codigo || codigo.trim() === '') {
       return null
@@ -353,6 +446,7 @@ export class UsersService {
       .from('usuarios')
       .select('*')
       .eq('codigo_referido', codigo.trim())
+      .eq('estado_habilitado', true) // Solo usuarios habilitados pueden referir
       .single()
 
     if (error) {
@@ -384,7 +478,7 @@ export class UsersService {
         }
       }
       
-      // PASO 1: Crear el usuario SIN billetera_id pero CON referido_id
+      // PASO 1: Crear el usuario directamente en la tabla usuarios
       const userInsertData = {
         email: userData.email,
         nombres: userData.nombres,
@@ -400,48 +494,14 @@ export class UsersService {
       console.log('Insertando usuario con datos:', userInsertData)
       console.log('Rol específico:', userInsertData.rol)
       
-      // PASO 1A: Crear el usuario en Supabase Auth usando signUp normal
-      const { data: authSignUp, error: authError } = await supabase.auth.signUp({
-        email: userData.email,
-        password: userData.password || '', // Asegurar que no sea undefined
-        options: {
-          data: {
-            nombres: userData.nombres,
-            apellidos: userData.apellidos,
-            usuario: userData.usuario,
-            rol: userData.rol || 'registered'
-          }
-        }
-      })
-
-      if (authError) {
-        console.error('Error creating auth user:', authError)
-        throw authError
-      }
-
-      if (!authSignUp.user) {
-        throw new Error('No se pudo crear el usuario en Auth')
-      }
-
-      console.log('Auth user created successfully:', authSignUp.user.id)
-      
-      // PASO 1B: Crear el usuario en la tabla usuarios con el ID de Auth
-      const userInsertDataWithAuth = {
-        ...userInsertData,
-        id: authSignUp.user.id // Usar el ID generado por Auth
-      }
-      
       const { data: userData_inserted, error: userError } = await supabase
         .from('usuarios')
-        .insert(userInsertDataWithAuth)
+        .insert(userInsertData)
         .select('*')
         .single()
       
       if (userError) {
         console.error('Error creating user with referral:', userError)
-        // Limpiar el usuario de Auth si falla la creación en la tabla
-        // Nota: Con signUp no podemos usar admin.deleteUser, pero el usuario de Auth quedará sin datos en la tabla
-        console.warn('Usuario creado en Auth pero falló en la tabla usuarios:', authSignUp.user.id)
         throw userError
       }
       
@@ -458,14 +518,11 @@ export class UsersService {
         .single()
       
       if (walletError) {
-        // Si falla la creación de la billetera, eliminar el usuario de la tabla
+        // Si falla la creación de la billetera, eliminar el usuario creado
         await supabase
           .from('usuarios')
           .delete()
           .eq('id', userData_inserted.id)
-        
-        // Nota: Con signUp no podemos eliminar el usuario de Auth fácilmente
-        console.warn('Usuario creado en Auth pero falló la billetera:', userData_inserted.id)
           
         console.error('Error creating wallet for referred user:', walletError)
         throw new Error('Error al crear la billetera: ' + walletError.message)
@@ -482,13 +539,15 @@ export class UsersService {
         .single()
       
       if (updateError) {
+        // Si falla la actualización, limpiar usuario y billetera
+        await supabase.from('billeteras').delete().eq('id', billetera_inserted.id)
+        await supabase.from('usuarios').delete().eq('id', userData_inserted.id)
+        
         console.error('Error updating user with wallet ID:', updateError)
-        throw updateError
+        throw new Error('Error al vincular la billetera: ' + updateError.message)
       }
       
-      // IMPORTANTE: Cerrar la sesión del usuario recién creado para que el formulario pueda hacer login
-      await supabase.auth.signOut()
-      console.log('Sesión cerrada para permitir login desde el formulario')
+      console.log('User updated with wallet ID:', updated_user)
       
       return updated_user
       
@@ -533,5 +592,96 @@ export class UsersService {
       saldo_billetera: user.billeteras?.[0]?.saldo || null,
       billetera_id: user.billeteras?.[0]?.id || null
     }))
+  }
+
+  // Eliminar usuario permanentemente (hard delete) y todo lo relacionado
+  static async permanentDeleteUser(id: string): Promise<boolean> {
+    try {
+      console.log('Starting permanent deletion process for user:', id)
+      
+      // PASO 1: Eliminar todas las transacciones relacionadas
+      const { error: transactionsError } = await supabase
+        .from('transacciones')
+        .delete()
+        .eq('usuario_id', id)
+      
+      if (transactionsError) {
+        console.error('Error deleting transactions:', transactionsError)
+        throw new Error('Error al eliminar transacciones: ' + transactionsError.message)
+      }
+      
+      // PASO 2: Eliminar todas las recargas relacionadas
+      const { error: recargasError } = await supabase
+        .from('recargas')
+        .delete()
+        .eq('usuario_id', id)
+      
+      if (recargasError) {
+        console.error('Error deleting recargas:', recargasError)
+        throw new Error('Error al eliminar recargas: ' + recargasError.message)
+      }
+      
+      // PASO 3: Eliminar todos los retiros relacionados
+      const { error: retirosError } = await supabase
+        .from('retiros')
+        .delete()
+        .eq('usuario_id', id)
+      
+      if (retirosError) {
+        console.error('Error deleting retiros:', retirosError)
+        throw new Error('Error al eliminar retiros: ' + retirosError.message)
+      }
+      
+      // PASO 4: Eliminar todas las compras relacionadas
+      const { error: comprasError } = await supabase
+        .from('compras')
+        .delete()
+        .eq('usuario_id', id)
+      
+      if (comprasError) {
+        console.error('Error deleting compras:', comprasError)
+        throw new Error('Error al eliminar compras: ' + comprasError.message)
+      }
+      
+      // PASO 5: Eliminar la billetera del usuario
+      const { error: walletError } = await supabase
+        .from('billeteras')
+        .delete()
+        .eq('usuario_id', id)
+      
+      if (walletError) {
+        console.error('Error deleting wallet:', walletError)
+        throw new Error('Error al eliminar billetera: ' + walletError.message)
+      }
+      
+      // PASO 6: Actualizar usuarios que fueron referidos por este usuario (limpiar la referencia)
+      const { error: referralsError } = await supabase
+        .from('usuarios')
+        .update({ referido_id: null })
+        .eq('referido_id', id)
+      
+      if (referralsError) {
+        console.error('Error cleaning referrals:', referralsError)
+        throw new Error('Error al limpiar referencias: ' + referralsError.message)
+      }
+      
+      // PASO 7: Finalmente eliminar el usuario
+      const { error: userError } = await supabase
+        .from('usuarios')
+        .delete()
+        .eq('id', id)
+      
+      if (userError) {
+        console.error('Error deleting user:', userError)
+        throw new Error('Error al eliminar usuario: ' + userError.message)
+      }
+      
+      console.log('User permanently deleted successfully:', id)
+      return true
+      
+    } catch (error) {
+      console.error('Error in permanent deletion process:', error)
+      throw error
+    }
   }
 }

@@ -76,6 +76,18 @@ export function RegisterWithReferralForm() {
   const [tokenData, setTokenData] = useState<RegistrationTokenData | null>(null)
   const [registrationAllowed, setRegistrationAllowed] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string>('')
+  const [emailValidation, setEmailValidation] = useState<{
+    isChecking: boolean
+    isDuplicate: boolean
+    message: string
+  }>({ isChecking: false, isDuplicate: false, message: '' })
+  const [usernameValidation, setUsernameValidation] = useState<{
+    isChecking: boolean
+    isDuplicate: boolean
+    message: string
+  }>({ isChecking: false, isDuplicate: false, message: '' })
+  const emailTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const usernameTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const navigate = useNavigate()
   
   // Obtener parámetros de URL usando TanStack Router
@@ -133,6 +145,18 @@ export function RegisterWithReferralForm() {
     validateRegistrationToken()
   }, [searchParams.token, searchParams.ref])
 
+  // Cleanup timeouts al desmontar el componente
+  useEffect(() => {
+    return () => {
+      if (emailTimeoutRef.current) {
+        clearTimeout(emailTimeoutRef.current)
+      }
+      if (usernameTimeoutRef.current) {
+        clearTimeout(usernameTimeoutRef.current)
+      }
+    }
+  }, [])
+
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerWithReferralSchema),
     defaultValues: {
@@ -162,8 +186,128 @@ export function RegisterWithReferralForm() {
     }
   }, [tokenData, form])
 
+  // Función para validar email en tiempo real
+  const validateEmailUnique = async (email: string) => {
+    if (!email || email.length < 3) {
+      setEmailValidation({ isChecking: false, isDuplicate: false, message: '' })
+      return
+    }
+
+    setEmailValidation({ isChecking: true, isDuplicate: false, message: '' })
+
+    try {
+      const { data, error } = await supabase
+        .from('usuarios')
+        .select('id, estado_habilitado')
+        .eq('email', email.toLowerCase())
+        .eq('estado_habilitado', true) // Solo considerar usuarios habilitados
+        .maybeSingle()
+
+      if (error) {
+        console.error('Error checking email:', error)
+        setEmailValidation({ 
+          isChecking: false, 
+          isDuplicate: false, 
+          message: 'Error verificando email' 
+        })
+        return
+      }
+
+      if (data) {
+        setEmailValidation({ 
+          isChecking: false, 
+          isDuplicate: true, 
+          message: 'Este email ya está registrado' 
+        })
+        form.setError('email', {
+          type: 'manual',
+          message: 'Este email ya está registrado'
+        })
+      } else {
+        setEmailValidation({ 
+          isChecking: false, 
+          isDuplicate: false, 
+          message: '' 
+        })
+        // Limpiar error si el email está disponible
+        if (form.formState.errors.email?.message === 'Este email ya está registrado') {
+          form.clearErrors('email')
+        }
+      }
+    } catch (err) {
+      console.error('Error in email validation:', err)
+      setEmailValidation({ 
+        isChecking: false, 
+        isDuplicate: false, 
+        message: 'Error verificando email' 
+      })
+    }
+  }
+
+  // Función para validar username en tiempo real
+  const validateUsernameUnique = async (username: string) => {
+    if (!username || username.length < 3) {
+      setUsernameValidation({ isChecking: false, isDuplicate: false, message: '' })
+      return
+    }
+
+    setUsernameValidation({ isChecking: true, isDuplicate: false, message: '' })
+
+    try {
+      const { data, error } = await supabase
+        .from('usuarios')
+        .select('id, estado_habilitado')
+        .eq('usuario', username.toLowerCase())
+        .eq('estado_habilitado', true) // Solo considerar usuarios habilitados
+        .maybeSingle()
+
+      if (error) {
+        console.error('Error checking username:', error)
+        setUsernameValidation({ 
+          isChecking: false, 
+          isDuplicate: false, 
+          message: 'Error verificando usuario' 
+        })
+        return
+      }
+
+      if (data) {
+        setUsernameValidation({ 
+          isChecking: false, 
+          isDuplicate: true, 
+          message: 'Este nombre de usuario ya está en uso' 
+        })
+        form.setError('usuario', {
+          type: 'manual',
+          message: 'Este nombre de usuario ya está en uso'
+        })
+      } else {
+        setUsernameValidation({ 
+          isChecking: false, 
+          isDuplicate: false, 
+          message: '' 
+        })
+        // Limpiar error si el username está disponible
+        if (form.formState.errors.usuario?.message === 'Este nombre de usuario ya está en uso') {
+          form.clearErrors('usuario')
+        }
+      }
+    } catch (err) {
+      console.error('Error in username validation:', err)
+      setUsernameValidation({ 
+        isChecking: false, 
+        isDuplicate: false, 
+        message: 'Error verificando usuario' 
+      })
+    }
+  }
+
   const onSubmit = async (values: RegisterFormData) => {
     setIsLoading(true)
+    
+    // Limpiar errores previos de campos específicos
+    form.clearErrors(['email', 'usuario'])
+    
     try {
       console.log('Registrando usuario con referido:', values)
 
@@ -197,64 +341,56 @@ export function RegisterWithReferralForm() {
         await RegistrationTokenValidator.invalidateToken(tokenData.validationToken)
       }
 
-      // Esperar un poco antes de intentar el login
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      // Después de crear el usuario exitosamente, iniciar sesión automáticamente
-      console.log('Intentando login automático con:', userData.email)
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: userData.email,
-        password: userData.password,
+      // Mostrar mensaje de éxito y redirigir al login
+      toast.success('¡Registro exitoso!', {
+        description: 'Tu cuenta ha sido creada correctamente. Por favor inicia sesión con tus credenciales.'
       })
-
-      if (signInError) {
-        console.error('Error al iniciar sesión automáticamente:', signInError)
-        console.error('Detalles del error:', signInError.message)
-
-        // Manejo específico de diferentes tipos de errores
-        if (signInError.message.includes('Email not confirmed') || signInError.message.includes('confirmation')) {
-          toast.success('¡Registro exitoso!', {
-            description: 'Tu cuenta ha sido creada. El administrador te concederá acceso a la plataforma.'
-          })
-        } else if (signInError.message.includes('Invalid login credentials')) {
-          toast.success('¡Registro exitoso!', {
-            description: 'Tu cuenta ha sido creada correctamente. Puedes iniciar sesión con tus credenciales.'
-          })
-        } else {
-          toast.success('¡Registro exitoso!', {
-            description: 'Tu cuenta ha sido creada correctamente. Por favor inicia sesión.'
-          })
-        }
-        navigate({ to: '/sign-in' })
-      } else {
-        console.log('Inicio de sesión automático exitoso:', signInData)
-        toast.success('¡Bienvenido!', {
-          description: 'Tu cuenta ha sido creada y has iniciado sesión exitosamente.'
-        })
-
-        // Verificar el rol del usuario para redirigir correctamente
-        const userRole = signInData.user?.user_metadata?.rol || tokenData?.role || 'registered'
-        console.log('Rol del usuario:', userRole)
-
-        // Redirigir según el rol del usuario
-        let dashboardRoute = '/dashboard'
-        if (userRole === 'admin') {
-          dashboardRoute = '/admin'
-        } else if (userRole === 'seller') {
-          dashboardRoute = '/vendedor'
-        } else if (userRole === 'provider') {
-          dashboardRoute = '/proveedor'
-        }
-
-        console.log('Redirigiendo a:', dashboardRoute)
-        navigate({ to: dashboardRoute })
-      }
+      
+      // Redirigir al login
+      navigate({ to: '/sign-in' })
 
     } catch (error: any) {
       console.error('Error en el registro:', error)
+      
+      // Manejo específico de errores de validación de campo
+      const errorMessage = error.message || error.toString()
+      
+      // Errores de email duplicado en la tabla usuarios
+      if (errorMessage.includes('duplicate key value violates unique constraint') && 
+          (errorMessage.includes('usuarios_email_key') || errorMessage.includes('email'))) {
+        form.setError('email', {
+          type: 'manual',
+          message: 'Este email ya está registrado'
+        })
+        return
+      }
+      
+      // Errores de usuario duplicado en la tabla usuarios
+      if (errorMessage.includes('duplicate key value violates unique constraint') && 
+          errorMessage.includes('usuario')) {
+        form.setError('usuario', {
+          type: 'manual',
+          message: 'Este nombre de usuario ya está en uso'
+        })
+        return
+      }
+      
+      // Errores de validación de email por formato
+      if (errorMessage.includes('invalid input syntax') && errorMessage.includes('email')) {
+        form.setError('email', {
+          type: 'manual',
+          message: 'Formato de email inválido'
+        })
+        return
+      }
+      
+      // Error genérico para otros casos
       toast.error('Error en el registro', {
-        description: error.message || 'No se pudo crear la cuenta. Inténtalo de nuevo.'
+        description: errorMessage.includes('Código de referido') 
+          ? errorMessage 
+          : 'No se pudo crear la cuenta. Inténtalo de nuevo.'
       })
+      
     } finally {
       setIsLoading(false)
     }
@@ -375,10 +511,29 @@ export function RegisterWithReferralForm() {
             name="usuario"
             render={({ field }) => (
               <FormItem>
-
                 <FormControl>
-                  <Input placeholder="Usuario" {...field} />
+                  <Input 
+                    placeholder="Usuario" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(e)
+                      
+                      // Debounce username validation
+                      if (usernameTimeoutRef.current) {
+                        clearTimeout(usernameTimeoutRef.current)
+                      }
+                      usernameTimeoutRef.current = setTimeout(() => {
+                        validateUsernameUnique(e.target.value)
+                      }, 800)
+                    }}
+                  />
                 </FormControl>
+                {usernameValidation.isChecking && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Verificando disponibilidad...
+                  </div>
+                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -407,8 +562,25 @@ export function RegisterWithReferralForm() {
                     type="email"
                     placeholder="Email"
                     {...field}
+                    onChange={(e) => {
+                      field.onChange(e)
+                      
+                      // Debounce email validation
+                      if (emailTimeoutRef.current) {
+                        clearTimeout(emailTimeoutRef.current)
+                      }
+                      emailTimeoutRef.current = setTimeout(() => {
+                        validateEmailUnique(e.target.value)
+                      }, 800)
+                    }}
                   />
                 </FormControl>
+                {emailValidation.isChecking && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Verificando disponibilidad...
+                  </div>
+                )}
                 <FormMessage />
               </FormItem>
             )}

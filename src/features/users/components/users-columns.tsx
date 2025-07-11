@@ -196,6 +196,31 @@ export const columns: ColumnDef<MappedUser>[] = [
     enableHiding: false,
   },
   {
+    accessorKey: 'estado_habilitado',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Estado' />
+    ),
+    cell: ({ row }) => {
+      const estadoHabilitado = row.getValue('estado_habilitado') as boolean
+      return (
+        <div className='text-sm'>
+          <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+            estadoHabilitado 
+              ? 'bg-green-50 text-green-700 border border-green-200' 
+              : 'bg-red-50 text-red-700 border border-red-200'
+          }`}>
+            {estadoHabilitado ? 'Habilitado' : 'Deshabilitado'}
+          </span>
+        </div>
+      )
+    },
+    filterFn: (row, id, value) => {
+      const estadoHabilitado = row.getValue(id) as boolean
+      return value.includes(estadoHabilitado ? 'habilitado' : 'deshabilitado')
+    },
+    enableSorting: true,
+  },
+  {
     accessorKey: 'referido_por_nombre',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Referido Por' />

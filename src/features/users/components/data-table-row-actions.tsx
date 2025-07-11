@@ -1,6 +1,6 @@
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { Row } from '@tanstack/react-table'
-import { IconEdit, IconTrash, IconEye, IconUserCog } from '@tabler/icons-react'
+import { IconEdit, IconEye, IconUserCog, IconUserX, IconUserCheck } from '@tabler/icons-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -19,6 +19,9 @@ interface DataTableRowActionsProps {
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const { setOpen, setCurrentRow } = useUsersContext()
+  const user = row.original
+  const isDisabled = !user.estado_habilitado
+  
   return (
     <>
       <DropdownMenu modal={false}>
@@ -48,6 +51,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               setCurrentRow(row.original)
               setOpen('edit')
             }}
+            disabled={isDisabled}
           >
             Editar
             <DropdownMenuShortcut>
@@ -59,6 +63,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               setCurrentRow(row.original)
               setOpen('changeRole')
             }}
+            disabled={isDisabled}
           >
             Cambiar Rol
             <DropdownMenuShortcut>
@@ -66,18 +71,33 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             </DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={() => {
-              setCurrentRow(row.original)
-              setOpen('delete')
-            }}
-            className='text-red-500!'
-          >
-            Eliminar
-            <DropdownMenuShortcut>
-              <IconTrash size={16} />
-            </DropdownMenuShortcut>
-          </DropdownMenuItem>
+          {isDisabled ? (
+            <DropdownMenuItem
+              onClick={() => {
+                setCurrentRow(row.original)
+                setOpen('enable')
+              }}
+              className='text-green-600!'
+            >
+              Habilitar
+              <DropdownMenuShortcut>
+                <IconUserCheck size={16} />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem
+              onClick={() => {
+                setCurrentRow(row.original)
+                setOpen('delete')
+              }}
+              className='text-red-500!'
+            >
+              Deshabilitar
+              <DropdownMenuShortcut>
+                <IconUserX size={16} />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

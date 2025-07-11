@@ -4,7 +4,7 @@ import { MappedUser } from '../data/schema'
 import { useUsers as useSupabaseUsers } from '../hooks/use-users'
 import { CreateUserData, UpdateUserData } from '../services/users.service'
 
-type UsersDialogType = 'invite' | 'add' | 'edit' | 'delete' | 'view' | 'changeRole'
+type UsersDialogType = 'invite' | 'add' | 'edit' | 'delete' | 'view' | 'changeRole' | 'enable' | 'disabledUsers' | 'permanentDelete'
 
 interface UsersContextType {
   open: UsersDialogType | null
@@ -13,15 +13,22 @@ interface UsersContextType {
   setCurrentRow: React.Dispatch<React.SetStateAction<MappedUser | null>>
   // Datos y funciones de Supabase
   users: MappedUser[]
+  disabledUsers: MappedUser[]
   loading: boolean
+  disabledUsersLoading: boolean
   error: string | null
+  showDisabledUsers: boolean
+  setShowDisabledUsers: (show: boolean) => void
   createUser: (userData: CreateUserData) => Promise<MappedUser | null>
   updateUser: (id: string, userData: UpdateUserData) => Promise<MappedUser | null>
   deleteUser: (id: string) => Promise<boolean>
+  enableUser: (id: string) => Promise<boolean>
+  permanentDeleteUser: (id: string) => Promise<boolean>
   searchUsersByName: (name: string) => Promise<void>
   filterByRole: (role: 'admin' | 'provider' | 'seller' | 'registered') => Promise<void>
   updateUserBalance: (id: string, newBalance: number) => Promise<boolean>
   refreshUsers: () => void
+  loadDisabledUsers: () => void
   clearError: () => void
 }
 
@@ -34,19 +41,25 @@ interface Props {
 export default function UsersProvider({ children }: Props) {
   const [open, setOpen] = useDialogState<UsersDialogType>(null)
   const [currentRow, setCurrentRow] = useState<MappedUser | null>(null)
+  const [showDisabledUsers, setShowDisabledUsers] = useState(false)
   
   // Usar el hook de Supabase
   const {
     users,
+    disabledUsers,
     loading,
+    disabledUsersLoading,
     error,
     createUser,
     updateUser,
     deleteUser,
+    enableUser,
+    permanentDeleteUser,
     searchUsersByName,
     filterByRole,
     updateUserBalance,
     refreshUsers,
+    loadDisabledUsers,
     clearError
   } = useSupabaseUsers()
 
@@ -57,15 +70,22 @@ export default function UsersProvider({ children }: Props) {
       currentRow, 
       setCurrentRow,
       users,
+      disabledUsers,
       loading,
+      disabledUsersLoading,
       error,
+      showDisabledUsers,
+      setShowDisabledUsers,
       createUser,
       updateUser,
       deleteUser,
+      enableUser,
+      permanentDeleteUser,
       searchUsersByName,
       filterByRole,
       updateUserBalance,
       refreshUsers,
+      loadDisabledUsers,
       clearError
     }}>
       {children}

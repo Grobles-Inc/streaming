@@ -39,6 +39,7 @@ const userSchema = z.object({
   rol: userRoleSchema,
   created_at: z.string(),
   updated_at: z.string(),
+  estado_habilitado: z.boolean(),
 })
 export type User = z.infer<typeof userSchema>
 
@@ -62,6 +63,7 @@ const mappedUserSchema = z.object({
   codigo_referido: z.string(),
   referido_id: z.string().nullable(),
   referido_por_nombre: z.string().nullable(), // Nombre del usuario que lo refirió
+  estado_habilitado: z.boolean(),
   fechaCreacion: z.coerce.date(),
   fechaActualizacion: z.coerce.date(),
 })
@@ -85,6 +87,7 @@ export function mapSupabaseUserToComponent(supabaseUser: SupabaseUserWithWallet)
     codigo_referido: supabaseUser.codigo_referido || '',
     referido_id: supabaseUser.referido_id || null,
     referido_por_nombre: supabaseUser.referido_por_nombre || null,
+    estado_habilitado: supabaseUser.estado_habilitado || true,
     fechaCreacion: new Date(supabaseUser.created_at),
     fechaActualizacion: new Date(supabaseUser.updated_at),
   }

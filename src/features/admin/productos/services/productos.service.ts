@@ -25,7 +25,7 @@ export class ProductosService {
           nombre,
           descripcion
         ),
-        usuarios (
+        usuarios!proveedor_id (
           id,
           nombres,
           apellidos,
@@ -76,8 +76,8 @@ export class ProductosService {
 
     return (data || []).map(producto => ({
       ...producto,
-      categoria: producto.categoria || null,
-      proveedor: producto.proveedor || null,
+      categoria: producto.categorias || null,
+      proveedor: producto.usuarios || null,
       stock_productos: producto.stock_productos || []
     })) as ProductoWithRelations[]
   }
@@ -88,12 +88,12 @@ export class ProductosService {
       .from('productos')
       .select(`
         *,
-        categoria:categorias!categoria_id (
+        categorias!categoria_id (
           id,
           nombre,
           descripcion
         ),
-        proveedor:usuarios!proveedor_id (
+        usuarios!proveedor_id (
           id,
           nombres,
           apellidos,
@@ -116,8 +116,8 @@ export class ProductosService {
 
     return {
       ...data,
-      categoria: data.categoria || null,
-      proveedor: data.proveedor || null,
+      categoria: data.categorias || null,
+      proveedor: data.usuarios || null,
       stock_productos: data.stock_productos || []
     } as ProductoWithRelations
   }

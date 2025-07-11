@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
@@ -10,7 +11,12 @@ import { UsersTable } from './components/users-table'
 import UsersProvider, { useUsersContext } from './context/users-context'
 
 function UsersContent() {
-  const { users, loading, error } = useUsersContext()
+  const { 
+    users, 
+    loading, 
+    error,
+    setOpen
+  } = useUsersContext()
 
   if (error) {
     return (
@@ -43,8 +49,18 @@ function UsersContent() {
               Gestiona los usuarios y sus roles.
             </p>
           </div>
-          <UsersPrimaryButtons />
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setOpen('disabledUsers')}
+              size="sm"
+            >
+              Ver usuarios deshabilitados
+            </Button>
+            <UsersPrimaryButtons />
+          </div>
         </div>
+        
         <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
           {loading ? (
             <div className="flex items-center justify-center h-64">

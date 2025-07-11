@@ -1,4 +1,5 @@
 import { NavGroup } from '@/components/layout/nav-group'
+import { BalanceSummary } from '@/components/layout/balance-summary'
 import {
   Sidebar,
   SidebarContent,
@@ -38,7 +39,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="space-y-4">
+        {/* Resumen Financiero - Solo para admin */}
+        {userRole === 'admin' && (
+          <div className="px-2">
+            <BalanceSummary />
+          </div>
+        )}
+        
+        {/* Navegación */}
         {sidebarData.navGroups.map((props) => (
           <NavGroup key={props.title} {...props} />
         ))}

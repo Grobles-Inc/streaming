@@ -4,7 +4,9 @@ import { mapSupabaseUserToComponent, type MappedUser } from '../data/schema'
 
 export function useUsers() {
   const [users, setUsers] = useState<MappedUser[]>([])
+  const [disabledUsers, setDisabledUsers] = useState<MappedUser[]>([])
   const [loading, setLoading] = useState(true)
+  const [disabledUsersLoading, setDisabledUsersLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Cargar usuarios inicial
@@ -15,7 +17,7 @@ export function useUsers() {
   const loadUsers = async () => {
     try {
       setLoading(true)
-      const supabaseUsers = await UsersService.getUsers()
+      const supabaseUsers = await UsersService.getEnabledUsers()
       const mappedUsers = supabaseUsers.map(mapSupabaseUserToComponent)
       setUsers(mappedUsers)
       setError(null)
@@ -24,6 +26,20 @@ export function useUsers() {
       console.error('Error loading users:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadDisabledUsers = async () => {
+    try {
+      setDisabledUsersLoading(true)
+      const supabaseUsers = await UsersService.getDisabledUsers()
+      const mappedUsers = supabaseUsers.map(mapSupabaseUserToComponent)
+      setDisabledUsers(mappedUsers)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cargar usuarios deshabilitados')
+      console.error('Error loading disabled users:', err)
+    } finally {
+      setDisabledUsersLoading(false)
     }
   }
 
@@ -68,11 +84,38 @@ export function useUsers() {
   const deleteUser = async (id: string): Promise<boolean> => {
     try {
       await UsersService.deleteUser(id)
+      // Remover de la lista de usuarios habilitados
       setUsers(prev => prev.filter(u => u.id !== id))
+      // Si ya tenemos usuarios deshabilitados cargados, añadir el usuario a esa lista
+      const userWithWallet = await UsersService.getUserById(id)
+      if (userWithWallet && !userWithWallet.estado_habilitado) {
+        const mappedUser = mapSupabaseUserToComponent(userWithWallet)
+        setDisabledUsers(prev => [mappedUser, ...prev])
+      }
       return true
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al eliminar usuario')
-      console.error('Error deleting user:', err)
+      setError(err instanceof Error ? err.message : 'Error al deshabilitar usuario')
+      console.error('Error disabling user:', err)
+      return false
+    }
+  }
+
+  const enableUser = async (id: string): Promise<boolean> => {
+    try {
+      await UsersService.enableUser(id)
+      // Obtener el usuario actualizado
+      const userWithWallet = await UsersService.getUserById(id)
+      if (userWithWallet && userWithWallet.estado_habilitado) {
+        const mappedUser = mapSupabaseUserToComponent(userWithWallet)
+        // Añadir a la lista de usuarios habilitados
+        setUsers(prev => [mappedUser, ...prev])
+        // Remover de la lista de usuarios deshabilitados
+        setDisabledUsers(prev => prev.filter(u => u.id !== id))
+      }
+      return true
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al habilitar usuario')
+      console.error('Error enabling user:', err)
       return false
     }
   }
@@ -126,17 +169,35 @@ export function useUsers() {
     loadUsers()
   }
 
+  const permanentDeleteUser = async (id: string): Promise<boolean> => {
+    try {
+      await UsersService.permanentDeleteUser(id)
+      // Remover de la lista de usuarios deshabilitados
+      setDisabledUsers(prev => prev.filter(u => u.id !== id))
+      return true
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al eliminar usuario permanentemente')
+      console.error('Error permanently deleting user:', err)
+      return false
+    }
+  }
+
   return {
     users,
+    disabledUsers,
     loading,
+    disabledUsersLoading,
     error,
     createUser,
     updateUser,
     deleteUser,
+    enableUser,
     searchUsersByName,
     filterByRole,
     updateUserBalance,
     refreshUsers,
-    clearError: () => setError(null)
+    loadDisabledUsers,
+    clearError: () => setError(null),
+    permanentDeleteUser
   }
 }

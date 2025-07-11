@@ -1,9 +1,12 @@
 import { useUsersContext } from '../context/users-context'
 import { UsersActionDialog } from './users-action-dialog'
 import { UsersDeleteDialog } from './users-delete-dialog'
+import { UsersEnableDialog } from './users-enable-dialog'
 import { UsersDetailsDialog } from './users-details-dialog'
 import { UsersInviteDialog } from './users-invite-dialog'
 import { UsersChangeRoleDialog } from './users-change-role-dialog'
+import { DisabledUsersModal } from './disabled-users-modal'
+import { UsersPermanentDeleteDialog } from './users-permanent-delete-dialog'
 
 export function UsersDialogs() {
   const { open, setOpen, currentRow, setCurrentRow } = useUsersContext()
@@ -70,8 +73,24 @@ export function UsersDialogs() {
             }}
             currentRow={currentRow}
           />
+
+          <UsersEnableDialog
+            key={`user-enable-${currentRow.id}`}
+            open={open === 'enable'}
+            onOpenChange={() => {
+              setOpen('enable')
+              setTimeout(() => {
+                setCurrentRow(null)
+              }, 500)
+            }}
+            currentRow={currentRow}
+          />
         </>
       )}
+
+      {/* Modales que no requieren currentRow */}
+      <DisabledUsersModal />
+      <UsersPermanentDeleteDialog />
     </>
   )
 }

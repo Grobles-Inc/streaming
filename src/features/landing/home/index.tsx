@@ -40,18 +40,31 @@ export default function Home() {
       )}
 
 
-      {
-        searchInput && (
-          <div className="md:px-8 px-4 pb-12 pt-4">
-            <h2 className="text-2xl font-bold mb-4">Resultados de la búsqueda</h2>
+      {searchInput && (
+        <div className="md:px-8 px-4 pb-12 pt-4">
+          <h2 className="text-2xl font-bold mb-4">Resultados de la búsqueda</h2>
+          {filteredProductos && filteredProductos.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-5 md:gap-6 gap-4">
-              {filteredProductos?.map((producto) => (
+              {filteredProductos.map((producto) => (
                 <ProductoCard key={producto.id} producto={producto} />
               ))}
             </div>
-          </div>
-        )
-      }
+          ) : (
+            <div className="col-span-full text-center py-8 text-muted-foreground">
+              <div className="flex flex-col items-center justify-center gap-2">
+                <span className="inline-flex items-center rounded-full bg-yellow-100 px-3 py-1 text-sm font-semibold text-yellow-800 mb-2">
+                  <svg className="w-5 h-5 mr-2 text-yellow-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01" />
+                  </svg>
+                  Sin resultados
+                </span>
+                <span className="text-base text-muted-foreground">No encontramos productos que coincidan con tu búsqueda.</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
 
 
@@ -84,7 +97,7 @@ export default function Home() {
           ) : productos?.data && productos.data.length > 0 ? (
             [...productos.data]
               .sort(() => Math.random() - 0.5)
-              .slice(0, 10)
+              .slice(0, 6)
               .map((producto) => (
                 <ProductoCard key={producto.id} producto={producto} />
               ))
@@ -108,7 +121,7 @@ export default function Home() {
           ) : productos?.data && productos.data.length > 0 ? (
             [...productos.data]
               .sort(() => Math.random() - 0.5)
-              .slice(0, 10)
+              .slice(0, 6)
               .map((producto) => (
                 <ProductoCard key={producto.id} producto={producto} />
               ))

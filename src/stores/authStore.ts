@@ -21,7 +21,7 @@ export const useAuthStore = create<AuthState>((set, _get) => ({
 
   signIn: async (usuario: string, password: string) => {
     set({ loading: true })
-    
+
     try {
       // Find user by username
       const { data: userData, error } = await supabase
@@ -35,15 +35,21 @@ export const useAuthStore = create<AuthState>((set, _get) => ({
         return { error: { message: 'Usuario no encontrado' } }
       }
 
+      // Check if user is enabled
+      if (userData.estado_habilitado === false) {
+        set({ loading: false })
+        return { error: { message: 'Usuario no habilitado' } }
+      }
+
       // Verify password
-      if ( !userData.password || userData.password !== password) {
+      if (!userData.password || userData.password !== password) {
         set({ loading: false })
         return { error: { message: 'Contraseña incorrecta' } }
       }
 
       // Store user session in localStorage
       localStorage.setItem('currentUserId', userData.id)
-      
+
       set({ user: userData, loading: false })
       return { error: null }
     } catch (err) {

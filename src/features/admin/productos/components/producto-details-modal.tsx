@@ -218,12 +218,6 @@ export function ProductoDetailsModal({
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">A Pedido:</span>
-                    <Badge variant={producto.aPedido ? 'default' : 'secondary'} className="text-xs">
-                      {producto.aPedido ? 'Sí' : 'No'}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Nuevo:</span>
                     <Badge variant={producto.nuevo ? 'default' : 'secondary'} className="text-xs">
                       {producto.nuevo ? 'Sí' : 'No'}

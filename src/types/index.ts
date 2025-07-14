@@ -2,7 +2,6 @@ export interface Producto {
   titulo: string
   subtitulo: string
   nuevo: boolean
-  aPedido: boolean
   categoria: string
   stock: number
   precioSoles: number

@@ -269,11 +269,6 @@ export function createProductosColumns(
         return (
           <div className="space-y-1">
             <div className="flex items-center gap-1">
-              <Badge variant={producto.aPedido ? "default" : "outline"} className="text-xs">
-                {producto.aPedido ? "A Pedido" : "Stock"}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-1">
               <Badge variant={producto.renovable ? "default" : "outline"} className="text-xs">
                 <IconRefresh className="mr-1 h-2 w-2" />
                 {producto.renovable ? "Renovable" : "No Renovable"}

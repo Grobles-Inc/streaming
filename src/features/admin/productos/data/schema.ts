@@ -28,7 +28,6 @@ const productoBaseSchema = z.object({
   created_at: z.string(),
   updated_at: z.string(),
   tiempo_uso: z.number().min(0, 'El tiempo de uso debe ser mayor o igual a 0'),
-  a_pedido: z.boolean(),
   nuevo: z.boolean(),
   descripcion_completa: z.string().nullable(),
   disponibilidad: disponibilidadProductoSchema,
@@ -82,7 +81,6 @@ const mappedProductoSchema = z.object({
   fechaActualizacion: z.date(),
   fechaExpiracion: z.date().nullable(), // Nuevo campo
   tiempoUso: z.number(),
-  aPedido: z.boolean(),
   nuevo: z.boolean(),
   descripcionCompleta: z.string().nullable(),
   disponibilidad: disponibilidadProductoSchema,
@@ -163,7 +161,6 @@ export function mapSupabaseProductoToComponent(producto: ProductoWithRelations):
   const etiquetas: string[] = []
   if (producto.nuevo) etiquetas.push('Nuevo')
   if (producto.renovable) etiquetas.push('Renovable')
-  if (producto.a_pedido) etiquetas.push('A Pedido')
 
   return {
     id: producto.id,
@@ -186,7 +183,6 @@ export function mapSupabaseProductoToComponent(producto: ProductoWithRelations):
     fechaActualizacion,
     fechaExpiracion,
     tiempoUso: producto.tiempo_uso,
-    aPedido: producto.a_pedido,
     nuevo: producto.nuevo,
     descripcionCompleta: producto.descripcion_completa,
     disponibilidad: producto.disponibilidad,
@@ -216,7 +212,6 @@ const createProductoSchema = z.object({
   proveedor_id: z.string().min(1, 'El proveedor es requerido'),
   imagen_url: z.string().nullable().optional(),
   tiempo_uso: z.number().min(0, 'El tiempo de uso debe ser mayor o igual a 0').optional(),
-  a_pedido: z.boolean().optional(),
   nuevo: z.boolean().optional(),
   descripcion_completa: z.string().nullable().optional(),
   disponibilidad: disponibilidadProductoSchema,

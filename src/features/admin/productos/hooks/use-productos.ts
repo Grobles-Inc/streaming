@@ -21,13 +21,10 @@ export function useProductos() {
     try {
       setLoading(true)
       setError(null)
-      console.log('🔄 Loading productos with filters:', filtros)
       
       const supabaseProductos = await ProductosService.getProductos(filtros)
-      console.log('📦 Raw productos from service:', supabaseProductos.length, supabaseProductos)
       
       const mappedProductos = supabaseProductos.map(mapSupabaseProductoToComponent)
-      console.log('🗺️ Mapped productos:', mappedProductos.length, mappedProductos)
       setProductos(mappedProductos)
       
       // Cargar estadísticas solo si no hay filtros específicos
@@ -53,12 +50,11 @@ export function useProductos() {
   const crearProducto = async (productoData: CreateProductoData): Promise<boolean> => {
     try {
       setError(null)
-      console.log('➕ Creating producto:', productoData)
       
       await ProductosService.createProducto(productoData)
       await cargarProductos() // Recargar la lista
       
-      console.log('✅ Producto created successfully')
+      
       return true
     } catch (err) {
       console.error('❌ Error creating producto:', err)
@@ -71,12 +67,10 @@ export function useProductos() {
   const actualizarProducto = async (id: number, productoData: Partial<UpdateProductoData>): Promise<boolean> => {
     try {
       setError(null)
-      console.log('✏️ Updating producto:', id, productoData)
       
       await ProductosService.updateProducto(id, productoData)
       await cargarProductos() // Recargar la lista
       
-      console.log('✅ Producto updated successfully')
       return true
     } catch (err) {
       console.error('❌ Error updating producto:', err)
@@ -89,12 +83,10 @@ export function useProductos() {
   const eliminarProducto = async (id: number): Promise<boolean> => {
     try {
       setError(null)
-      console.log('🗑️ Deleting producto:', id)
       
       await ProductosService.deleteProducto(id)
       await cargarProductos() // Recargar la lista
       
-      console.log('✅ Producto deleted successfully')
       return true
     } catch (err) {
       console.error('❌ Error deleting producto:', err)
@@ -107,12 +99,10 @@ export function useProductos() {
   const cambiarEstadoProducto = async (id: number, nuevoEstado: EstadoProducto): Promise<boolean> => {
     try {
       setError(null)
-      console.log('🔄 Changing producto state:', id, nuevoEstado)
       
       await ProductosService.cambiarEstadoProducto(id, nuevoEstado)
       await cargarProductos() // Recargar la lista
       
-      console.log('✅ Producto state changed successfully')
       return true
     } catch (err) {
       console.error('❌ Error changing producto state:', err)
@@ -125,12 +115,10 @@ export function useProductos() {
   const duplicarProducto = async (id: number): Promise<boolean> => {
     try {
       setError(null)
-      console.log('📋 Duplicating producto:', id)
       
       await ProductosService.duplicarProducto(id)
       await cargarProductos() // Recargar la lista
       
-      console.log('✅ Producto duplicated successfully')
       return true
     } catch (err) {
       console.error('❌ Error duplicating producto:', err)

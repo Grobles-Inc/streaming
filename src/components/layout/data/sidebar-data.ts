@@ -233,7 +233,12 @@ const baseNavGroups = [
     title: 'Referidos',
     roles: ['seller', 'provider'],
     items: [
-      
+      {
+        title: 'Mis Referidos',
+        url: '/referidos',
+        icon: IconUsers,
+        roles: ['seller', 'provider'],
+      }
     ]
   },
   // {

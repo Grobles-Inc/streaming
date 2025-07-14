@@ -134,7 +134,7 @@ export async function RetiroMessage(
 - *Usuario:* ${message.usuario}
 - *Monto solicitado:* S/. ${message.monto_soles.toFixed(2)}
 - *Valor en USD:* $${message.monto_dolares.toFixed(2)}
-- *Comisión (10%):* $${message.comision.toFixed(2)}
+- *Comisión (${((message.comision / message.monto_dolares) * 100).toFixed(0)}%):* $${message.comision.toFixed(2)}
 - *Monto neto a recibir:* $${message.monto_neto.toFixed(2)}
 - *Monto neto en soles:* S/. ${(message.monto_neto * (message.monto_soles / message.monto_dolares)).toFixed(2)}
 - *ID Cliente:* ${message.id_cliente}`

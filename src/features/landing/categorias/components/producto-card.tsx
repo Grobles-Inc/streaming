@@ -47,7 +47,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
           ></feColorMatrix>
         </filter>
       </svg>
-      <div className="card-container md:h-[420px] h-[380px]  w-48 md:w-56">
+      <div className="card-container md:h-[420px] h-[340px] w-44 md:w-56">
         <div className="spin spin-blur"></div>
         <div className="spin spin-intense"></div>
         <div className="card-border">
@@ -55,7 +55,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
         </div>
         <Card className='relative  overflow-hidden rounded-md max-w-sm pt-0 gap-4 flex flex-col h-full'>
           <CardHeader className="relative z-0 p-0 -mt-0 ">
-            <img src={producto.imagen_url || ''} alt={producto.nombre} className='w-full -mt-4 h-44 object-contain ' />
+            <img src={producto.imagen_url || ''} alt={producto.nombre} className='w-full -mt-9 md:-mt-4 h-44 object-contain ' />
             <div className='flex items-center gap-1 mt-0 px-4'>
 
               {producto.nuevo && (

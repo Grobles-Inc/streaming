@@ -187,7 +187,7 @@ const baseNavGroups = [
         roles: ['admin'],
       },
       {
-        title: 'Mi Billetera',
+        title: 'Billetera de la Web',
         url: '/admin/mi-billetera',
         icon: IconWallet,
         roles: ['admin'],

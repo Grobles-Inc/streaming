@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button'
+
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
@@ -13,8 +13,7 @@ function UsersContent() {
   const { 
     users, 
     loading, 
-    error,
-    setOpen
+    error
   } = useUsersContext()
 
   if (error) {
@@ -49,13 +48,13 @@ function UsersContent() {
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            <Button
+            {/* <Button
               variant="outline"
               onClick={() => setOpen('disabledUsers')}
               size="sm"
             >
               Ver usuarios deshabilitados
-            </Button>
+            </Button> */}
             <UsersPrimaryButtons />
           </div>
         </div>

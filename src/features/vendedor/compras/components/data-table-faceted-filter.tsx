@@ -22,7 +22,7 @@ export function DataTableFacetedFilter<TData, TValue>({
   const selectedValue = column?.getFilterValue() as string
 
   return (
-    <div className="grid grid-cols-3 gap-2 md:grid-cols-6 ">
+    <div className="grid grid-cols-3 gap-2 md:grid-cols-7 ">
       <Button
         variant="outline"
         className="h-8"

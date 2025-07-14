@@ -38,8 +38,6 @@ export default function Home() {
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
       )}
-
-
       {searchInput && (
         <div className="md:px-8 px-4 pb-12 pt-4">
           <h2 className="text-2xl font-bold mb-4">Resultados de la búsqueda</h2>
@@ -85,49 +83,22 @@ export default function Home() {
       </div>
 
 
-      {/* Productos Destacados */}
-      <div className="md:px-8 px-4 pt-12">
-        <h2 className="text-2xl font-bold mb-4">Productos Destacados</h2>
-        <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-6 md:gap-6 gap-4">
-          {loadingProductos ? (
-            // Skeleton loading para productos
-            Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="w-full bg-muted animate-pulse rounded-lg h-64" />
-            ))
-          ) : productos?.data && productos.data.length > 0 ? (
-            [...productos.data]
-              .sort(() => Math.random() - 0.5)
-              .slice(0, 6)
-              .map((producto) => (
-                <ProductoCard key={producto.id} producto={producto} />
-              ))
-          ) : (
-            <div className="col-span-full text-center py-8 text-muted-foreground">
-              No hay productos destacados disponibles
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Los más vendidos */}
+      {/* Lista de productos */}
       <div className="md:px-8 px-4 pt-12 pb-12">
-        <h2 className="text-2xl font-bold mb-4">Productos Nuevos</h2>
+        <h2 className="text-2xl font-bold mb-4">Todos los productos</h2>
         <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-6 md:gap-6 gap-4">
           {loadingProductos ? (
             // Skeleton loading para productos
-            Array.from({ length: 5 }).map((_, i) => (
+            Array.from({ length: 12 }).map((_, i) => (
               <div key={i} className="w-full bg-muted animate-pulse rounded-lg h-64" />
             ))
           ) : productos?.data && productos.data.length > 0 ? (
-            [...productos.data]
-              .sort(() => Math.random() - 0.5)
-              .slice(0, 6)
-              .map((producto) => (
-                <ProductoCard key={producto.id} producto={producto} />
-              ))
+            productos.data.map((producto) => (
+              <ProductoCard key={producto.id} producto={producto} />
+            ))
           ) : (
             <div className="col-span-full text-center py-8 text-muted-foreground">
-              No hay productos nuevos disponibles
+              No hay productos disponibles
             </div>
           )}
         </div>

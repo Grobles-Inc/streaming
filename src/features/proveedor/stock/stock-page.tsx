@@ -233,6 +233,7 @@ export function StockPage() {
             </div>
           ) : stockItems && stockItems.length > 0 ? (
             <StockTable 
+              // @ts-expect-error - Type conflict between tanstack versions
               columns={columns} 
               data={stockItems} 
               onAgregarStock={() => setShowAgregarStockDialog(true)}

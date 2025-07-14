@@ -9,7 +9,7 @@ import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 
 const rolRedirect = {
-  admin: '/admin/reportes-globales',
+  admin: '/admin/recargas',
   provider: '/proveedor/productos',
   user: '/dashboard',
   registrado: '/settings',

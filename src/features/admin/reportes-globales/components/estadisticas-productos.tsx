@@ -71,7 +71,6 @@ export function EstadisticasProductosCard() {
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
     },
-
     {
       title: 'Nuevos',
       value: estadisticas?.nuevos || 0,

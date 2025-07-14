@@ -14,7 +14,6 @@ import type {
 export class ProductosService {
   // Obtener todos los productos con información relacionada
   static async getProductos(filtros?: FiltroProducto): Promise<ProductoWithRelations[]> {
-    console.log('🔍 ProductosService.getProductos called with filters:', filtros)
     
     let query = supabase
       .from('productos')
@@ -61,7 +60,6 @@ export class ProductosService {
       query = query.or(`nombre.ilike.%${filtros.busqueda}%,descripcion.ilike.%${filtros.busqueda}%`)
     }
 
-    console.log('📊 Executing query to productos table...')
     const { data, error } = await query
 
     if (error) {
@@ -69,10 +67,7 @@ export class ProductosService {
       throw error
     }
 
-    console.log('✅ Raw productos data from Supabase:', {
-      count: data?.length || 0,
-      sample: data?.slice(0, 2)
-    })
+    
 
     return (data || []).map(producto => ({
       ...producto,
@@ -190,8 +185,7 @@ export class ProductosService {
   // Procesar comisión de publicación
   private static async procesarComisionPublicacion(producto: SupabaseProducto): Promise<void> {
     try {
-      console.log('🔄 Procesando comisión de publicación para producto:', producto.id)
-
+      
       // 1. Obtener la configuración actual del sistema
       const configuracion = await ConfiguracionService.getLatestConfiguracion()
       if (!configuracion) {
@@ -247,14 +241,6 @@ export class ProductosService {
         throw new Error('Error al actualizar el saldo del administrador')
       }
 
-      console.log('✅ Comisión de publicación procesada exitosamente:', {
-        producto: producto.id,
-        comision: comisionPublicacion,
-        proveedorAntes: billeteraProveedor.saldo,
-        proveedorDespues: nuevoSaldoProveedor,
-        adminAntes: billeteraAdmin.saldo,
-        adminDespues: nuevoSaldoAdmin
-      })
 
     } catch (error) {
       console.error('❌ Error al procesar comisión de publicación:', error)
@@ -279,7 +265,6 @@ export class ProductosService {
       proveedor_id: productoOriginal.proveedor_id,
       imagen_url: productoOriginal.imagen_url,
       tiempo_uso: productoOriginal.tiempo_uso,
-      a_pedido: productoOriginal.a_pedido,
       nuevo: false, // No es nuevo al duplicar
 
       descripcion_completa: productoOriginal.descripcion_completa,
@@ -316,7 +301,7 @@ export class ProductosService {
       enStock: productos.filter(p => p.disponibilidad === 'en_stock').length,
       aPedido: productos.filter(p => p.disponibilidad === 'a_pedido').length,
       activacion: productos.filter(p => p.disponibilidad === 'activacion').length,
-          nuevos: productos.filter(p => p.nuevo).length,
+      nuevos: productos.filter(p => p.nuevo).length,
     }
   }
 

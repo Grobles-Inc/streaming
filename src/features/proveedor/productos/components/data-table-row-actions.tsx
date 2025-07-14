@@ -169,7 +169,6 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           precio_renovacion: producto.precio_renovacion ?? 0,
           categoria_id: producto.categoria_id,
           tiempo_uso: producto.tiempo_uso,
-          a_pedido: producto.a_pedido,
           nuevo: producto.nuevo,
           disponibilidad: producto.disponibilidad,
           renovable: producto.renovable,

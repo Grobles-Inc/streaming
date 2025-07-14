@@ -120,7 +120,6 @@ export interface Database {
           created_at: string
           updated_at: string
           tiempo_uso: number
-          a_pedido: boolean
           nuevo: boolean
           descripcion_completa: string | null
           disponibilidad: 'en_stock' | 'a_pedido' | 'activacion'
@@ -147,7 +146,6 @@ export interface Database {
           proveedor_id: string
           imagen_url?: string | null
           tiempo_uso?: number
-          a_pedido?: boolean
           nuevo?: boolean
           descripcion_completa?: string | null
           disponibilidad: 'en_stock' | 'a_pedido' | 'activacion'
@@ -176,7 +174,6 @@ export interface Database {
           created_at?: string
           updated_at?: string
           tiempo_uso?: number
-          a_pedido?: boolean
           nuevo?: boolean
           descripcion_completa?: string | null
           disponibilidad?: 'en_stock' | 'a_pedido' | 'activacion'

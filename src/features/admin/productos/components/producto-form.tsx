@@ -58,7 +58,6 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
       proveedor_id: '',
       imagen_url: '',
       tiempo_uso: 30,
-      a_pedido: false,
       nuevo: false,
       descripcion_completa: '',
       disponibilidad: 'en_stock',
@@ -84,7 +83,6 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
       proveedor_id: producto.proveedor_id || '', // Mantener el proveedor original
       imagen_url: producto.imagen_url || '',
       tiempo_uso: producto.tiempo_uso || 30,
-      a_pedido: producto.a_pedido || false,
       nuevo: producto.nuevo || false,
       descripcion_completa: producto.descripcion_completa || '',
       disponibilidad: producto.disponibilidad || 'en_stock',
@@ -364,22 +362,6 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
               />
 
               <div className="space-y-4 pt-4">
-                <FormField
-                  control={form.control}
-                  name="a_pedido"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between">
-                      <FormLabel>A pedido</FormLabel>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
                 <FormField
                   control={form.control}
                   name="nuevo"

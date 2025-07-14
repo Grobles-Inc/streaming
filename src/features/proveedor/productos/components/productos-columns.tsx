@@ -348,32 +348,6 @@ export const columns: ColumnDef<Producto>[] = [
     meta: { className: 'w-24' },
   },
   {
-    accessorKey: 'a_pedido',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='A Pedido' />
-    ),
-    cell: ({ row }) => {
-      const aPedido = row.getValue('a_pedido') as boolean
-
-      return (
-        <Badge variant='outline' className={cn(
-          'text-xs',
-          aPedido ? 'text-orange-600 bg-orange-50 border-orange-200' : 'text-gray-600 bg-gray-50 border-gray-200'
-        )}>
-          {aPedido ? (
-            <><IconCheck size={12} className='mr-1' />Sí</>
-          ) : (
-            <><IconX size={12} className='mr-1' />No</>
-          )}
-        </Badge>
-      )
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
-    },
-    meta: { className: 'w-24' },
-  },
-  {
     accessorKey: 'created_at',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Creado' />

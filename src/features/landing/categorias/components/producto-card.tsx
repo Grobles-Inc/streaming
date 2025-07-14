@@ -78,7 +78,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
           </div>
         )}
 
-        {producto.a_pedido && (
+        {producto.disponibilidad === 'a_pedido' && (
           <div className="absolute top-0 left-0 z-50">
             <div
               className="bg-green-600  text-white px-10 py-2 text-sm font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"

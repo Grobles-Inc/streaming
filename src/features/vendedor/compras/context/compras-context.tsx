@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import useDialogState from '@/hooks/use-dialog-state'
 import { Compra } from '../data/schema'
 
-export type ComprasDialogType = 'create' | 'update' | 'delete' | 'import' | 'renovar' | 'ver_producto' | 'soporte'
+export type ComprasDialogType = 'renovar' | 'ver_producto' | 'soporte' | 'activacion' | 'delete'
 
 interface ComprasContextType {
   open: ComprasDialogType | null

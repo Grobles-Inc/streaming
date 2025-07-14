@@ -178,6 +178,19 @@ const SoporteCell = ({ row }: { row: Compra }) => {
     </div>
   )
 }
+const ActivacionCell = ({ row }: { row: Compra }) => {
+  const { setOpen, setCurrentRow } = useCompras()
+  return (
+    <div className='flex justify-center'>
+      <Button variant='outline' size='sm' className='text-xs' onClick={() => {
+        setOpen('activacion')
+        setCurrentRow(row)
+      }}>
+        Solicitar Activación
+      </Button>
+    </div>
+  )
+}
 
 const RenovacionCell = ({ row }: { row: Compra }) => {
   const { mutate: renovarCompra, isPending } = useRenovarCompra()
@@ -411,7 +424,7 @@ export const columns: ColumnDef<Compra>[] = [
     ),
     enableSorting: false,
     cell: ({ row }) => {
-      return <div className='flex justify-center'>{row.original.fecha_inicio ? new Date(row.original.fecha_inicio).toLocaleDateString('es-ES') : 'Sin activar'}</div>
+      return <div className='flex justify-center'>{row.original.fecha_inicio ? new Date(row.original.fecha_inicio).toLocaleDateString('es-ES') : <ActivacionCell row={row.original} />}</div>
     },
   },
   {

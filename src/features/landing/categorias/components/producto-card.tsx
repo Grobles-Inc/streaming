@@ -1,14 +1,14 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { useAuth } from '@/stores/authStore'
 import { IconFileInfo, IconHandClick, IconHeartHandshake } from '@tabler/icons-react'
 import { useState } from 'react'
+import { useConfiguracionSistema } from '../../queries'
 import { Producto } from '../../services'
+import '../../styles/card.css'
 import ComprarProductoModal from './comprar-producto-modal'
 import ProductoInfoModal from './producto-info-modal'
-import { useAuth } from '@/stores/authStore'
-import { useConfiguracionSistema } from '../../queries'
-import '../../styles/card.css'
 
 
 export default function ProductoCard({ producto }: { producto: Producto }) {
@@ -63,46 +63,57 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
               )}
             </div>
             <div className="absolute  flex-col right-2 top-2 flex gap-1">
-              <Button size="icon" variant="secondary" title="Información del Producto" onClick={() => {
-                setInfoModalType('informacion')
-                setInfoModalOpen(true)
-              }}>
-                <IconHeartHandshake />
-              </Button>
-              <Button
-                size="icon"
-                variant="secondary"
-                title="Descripción del Producto"
-                onClick={() => {
-                  setInfoModalType('descripcion')
-                  setInfoModalOpen(true)
-                }}
-              >
-                <IconFileInfo />
-              </Button>
-              <Button
-                size="icon"
-                variant="secondary"
-                title="Condiciones del Producto"
-                onClick={() => {
-                  setInfoModalType('condiciones')
-                  setInfoModalOpen(true)
-                }}
-              >
-                <IconHandClick />
-              </Button>
+              <div className="flex flex-col -space-y-px rounded-md shadow-xs">
+                <Button
+                  className="rounded-none shadow-none size-6 first:rounded-t-md last:rounded-b-md focus-visible:z-10"
+                  variant="secondary"
+                  size="icon"
+                  aria-label="Información del Producto"
+                  onClick={() => {
+                    setInfoModalType('informacion')
+                    setInfoModalOpen(true)
+                  }}
+                >
+                  <IconHeartHandshake size={12} />
+                </Button>
+                <Button
+                  className="rounded-none shadow-none size-6 first:rounded-t-md last:rounded-b-md focus-visible:z-10"
+                  variant="secondary"
+                  size="icon"
+                  aria-label="Descripción del Producto"
+                  onClick={() => {
+                    setInfoModalType('descripcion')
+                    setInfoModalOpen(true)
+                  }}
+                >
+                  <IconFileInfo size={12} />
+                </Button>
+                <Button
+                  className="rounded-none shadow-none size-6 first:rounded-t-md last:rounded-b-md focus-visible:z-10"
+                  variant="secondary"
+                  size="icon"
+                  aria-label="Condiciones del Producto"
+                  onClick={() => {
+                    setInfoModalType('condiciones')
+                    setInfoModalOpen(true)
+                  }}
+                >
+                  <IconHandClick size={12} />
+                </Button>
+              </div>
+
             </div>
           </CardHeader>
           {producto.stock_de_productos.length > 0 && (
             <div className="absolute top-0 left-0 z-50">
               <div
-                className="bg-blue-600  text-white px-10 py-2 text-sm font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"
+                className="bg-blue-600 text-white px-5 py-1 text-xs font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"
                 style={{
                   transform: 'rotate(-45deg)',
                   transformOrigin: 'center',
                   position: 'relative',
-                  left: '-35px',
-                  top: '18px'
+                  left: '-23px',
+                  top: '10px'
                 }}
               >
                 En Stock
@@ -113,13 +124,13 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
           {producto.disponibilidad === 'a_pedido' && (
             <div className="absolute top-0 left-0 z-50">
               <div
-                className="bg-green-600  text-white px-10 py-2 text-sm font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"
+                className="bg-green-600  text-white px-5 py-1 text-xs font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"
                 style={{
                   transform: 'rotate(-45deg)',
                   transformOrigin: 'center',
                   position: 'relative',
-                  left: '-35px',
-                  top: '18px'
+                  left: '-23px',
+                  top: '10px'
                 }}
               >
                 A pedido
@@ -129,13 +140,13 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
           {producto.disponibilidad === 'activacion' && (
             <div className="absolute top-0 left-0 z-50">
               <div
-                className="bg-yellow-600  text-white px-10 py-2 text-sm font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"
+                className="bg-yellow-600  text-white px-5 py-1 text-xs font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"
                 style={{
                   transform: 'rotate(-45deg)',
                   transformOrigin: 'center',
                   position: 'relative',
-                  left: '-35px',
-                  top: '18px'
+                  left: '-25px',
+                  top: '14px'
                 }}
               >
                 Activación

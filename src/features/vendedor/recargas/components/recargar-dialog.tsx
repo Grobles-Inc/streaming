@@ -62,11 +62,15 @@ export function RecargarDialog() {
       })
       form.reset()
       setDialogOpen(false)
-      RecargaMessage({
-        usuario: user?.usuario || '',
-        monto: Number(data.amount),
-        id_cliente: user?.id || '',
-      }, '51913190401', isMobile ? 'mobile' : 'web')
+      const audio = new Audio('/src/assets/sound/yape.mp3')
+      audio.play()
+      setTimeout(() => {
+        RecargaMessage({
+          usuario: user?.usuario || '',
+          monto: Number(data.amount),
+          id_cliente: user?.id || '',
+        }, '51913190401', isMobile ? 'mobile' : 'web')
+      }, 3000)
     } catch (error) {
       console.error('Error:', error)
     }

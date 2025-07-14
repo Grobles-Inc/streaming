@@ -47,6 +47,7 @@ export function HistorialConfiguracionCard({
                   <TableHead>Mantenimiento</TableHead>
                   <TableHead>Email Soporte</TableHead>
                   <TableHead>Comisión Global</TableHead>
+                  <TableHead>Com. Publicación</TableHead>
                   <TableHead>Conversión</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
@@ -79,7 +80,10 @@ export function HistorialConfiguracionCard({
                       {config.comision}%
                     </TableCell>
                     <TableCell>
-                      {config.conversion}
+                      ${config.comision_publicacion_producto}
+                    </TableCell>
+                    <TableCell>
+                      {config.conversion}%
                     </TableCell>
                     <TableCell className="text-right">
                       {index > 0 && (

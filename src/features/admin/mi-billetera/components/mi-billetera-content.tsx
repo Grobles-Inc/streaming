@@ -417,15 +417,16 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
                       <th className="px-4 py-3 font-medium">Producto</th>
                       <th className="px-4 py-3 font-medium">Proveedor</th>
                       <th className="px-4 py-3 font-medium">Precio</th>
-                      <th className="px-4 py-3 font-medium">Comisión (USD)</th>
-                      <th className="px-4 py-3 font-medium">Comisión (PEN)</th>
+                      
+                      <th className="px-4 py-3 font-medium">Total USD</th>
+                      <th className="px-4 py-3 font-medium">Total PEN</th>
                       <th className="px-4 py-3 font-medium">Fecha</th>
                     </tr>
                   </thead>
                   <tbody>
                     {comisionesPublicacion.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
+                        <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
                           No hay comisiones de publicación registradas
                         </td>
                       </tr>
@@ -437,7 +438,7 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
                             {comision.proveedor.nombres} {comision.proveedor.apellidos}
                             <div className="text-xs text-muted-foreground">@{comision.proveedor.usuario}</div>
                           </td>
-                          <td className="px-4 py-3">{formatCurrency(comision.producto.precio_publico)}</td>
+                          <td className="px-4 py-3">{formatCurrency(comision.producto.precio_publico)}</td> 
                           <td className="px-4 py-3 font-semibold text-green-600">
                             {formatCurrency(comision.monto_comision)}
                           </td>

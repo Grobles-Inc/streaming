@@ -6,7 +6,21 @@ import type {
 } from '../data/types'
 
 export class MiBilleteraService {
-  // Obtener comisiones por publicación para un admin específico
+  /**
+   * Obtiene comisiones por publicación para un admin específico.
+   * 
+   * IMPORTANTE: Las comisiones se calculan usando la tasa vigente en el momento de la publicación,
+   * no la tasa actual. Esto se logra comparando el updated_at del producto con el updated_at 
+   * de las configuraciones para encontrar qué comisión estaba activa en ese momento.
+   * 
+   * Ejemplo:
+   * - Producto publicado el 1 de enero con comisión de $3.50
+   * - Comisión cambió a $4.00 el 15 de enero
+   * - Este producto siempre mostrará $3.50 como comisión, no $4.00
+   * 
+   * @param adminId ID del administrador
+   * @returns Array de comisiones de publicación con comisiones históricas
+   */
   static async getComisionesPublicacion(adminId: string): Promise<ComisionPublicacion[]> {
     try {
       // Obtener productos publicados
@@ -38,11 +52,62 @@ export class MiBilleteraService {
 
       if (configError) throw configError
 
+      /* 
+       * LÓGICA CORREGIDA:
+       * 
+       * Para encontrar la configuración vigente, necesitamos:
+       * 1. Todas las configuraciones ordenadas por fecha (más reciente primero)
+       * 2. Buscar la PRIMERA configuración cuya fecha sea MENOR O IGUAL a la fecha del producto
+       * 
+       * Ejemplo:
+       * Configuraciones: [2024-07-13: $4, 2024-06-30: $3.5, 2024-06-01: $3]
+       * - Producto del 2024-07-15 -> Usa $4 (config del 2024-07-13)
+       * - Producto del 2024-07-13 -> Usa $4 (config del 2024-07-13, misma fecha)
+       * - Producto del 2024-07-05 -> Usa $3.5 (config del 2024-06-30)
+       * - Producto del 2024-05-15 -> Usa $3 (config del 2024-06-01, la más antigua)
+       */
+
       // Calcular comisiones de publicación
       const comisiones: ComisionPublicacion[] = productos?.map((producto) => {
-        const configVigente = configuraciones?.find(config => 
-          new Date(config.updated_at) <= new Date(producto.updated_at)
-        ) || configuraciones?.[configuraciones.length - 1]
+        const fechaProducto = new Date(producto.updated_at)
+        
+        // Buscar la configuración vigente para esta fecha
+        // Necesitamos la configuración MÁS RECIENTE que sea anterior o igual a la fecha del producto
+        let configVigente = null
+        let fechaMasReciente: Date | null = null
+        
+        // Recorrer todas las configuraciones
+        for (const config of configuraciones || []) {
+          const fechaConfig = new Date(config.updated_at)
+          
+          // Si la configuración es anterior o igual a la fecha del producto
+          if (fechaConfig <= fechaProducto) {
+            // Si es la primera que encontramos, o si es más reciente que la anterior
+            if (!configVigente || !fechaMasReciente || fechaConfig > fechaMasReciente) {
+              configVigente = config
+              fechaMasReciente = fechaConfig
+            }
+          }
+        }
+        
+        // Si no encontramos ninguna anterior, el producto es muy antiguo, usar la más vieja
+        if (!configVigente && configuraciones && configuraciones.length > 0) {
+          configVigente = configuraciones[configuraciones.length - 1]
+        }
+
+        // Debug temporal - para verificar la corrección
+        console.log(`🔧 CORREGIDO - Producto: ${producto.nombre}`, {
+          fechaProducto: fechaProducto.toLocaleDateString('es-PE') + ' ' + fechaProducto.toLocaleTimeString('es-PE'),
+          configUsada: configVigente ? {
+            fecha: new Date(configVigente.updated_at).toLocaleDateString('es-PE') + ' ' + new Date(configVigente.updated_at).toLocaleTimeString('es-PE'),
+            comision: `$${configVigente.comision_publicacion_producto}`
+          } : 'No encontrada',
+          configuracionesDisponibles: configuraciones?.map(c => ({
+            fecha: new Date(c.updated_at).toLocaleDateString('es-PE') + ' ' + new Date(c.updated_at).toLocaleTimeString('es-PE'),
+            comision: `$${c.comision_publicacion_producto}`,
+            esAnterior: new Date(c.updated_at) <= fechaProducto
+          }))
+        })
 
         const comisionEnDolares = configVigente?.comision_publicacion_producto || 0
         const porcentajeComision = producto.precio_publico > 0 ? (comisionEnDolares / producto.precio_publico) * 100 : 0
@@ -77,7 +142,16 @@ export class MiBilleteraService {
     }
   }
 
-  // Obtener comisiones por retiro para un admin específico
+  /**
+   * Obtiene comisiones por retiro para un admin específico.
+   * 
+   * IMPORTANTE: Las comisiones se calculan usando la tasa vigente en el momento del retiro,
+   * no la tasa actual. Esto se logra comparando el updated_at del retiro con el updated_at 
+   * de las configuraciones para encontrar qué comisión estaba activa en ese momento.
+   * 
+   * @param adminId ID del administrador
+   * @returns Array de comisiones de retiro con comisiones históricas
+   */
   static async getComisionesRetiro(adminId: string): Promise<ComisionRetiro[]> {
     try {
       // Obtener retiros aprobados
@@ -123,9 +197,30 @@ export class MiBilleteraService {
 
       // Calcular comisiones de retiro
       const comisiones: ComisionRetiro[] = retiros?.map((retiro) => {
-        const configVigente = configuraciones?.find(config => 
-          new Date(config.updated_at) <= new Date(retiro.updated_at)
-        ) || configuraciones?.[configuraciones.length - 1]
+        const fechaRetiro = new Date(retiro.updated_at)
+        
+        // Buscar la configuración vigente para esta fecha
+        // Necesitamos la configuración MÁS RECIENTE que sea anterior o igual a la fecha del retiro
+        let configVigente = null
+        let fechaMasReciente: Date | null = null
+        
+        for (const config of configuraciones || []) {
+          const fechaConfig = new Date(config.updated_at)
+          
+          // Si la configuración es anterior o igual a la fecha del retiro
+          if (fechaConfig <= fechaRetiro) {
+            // Si es la primera que encontramos, o si es más reciente que la anterior
+            if (!configVigente || !fechaMasReciente || fechaConfig > fechaMasReciente) {
+              configVigente = config
+              fechaMasReciente = fechaConfig
+            }
+          }
+        }
+        
+        // Si no encontramos ninguna anterior, usar la más vieja
+        if (!configVigente && configuraciones && configuraciones.length > 0) {
+          configVigente = configuraciones[configuraciones.length - 1]
+        }
 
         const comisionPorcentaje = configVigente?.comision_retiro || 2.5 // Valor por defecto temporal
         const comisionEnDolares = (retiro.monto * comisionPorcentaje) / 100

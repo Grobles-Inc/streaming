@@ -50,12 +50,16 @@ export function GestionarExistenciasModal({
   const [showDespublicarDialog, setShowDespublicarDialog] = useState(false)
   const [showAgregarStockDialog, setShowAgregarStockDialog] = useState(false)
   const [showEditarStockDialog, setShowEditarStockDialog] = useState(false)
+  const [showAdvertenciaDialog, setShowAdvertenciaDialog] = useState(false)
   const [selectedStock, setSelectedStock] = useState<StockProducto | null>(null)
   const [modalPrincipalCerrado, setModalPrincipalCerrado] = useState(false)
 
   const { data: stockItems, isLoading, error } = useStockProductosByProductoId(producto.id)
   const deleteStockMutation = useDeleteStockProducto()
   const updateStockMutation = useUpdateStockProducto()
+
+  // Verificar si el producto está publicado
+  const productoEstaPublicado = producto.estado === 'publicado'
 
   const handleDelete = (stock: StockProducto) => {
     setSelectedStock(stock)
@@ -105,6 +109,12 @@ export function GestionarExistenciasModal({
   }
 
   const handlePublicar = (stock: StockProducto) => {
+    if (!productoEstaPublicado) {
+      setSelectedStock(stock)
+      setShowAdvertenciaDialog(true)
+      return
+    }
+    
     setSelectedStock(stock)
     setShowPublicarDialog(true)
   }
@@ -319,9 +329,13 @@ export function GestionarExistenciasModal({
                                   Despublicar
                                 </DropdownMenuItem>
                               ) : (
-                                <DropdownMenuItem onClick={() => handlePublicar(stock)} disabled={updateStockMutation.isPending}>
+                                <DropdownMenuItem 
+                                  onClick={() => handlePublicar(stock)} 
+                                  disabled={updateStockMutation.isPending}
+                                  className={!productoEstaPublicado ? 'text-red-500' : ''}
+                                >
                                   <IconEye className="mr-2 h-4 w-4" />
-                                  Publicar
+                                  Publicar {!productoEstaPublicado}
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuSeparator />
@@ -424,6 +438,35 @@ export function GestionarExistenciasModal({
         confirmText="Despublicar"
         handleConfirm={confirmDespublicar}
         isLoading={updateStockMutation.isPending}
+      />
+
+      {/* Modal de advertencia para productos en borrador */}
+      <ConfirmDialog
+        open={showAdvertenciaDialog}
+        onOpenChange={(open) => {
+          setShowAdvertenciaDialog(open)
+          if (!open) setSelectedStock(null)
+        }}
+        title="No se puede publicar stock"
+        desc={
+          <div>
+            <p className="text-sm text-muted-foreground mb-3">
+              No puedes publicar cuentas de stock porque el producto está en estado <span className="font-semibold text-orange-600">BORRADOR</span>.
+            </p>
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm font-medium text-orange-800">Para publicar stock necesitas:</span>
+              </div>
+              <ol className="text-sm text-orange-700 space-y-1 ml-4 list-decimal">
+                <li>Primero publicar el producto desde la tabla de productos</li>
+                <li>Luego podrás publicar las cuentas de stock individuales</li>
+              </ol>
+            </div>
+          </div>
+        }
+        confirmText="Entendido"
+        handleConfirm={() => setShowAdvertenciaDialog(false)}
+        isLoading={false}
       />
     </>
   )

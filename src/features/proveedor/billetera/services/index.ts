@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/supabase'
-import { getConfiguracionActual, getAdministrador } from '@/features/proveedor/productos/services'
+import { getConfiguracionActual } from '@/features/proveedor/productos/services'
 
 export type Billetera = Database['public']['Tables']['billeteras']['Row']
 export type Usuario = Database['public']['Tables']['usuarios']['Row']
@@ -163,14 +163,6 @@ export const procesarRetiroAprobado = async (retiroId: number): Promise<boolean>
     const montoTotalConComision = parseFloat((montoNetoUsuario / (1 - comisionPorcentaje / 100)).toFixed(2))
     const comisionAdmin = parseFloat((montoTotalConComision - montoNetoUsuario).toFixed(2))
 
-    console.log('💰 Procesando retiro:', {
-      retiroId,
-      montoNeto: montoNetoUsuario,
-      montoTotal: montoTotalConComision,
-      comision: comisionAdmin,
-      porcentajeComision: comisionPorcentaje
-    })
-
     // 4. Verificar saldo actual del usuario
     const billeteraUsuario = await getBilleteraByUsuarioId(retiro.usuario_id)
     if (!billeteraUsuario || billeteraUsuario.saldo < montoTotalConComision) {
@@ -178,32 +170,28 @@ export const procesarRetiroAprobado = async (retiroId: number): Promise<boolean>
     }
 
     // 5. Realizar las transferencias de fondos
-    console.log('💸 Retirando fondos del usuario:', montoTotalConComision)
     const billeteraActualizada = await retirarFondos(retiro.usuario_id, montoTotalConComision)
     if (!billeteraActualizada) {
       throw new Error('Error al retirar fondos de la billetera del usuario')
     }
 
     // 6. Agregar la comisión al administrador
-    console.log('💰 Agregando comisión al administrador:', comisionAdmin)
-    const administrador = await getAdministrador()
-    if (administrador) {
-      const billeteraAdmin = await agregarFondos(administrador.id, comisionAdmin)
+    const ADMIN_ID_ESTATICO = 'bc934460-c7c6-4137-ba47-bfcb7eac619e'
+    if (ADMIN_ID_ESTATICO) {
+      const billeteraAdmin = await agregarFondos(ADMIN_ID_ESTATICO, comisionAdmin)
       if (!billeteraAdmin) {
         console.error('❌ Error al agregar comisión al administrador, revirtiendo retiro...')
         // Revertir el retiro si falla la comisión
         await agregarFondos(retiro.usuario_id, montoTotalConComision)
         throw new Error('Error al procesar la comisión del administrador')
       }
-      console.log('✅ Comisión agregada al administrador correctamente')
-    } else {
-      console.warn('⚠️ No se encontró administrador para agregar la comisión')
+      console.log('Comisión agregada al administrador correctamente')
     }
 
-    console.log('✅ Retiro procesado correctamente')
+    console.log('Retiro procesado correctamente')
     return true
   } catch (error) {
-    console.error('❌ Error procesando retiro aprobado:', error)
+    console.error('Error procesando retiro aprobado:', error)
     throw error
   }
 }

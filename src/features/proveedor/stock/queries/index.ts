@@ -6,6 +6,7 @@ type StockProducto = Database['public']['Tables']['stock_productos']['Row'] & {
   producto?: {
     id: string
     nombre: string
+    estado: string
   }
 }
 
@@ -20,7 +21,8 @@ export const useStockProductosByProveedor = (proveedorId: string) => {
           *,
           producto:productos!inner (
             id,
-            nombre
+            nombre,
+            estado
           )
         `)
         .eq('proveedor_id', proveedorId)

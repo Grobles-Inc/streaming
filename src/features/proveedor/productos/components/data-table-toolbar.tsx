@@ -91,16 +91,6 @@ export function DataTableToolbar<TData>({
               ]}
             />
           )}
-          {table.getColumn('a_pedido') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('a_pedido')}
-              title='A Pedido'
-              options={[
-                { label: 'A Pedido', value: true },
-                { label: 'No A Pedido', value: false },
-              ]}
-            />
-          )}
 
         </div>
         

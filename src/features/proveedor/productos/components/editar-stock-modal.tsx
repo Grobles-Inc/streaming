@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { IconEdit } from '@tabler/icons-react'
+import { IconEdit, IconEye, IconEyeOff } from '@tabler/icons-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -45,6 +45,9 @@ export function EditarStockModal({
 }: EditarStockModalProps) {
   const updateStockMutation = useUpdateStockProducto()
 
+  // Estado para controlar visibilidad de contraseña
+  const [mostrarClave, setMostrarClave] = useState(false)
+
   const {
     register,
     handleSubmit,
@@ -77,6 +80,8 @@ export function EditarStockModal({
         estado: stock.estado,
         soporte_stock_producto: stock.soporte_stock_producto
       })
+      // Resetear estado de visibilidad al abrir modal
+      setMostrarClave(false)
     }
   }, [open, stock, reset])
 
@@ -144,11 +149,27 @@ export function EditarStockModal({
             </div>
             <div className="space-y-2">
               <Label htmlFor="clave">Clave</Label>
-              <Input
-                {...register('clave')}
-                type="password"
-                placeholder="Contraseña"
-              />
+              <div className="relative">
+                <Input
+                  {...register('clave')}
+                  type={mostrarClave ? "text" : "password"}
+                  placeholder="Contraseña"
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setMostrarClave(!mostrarClave)}
+                >
+                  {mostrarClave ? (
+                    <IconEyeOff className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <IconEye className="h-4 w-4 text-gray-400" />
+                  )}
+                </Button>
+              </div>
               {errors.clave && (
                 <p className="text-sm text-red-500">{errors.clave.message}</p>
               )}

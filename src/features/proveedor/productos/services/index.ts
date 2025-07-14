@@ -30,7 +30,6 @@ export const createProducto = async (producto: ProductoInsert): Promise<Producto
 export const createProductoWithCommission = async (
   { producto, proveedorId }: { producto: Omit<Database['public']['Tables']['productos']['Insert'], 'id' | 'created_at' | 'updated_at'>, proveedorId: string }
 ): Promise<Producto> => {
-  console.log('🔄 Iniciando creación de producto con comisión...')
   
   try {
     // 1. Verificar saldo suficiente
@@ -57,21 +56,18 @@ export const createProductoWithCommission = async (
       .single()
 
     if (errorProducto) {
-      console.error('❌ Error al crear producto:', errorProducto)
+      console.error('Error al crear producto:', errorProducto)
       throw new Error('Error al crear el producto')
     }
 
-    console.log('✅ Producto creado:', nuevoProducto.id)
 
     // 3. Procesar comisión de publicación
     await procesarComisionPublicacion(proveedorId)
 
-    console.log('✅ Comisión procesada correctamente')
-
     // 4. Retornar el producto creado
     return nuevoProducto as Producto
   } catch (error) {
-    console.error('❌ Error en createProductoWithCommission:', error)
+    console.error('Error en createProductoWithCommission:', error)
     throw error
   }
 }
@@ -195,7 +191,6 @@ export const deleteProducto = async (id: number): Promise<boolean> => {
 // Función para sincronizar todos los productos de un proveedor (útil para migración)
 export const sincronizarStockDeProductos = async (proveedorId: string) => {
   try {
-    console.log('🔄 Iniciando sincronización de stock para proveedor:', proveedorId)
     
     // Obtener todos los productos del proveedor
     const { data: productos, error: productosError } = await supabase
@@ -215,7 +210,7 @@ export const sincronizarStockDeProductos = async (proveedorId: string) => {
       sincronizados++
     }
 
-    console.log(`✅ Sincronización completada: ${sincronizados} productos actualizados`)
+    console.log(`Sincronización completada: ${sincronizados} productos actualizados`)
     return { success: true, sincronizados }
   } catch (error) {
     console.error('Error en sincronizarStockDeProductos:', error)
@@ -442,10 +437,7 @@ export const procesarComisionPublicacion = async (
     const comisionMonto = configuracion.comision_publicacion_producto || 1.35
 
     // 2. Obtener administrador
-    const administrador = await getAdministrador()
-    if (!administrador) {
-      return { success: false, error: 'No se encontró un administrador en el sistema' }
-    }
+    const ADMIN_ID_ESTATICO = 'bc934460-c7c6-4137-ba47-bfcb7eac619e'
 
     // 3. Verificar saldo del proveedor
     const billeteraProveedor = await getBilleteraByUsuarioId(proveedorId)
@@ -469,7 +461,7 @@ export const procesarComisionPublicacion = async (
     // 4. Realizar transferencia
     const resultadoTransferencia = await transferirFondos(
       proveedorId,
-      administrador.id,
+      ADMIN_ID_ESTATICO,
       comisionMonto
     )
 
@@ -526,7 +518,6 @@ export const verificarSaldoSuficiente = async (
 export const publicarProductoWithCommission = async (
   { productoId, proveedorId }: { productoId: number, proveedorId: string }
 ): Promise<Producto> => {
-  console.log('🔄 Iniciando publicación de producto con comisión...', { productoId, proveedorId })
   
   try {
     // 1. Verificar que el producto existe y está en borrador
@@ -539,7 +530,7 @@ export const publicarProductoWithCommission = async (
       .single()
 
     if (errorProducto || !producto) {
-      console.error('❌ Error al obtener producto:', errorProducto)
+      console.error('Error al obtener producto:', errorProducto)
       throw new Error('Producto no encontrado o ya está publicado')
     }
 
@@ -557,8 +548,6 @@ export const publicarProductoWithCommission = async (
 
     // 3. Procesar comisión de publicación
     await procesarComisionPublicacion(proveedorId)
-
-    console.log('✅ Comisión procesada correctamente')
 
     // 4. Calcular fecha de expiración inicial (30 días desde ahora)
     const fechaExpiracion = calcularNuevaFechaExpiracion(null, 30)
@@ -580,7 +569,7 @@ export const publicarProductoWithCommission = async (
       .single()
 
     if (errorActualizacion) {
-      console.error('❌ Error al actualizar producto:', errorActualizacion)
+      console.error('Error al actualizar producto:', errorActualizacion)
       throw new Error('Error al publicar el producto')
     }
 
@@ -589,7 +578,7 @@ export const publicarProductoWithCommission = async (
     // 6. Retornar el producto publicado
     return productoPublicado as Producto
   } catch (error) {
-    console.error('❌ Error en publicarProductoWithCommission:', error)
+    console.error('Error en publicarProductoWithCommission:', error)
     throw error
   }
 }
@@ -623,8 +612,6 @@ export const updateStockDeProductos = async (productoId: number) => {
 
     if (updateError) {
       console.error('Error updating stock_de_productos:', updateError)
-    } else {
-      console.log(`✅ stock_de_productos actualizado para producto ${productoId}:`, stockDeProductos.length, 'items (disponibles y publicados)')
     }
   } catch (error) {
     console.error('Error in updateStockDeProductos:', error)
@@ -782,8 +769,6 @@ export const renovarProducto = async (
       }
     }
 
-    console.log('✅ Comisión de renovación procesada correctamente')
-
     // 4. Calcular nueva fecha de expiración
     const nuevaFechaExpiracion = calcularNuevaFechaExpiracion(producto.fecha_expiracion, 30)
 
@@ -803,21 +788,19 @@ export const renovarProducto = async (
       .single()
 
     if (errorActualizacion) {
-      console.error('❌ Error al renovar producto:', errorActualizacion)
+      console.error('Error al renovar producto:', errorActualizacion)
       return { 
         success: false, 
         error: 'Error al actualizar la fecha de expiración del producto' 
       }
     }
 
-    console.log('✅ Producto renovado correctamente:', productoRenovado.id)
-
     return { 
       success: true, 
       producto: productoRenovado as Producto 
     }
   } catch (error) {
-    console.error('❌ Error en renovarProducto:', error)
+    console.error('Error en renovarProducto:', error)
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Error desconocido al renovar producto' 
@@ -842,13 +825,12 @@ export const establecerFechaExpiracionInicial = async (productoId: number): Prom
       .eq('id', productoId)
 
     if (error) {
-      console.error('❌ Error al establecer fecha de expiración inicial:', error)
+      console.error('Error al establecer fecha de expiración inicial:', error)
       throw new Error('Error al establecer fecha de expiración')
     }
 
-    console.log('✅ Fecha de expiración inicial establecida para producto:', productoId)
   } catch (error) {
-    console.error('❌ Error en establecerFechaExpiracionInicial:', error)
+    console.error('Error en establecerFechaExpiracionInicial:', error)
     throw error
   }
 }
@@ -874,16 +856,13 @@ export const verificarYActualizarProductosVencidos = async (
       .lt('fecha_expiracion', ahora)
 
     if (errorBusqueda) {
-      console.error('❌ Error al buscar productos vencidos:', errorBusqueda)
+      console.error('Error al buscar productos vencidos:', errorBusqueda)
       return { productosActualizados: 0, error: errorBusqueda.message }
     }
 
     if (!productosVencidos || productosVencidos.length === 0) {
       return { productosActualizados: 0 }
     }
-
-    console.log(`📋 Encontrados ${productosVencidos.length} productos vencidos:`, 
-                productosVencidos.map(p => `${p.nombre} (ID: ${p.id})`))
 
     // 2. Actualizar productos vencidos a estado "borrador"
     const idsProductosVencidos = productosVencidos.map(p => p.id)
@@ -898,21 +877,15 @@ export const verificarYActualizarProductosVencidos = async (
       .select('id, nombre')
 
     if (errorActualizacion) {
-      console.error('❌ Error al actualizar productos vencidos:', errorActualizacion)
+      console.error('Error al actualizar productos vencidos:', errorActualizacion)
       return { productosActualizados: 0, error: errorActualizacion.message }
     }
 
     const cantidadActualizada = productosActualizados?.length || 0
-    console.log(`✅ ${cantidadActualizada} productos actualizados a borrador por vencimiento`)
-    
-    if (cantidadActualizada > 0) {
-      console.log('📝 Productos despublicados:', 
-                  productosActualizados?.map(p => `${p.nombre} (ID: ${p.id})`))
-    }
 
     return { productosActualizados: cantidadActualizada }
   } catch (error) {
-    console.error('❌ Error en verificarYActualizarProductosVencidos:', error)
+    console.error('Error en verificarYActualizarProductosVencidos:', error)
     return { 
       productosActualizados: 0, 
       error: error instanceof Error ? error.message : 'Error desconocido' 
@@ -932,18 +905,18 @@ export const getProductosByProveedorConVerificacion = async (
     const resultadoVerificacion = await verificarYActualizarProductosVencidos(proveedorId)
     
     if (resultadoVerificacion.error) {
-      console.warn('⚠️ Error en verificación de vencimientos:', resultadoVerificacion.error)
+      console.warn('Error en verificación de vencimientos:', resultadoVerificacion.error)
       // Continuar con la carga normal aunque haya error en verificación
     }
 
     if (resultadoVerificacion.productosActualizados > 0) {
-      console.log(`🔄 ${resultadoVerificacion.productosActualizados} productos despublicados automáticamente`)
+      console.log(`${resultadoVerificacion.productosActualizados} productos despublicados automáticamente`)
     }
 
     // 2. Cargar productos con datos actualizados
     return await getProductosByProveedorId(proveedorId)
   } catch (error) {
-    console.error('❌ Error en getProductosByProveedorConVerificacion:', error)
+    console.error('Error en getProductosByProveedorConVerificacion:', error)
     // Fallback: cargar productos sin verificación
     return await getProductosByProveedorId(proveedorId)
   }

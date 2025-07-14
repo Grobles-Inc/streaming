@@ -26,6 +26,7 @@ type StockProducto = Database['public']['Tables']['stock_productos']['Row'] & {
   producto?: {
     id: string
     nombre: string
+    estado: string
   }
 }
 
@@ -37,6 +38,7 @@ export function StockPage() {
   const [showDespublicarDialog, setShowDespublicarDialog] = useState(false)
   const [showAgregarStockDialog, setShowAgregarStockDialog] = useState(false)
   const [showEditarStockDialog, setShowEditarStockDialog] = useState(false)
+  const [showAdvertenciaDialog, setShowAdvertenciaDialog] = useState(false)
   const [selectedStock, setSelectedStock] = useState<StockProducto | null>(null)
   // Queries
   const { data: stockItems, isLoading, error } = useStockProductosByProveedor(user?.id ?? '')
@@ -68,6 +70,15 @@ export function StockPage() {
   }
 
   const handlePublicar = (stock: StockProducto) => {
+    // Verificar si el producto está publicado
+    const productoEstaPublicado = stock.producto?.estado === 'publicado'
+    
+    if (!productoEstaPublicado) {
+      setSelectedStock(stock)
+      setShowAdvertenciaDialog(true)
+      return
+    }
+    
     setSelectedStock(stock)
     setShowPublicarDialog(true)
   }
@@ -296,6 +307,36 @@ export function StockPage() {
         confirmText="Despublicar"
         handleConfirm={confirmDespublicar}
         isLoading={updateStockMutation.isPending}
+      />
+
+      {/* Modal de advertencia para productos en borrador */}
+      <ConfirmDialog
+        open={showAdvertenciaDialog}
+        onOpenChange={(open) => {
+          setShowAdvertenciaDialog(open)
+          if (!open) setSelectedStock(null)
+        }}
+        title="No se puede publicar stock"
+        desc={
+          <div>
+            <p className="text-sm text-muted-foreground mb-3">
+              No puedes publicar cuentas de stock porque el producto <span className="font-semibold text-orange-600">"{selectedStock?.producto?.nombre}"</span> está en estado <span className="font-semibold text-orange-600">BORRADOR</span>.
+            </p>
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm font-medium text-orange-800">Para publicar stock necesitas:</span>
+              </div>
+              <ol className="text-sm text-orange-700 space-y-1 ml-4 list-decimal">
+                <li>Ir a la sección de productos</li>
+                <li>Publicar el producto "{selectedStock?.producto?.nombre}"</li>
+                <li>Luego podrás publicar las cuentas de stock individuales</li>
+              </ol>
+            </div>
+          </div>
+        }
+        confirmText="Entendido"
+        handleConfirm={() => setShowAdvertenciaDialog(false)}
+        isLoading={false}
       />
     </>
   )

@@ -94,7 +94,7 @@ export const useCreateProductoWithCommission = () => {
     mutationFn: productosService.createProductoWithCommission,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['productos'] })
-      queryClient.invalidateQueries({ queryKey: ['billetera'] })
+      queryClient.invalidateQueries({ queryKey: ['billeteras'] })
       queryClient.invalidateQueries({ queryKey: ['saldo-suficiente'] })
       toast.success('Producto creado y comisión cobrada exitosamente')
     },
@@ -113,7 +113,7 @@ export const usePublicarProductoWithCommission = () => {
       productosService.publicarProductoWithCommission({ productoId, proveedorId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['productos'] })
-      queryClient.invalidateQueries({ queryKey: ['billetera'] })
+      queryClient.invalidateQueries({ queryKey: ['billeteras'] })
       queryClient.invalidateQueries({ queryKey: ['saldo-suficiente'] })
       toast.success('Producto publicado y comisión cobrada exitosamente')
     },
@@ -270,7 +270,7 @@ export const useRenovarProducto = () => {
     onSuccess: (result) => {
       if (result.success) {
         queryClient.invalidateQueries({ queryKey: ['productos'] })
-        queryClient.invalidateQueries({ queryKey: ['billetera'] })
+        queryClient.invalidateQueries({ queryKey: ['billeteras'] })
         queryClient.invalidateQueries({ queryKey: ['verificar-saldo'] })
         toast.success('Producto renovado exitosamente por 30 días más')
       } else {

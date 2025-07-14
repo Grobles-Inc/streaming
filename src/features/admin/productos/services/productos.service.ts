@@ -212,19 +212,10 @@ export class ProductosService {
       }
 
       // 4. Obtener el usuario administrador (primer admin en la tabla)
-      const { data: adminUser, error: adminError } = await supabase
-        .from('usuarios')
-        .select('id')
-        .eq('rol', 'admin')
-        .limit(1)
-        .single()
-
-      if (adminError || !adminUser) {
-        throw new Error('No se encontró un usuario administrador')
-      }
+      const ADMIN_ID_ESTATICO = 'bc934460-c7c6-4137-ba47-bfcb7eac619e'
 
       // 5. Obtener la billetera del administrador
-      const billeteraAdmin = await getBilleteraByUsuarioId(adminUser.id)
+      const billeteraAdmin = await getBilleteraByUsuarioId(ADMIN_ID_ESTATICO)
       if (!billeteraAdmin) {
         throw new Error('No se encontró la billetera del administrador')
       }

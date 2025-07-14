@@ -124,7 +124,6 @@ export function ProductoFormDialog({
       deshabilitar_boton_comprar: false,
       muestra_disponibilidad_stock: false,
       tiempo_uso: 0,
-      a_pedido: false,
       nuevo: false,
       ...defaultValues,
     },
@@ -578,21 +577,6 @@ export function ProductoFormDialog({
                           <div className="space-y-0.5">
                             <FormLabel className="text-sm font-medium">¿Es renovable?</FormLabel>
                             <div className="text-xs text-muted-foreground">El producto puede ser renovado</div>
-                          </div>
-                          <FormControl>
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="a_pedido"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-sm font-medium">¿A pedido?</FormLabel>
-                            <div className="text-xs text-muted-foreground">Producto disponible bajo pedido</div>
                           </div>
                           <FormControl>
                             <Switch checked={field.value} onCheckedChange={field.onChange} />

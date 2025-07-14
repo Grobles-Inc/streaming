@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { DotsHorizontalIcon } from '@radix-ui/react-icons'
 import { Row } from '@tanstack/react-table'
-import { IconEdit, IconTrash, IconEye, IconPackage, IconRefresh } from '@tabler/icons-react'
+import { IconEdit, IconTrash, IconEye, IconPackage, IconRefresh, IconCoins, IconWallet } from '@tabler/icons-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -16,12 +16,62 @@ import { ProductoFormDialog } from './producto-form'
 import { GestionarExistenciasModal } from './gestionar-existencias-modal'
 
 import type { Producto } from '../data/schema'
-import { useDeleteProducto, usePublicarProductoWithCommission, useVerificarProductoTieneCuentas, useRenovarProducto } from '../queries'
+import { useDeleteProducto, usePublicarProductoWithCommission, useVerificarProductoTieneCuentas, useRenovarProducto, useConfiguracionSistema, useVerificarSaldoSuficiente } from '../queries'
 import { useAuth } from '@/stores/authStore'
 import { calcularEstadoExpiracion } from '../utils/expiracion'
 
 interface DataTableRowActionsProps {
   row: Row<Producto>
+}
+
+// Componente para mostrar información de comisión y saldo
+const InfoComisionCards = ({ 
+  comisionFormateada, 
+  saldoFormateado,
+  tienesSaldoSuficiente,
+  saldoActual,
+  comisionMonto
+}: { 
+  comisionFormateada: string
+  saldoFormateado: string
+  tienesSaldoSuficiente: boolean
+  saldoActual: number
+  comisionMonto: number
+}) => {
+  // Calcular saldo después de comisión (sin negativos)
+  const saldoDespuesComision = Math.max(0, saldoActual - comisionMonto)
+  const saldoDespuesFormateado = new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+  }).format(saldoDespuesComision)
+
+  return (
+    <div className="flex gap-3 mt-4">
+      <div className="flex-1 bg-orange-50 border border-orange-200 rounded-lg p-3">
+        <div className="flex items-center gap-2 mb-1">
+          <IconCoins className="h-4 w-4 text-orange-600" />
+          <span className="text-sm font-medium text-orange-800">Comisión a cobrar</span>
+        </div>
+        <div className="text-lg font-bold text-orange-900">{comisionFormateada}</div>
+      </div>
+      
+      <div className={`flex-1 ${tienesSaldoSuficiente ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'} border rounded-lg p-3`}>
+        <div className="flex items-center gap-2 mb-1">
+          <IconWallet className={`h-4 w-4 ${tienesSaldoSuficiente ? 'text-green-600' : 'text-red-600'}`} />
+          <span className={`text-sm font-medium ${tienesSaldoSuficiente ? 'text-green-800' : 'text-red-800'}`}>
+            Tu saldo actual
+          </span>
+        </div>
+        <div className={`text-lg font-bold ${tienesSaldoSuficiente ? 'text-green-900' : 'text-red-900'}`}>
+          {saldoFormateado}
+        </div>
+        <div className={`text-xs mt-1 ${tienesSaldoSuficiente ? 'text-green-700' : 'text-red-700'}`}>
+          Restante: {saldoDespuesFormateado}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
@@ -35,6 +85,12 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const publicarProducto = usePublicarProductoWithCommission()
   const renovarProducto = useRenovarProducto()
   const { user } = useAuth()
+  
+  // Obtener configuración del sistema para la comisión
+  const { data: configuracion } = useConfiguracionSistema()
+  
+  // Obtener información del saldo del proveedor
+  const { data: saldoInfo } = useVerificarSaldoSuficiente(user?.id ?? '')
   
   const producto = row.original
   const esBorrador = producto.estado === 'borrador'
@@ -54,6 +110,23 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   
   // Verificar si el producto tiene cuentas asociadas
   const { data: tieneCuentas, isLoading: verificandoCuentas } = useVerificarProductoTieneCuentas(producto.id)
+
+  // Formatear valores monetarios
+  const comisionPublicacion = configuracion?.comision_publicacion_producto || 1.35
+  const saldoActual = saldoInfo?.saldoActual || 0
+  const tienesSaldoSuficiente = saldoInfo?.suficiente || false
+  
+  const comisionFormateada = new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+  }).format(comisionPublicacion)
+  
+  const saldoFormateado = new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+  }).format(saldoActual)
 
   const handleEdit = () => {
     setShowEditDialog(true)
@@ -169,7 +242,6 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           precio_renovacion: producto.precio_renovacion ?? 0,
           categoria_id: producto.categoria_id,
           tiempo_uso: producto.tiempo_uso,
-          a_pedido: producto.a_pedido,
           nuevo: producto.nuevo,
           disponibilidad: producto.disponibilidad,
           renovable: producto.renovable,
@@ -194,9 +266,22 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         open={showPublishDialog}
         onOpenChange={setShowPublishDialog}
         title={esDespublicadoPorVencimiento ? "¿Renovar producto?" : "¿Publicar producto?"}
-        desc={esDespublicadoPorVencimiento 
-          ? "Se cobrará la comisión de renovación de tu billetera y el producto será renovado por 30 días más."
-          : "Se cobrará la comisión de publicación de tu billetera. Una vez publicado, el producto estará disponible para la venta por 30 días."
+        desc={
+          <div>
+            <p className="text-sm text-muted-foreground mb-2">
+              {esDespublicadoPorVencimiento 
+                ? "El producto será renovado por 30 días más y estará disponible para la venta."
+                : "Al publicar el producto, estará disponible para la venta por 30 días."
+              }
+            </p>
+            <InfoComisionCards
+              comisionFormateada={comisionFormateada}
+              saldoFormateado={saldoFormateado}
+              tienesSaldoSuficiente={tienesSaldoSuficiente}
+              saldoActual={saldoActual}
+              comisionMonto={comisionPublicacion}
+            />
+          </div>
         }
         confirmText={esDespublicadoPorVencimiento ? "Renovar y cobrar comisión" : "Publicar y cobrar comisión"}
         handleConfirm={confirmPublish}
@@ -208,7 +293,23 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         open={showRenovarDialog}
         onOpenChange={setShowRenovarDialog}
         title="¿Renovar producto?"
-        desc={`Se cobrará la comisión de renovación de tu billetera y el producto será renovado por 30 días más. Estado actual: ${infoExpiracion.mensaje}`}
+        desc={
+          <div>
+            <p className="text-sm text-muted-foreground mb-2">
+              El producto será renovado por 30 días más y estará disponible para la venta.
+            </p>
+            <div className="text-sm text-muted-foreground mb-2">
+              Estado actual: {infoExpiracion.mensaje}
+            </div>
+            <InfoComisionCards
+              comisionFormateada={comisionFormateada}
+              saldoFormateado={saldoFormateado}
+              tienesSaldoSuficiente={tienesSaldoSuficiente}
+              saldoActual={saldoActual}
+              comisionMonto={comisionPublicacion}
+            />
+          </div>
+        }
         confirmText="Renovar y cobrar comisión"
         handleConfirm={confirmRenovar}
         isLoading={renovarProducto.isPending}

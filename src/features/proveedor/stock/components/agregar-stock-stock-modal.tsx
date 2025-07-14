@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,14 +10,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { IconTrash, IconPlus, IconPackage } from '@tabler/icons-react'
+import { IconTrash, IconPlus, IconPackage, IconCopy, IconClipboard, IconEye, IconEyeOff } from '@tabler/icons-react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useCreateStockProducto, useProductosByProveedor, useStockProductosByProductoId } from '../../productos/queries'
 import { useAuth } from '@/stores/authStore'
 
-// Schema básico sin validación compleja por ahora
+// Schema básico con campos opcionales
 const stockFormSchema = z.object({
   producto_id: z.number().min(1, 'Selecciona un producto'),
   tipo: z.enum(['cuenta', 'perfiles', 'combo']),
@@ -27,8 +27,8 @@ const stockFormSchema = z.object({
   perfil: z.string().optional(),
   pin: z.string().optional(),
   perfiles: z.array(z.object({
-    email: z.string(),
-    clave: z.string(),
+    email: z.string().optional(),
+    clave: z.string().optional(),
     url: z.string().optional(),
     perfil: z.string().optional(),
     pin: z.string().optional(),
@@ -49,6 +49,19 @@ export function AgregarStockStockModal({
   const { user } = useAuth()
   const { data: productos } = useProductosByProveedor(user?.id ?? '')
   const createStockMutation = useCreateStockProducto()
+
+  // Estado para almacenar datos copiados
+  const perfilCopiado = useRef<{
+    email: string
+    clave: string
+    url: string
+    perfil: string
+    pin: string
+  } | null>(null)
+
+  // Estado para controlar visibilidad de contraseñas
+  const [mostrarClave, setMostrarClave] = useState(false)
+  const [mostrarClavePerfiles, setMostrarClavePerfiles] = useState<{ [key: number]: boolean }>({})
 
   const {
     register,
@@ -113,59 +126,21 @@ export function AgregarStockStockModal({
   useEffect(() => {
     if (tipoSeleccionado === 'perfiles') {
       // Limpiar campos individuales para perfiles
-      let emailPrelleno = ''
-      let clavePrelleno = ''
-
-      if (stockExistente && stockExistente.length > 0) {
-        const primerPerfil = stockExistente.find(stock => stock.tipo === 'perfiles')
-        if (primerPerfil) {
-          emailPrelleno = primerPerfil.email || ''
-          clavePrelleno = primerPerfil.clave || ''
-        }
-      }
-      
       setValue('email', '')
       setValue('clave', '')
       setValue('url', '')
       setValue('perfil', '')
       setValue('pin', '')
-      setValue('perfiles', [{ email: emailPrelleno, clave: clavePrelleno, url: '', perfil: '', pin: '' }])
+      setValue('perfiles', [{ email: '', clave: '', url: '', perfil: '', pin: '' }])
     } else {
       // Limpiar array de perfiles para cuenta/combo
       setValue('perfiles', [])
     }
-  }, [tipoSeleccionado, stockExistente, setValue])
+  }, [tipoSeleccionado, setValue])
 
   const onSubmit = async (data: StockFormData) => {
     if (!user?.id) {
       return
-    }
-
-    // Validación manual según el tipo
-    if (data.tipo === 'cuenta' || data.tipo === 'combo') {
-      if (!data.email || data.email.trim() === '') {
-        return
-      }
-      if (!data.clave || data.clave.trim() === '') {
-        return
-      }
-    }
-    
-    if (data.tipo === 'perfiles') {
-      if (!data.perfiles || data.perfiles.length === 0) {
-        return
-      }
-      
-      // Validar cada perfil
-      for (let i = 0; i < data.perfiles.length; i++) {
-        const perfil = data.perfiles[i]
-        if (!perfil.email || perfil.email.trim() === '') {
-          return
-        }
-        if (!perfil.clave || perfil.clave.trim() === '') {
-          return
-        }
-      }
     }
 
     try {
@@ -178,8 +153,8 @@ export function AgregarStockStockModal({
             producto_id: data.producto_id,
             proveedor_id: user.id,
             tipo: 'perfiles' as const,
-            email: perfilData.email,
-            clave: perfilData.clave,
+            email: perfilData.email || null,
+            clave: perfilData.clave || null,
             url: perfilData.url || null,
             perfil: perfilData.perfil || null,
             pin: perfilData.pin || null,
@@ -219,23 +194,43 @@ export function AgregarStockStockModal({
   }
 
   const agregarPerfil = () => {
-    let emailPrelleno = ''
-    let clavePrelleno = ''
-
-    if (stockExistente && stockExistente.length > 0) {
-      const primerPerfil = stockExistente.find(stock => stock.tipo === 'perfiles')
-      if (primerPerfil) {
-        emailPrelleno = primerPerfil.email || ''
-        clavePrelleno = primerPerfil.clave || ''
-      }
-    }
-    append({ email: emailPrelleno, clave: clavePrelleno, url: '', perfil: '', pin: '' })
+    append({ email: '', clave: '', url: '', perfil: '', pin: '' })
   }
 
   const eliminarPerfil = (index: number) => {
     if (fields.length > 1) {
       remove(index)
     }
+  }
+
+  const copiarPerfil = (index: number) => {
+    const perfil = watch(`perfiles.${index}`)
+    if (perfil) {
+      perfilCopiado.current = {
+        email: perfil.email || '',
+        clave: perfil.clave || '',
+        url: perfil.url || '',
+        perfil: perfil.perfil || '',
+        pin: perfil.pin || ''
+      }
+    }
+  }
+
+  const pegarPerfil = (index: number) => {
+    if (perfilCopiado.current) {
+      setValue(`perfiles.${index}.email`, perfilCopiado.current.email)
+      setValue(`perfiles.${index}.clave`, perfilCopiado.current.clave)
+      setValue(`perfiles.${index}.url`, perfilCopiado.current.url)
+      setValue(`perfiles.${index}.perfil`, perfilCopiado.current.perfil)
+      setValue(`perfiles.${index}.pin`, perfilCopiado.current.pin)
+    }
+  }
+
+  const toggleMostrarClavePerfiles = (index: number) => {
+    setMostrarClavePerfiles(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }))
   }
 
   return (
@@ -309,7 +304,7 @@ export function AgregarStockStockModal({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">
-                    Cuenta Email <span className="text-red-500">*</span>
+                    Cuenta Email
                   </Label>
                   <Input
                     {...register('email')}
@@ -321,13 +316,29 @@ export function AgregarStockStockModal({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="clave">
-                    Cuenta Clave <span className="text-red-500">*</span>
+                    Cuenta Clave
                   </Label>
-                  <Input
-                    {...register('clave')}
-                    type="password"
-                    placeholder="Contraseña"
-                  />
+                  <div className="relative">
+                    <Input
+                      {...register('clave')}
+                      type={mostrarClave ? "text" : "password"}
+                      placeholder="Contraseña"
+                      className="pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setMostrarClave(!mostrarClave)}
+                    >
+                      {mostrarClave ? (
+                        <IconEyeOff className="h-4 w-4 text-gray-400" />
+                      ) : (
+                        <IconEye className="h-4 w-4 text-gray-400" />
+                      )}
+                    </Button>
+                  </div>
                   {errors.clave && (
                     <p className="text-sm text-red-500">{errors.clave.message}</p>
                   )}
@@ -379,17 +390,18 @@ export function AgregarStockStockModal({
               </div>
 
               <div className="space-y-4">
-                <div className="grid grid-cols-6 gap-2 text-sm font-medium text-muted-foreground">
+                <div className="grid grid-cols-7 gap-2 text-sm font-medium text-muted-foreground">
                   <div>Cuenta Email</div>
                   <div>Cuenta Clave</div>
                   <div>URL</div>
                   <div>Perfil</div>
                   <div>PIN</div>
+                  <div>Acciones</div>
                   <div></div>
                 </div>
 
                 {fields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-6 gap-2 items-end">
+                  <div key={field.id} className="grid grid-cols-7 gap-2 items-end">
                     <div>
                       <Input
                         {...register(`perfiles.${index}.email`)}
@@ -402,11 +414,27 @@ export function AgregarStockStockModal({
                       )}
                     </div>
                     <div>
-                      <Input
-                        {...register(`perfiles.${index}.clave`)}
-                        type="password"
-                        placeholder="Contraseña"
-                      />
+                      <div className="relative">
+                        <Input
+                          {...register(`perfiles.${index}.clave`)}
+                          type={mostrarClavePerfiles[index] ? "text" : "password"}
+                          placeholder="Contraseña"
+                          className="pr-10"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() => toggleMostrarClavePerfiles(index)}
+                        >
+                          {mostrarClavePerfiles[index] ? (
+                            <IconEyeOff className="h-4 w-4 text-gray-400" />
+                          ) : (
+                            <IconEye className="h-4 w-4 text-gray-400" />
+                          )}
+                        </Button>
+                      </div>
                       {errors.perfiles?.[index]?.clave && (
                         <p className="text-xs text-red-500 mt-1">
                           {errors.perfiles[index]?.clave?.message}
@@ -431,18 +459,66 @@ export function AgregarStockStockModal({
                         placeholder="PIN"
                       />
                     </div>
-                    <div>
+                    <div className="flex gap-1">
+                      {(() => {
+                        // Verificar si el perfil actual tiene datos para copiar
+                        const perfilActual = watch(`perfiles.${index}`)
+                        const tienesDatosParaCopiar = perfilActual && (
+                          perfilActual.email?.trim() || 
+                          perfilActual.clave?.trim() || 
+                          perfilActual.url?.trim() || 
+                          perfilActual.perfil?.trim() || 
+                          perfilActual.pin?.trim()
+                        )
+                        
+                        return (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copiarPerfil(index)}
+                            className={`h-8 w-8 p-0 ${
+                              tienesDatosParaCopiar
+                                ? 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'
+                                : 'text-gray-300 cursor-not-allowed'
+                            }`}
+                            title={tienesDatosParaCopiar ? "Copiar este perfil" : "Completa algunos campos para poder copiar"}
+                            disabled={!tienesDatosParaCopiar}
+                          >
+                            <IconCopy size={16} />
+                          </Button>
+                        )
+                      })()}
+                      
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => pegarPerfil(index)}
+                        className={`h-8 w-8 p-0 ${
+                          perfilCopiado.current
+                            ? 'text-green-500 hover:text-green-700 hover:bg-green-50'
+                            : 'text-gray-300 cursor-not-allowed'
+                        }`}
+                        title={perfilCopiado.current ? "Pegar perfil copiado" : "Primero copia un perfil"}
+                        disabled={!perfilCopiado.current}
+                      >
+                        <IconClipboard size={16} />
+                      </Button>
+                      
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         onClick={() => eliminarPerfil(index)}
                         disabled={fields.length === 1}
-                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        title="Eliminar perfil"
                       >
                         <IconTrash size={16} />
                       </Button>
                     </div>
+                    <div></div>
                   </div>
                 ))}
               </div>
@@ -455,7 +531,7 @@ export function AgregarStockStockModal({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">
-                    Email Principal <span className="text-red-500">*</span>
+                    Email Principal
                   </Label>
                   <Input
                     {...register('email')}
@@ -467,13 +543,29 @@ export function AgregarStockStockModal({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="clave">
-                    Clave Principal <span className="text-red-500">*</span>
+                    Clave Principal
                   </Label>
-                  <Input
-                    {...register('clave')}
-                    type="password"
-                    placeholder="Contraseña"
-                  />
+                  <div className="relative">
+                    <Input
+                      {...register('clave')}
+                      type={mostrarClave ? "text" : "password"}
+                      placeholder="Contraseña"
+                      className="pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setMostrarClave(!mostrarClave)}
+                    >
+                      {mostrarClave ? (
+                        <IconEyeOff className="h-4 w-4 text-gray-400" />
+                      ) : (
+                        <IconEye className="h-4 w-4 text-gray-400" />
+                      )}
+                    </Button>
+                  </div>
                   {errors.clave && (
                     <p className="text-sm text-red-500">{errors.clave.message}</p>
                   )}

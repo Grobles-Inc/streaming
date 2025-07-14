@@ -17,6 +17,7 @@ type StockProducto = Database['public']['Tables']['stock_productos']['Row'] & {
   producto?: {
     id: string
     nombre: string
+    estado: string
   }
 }
 
@@ -238,6 +239,7 @@ export const createStockColumns = (
     header: 'Acciones',
     cell: ({ row }) => {
       const stock = row.original
+      const productoEstaPublicado = stock.producto?.estado === 'publicado'
       
       return (
         <DropdownMenu>
@@ -257,9 +259,13 @@ export const createStockColumns = (
                 Despublicar
               </DropdownMenuItem>
             ) : (
-              <DropdownMenuItem onClick={() => actions.onPublicar(stock)} disabled={actions.isUpdating}>
+              <DropdownMenuItem 
+                onClick={() => actions.onPublicar(stock)} 
+                disabled={actions.isUpdating}
+                className={!productoEstaPublicado ? 'text-red-500' : ''}
+              >
                 <IconEye className="mr-2 h-4 w-4" />
-                Publicar
+                Publicar {!productoEstaPublicado}
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />

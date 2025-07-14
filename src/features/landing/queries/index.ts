@@ -8,7 +8,6 @@ export const useCategorias = () => {
   return useQuery({
     queryKey: ['categorias'],
     queryFn: () => categoriasService.getCategorias(),
-    staleTime: 1000 * 60 * 5, // 5 minutos
   })
 }
 
@@ -46,7 +45,6 @@ export const useConfiguracionSistema = () => {
   return useQuery({
     queryKey: ['configuracion-sistema'],
     queryFn: () => landingService.getConfiguracionActual(),
-    staleTime: 1000 * 60 * 5, // 5 minutos
   })
 }
 

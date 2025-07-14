@@ -62,32 +62,33 @@ export const estados = [
     value: 'resuelto',
     label: 'Resuelto',
     icon: IconCircleCheck,
-    color: 'bg-green-500 text-white dark:text-white border-green-500',
+    color: 'bg-green-500 text-white text-xs hover:bg-green-600 dark:text-white border-green-500',
 
   },
   {
     value: 'soporte',
     label: 'Soporte',
     icon: IconHelpOctagon,
-    color: 'bg-yellow-400 text-white dark:text-white border-yellow-500',
+    color: 'bg-yellow-400 text-white text-xs hover:bg-yellow-500 dark:text-white border-yellow-500',
   },
   {
     value: 'vencido',
     label: 'Vencido',
     icon: IconStopwatch,
-    color: 'bg-red-500 text-white dark:text-white border-red-500',
+    color: 'bg-red-500 text-white text-xs hover:bg-red-600 dark:text-white border-red-500',
   },
   {
     value: 'pedido',
-    label: 'Pedido',
+    label: 'Pedido/Activacion',
     icon: IconExclamationCircle,
-    color: 'bg-blue-500 text-white dark:text-white border-blue-500',
+    color: 'bg-blue-500 text-white text-xs hover:bg-blue-600 dark:text-white border-blue-500',
   },
+  
   {
     value: 'entregado',
     label: 'Entregado',
     icon: IconFlag,
-    color: 'bg-gray-600/30 text-white dark:text-white border-gray-200',
+    color: 'bg-gray-600/30 text-white text-xs hover:bg-gray-600/40 dark:text-white border-gray-200',
   },
 ]
 

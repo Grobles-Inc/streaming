@@ -54,7 +54,7 @@ export default function SettingsProfile() {
         </div>
       </Header>
 
-      <Main fixed>
+      <Main >
         <div className='space-y-0.5'>
           <h1 className='text-2xl font-bold tracking-tight md:text-3xl'>
             Perfil de Cuenta
@@ -153,7 +153,6 @@ export default function SettingsProfile() {
                 <Button type='submit' disabled>Actualizar Perfil</Button>
               </form>
             </Form>
-
           </div>
         </div>
       </Main>

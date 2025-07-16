@@ -112,9 +112,11 @@ export default function Home() {
                   <div key={i} className="w-full bg-muted animate-pulse rounded-lg h-64" />
                 ))
               ) : productos?.data && productos.data.length > 0 ? (
-                productos.data.map((producto) => (
-                  <ProductoCard key={producto.id} producto={producto} />
-                ))
+                [...productos.data]
+                  .sort(() => Math.random() - 0.5)
+                  .map((producto) => (
+                    <ProductoCard key={producto.id} producto={producto} />
+                  ))
               ) : (
                 <div className="col-span-full text-center py-8 text-muted-foreground">
                   No hay productos disponibles

@@ -22,7 +22,7 @@ export const compraSchema = z.object({
   soporte_asunto: z.string().nullable().optional(),
   soporte_respuesta: z.string().nullable().optional(),
   stock_producto_id: z.number().min(1, 'Stock del producto es requerido.'),
-  precio: z.number().min(1, 'Precio es requerido.'),
+  precio: z.number().min(0.1, 'Precio es requerido.'),
   stock_productos: z.object({
     email: z.string().nullable(),
     perfil: z.string().nullable(),

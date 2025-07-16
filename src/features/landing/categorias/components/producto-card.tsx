@@ -47,7 +47,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
           ></feColorMatrix>
         </filter>
       </svg>
-      <div className="card-container md:h-[420px] h-[340px] w-44 md:w-56">
+      <div className="card-container md:h-[410px] h-[340px] w-44 md:w-56">
         <div className="spin spin-blur"></div>
         <div className="spin spin-intense"></div>
         <div className="card-border">
@@ -155,10 +155,14 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
           )}
           <CardContent className='flex flex-col px-4 flex-grow'>
             <span className="text-xs text-gray-500 font-semibold  mb-1">{producto.usuarios.usuario.toUpperCase()}</span>
-            <span className="font-bold md:text-lg mb-1 hidden md:block  leading-tight">{producto.nombre}</span>
+            <span className="font-bold  mb-1 hidden md:block  leading-tight">{producto.nombre}</span>
             <span className="font-bold md:text-lg text-sm mb-1 md:hidden truncate  leading-tight">{producto.nombre}</span>
             <div className="md:flex flex-row hidden justify-between items-center w-full mb-2">
-              <span className="text-xs text-green-600 ">Renovable: <strong>$ {producto.precio_renovacion?.toFixed(2)}</strong></span>
+              {producto.renovable ? (
+                <span className="text-xs text-green-600 ">Renovable: <strong>$ {producto.precio_renovacion?.toFixed(2)}</strong></span>
+              ) : (
+                <span className="text-xs text-red-600 ">No renovable</span>
+              )}
             </div>
 
 

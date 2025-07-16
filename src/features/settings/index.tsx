@@ -107,11 +107,11 @@ export default function SettingsProfile() {
                 <FormField
                   control={form.control}
                   name='email'
-                  render={() => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input placeholder='Ej. juan@gmail.com' disabled value={user?.email} />
+                        <Input placeholder='Ej. juan@gmail.com' {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

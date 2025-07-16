@@ -42,7 +42,6 @@ import {
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
-  IconSearch,
   IconCheck,
   IconX,
   IconClock,

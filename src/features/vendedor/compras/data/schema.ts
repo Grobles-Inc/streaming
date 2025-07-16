@@ -32,7 +32,7 @@ export const compraSchema = z.object({
   productos: z.object({
     nombre: z.string().min(1, 'Nombre del producto es requerido.'),
     tiempo_uso: z.number().optional(),
-    precio_publico: z.number().min(1, 'Precio es requerido.'),
+    precio_publico: z.number().min(0.1, 'Precio es requerido.'),
     precio_renovacion: z.number().optional(),
     descripcion: z.string().optional(),
     informacion: z.string().optional(),

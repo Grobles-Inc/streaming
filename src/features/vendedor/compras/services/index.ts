@@ -179,7 +179,7 @@ export const getComprasByVendedorId = async (vendedorId: string, page: number = 
     .select(`
       *,
       productos:producto_id (nombre, precio_publico, tiempo_uso, condiciones, descripcion, informacion, precio_renovacion, renovable),
-      usuarios:proveedor_id (nombres, apellidos, telefono, billetera_id),
+      usuarios:proveedor_id (nombres, apellidos, telefono, billetera_id, usuario),
       stock_productos:stock_producto_id (email, perfil, pin, clave)
     `, { count: 'exact' })
     .eq('vendedor_id', vendedorId)

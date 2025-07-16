@@ -228,13 +228,13 @@ const RenovacionCell = ({ row }: { row: Compra }) => {
             <div className="space-y-1">
               <Label>Saldo Actual</Label>
               <span className="text-xl font-semibold text-green-600 dark:text-green-400 ">
-                $ {billetera?.saldo}
+                $ {billetera?.saldo?.toFixed(2)}
               </span>
             </div>
             <div className="space-y-1">
               <Label >Costo Renovación</Label>
               <span className="text-xl font-semibold text-destructive">
-                $ {row.productos?.precio_renovacion}
+                $ {row.productos?.precio_renovacion?.toFixed(2)}
               </span>
             </div>
 
@@ -245,7 +245,7 @@ const RenovacionCell = ({ row }: { row: Compra }) => {
                 "text-xl font-semibold"
 
               >
-                $ {saldo}
+                $ {saldo?.toFixed(2)}
               </span>
               {saldo < 0 && (
                 <p className="text-xs text-destructive">No tienes saldo suficiente para renovar</p>
@@ -480,7 +480,7 @@ export const columns: ColumnDef<Compra>[] = [
     ),
     cell: ({ row }) => {
       const { usuarios } = row.original
-      return <div className='flex justify-center'>{usuarios?.nombres}</div>
+      return <div className='flex justify-center'>{usuarios?.usuario}</div>
     },
     enableSorting: false,
   },

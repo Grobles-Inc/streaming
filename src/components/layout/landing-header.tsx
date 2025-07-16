@@ -69,7 +69,11 @@ export default function LandingHeader() {
                       $ {billetera?.saldo.toFixed(2)}
                       <div className='flex gap-1 items-center'>
                         <IconUser size={16} />
-                        <span className='text-xs font-normal font-mono'>  {user.usuario}</span>
+                        <div className='flex flex-col gap-0'>
+
+                          <span className='text-xs font-normal font-mono'>  {user.usuario}</span>
+                          <span className='text-xs font-normal font-mono'>  {user.codigo_referido}</span>
+                        </div>
                       </div>
                     </div>
                     <Button variant="secondary" onClick={() => navigate({ to: '/compras' })} className='flex items-center gap-2'>

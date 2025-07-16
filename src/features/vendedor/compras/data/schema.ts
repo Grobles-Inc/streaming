@@ -42,6 +42,7 @@ export const compraSchema = z.object({
   usuarios: z.object({
     nombres: z.string().min(1, 'Nombres es requerido.'),
     apellidos: z.string().min(1, 'Apellidos es requerido.'),
+    usuario: z.string().min(1, 'Usuario es requerido.'),
     telefono: z.string().min(1, 'Teléfono es requerido.'),
     billetera_id: z.string().nullable().optional(),
   }).optional(),

@@ -6,24 +6,23 @@ import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+  FormMessage
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
+import { useAuth } from '@/stores/authStore'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { IconCheck, IconCopy } from '@tabler/icons-react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { z } from 'zod'
 import { PhoneInput } from '../landing/categorias/components/phone-input'
 import { usuarioSchema } from './data/schema'
-import { useAuth } from '@/stores/authStore'
-import { IconCheck, IconCopy } from '@tabler/icons-react'
-import { Label } from '@/components/ui/label'
-import { useState } from 'react'
-import { toast } from 'sonner'
 
 
 type ProfileFormValues = z.infer<typeof usuarioSchema>
@@ -82,7 +81,24 @@ export default function SettingsProfile() {
         <Separator className='my-4 lg:my-6' />
         <div className='flex flex-1 flex-col space-y-2 overflow-hidden md:space-y-2 lg:flex-row lg:space-y-0 lg:space-x-12'>
 
-          <div className='flex w-full overflow-y-hidden p-1'>
+          <div className='flex flex-col  overflow-y-hidden p-1'>
+            <div className='space-y-1 mb-4'>
+              <Label>Código Referido</Label>
+              <div className='flex items-center gap-2'>
+                <Input disabled value={user?.codigo_referido} />
+                <Button title='Copiar Codigo' variant='outline' size='icon' onClick={() => {
+                  navigator.clipboard.writeText(user?.codigo_referido || '')
+                  setCopied(true)
+                  setTimeout(() => {
+                    setCopied(false)
+                  }, 1000)
+                  toast.success('Código copiado')
+                }}>
+                  {copied ? <IconCheck /> : <IconCopy />}
+                </Button>
+              </div>
+            </div>
+
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -97,9 +113,7 @@ export default function SettingsProfile() {
                       <FormControl>
                         <Input disabled placeholder='Ej. juan_perez' {...field} />
                       </FormControl>
-                      <FormDescription>
-                        Este es el nombre de usuario que se mostrará en la plataforma, ademas te servirá para iniciar sesión.
-                      </FormDescription>
+
                       <FormMessage />
                     </FormItem>
                   )}
@@ -160,22 +174,7 @@ export default function SettingsProfile() {
 
 
 
-                <div className='space-y-1'>
-                  <Label>Código Referido</Label>
-                  <div className='flex items-center gap-2'>
-                    <Input disabled value={user?.codigo_referido} />
-                    <Button title='Copiar Codigo' variant='outline' size='icon' onClick={() => {
-                      navigator.clipboard.writeText(user?.codigo_referido || '')
-                      setCopied(true)
-                      setTimeout(() => {
-                        setCopied(false)
-                      }, 1000)
-                    }}>
-                      {copied ? <IconCheck /> : <IconCopy />}
-                    </Button>
-                  </div>
-                </div>
-                <Button type='submit' >Actualizar Perfil</Button>
+                <Button type='submit' className='w-full md:w-auto' >Actualizar Perfil</Button>
               </form>
             </Form>
           </div>

@@ -336,10 +336,11 @@ export function RegisterWithReferralForm() {
 
       console.log('Usuario creado exitosamente:', newUser)
 
-      // Invalidar el token de registro después del uso exitoso
-      if (tokenData?.validationToken) {
-        await RegistrationTokenValidator.invalidateToken(tokenData.validationToken)
-      }
+      // DESHABILITADO: No invalidar tokens porque ahora son permanentes
+      // Los tokens solo se invalidan cuando se regeneran explícitamente
+      // if (tokenData?.validationToken) {
+      //   await RegistrationTokenValidator.invalidateToken(tokenData.validationToken)
+      // }
 
       // Mostrar mensaje de éxito y redirigir al login
       toast.success('¡Registro exitoso!', {

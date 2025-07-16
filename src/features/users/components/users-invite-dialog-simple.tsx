@@ -86,38 +86,10 @@ export function UsersInviteDialog({ open, onOpenChange }: Props) {
     }
   }
 
-  // Inicializar token si no existe (solo una vez)
-  const initializeTokenIfNeeded = async () => {
-    try {
-      const existingToken = await ConfigurationService.getCurrentToken()
-      
-      if (!existingToken) {
-        console.log('Inicializando token permanente por primera vez...')
-        // Crear un token FIJO que no cambie
-        const fixedToken = 'permanent_registration_token_2025'
-        const stored = await ConfigurationService.storeRegistrationToken(fixedToken)
-        
-        if (stored) {
-          console.log('Token permanente inicializado:', fixedToken)
-          toast.success('Token de invitación configurado')
-        } else {
-          console.error('Error al inicializar token')
-          toast.error('Error al configurar el sistema')
-        }
-      }
-    } catch (error) {
-      console.error('Error inicializando token:', error)
-    }
-  }
-
   // Cargar link al abrir el diálogo
   useEffect(() => {
     if (open) {
-      // Primero inicializar token si es necesario
-      initializeTokenIfNeeded().then(() => {
-        // Luego generar el link
-        generateLink(referralCode)
-      })
+      generateLink(referralCode)
     }
   }, [open])
 
@@ -192,7 +164,7 @@ export function UsersInviteDialog({ open, onOpenChange }: Props) {
               disabled={loading}
               variant="destructive"
             >
-              Regenerar Token
+              Crear/Regenerar Token
             </Button>
           </div>
 

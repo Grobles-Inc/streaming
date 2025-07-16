@@ -7,26 +7,24 @@ type ConfiguracionUpdate = Database['public']['Tables']['configuracion']['Update
 export class ConfigurationService {
   
   /**
-   * Genera un token único y seguro para links de registro
+   * Genera un token único y PERMANENTE para links de registro
+   * Este token será estable y no caducará por tiempo, solo cuando se regenere explícitamente
    */
   static generateRegistrationToken(): string {
-    console.log("Generando nuevo token de registro");
+    console.log("Generando nuevo token de registro permanente");
     
-    // Usar un formato más simple y directo para evitar problemas de codificación
+    // Crear un token estable usando datos que no cambien frecuentemente
     const timestamp = Date.now();
-    const randomPart = Math.random().toString(36).substring(2, 15);
+    const randomSeed = Math.random().toString(36).substring(2, 15);
     
-    const tokenParts = [
-      timestamp.toString(),
-      randomPart,
-      "reg"  // indicador de tipo de token
-    ];
+    // Crear una cadena base para encriptar
+    const baseString = `${timestamp}_${randomSeed}_permanent_reg`;
     
-    const combinedToken = tokenParts.join('_');
-    console.log("Token generado (sin codificar):", combinedToken);
+    // Convertir a Base64 para hacer el token más robusto
+    const stableToken = btoa(baseString).replace(/[+/=]/g, ''); // Remover caracteres problemáticos
     
-    // Usar un formato más directo sin base64 para evitar problemas
-    return combinedToken;
+    console.log("Token permanente generado:", stableToken);
+    return stableToken;
   }
 
   /**
@@ -113,9 +111,10 @@ export class ConfigurationService {
 
   /**
    * Valida si un token de registro es válido
+   * NOTA: Los tokens ahora son PERMANENTES y solo se invalidan cuando se regeneran
    */
   static async validateRegistrationToken(token: string): Promise<boolean> {
-    console.log("Validando token:", token);
+    console.log("Validando token permanente:", token);
     
     if (!token || token.trim() === '') {
       console.error('Token inválido: token vacío');
@@ -135,33 +134,77 @@ export class ConfigurationService {
       }
 
       // Log para depuración
-      console.log('Token almacenado:', data.register_link);
-      console.log('Token recibido:', token);
+      console.log('Token almacenado en BD:', data.register_link);
+      console.log('Token recibido para validar:', token);
       
-      // Verificar que el token coincida
+      // Verificar que el token coincida exactamente
       const tokenMatches = data.register_link === token;
       console.log('¿Los tokens coinciden?', tokenMatches);
       
       if (!tokenMatches) {
+        console.warn('Token no coincide con el almacenado');
         return false;
       }
 
-      // Verificar que el token no sea muy antiguo (7 días de validez)
-      const tokenDate = new Date(data.updated_at)
-      const now = new Date()
-      const hoursDiff = (now.getTime() - tokenDate.getTime()) / (1000 * 60 * 60)
+      // ✅ CAMBIO IMPORTANTE: Ya no validamos por tiempo
+      // Los tokens ahora son permanentes hasta que se regeneren explícitamente
+      console.log('✅ Token permanente válido');
+      return true;
       
-      console.log('Horas desde la creación del token:', hoursDiff);
-      
-      if (hoursDiff > 168) { // 7 días en horas
-        console.warn('Token de registro expirado')
-        return false
-      }
-
-      return true
     } catch (error) {
       console.error('Error validating registration token:', error)
       return false
+    }
+  }
+
+  /**
+   * Regenera explícitamente el token de invitación
+   * Esto invalidará todos los links anteriores
+   */
+  static async regenerateInvitationToken(): Promise<string | null> {
+    try {
+      console.log("🔄 Regenerando token de invitación...");
+      
+      // Generar nuevo token
+      const newToken = this.generateRegistrationToken();
+      
+      // Almacenar el nuevo token
+      const stored = await this.storeRegistrationToken(newToken);
+      
+      if (!stored) {
+        console.error('Error almacenando el nuevo token');
+        return null;
+      }
+      
+      console.log("✅ Token regenerado exitosamente:", newToken);
+      return newToken;
+      
+    } catch (error) {
+      console.error('Error regenerating invitation token:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Obtiene el token actual sin regenerarlo
+   */
+  static async getCurrentToken(): Promise<string | null> {
+    try {
+      const { data, error } = await supabase
+        .from('configuracion')
+        .select('register_link')
+        .eq('id', '1')
+        .single()
+
+      if (error || !data) {
+        console.log('No hay token actual, se necesita generar uno');
+        return null;
+      }
+
+      return data.register_link || null;
+    } catch (error) {
+      console.error('Error getting current token:', error);
+      return null;
     }
   }
 

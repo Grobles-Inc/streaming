@@ -14,13 +14,16 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
-import { showSubmittedData } from '@/utils/show-submitted-data'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { PhoneInput } from '../landing/categorias/components/phone-input'
 import { usuarioSchema } from './data/schema'
 import { useAuth } from '@/stores/authStore'
+import { IconCheck, IconCopy } from '@tabler/icons-react'
+import { Label } from '@/components/ui/label'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 
 type ProfileFormValues = z.infer<typeof usuarioSchema>
@@ -28,7 +31,8 @@ type ProfileFormValues = z.infer<typeof usuarioSchema>
 
 
 export default function SettingsProfile() {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
+  const [copied, setCopied] = useState(false)
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(usuarioSchema),
     defaultValues: {
@@ -41,6 +45,18 @@ export default function SettingsProfile() {
     },
     mode: 'onChange',
   })
+
+  const onSubmit = (data: ProfileFormValues) => {
+    updateUser({
+      id: user?.id ?? '',
+      nombres: data.nombres,
+      apellidos: data.apellidos,
+      telefono: data.telefono,
+      email: data.email,
+      codigo_referido: data.codigo_referido,
+    })
+    toast.success('Perfil actualizado correctamente')
+  }
 
 
   return (
@@ -69,7 +85,7 @@ export default function SettingsProfile() {
           <div className='flex w-full overflow-y-hidden p-1'>
             <Form {...form}>
               <form
-                onSubmit={form.handleSubmit((data) => showSubmittedData(data))}
+                onSubmit={form.handleSubmit(onSubmit)}
                 className='space-y-8'
               >
                 <FormField
@@ -79,7 +95,7 @@ export default function SettingsProfile() {
                     <FormItem>
                       <FormLabel>Usuario</FormLabel>
                       <FormControl>
-                        <Input placeholder='Ej. juan_perez' {...field} />
+                        <Input disabled placeholder='Ej. juan_perez' {...field} />
                       </FormControl>
                       <FormDescription>
                         Este es el nombre de usuario que se mostrará en la plataforma, ademas te servirá para iniciar sesión.
@@ -142,15 +158,24 @@ export default function SettingsProfile() {
                   )}
                 />
 
-                <FormItem>
-                  <FormLabel>Código Referido</FormLabel>
-                  <FormControl>
-                    <Input disabled value={user?.codigo_referido} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
 
-                <Button type='submit' disabled>Actualizar Perfil</Button>
+
+                <div className='space-y-1'>
+                  <Label>Código Referido</Label>
+                  <div className='flex items-center gap-2'>
+                    <Input disabled value={user?.codigo_referido} />
+                    <Button title='Copiar Codigo' variant='outline' size='icon' onClick={() => {
+                      navigator.clipboard.writeText(user?.codigo_referido || '')
+                      setCopied(true)
+                      setTimeout(() => {
+                        setCopied(false)
+                      }, 1000)
+                    }}>
+                      {copied ? <IconCheck /> : <IconCopy />}
+                    </Button>
+                  </div>
+                </div>
+                <Button type='submit' >Actualizar Perfil</Button>
               </form>
             </Form>
           </div>

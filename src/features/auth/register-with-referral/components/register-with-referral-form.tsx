@@ -58,6 +58,17 @@ const registerWithReferralSchema = z
       .min(1, { message: 'La contraseña es requerida' })
       .min(8, { message: 'La contraseña debe tener al menos 8 caracteres' }),
     confirmPassword: z.string(),
+    // Campo para el código de referido PROPIO del usuario
+    codigoReferidoPropio: z
+      .string()
+      .optional()
+      .transform((val) => val ? val.replace(/\s+/g, '') : val) // Eliminar espacios
+      .refine((val) => !val || val.length >= 3, {
+        message: 'El código debe tener al menos 3 caracteres',
+      })
+      .refine((val) => !val || /^[a-zA-Z0-9_]+$/.test(val), {
+        message: 'Solo letras, números y guiones bajos',
+      }),
     // Campos bloqueados que vienen del link
     codigoReferido: z.string(),
     rol: z.enum(['registered', 'provider', 'seller']),
@@ -86,8 +97,14 @@ export function RegisterWithReferralForm() {
     isDuplicate: boolean
     message: string
   }>({ isChecking: false, isDuplicate: false, message: '' })
+  const [codigoValidation, setCodigoValidation] = useState<{
+    isChecking: boolean
+    isDuplicate: boolean
+    message: string
+  }>({ isChecking: false, isDuplicate: false, message: '' })
   const emailTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const usernameTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const codigoTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const navigate = useNavigate()
   
   // Obtener parámetros de URL usando TanStack Router
@@ -154,6 +171,9 @@ export function RegisterWithReferralForm() {
       if (usernameTimeoutRef.current) {
         clearTimeout(usernameTimeoutRef.current)
       }
+      if (codigoTimeoutRef.current) {
+        clearTimeout(codigoTimeoutRef.current)
+      }
     }
   }, [])
 
@@ -167,6 +187,7 @@ export function RegisterWithReferralForm() {
       telefono: '',
       password: '',
       confirmPassword: '',
+      codigoReferidoPropio: '',
       codigoReferido: '',
       rol: 'registered',
     },
@@ -302,23 +323,117 @@ export function RegisterWithReferralForm() {
     }
   }
 
+  // Función para validar código de referido propio en tiempo real
+  const validateCodigoPropio = async (codigo: string) => {
+    if (!codigo || codigo.length < 3) {
+      setCodigoValidation({ isChecking: false, isDuplicate: false, message: '' })
+      return
+    }
+
+    // Eliminar espacios y mantener el caso original
+    const codigoLimpio = codigo.replace(/\s+/g, '')
+    
+    if (codigoLimpio.length < 3) {
+      setCodigoValidation({ isChecking: false, isDuplicate: false, message: '' })
+      return
+    }
+
+    setCodigoValidation({ isChecking: true, isDuplicate: false, message: '' })
+
+    try {
+      // Verificar si el código ya existe EXACTAMENTE como está escrito en la columna codigo_referido
+      const { data: existingCodes, error: codesError } = await supabase
+        .from('usuarios')
+        .select('id, codigo_referido, nombres, apellidos, estado_habilitado')
+        .eq('codigo_referido', codigoLimpio) // Sin convertir a minúsculas, buscar exacto
+        .eq('estado_habilitado', true)
+        .limit(1)
+
+      if (codesError) {
+        console.error('Error checking codigo_referido uniqueness:', codesError)
+        setCodigoValidation({ 
+          isChecking: false, 
+          isDuplicate: false, 
+          message: 'Error verificando código' 
+        })
+        return
+      }
+
+      // Si encontramos el código como codigo_referido de alguien más
+      if (existingCodes && existingCodes.length > 0) {
+        
+        setCodigoValidation({ 
+          isChecking: false, 
+          isDuplicate: true, 
+          message: `Este código ya está en uso.` 
+        })
+        form.setError('codigoReferidoPropio', {
+          type: 'manual',
+        })
+        return
+      }
+
+      // Si llegamos aquí, el código está disponible
+      setCodigoValidation({ 
+        isChecking: false, 
+        isDuplicate: false, 
+        message: 'Código disponible' 
+      })
+      // Limpiar error si el código está disponible
+      if (form.formState.errors.codigoReferidoPropio?.message === 'Este código ya está en uso') {
+        form.clearErrors('codigoReferidoPropio')
+      }
+
+    } catch (err) {
+      console.error('Error in codigo validation:', err)
+      setCodigoValidation({ 
+        isChecking: false, 
+        isDuplicate: false, 
+        message: 'Error verificando código' 
+      })
+    }
+  }
+
   const onSubmit = async (values: RegisterFormData) => {
     setIsLoading(true)
     
     // Limpiar errores previos de campos específicos
     form.clearErrors(['email', 'usuario'])
     
+    // Verificar si hay errores de validación de código duplicado
+    if (codigoValidation.isDuplicate) {
+      toast.error('Error en el registro', {
+        description: 'Por favor corrige los errores antes de continuar'
+      })
+      setIsLoading(false)
+      return
+    }
+
+    // Verificar si hay errores en el formulario
+    if (Object.keys(form.formState.errors).length > 0) {
+      toast.error('Error en el registro', {
+        description: 'Por favor corrige todos los errores antes de continuar'
+      })
+      setIsLoading(false)
+      return
+    }
+    
     try {
       console.log('Registrando usuario con referido:', values)
 
       // Extraer el código de referido de los valores
-      const { codigoReferido, confirmPassword, rol, ...userData } = values
+      const { codigoReferido, codigoReferidoPropio, confirmPassword, rol, ...userData } = values
+
+      // Limpiar espacios del código propio antes de enviarlo
+      const codigoLimpio = codigoReferidoPropio ? codigoReferidoPropio.replace(/\s+/g, '') : undefined
 
       console.log('Datos del usuario a crear:', {
         ...userData,
+        codigo_referido: codigoLimpio || null, // Código propio del usuario limpio
         rol: rol || 'registered' // Usar el rol del link o 'registered' por defecto
       })
-      console.log('Código de referido:', codigoReferido)
+      console.log('Código de referido del referente:', codigoReferido)
+      console.log('Código propio del usuario:', codigoLimpio)
 
       // Crear el usuario usando el servicio correcto
       const newUser = await UsersService.createUserWithReferral(
@@ -329,6 +444,7 @@ export function RegisterWithReferralForm() {
           usuario: userData.usuario,
           password: userData.password,
           telefono: userData.telefono,
+          codigo_referido: codigoLimpio || undefined, // Código propio del usuario limpio
           rol: rol || 'registered' // Usar el rol del link
         },
         codigoReferido // Código del referente (viene del enlace)
@@ -548,6 +664,47 @@ export function RegisterWithReferralForm() {
                   <PhoneInput {...field} defaultCountry="PE" placeholder="Teléfono" />
                 </FormControl>
                 <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="codigoReferidoPropio"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input 
+                    placeholder="Tu código de referido (opcional)" 
+                    {...field} 
+                    onChange={(e) => {
+                      field.onChange(e)
+                      
+                      // Debounce codigo validation
+                      if (codigoTimeoutRef.current) {
+                        clearTimeout(codigoTimeoutRef.current)
+                      }
+                      codigoTimeoutRef.current = setTimeout(() => {
+                        validateCodigoPropio(e.target.value)
+                      }, 800)
+                    }}
+                  />
+                </FormControl>
+                {codigoValidation.isChecking && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Verificando disponibilidad...
+                  </div>
+                )}
+                {codigoValidation.message && !codigoValidation.isChecking && (
+                  <div className={`text-xs ${codigoValidation.isDuplicate ? 'text-red-500' : 'text-green-600'}`}>
+                    {codigoValidation.message}
+                  </div>
+                )}
+                <FormMessage />
+                <div className="text-xs text-muted-foreground">
+                  Crea tu propio código único para referir a otros usuarios
+                </div>
               </FormItem>
             )}
           />

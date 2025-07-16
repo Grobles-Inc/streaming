@@ -150,7 +150,7 @@ export default function SettingsProfile() {
                   <FormMessage />
                 </FormItem>
 
-                <Button type='submit'>Actualizar Perfil</Button>
+                <Button type='submit' disabled>Actualizar Perfil</Button>
               </form>
             </Form>
 

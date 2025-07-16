@@ -43,7 +43,6 @@ export const removeIdFromStockProductos = async (productoId: number): Promise<bo
     })
     .eq('id', productoId)
 
-  console.log(updatedStockProducts)
 
   if (updateError) {
     console.error('Error updating producto:', updateError)

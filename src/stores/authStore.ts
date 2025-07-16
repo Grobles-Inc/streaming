@@ -3,13 +3,14 @@ import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/supabase'
 
 type User = Database['public']['Tables']['usuarios']['Row']
-
+type UserUpdate = Database['public']['Tables']['usuarios']['Update']
 interface AuthState {
   user: User | null
   loading: boolean
   signIn: (usuario: string, password: string) => Promise<{ error: any }>
   signUp: (userData: Omit<User, 'id' | 'created_at' | 'updated_at'>) => Promise<{ error: any }>
   signOut: () => Promise<void>
+  updateUser: (userData: UserUpdate) => Promise<{ error: any }>
   refreshUser: () => Promise<void>
 }
 
@@ -110,6 +111,28 @@ export const useAuthStore = create<AuthState>((set, _get) => ({
     }
   },
 
+  updateUser: async (userData: UserUpdate) => {
+
+    try {
+      const { data, error } = await supabase
+        .from('usuarios')
+        .update(userData)
+        .eq('id', userData.id)
+        .select()
+        .single()
+
+      if (error) {
+        return { error }
+      }
+
+      set({ user: data, loading: false })
+      return { error: null }
+    } catch (err) {
+      set({ loading: false })
+      return { error: err }
+    }
+  },
+
   signOut: async () => {
     set({ loading: true })
     
@@ -157,7 +180,7 @@ export const initializeAuth = async () => {
 
 // Custom hook for easier usage
 export const useAuth = () => {
-  const { user, loading, signIn, signUp, signOut, refreshUser } = useAuthStore()
+  const { user, loading, signIn, signUp, signOut, refreshUser, updateUser } = useAuthStore()
   
   return {
     user,
@@ -171,5 +194,6 @@ export const useAuth = () => {
     isProvider: user?.rol === 'provider',
     isSeller: user?.rol === 'seller',
     isRegistered: user?.rol === 'registered',
+    updateUser,
   }
 }

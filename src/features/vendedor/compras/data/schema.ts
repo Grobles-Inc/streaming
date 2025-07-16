@@ -22,7 +22,7 @@ export const compraSchema = z.object({
   soporte_asunto: z.string().nullable().optional(),
   soporte_respuesta: z.string().nullable().optional(),
   stock_producto_id: z.number().min(1, 'Stock del producto es requerido.'),
-  precio: z.number().min(1, 'Precio es requerido.'),
+  precio: z.number().min(0.1, 'Precio es requerido.'),
   stock_productos: z.object({
     email: z.string().nullable(),
     perfil: z.string().nullable(),
@@ -32,7 +32,7 @@ export const compraSchema = z.object({
   productos: z.object({
     nombre: z.string().min(1, 'Nombre del producto es requerido.'),
     tiempo_uso: z.number().optional(),
-    precio_publico: z.number().min(1, 'Precio es requerido.'),
+    precio_publico: z.number().min(0.1, 'Precio es requerido.'),
     precio_renovacion: z.number().optional(),
     descripcion: z.string().optional(),
     informacion: z.string().optional(),
@@ -42,6 +42,7 @@ export const compraSchema = z.object({
   usuarios: z.object({
     nombres: z.string().min(1, 'Nombres es requerido.'),
     apellidos: z.string().min(1, 'Apellidos es requerido.'),
+    usuario: z.string().min(1, 'Usuario es requerido.'),
     telefono: z.string().min(1, 'Teléfono es requerido.'),
     billetera_id: z.string().nullable().optional(),
   }).optional(),

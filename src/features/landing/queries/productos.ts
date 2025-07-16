@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as productosService from '../services/productos'
 import * as stockProductosService from '../services/stock'
 
@@ -33,8 +33,13 @@ export const useStockProductosIds = (productoId: number) => {
 }
 
 export const useRemoveIdFromStockProductos = () => {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ productoId }: { productoId: number }) => stockProductosService.removeIdFromStockProductos(productoId),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['stock-productos-ids', variables.productoId] })
+      queryClient.invalidateQueries({ queryKey: ['productos'] })
+    },
   })
 }
 

@@ -54,13 +54,10 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
 
   const tasaDeConversion = configuracion?.conversion || 1
   const monto = billetera?.saldo
-  const randomIndex = Math.floor(Math.random() * (stockProductosIds?.length || 0))
-  const stock_producto_id = stockProductosIds?.[randomIndex] || 0
   const fecha_expiracion = new Date(Date.now() + producto.tiempo_uso * 24 * 60 * 60 * 1000).toISOString()
   const precio_producto = user ? producto.precio_vendedor : producto.precio_publico
 
   function onSubmit(data: FormData) {
-
     if (!user?.id) {
       toast.error("Debes iniciar sesión para comprar un producto", { duration: 3000 })
       return
@@ -85,7 +82,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       monto_reembolso: producto.precio_vendedor,
       telefono_cliente: data.telefono_cliente.replace(/\s/g, ''),
       fecha_inicio: producto.disponibilidad === 'a_pedido' || producto.disponibilidad === 'activacion' ? null : new Date().toISOString(),
-      stock_producto_id: stock_producto_id,
+      stock_producto_id: stockProductosIds?.[0] || 0,
       fecha_expiracion: producto.disponibilidad === 'a_pedido' || producto.disponibilidad === 'activacion' ? null : fecha_expiracion,
     })
     actualizarSaldo(
@@ -96,7 +93,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
             { productoId: producto.id },
             {
               onSuccess: () => {
-                updateStockProductoStatusVendido({ id: stock_producto_id })
+                updateStockProductoStatusVendido({ id: stockProductosIds?.[0] || 0 })
                 updateProveedorBilletera({ idBilletera: producto.usuarios.billetera_id, precioProducto: producto?.precio_vendedor })
                 navigate({ to: '/compras' })
               }

@@ -42,7 +42,6 @@ import {
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
-  IconSearch,
   IconCheck,
   IconX,
   IconClock,
@@ -297,10 +296,7 @@ export function ComprasTable({
 
       {/* Scroll horizontal superior mejorado */}
       <div className="relative mb-4">
-        <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
-          <IconSearch className="h-3 w-3" />
-          <span>Scroll horizontal para navegar entre columnas</span>
-        </div>
+        
         <div 
           ref={topScrollRef}
           className="overflow-x-auto border rounded-md bg-muted/30 h-4 hover:bg-muted/50 transition-colors cursor-pointer"
@@ -315,17 +311,7 @@ export function ComprasTable({
       {/* Barra de herramientas */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <div className="relative">
-            <IconSearch className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por cliente..."
-              value={(finalTable.getColumn('nombreCliente')?.getFilterValue() as string) ?? ''}
-              onChange={(event) =>
-                finalTable.getColumn('nombreCliente')?.setFilterValue(event.target.value)
-              }
-              className="pl-8 max-w-sm"
-            />
-          </div>
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="ml-auto">

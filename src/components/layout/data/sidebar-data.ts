@@ -1,16 +1,18 @@
 import {
-  IconCash,
+  IconAdjustments,
+  IconArrowBigDownLines,
+  IconArrowBigUpLines,
+  IconArtboard,
+  IconBuildingStore,
   IconChartBar,
-  IconClipboardList,
-  IconCoins,
-  IconCreditCard,
-  IconFlag,
-  IconHome,
   IconLayoutDashboard,
-  IconPackage,
-  IconSettings,
+  IconPackages,
   IconShoppingCart,
+  IconStack3,
+  IconStackPop,
+  IconTags,
   IconUsers,
+  IconVersions,
   IconWallet
 } from '@tabler/icons-react'
 import { type SidebarData, type UserRole } from '../types'
@@ -80,7 +82,7 @@ const baseNavGroups = [
       {
         title: 'Ir a la Tienda',
         url: '/',
-        icon: IconHome,
+        icon: IconBuildingStore,
         roles: ['admin', 'registered', 'seller', 'provider'],
       }
     ]
@@ -104,7 +106,7 @@ const baseNavGroups = [
       {
         title: 'Dashboard',
         url: '/dashboard',
-        icon: IconLayoutDashboard,
+        icon: IconArtboard,
         roles: ['seller'],
       },        
       {
@@ -116,7 +118,7 @@ const baseNavGroups = [
         {
           title: 'Recargas',
           url: '/recargas',
-          icon: IconCreditCard,
+          icon: IconArrowBigUpLines,
           roles: ['seller'],
         }
         
@@ -129,19 +131,19 @@ const baseNavGroups = [
       {
         title: 'Productos',
         url: '/proveedor/productos',
-        icon: IconPackage,
+        icon: IconPackages,
         roles: ['provider'],
       },
       {
         title: 'Stock',
         url: '/proveedor/stock',
-        icon: IconPackage,
+        icon: IconStack3,
         roles: ['provider'],
       },
       {
         title: 'Pedidos',
         url: '/proveedor/pedidos',
-        icon: IconClipboardList,
+        icon: IconStackPop,
         roles: ['provider'],
       },
       {
@@ -155,78 +157,87 @@ const baseNavGroups = [
   {
     title: 'Administración',
     roles: ['admin'],
-    items: [
+    items: [{
+        title: 'Recargas',
+        url: '/admin/recargas',
+        icon: IconArrowBigUpLines,
+        roles: ['admin'],
+      },
       {
-        title: 'Gestión de Usuarios',
+        title: 'Retiros',
+        url: '/admin/retiros',
+        icon: IconArrowBigDownLines,
+        roles: ['admin'],
+      },
+      {
+        title: 'Usuarios',
         url: '/admin/users',
         icon: IconUsers,
         roles: ['admin'],
       },
+      
       {
-        title: 'Categorías y Productos',
-        url: '/admin/categories',
-        icon: IconFlag,
-        roles: ['admin'],
-      },
-      {
-        title: 'Gestión de Productos',
+        title: 'Productos',
         url: '/admin/productos',
-        icon: IconPackage,
+        icon: IconPackages,
         roles: ['admin'],
       },
       {
-        title: 'Gestión de Compras',
+        title: 'Compras',
         url: '/admin/compras',
         icon: IconShoppingCart,
         roles: ['admin'],
       },
       {
-        title: 'Gestión de Billeteras',
+        title: 'Billeteras',
         url: '/admin/billeteras',
-        icon: IconWallet,
+        icon: IconVersions,
+        roles: ['admin'],
+      }
+      
+      
+      
+    ],
+  },
+  {
+    title: 'Web',
+    roles: ['admin'],
+    items: [
+      {
+        title: 'Categorías ',
+        url: '/admin/categories',
+        icon: IconTags,
         roles: ['admin'],
       },
-      {
-        title: 'Billetera de la Web',
+     {
+        title: 'Billetera',
         url: '/admin/mi-billetera',
         icon: IconWallet,
         roles: ['admin'],
       },
       {
-        title: 'Gestión de Recargas',
-        url: '/admin/recargas',
-        icon: IconCash,
-        roles: ['admin'],
-      },
-      {
-        title: 'Gestión de Retiros',
-        url: '/admin/retiros',
-        icon: IconCoins,
-        roles: ['admin'],
-      },
-      {
-        title: 'Configuración del Sistema',
+        title: 'Configuración',
         url: '/admin/settings',
-        icon: IconSettings,
+        icon: IconAdjustments,
         roles: ['admin'],
       },
       {
-        title: 'Reportes Globales',
+        title: 'Reportes',
         url: '/admin/reportes-globales',
         icon: IconChartBar,
         roles: ['admin'],
       },
-    ],
+    ]
   },
   {
     title: 'Referidos',
-    roles: ['admin', 'registered', 'seller', 'provider'],
+    roles: ['seller', 'provider'],
     items: [
       {
         title: 'Mis Referidos',
         url: '/referidos',
         icon: IconUsers,
-        roles: ['admin', 'registered', 'seller', 'provider'],
+        roles: ['seller', 'provider'],
       }
     ]
   },

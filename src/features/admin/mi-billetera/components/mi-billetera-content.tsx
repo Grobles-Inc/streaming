@@ -1,25 +1,24 @@
-import { useState } from 'react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { 
-  IconPlus, 
-  IconWallet, 
-  IconTrendingDown, 
-  IconMenu2, 
-  IconCheck, 
-  IconX, 
-  IconLoader2,
-  IconPackage,
-  IconCoin,
-  IconRefresh
-} from '@tabler/icons-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuthStore } from '@/stores/authStore'
+import {
+  IconCheck,
+  IconCoin,
+  IconLoader2,
+  IconMenu2,
+  IconPackage,
+  IconPlus,
+  IconRefresh,
+  IconWallet,
+  IconX
+} from '@tabler/icons-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { useMiBilletera } from '../hooks/use-mi-billetera'
 
@@ -29,7 +28,7 @@ interface MiBilleteraContentProps {
 
 export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
   const { user } = useAuthStore()
-  
+
   // Usar el hook personalizado que replica el patrón de retiros
   const {
     billetera,
@@ -43,7 +42,7 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
     updateRetiroEstado,
     refresh
   } = useMiBilletera(user?.id)
-  
+
   // Estados para formularios
   const [retiroForm, setRetiroForm] = useState({ monto: '' })
   const [showRetiroModal, setShowRetiroModal] = useState(false)
@@ -55,7 +54,6 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
     try {
       setCreating(true)
       await createRetiro(parseFloat(retiroForm.monto))
-      
       setRetiroForm({ monto: '' })
       setShowRetiroModal(false)
       toast.success('Retiro creado exitosamente')
@@ -184,9 +182,8 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
                 <div className="flex gap-2">
                   <Dialog open={showRetiroModal} onOpenChange={setShowRetiroModal}>
                     <DialogTrigger asChild>
-                      <Button variant="outline" className="flex items-center gap-2">
-                        <IconTrendingDown className="h-4 w-4" />
-                        Nuevo Retiro
+                      <Button className="flex items-center gap-2" disabled={billetera?.saldo === 0 || user?.nombres !== 'Super Admin'}>
+                        Retirar Fondos
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
@@ -220,7 +217,7 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
                         <Button variant="outline" onClick={() => setShowRetiroModal(false)}>
                           Cancelar
                         </Button>
-                        <Button 
+                        <Button
                           onClick={handleCreateRetiro}
                           disabled={creating || !retiroForm.monto || parseFloat(retiroForm.monto) > (billetera?.saldo || 0)}
                         >
@@ -372,7 +369,7 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
               <p className="text-sm text-muted-foreground mb-4">
                 Tasa de conversión actual: S/. {conversion.toFixed(2)} por USD
               </p>
-              
+
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <div className="flex items-center gap-2">
@@ -417,7 +414,7 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
                       <th className="px-4 py-3 font-medium">Producto</th>
                       <th className="px-4 py-3 font-medium">Proveedor</th>
                       <th className="px-4 py-3 font-medium">Precio</th>
-                      
+
                       <th className="px-4 py-3 font-medium">Total USD</th>
                       <th className="px-4 py-3 font-medium">Total PEN</th>
                       <th className="px-4 py-3 font-medium">Fecha</th>
@@ -438,7 +435,7 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
                             {comision.proveedor.nombres} {comision.proveedor.apellidos}
                             <div className="text-xs text-muted-foreground">@{comision.proveedor.usuario}</div>
                           </td>
-                          <td className="px-4 py-3">{formatCurrency(comision.producto.precio_publico)}</td> 
+                          <td className="px-4 py-3">{formatCurrency(comision.producto.precio_publico)}</td>
                           <td className="px-4 py-3 font-semibold text-green-600">
                             {formatCurrency(comision.monto_comision)}
                           </td>

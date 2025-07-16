@@ -16,6 +16,9 @@ export default function Home() {
   const filteredProductos = productos?.data.filter((producto) =>
     producto.nombre.toLowerCase().includes(searchInput.toLowerCase())
   )
+  const filteredCategorias = categorias?.filter((categoria) =>
+    categoria.nombre.toLowerCase().includes(searchInput.toLowerCase())
+  )
   return (
     <div className="min-h-screen bg-base-100 max-w-[1500px] mx-auto">
       <LandingHeader />
@@ -38,15 +41,34 @@ export default function Home() {
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
       )}
-      {searchInput && (
+      {searchInput ? (
         <div className="md:px-8 px-4 pb-12 pt-4">
           <h2 className="text-2xl font-bold mb-4">Resultados de la búsqueda</h2>
-          {filteredProductos && filteredProductos.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-5 md:gap-6 gap-4">
-              {filteredProductos.map((producto) => (
-                <ProductoCard key={producto.id} producto={producto} />
-              ))}
-            </div>
+          {(filteredCategorias && filteredCategorias.length > 0) || (filteredProductos && filteredProductos.length > 0) ? (
+            <>
+              {filteredCategorias && filteredCategorias.length > 0 && (
+                <>
+                  <h3 className="text-xl font-semibold mb-2">Categorías</h3>
+                  <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 md:gap-4 gap-y-2 items-center justify-center place-items-center mb-8">
+                    {filteredCategorias.map((categoria: Categoria) => (
+                      <Link key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
+                        <CategoriaCard categoria={categoria as Categoria} />
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              )}
+              {filteredProductos && filteredProductos.length > 0 && (
+                <>
+                  <h3 className="text-xl font-semibold mb-2">Productos</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-5 md:gap-6 gap-4">
+                    {filteredProductos.map((producto) => (
+                      <ProductoCard key={producto.id} producto={producto} />
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
           ) : (
             <div className="col-span-full text-center py-8 text-muted-foreground">
               <div className="flex flex-col items-center justify-center gap-2">
@@ -57,52 +79,51 @@ export default function Home() {
                   </svg>
                   Sin resultados
                 </span>
-                <span className="text-base text-muted-foreground">No encontramos productos que coincidan con tu búsqueda.</span>
+                <span className="text-base text-muted-foreground">No encontramos categorías ni productos que coincidan con tu búsqueda.</span>
               </div>
             </div>
           )}
         </div>
-      )}
+      ) : (
+        <>
+          <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 md:gap-4 gap-y-2 items-center justify-center place-items-center">
+            {loadingCategorias ? (
+              // Skeleton loading para categorías
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="size-[100px] md:size-48 bg-muted animate-pulse rounded-lg" />
+              ))
+            ) : (
+              categorias && categorias.map((categoria: Categoria) => (
+                <Link key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
+                  <CategoriaCard categoria={categoria as Categoria} />
+                </Link>
+              ))
+            )}
+          </div>
 
 
-
-
-      <div className="grid grid-cols-4 lg:grid-cols-7  md:gap-4 gap-2 md:p-4 ">
-        {loadingCategorias ? (
-          // Skeleton loading para categorías
-          Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="size-[100px] md:size-48 bg-muted animate-pulse rounded-lg" />
-          ))
-        ) : (
-          categorias && categorias.map((categoria: Categoria) => (
-            <Link key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
-              <CategoriaCard categoria={categoria as Categoria} />
-            </Link>
-          ))
-        )}
-      </div>
-
-
-      {/* Lista de productos */}
-      <div className="md:px-8 px-4 pt-12 pb-12">
-        <h2 className="text-2xl font-bold mb-4">Todos los productos</h2>
-        <div className="grid grid-cols-2 md:grid-cols-6 lg:grid-cols-6 md:gap-6 gap-4">
-          {loadingProductos ? (
-            // Skeleton loading para productos
-            Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="w-full bg-muted animate-pulse rounded-lg h-64" />
-            ))
-          ) : productos?.data && productos.data.length > 0 ? (
-            productos.data.map((producto) => (
-              <ProductoCard key={producto.id} producto={producto} />
-            ))
-          ) : (
-            <div className="col-span-full text-center py-8 text-muted-foreground">
-              No hay productos disponibles
+          {/* Lista de productos */}
+          <div className="md:px-8 px-4 pt-12 pb-12">
+            <h2 className="text-2xl font-bold mb-4">Todos los productos</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 md:gap-6 gap-4">
+              {loadingProductos ? (
+                // Skeleton loading para productos
+                Array.from({ length: 12 }).map((_, i) => (
+                  <div key={i} className="w-full bg-muted animate-pulse rounded-lg h-64" />
+                ))
+              ) : productos?.data && productos.data.length > 0 ? (
+                productos.data.map((producto) => (
+                  <ProductoCard key={producto.id} producto={producto} />
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8 text-muted-foreground">
+                  No hay productos disponibles
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
+          </div>
+        </>
+      )}
       <footer className="text-center text-sm text-muted-foreground my-6 p-6 border-t bg-background">
         <p>
           © {new Date().getFullYear()} <strong>ML Streaming</strong> . Todos los derechos reservados.

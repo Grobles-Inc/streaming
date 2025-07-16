@@ -47,7 +47,7 @@ export default function SettingsProfile() {
     <>
       {/* ===== Top Heading ===== */}
       <Header>
-        
+
         <div className='ml-auto flex items-center space-x-4'>
           <ThemeSwitch />
           <ProfileDropdown />
@@ -141,19 +141,14 @@ export default function SettingsProfile() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="codigo_referido"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Código Referido</FormLabel>
-                      <FormControl>
-                        <Input disabled value={user?.codigo_referido} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
+                <FormItem>
+                  <FormLabel>Código Referido</FormLabel>
+                  <FormControl>
+                    <Input disabled value={user?.codigo_referido} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
 
                 <Button type='submit'>Actualizar Perfil</Button>
               </form>

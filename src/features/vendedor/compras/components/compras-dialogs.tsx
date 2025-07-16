@@ -1,20 +1,16 @@
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { useCompras } from '../context/compras-context'
 import { useReciclarCompra } from '../queries'
-import { ComprasImportDialog } from './compras-import-dialog'
 import ComprasProductoDialog from './compras-producto-dialog'
 import { ComprasSoporteModal } from './compras-soporte-modal'
+import { ComprasActivacionModal } from './compras-activacion-modal'
 
 export function ComprasDialogs() {
   const { open, setOpen, currentRow, setCurrentRow } = useCompras()
   const { mutate: reciclarCompra, isPending } = useReciclarCompra()
   return (
     <>
-      <ComprasImportDialog
-        key='compras-import'
-        open={open === 'import'}
-        onOpenChange={() => setOpen('import')}
-      />
+
       {currentRow && (
         <>
           <ComprasSoporteModal
@@ -27,6 +23,12 @@ export function ComprasDialogs() {
                 setCurrentRow(null)
               }, 500)
             }}
+          />
+          <ComprasActivacionModal
+            key='compras-activacion'
+            open={open === 'activacion'}
+            onOpenChange={() => setOpen('activacion')}
+            currentRow={currentRow}
           />
           <ComprasProductoDialog
             key={`compras-producto-${currentRow.id}`}

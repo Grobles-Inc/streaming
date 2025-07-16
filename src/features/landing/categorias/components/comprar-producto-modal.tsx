@@ -193,9 +193,9 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
                 name="nombre_cliente"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombres y Apellidos</FormLabel>
+                    <FormLabel>Nombre</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ingresa tu nombre completo" {...field} />
+                      <Input placeholder="Ingresa nombre" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

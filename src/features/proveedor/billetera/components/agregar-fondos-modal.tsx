@@ -64,24 +64,25 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
     }
 
     try {
-      // Calcular el monto en dólares que se agregará a la billetera
       const montoEnDolares = parseFloat((data.cantidad / tasaConversion).toFixed(2))
 
       await crearRecarga({
-        monto: montoEnDolares, // Guardar el valor en dólares
+        monto: montoEnDolares,
         usuario_id: user.id,
         estado: 'pendiente'
       })
       form.reset()
       onOpenChange(false)
-      onSubmit() // Esto disparará la refetch de los datos
-
-      // Enviar mensaje de WhatsApp inmediatamente
-      RecargaMessage({
-        usuario: user?.usuario || '',
-        monto: data.cantidad, // En el mensaje se muestra el monto en soles
-        id_cliente: user?.id || '',
-      }, '51913190401', isMobile ? 'mobile' : 'web')
+      onSubmit()
+      const audio = new Audio('/src/assets/sound/yape.mp3')
+      audio.play()
+      setTimeout(() => {
+        RecargaMessage({
+          usuario: user?.usuario || '',
+          monto: data.cantidad,
+          id_cliente: user?.id || '',
+        }, '51913190401', isMobile ? 'mobile' : 'web')
+      }, 3000)
     } catch (error) {
       console.error('Error:', error)
     }

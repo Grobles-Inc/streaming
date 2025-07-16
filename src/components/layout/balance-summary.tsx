@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react'
-import { IconTrendingUp, IconTrendingDown, IconWallet } from '@tabler/icons-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase'
+import { useEffect, useState } from 'react'
 
 type BalanceData = {
   totalGanado: number
@@ -96,105 +94,34 @@ export function BalanceSummary() {
     }).format(amount)
   }
 
-  const formatCurrencyUSD = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(amount)
-  }
+
 
   return (
-    <>
-      {/* Versión completa - se oculta cuando el sidebar está colapsado */}
-      <Card className="w-full bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200 group-data-[collapsible=icon]:hidden">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-blue-900 flex items-center gap-2">
-            
-            <span>Contabilidad</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {balanceData.loading ? (
-            <div className="flex items-center justify-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+
+    <Card className=" group-data-[collapsible=icon]:hidden bg-lime-400 text-black m-2 rounded-md">
+
+      <CardContent>
+        {balanceData.loading ? (
+          <div className="text-center py-8">Cargando...</div>
+        ) : (
+          <div>
+
+            <span className="text-sm">Contabilidad</span>
+            <div className="text-2xl font-bold">{formatCurrency(balanceData.balanceTotal)}</div>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs  ">Recargas</span>
+                <div className="text-sm font-medium">{formatCurrency(balanceData.totalGanado)}</div>
+              </div>
+              <div>
+                <span className="text-xs  ">Retiros</span>
+                <div className="text-sm font-medium">{formatCurrency(balanceData.totalPerdido)}</div>
+              </div>
             </div>
-          ) : (
-            <>
-              {/* Total Recargas */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <IconTrendingUp size={14} className="text-green-600" />
-                    <span className="text-xs text-gray-700">Recargas</span>
-                  </div>
-                  <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50">
-                    {formatCurrencyUSD(balanceData.totalGanadoUSD)}
-                  </Badge>
-                </div>
-                <div className="flex justify-end">
-                  <span className="text-xs text-gray-500">
-                    {formatCurrency(balanceData.totalGanado)}
-                  </span>
-                </div>
-              </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
 
-              {/* Total Retiros */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <IconTrendingDown size={14} className="text-red-600" />
-                    <span className="text-xs text-gray-700">Retiros</span>
-                  </div>
-                  <Badge variant="outline" className="text-red-700 border-red-300 bg-red-50">
-                    {formatCurrencyUSD(balanceData.totalPerdidoUSD)}
-                  </Badge>
-                </div>
-                <div className="flex justify-end">
-                  <span className="text-xs text-gray-500">
-                    {formatCurrency(balanceData.totalPerdido)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Separador */}
-              <hr className="border-blue-200" />
-
-              {/* Balance Total */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <IconWallet size={14} className="text-blue-600" />
-                    <span className="text-xs font-medium text-gray-800">Balance</span>
-                  </div>
-                  <Badge 
-                    variant={balanceData.balanceTotalUSD >= 0 ? "default" : "destructive"}
-                    className={
-                      balanceData.balanceTotalUSD >= 0 
-                        ? "bg-blue-600 text-white" 
-                        : "bg-red-600 text-white"
-                    }
-                  >
-                    {formatCurrencyUSD(balanceData.balanceTotalUSD)}
-                  </Badge>
-                </div>
-                <div className="flex justify-end">
-                  <span className="text-xs text-gray-500">
-                    {formatCurrency(balanceData.balanceTotal)}
-                  </span>
-                </div>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Versión compacta - se muestra cuando el sidebar está colapsado */}
-      <div className="hidden group-data-[collapsible=icon]:flex justify-center">
-        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-          <IconWallet size={16} className="text-blue-600" />
-        </div>
-      </div>
-    </>
   )
 }

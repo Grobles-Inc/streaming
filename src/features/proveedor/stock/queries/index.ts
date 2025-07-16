@@ -26,7 +26,7 @@ export const useStockProductosByProveedor = (proveedorId: string) => {
           )
         `)
         .eq('proveedor_id', proveedorId)
-        .order('created_at', { ascending: false })
+        .order('id', { ascending: true })
 
       if (error) {
         console.error('Error al obtener stock del proveedor:', error)

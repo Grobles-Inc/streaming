@@ -87,11 +87,6 @@ const MontoCell = ({ transaccion }: { transaccion: TransaccionCompleta }) => {
       <div className='text-muted-foreground text-sm'>
         Equivale a {formattedSoles}
       </div>
-      {transaccion.tipo === 'compra' && transaccion.nombre_cliente && (
-        <div className='text-muted-foreground text-xs'>
-          Cliente: {transaccion.nombre_cliente}
-        </div>
-      )}
     </div>
   )
 }

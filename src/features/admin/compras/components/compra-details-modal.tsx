@@ -58,7 +58,7 @@ export function CompraDetailsModal({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
-            <IconShoppingCart className="h-5 w-5" />
+            
             Detalles de Compra
             <Badge variant={badge.variant} className={badge.className}>
               {badge.label}
@@ -68,27 +68,7 @@ export function CompraDetailsModal({
 
         <div className="space-y-6">
           {/* Información del Cliente */}
-          <div>
-            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
-              <IconUser className="h-4 w-4" />
-              Cliente
-            </h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Nombre:</span>
-                <span className="font-medium">{compra.nombreCliente}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Teléfono:</span>
-                <div className="flex items-center gap-2">
-                  <IconPhone className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-mono">{compra.telefonoCliente}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
+          
 
           {/* Información del Producto */}
           <div>
@@ -110,40 +90,7 @@ export function CompraDetailsModal({
 
           <Separator />
 
-          {/* Información de Acceso */}
-          <div>
-            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
-              <IconKey className="h-4 w-4" />
-              Credenciales de Acceso
-            </h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Email:</span>
-                <div className="flex items-center gap-2">
-                  <IconMail className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-mono">{compra.emailCuenta}</span>
-                </div>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Contraseña:</span>
-                <span className="font-mono bg-muted px-2 py-1 rounded text-sm">{compra.claveCuenta}</span>
-              </div>
-              {compra.pinCuenta && (
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">PIN:</span>
-                  <span className="font-mono bg-muted px-2 py-1 rounded text-sm">{compra.pinCuenta}</span>
-                </div>
-              )}
-              {compra.perfilUsuario && (
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Perfil:</span>
-                  <span className="font-medium">{compra.perfilUsuario}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <Separator />
+          
 
           {/* Información de Usuarios */}
           <div>

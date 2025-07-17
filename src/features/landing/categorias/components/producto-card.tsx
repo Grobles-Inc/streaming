@@ -168,7 +168,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
 
             {/* Stock y precios */}
             <div className="flex flex-col md:flex-row justify-between md:items-center w-full ">
-              <Badge className='hidden md:block'>Stock: {producto.stock_de_productos.length} </Badge>
+              <Badge>Stock: {producto.stock_de_productos.length} </Badge>
 
               <div className='flex md:flex-col flex-row-reverse justify-between md:justify-start items-center'>
                 <span className="font-bold md:text-xl text-foreground">${precio_producto.toFixed(2)}</span><span className="text-xs text-muted-foreground">S/.{(precio_producto * (configuracion?.conversion ?? 1)).toFixed(2)}</span>

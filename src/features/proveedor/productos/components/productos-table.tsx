@@ -42,7 +42,7 @@ export function ProductosTable({ columns, data }: ProductosTableProps) {
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [sorting, setSorting] = useState<SortingState>([{ id: 'id', desc: false }])
+  const [sorting, setSorting] = useState<SortingState>([])
 
   const table = useReactTable({
     data,

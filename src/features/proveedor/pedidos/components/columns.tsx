@@ -58,7 +58,7 @@ export const columns: ColumnDef<Pedido>[] = [
       const id = row.getValue('id') as string
       return id.toString().includes(value)
     },
-    enableHiding: false,
+    enableSorting: false,
   },
   {
     accessorKey: 'producto_nombre',

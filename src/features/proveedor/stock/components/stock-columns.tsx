@@ -68,6 +68,7 @@ export const createStockColumns = (
         </div>
       )
     },
+    enableSorting: false,
     enableHiding: false,
   },
   {

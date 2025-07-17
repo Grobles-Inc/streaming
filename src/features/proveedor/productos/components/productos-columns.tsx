@@ -78,6 +78,7 @@ export const columns: ColumnDef<Producto>[] = [
         'md:sticky md:left-6 md:table-cell'
       ),
     },
+    enableSorting: false,
     enableHiding: false,
   },
   {

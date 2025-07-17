@@ -24,7 +24,7 @@ export const getComprasByProveedorId = async (proveedorId: string): Promise<Comp
       stock_productos:stock_producto_id (id, email, clave, pin, perfil, url, soporte_stock_producto)
     `)
     .eq('proveedor_id', proveedorId)
-    .order('id', { ascending: true })
+    .order('created_at', { ascending: false })
 
   if (error) {
     console.error('Error fetching compras by proveedor:', error)
@@ -107,7 +107,7 @@ export const getComprasPaginatedByProveedor = async (
     `, { count: 'exact' })
     .eq('proveedor_id', proveedorId)
     .range(from, to)
-    .order('id', { ascending: true })
+    .order('created_at', { ascending: false })
 
   if (error) {
     console.error('Error fetching paginated compras:', error)

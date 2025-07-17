@@ -624,7 +624,7 @@ export const getStockProductosByProductoId = async (productoId: number) => {
     .from('stock_productos')
     .select('*')
     .eq('producto_id', productoId)
-    .order('id', { ascending: true })
+    .order('created_at', { ascending: false })
 
   if (error) {
     console.error('Error fetching stock productos:', error)

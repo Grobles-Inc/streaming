@@ -85,9 +85,9 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       precio: producto.precio_vendedor,
       monto_reembolso: producto.precio_vendedor,
       telefono_cliente: data.telefono_cliente.replace(/\s/g, ''),
-      fecha_inicio: producto.disponibilidad === 'a_pedido' || producto.disponibilidad === 'activacion' ? null : new Date().toISOString(),
+      fecha_inicio: new Date().toISOString(),
       stock_producto_id: stockProductosIds?.[0],
-      fecha_expiracion: producto.disponibilidad === 'a_pedido' || producto.disponibilidad === 'activacion' ? null : fecha_expiracion,
+      fecha_expiracion: fecha_expiracion,
     })
     actualizarSaldo(
       { id: billetera?.id, nuevoSaldo: monto - producto?.precio_vendedor },

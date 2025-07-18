@@ -17,3 +17,22 @@ export function useIsMobile() {
 
   return !!isMobile
 }
+
+// Nueva función para detectar dispositivos móviles reales
+export function useIsRealMobile() {
+  const [isRealMobile, setIsRealMobile] = React.useState<boolean>(false)
+
+  React.useEffect(() => {
+    const checkMobileDevice = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera
+      
+      // Detectar dispositivos móviles reales usando User Agent
+      const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i
+      return mobileRegex.test(userAgent.toLowerCase())
+    }
+
+    setIsRealMobile(checkMobileDevice())
+  }, [])
+
+  return isRealMobile
+}

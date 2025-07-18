@@ -22,7 +22,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { agregarFondosSchema, type AgregarFondos } from '../data/schema'
 import { useAuth } from '@/stores/authStore'
-import { useIsMobile } from '@/hooks/use-mobile'
+import { useIsRealMobile } from '@/hooks/use-mobile'
 import { RecargaMessage } from '@/lib/whatsapp'
 import { useCreateRecarga } from '@/features/vendedor/recargas/queries'
 import { useConfiguracionSistema } from '@/features/proveedor/productos/queries'
@@ -36,7 +36,7 @@ interface AgregarFondosModalProps {
 }
 
 export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFondosModalProps) {
-  const isMobile = useIsMobile()
+  const isRealMobile = useIsRealMobile()
   const { user } = useAuth()
   const { mutate: crearRecarga, isPending } = useCreateRecarga()
 
@@ -81,7 +81,7 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
           usuario: user?.usuario || '',
           monto: data.cantidad,
           id_cliente: user?.id || '',
-        }, '51913190401', isMobile ? 'mobile' : 'web')
+        }, '51913190401', isRealMobile ? 'mobile' : 'web')
       }, 3000)
     } catch (error) {
       console.error('Error:', error)

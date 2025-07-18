@@ -10,7 +10,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { useCreateCompra, useUpdateBilleteraProveedorSaldo } from '../../queries/compra'
-import { useStockProductosIds, useUpdateStockProductoStatusVendido } from '../../queries/productos'
+import { useRemoveStockIdFromProducto, useStockProductosIds, useUpdateStockProductoStatusVendido } from '../../queries/productos'
 import { Producto } from '../../services'
 import { PhoneInput } from './phone-input'
 import { useConfiguracionSistema } from '../../queries'
@@ -40,6 +40,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
   const { data: stockProductosIds } = useStockProductosIds(productoId)
   const { mutate: updateProveedorBilletera } = useUpdateBilleteraProveedorSaldo()
   const { mutate: updateStockProductoStatusVendido } = useUpdateStockProductoStatusVendido()
+  const { mutate: removeStockIdFromProducto } = useRemoveStockIdFromProducto()
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -94,8 +95,12 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
         onSuccess: () => {
           updateStockProductoStatusVendido({ id: stockProductosIds?.[0], productoId: productoId }, {
             onSuccess: () => {
-              updateProveedorBilletera({ idBilletera: producto.usuarios.billetera_id, precioProducto: producto?.precio_vendedor })
-              navigate({ to: '/compras' })
+              updateProveedorBilletera({ idBilletera: producto.usuarios.billetera_id, precioProducto: producto?.precio_vendedor }, {
+                onSuccess: () => {
+                  removeStockIdFromProducto({ productoId: productoId, stockProductoId: stockProductosIds?.[0] })
+                  navigate({ to: '/compras' })
+                }
+              })
             }
           })
         }

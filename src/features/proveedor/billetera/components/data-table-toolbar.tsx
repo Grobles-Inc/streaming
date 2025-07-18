@@ -21,6 +21,10 @@ const tiposTransaccion = [
     value: 'compra',
     label: 'Venta',
   },
+  {
+    value: 'gasto_publicacion',
+    label: 'Publicación',
+  }
 ]
 
 

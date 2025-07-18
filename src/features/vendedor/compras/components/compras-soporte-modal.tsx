@@ -1,10 +1,12 @@
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Textarea } from '@/components/ui/textarea'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { SoporteMessage } from '@/lib/whatsapp'
+import { useAuth } from '@/stores/authStore'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { IconCheck } from '@tabler/icons-react'
 import { Loader2 } from 'lucide-react'
@@ -12,17 +14,13 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Compra } from '../data/schema'
 import { useUpdateCompraStatus, useUpdateStockProductoStatus } from '../queries'
-import { Input } from '@/components/ui/input'
-import { useAuth } from '@/stores/authStore'
 
 const subjectOptions = [
   { value: 'correo', label: 'Correo' },
   { value: 'clave', label: 'Clave' },
   { value: 'pago', label: 'Pago' },
   { value: 'reembolso', label: 'Reembolso' },
-  { value: 'geo', label: 'Geo' },
-  { value: 'codigo', label: 'Código' },
-  { value: 'otros', label: 'Otros' },
+  { value: 'activacion', label: 'Activación' },
 ]
 
 const formSchema = z.object({
@@ -61,15 +59,31 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
   async function onSubmit(data: FormData) {
     try {
       onOpenChange(false)
-      if (!currentRow.id) return
-      await updateCompraStatus({
-        id: currentRow.id,
-        status: "soporte",
-        message: data.subject === 'reembolso' ? data.message + `\n\nMonto a reembolsar: $ ${(monto_reembolso <= 0 ? 0 : monto_reembolso).toFixed(2)} USD ` : data.message,
-        subject: data.subject,
-      })
+      if (!currentRow.id || !currentRow.stock_producto_id) return
+      if (data.subject === 'activacion') {
+        await updateCompraStatus({
+          id: currentRow.id,
+          status: 'pedido',
+          message: data.message,
+          subject: 'activacion',
+        })
+      } else if (data.subject === 'reembolso') {
+        await updateCompraStatus({
+          id: currentRow.id,
+          status: 'soporte',
+          message: data.message + `\n\nMonto a reembolsar: $ ${(monto_reembolso <= 0 ? 0 : monto_reembolso).toFixed(2)} USD `,
+          subject: 'reembolso',
+        })
+      } else {
+        await updateCompraStatus({
+          id: currentRow.id,
+          status: 'soporte',
+          message: data.message,
+          subject: data.subject,
+        })
+      }
       updateStockProductoStatus({
-        id: currentRow.stock_producto_id || 0,
+        id: currentRow.stock_producto_id,
       })
       form.reset()
       setTimeout(() => {
@@ -77,8 +91,7 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
           usuario: user?.usuario || '',
           asunto: data.subject,
           mensaje: data.message,
-          id_producto: currentRow.producto_id,
-          id_cliente: currentRow.vendedor_id || '',
+          id_compra: currentRow.id || 0,
         }, currentRow.usuarios?.telefono || '', isMobile ? 'mobile' : 'web')
       }, 3000)
     } catch (error) {
@@ -121,13 +134,13 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="subject"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className='mb-2 text-muted-foreground'>Asunto</FormLabel>
+                  <FormLabel>Asunto</FormLabel>
                   <FormControl>
                     <RadioGroup
                       value={field.value}
@@ -153,7 +166,7 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
                   name="message"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className='mb-2 text-muted-foreground'>Monto a Reembolsar</FormLabel>
+                      <FormLabel>Monto a Reembolsar</FormLabel>
                       <FormControl>
                         <Input
                           disabled
@@ -173,11 +186,12 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
               name="message"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel>Mensaje</FormLabel>
                   <FormControl>
                     <Textarea
                       disabled={!!currentRow.soporte_mensaje}
                       placeholder="Describe tu problema para que el proveedor pueda ayudarte..."
-                      className="min-h-[100px]"
+                      className="min-h-[50px]"
                       {...field}
                     />
                   </FormControl>
@@ -193,12 +207,12 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
                   name="response"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className='mb-2 text-muted-foreground'>Respuesta por el Proveedor</FormLabel>
+                      <FormLabel>Respuesta</FormLabel>
                       <FormControl>
                         <Textarea
                           disabled
                           placeholder="Escribe la respuesta del soporte"
-                          className="min-h-[100px]"
+                          className="min-h-[50px]"
                           {...field}
                         />
                       </FormControl>

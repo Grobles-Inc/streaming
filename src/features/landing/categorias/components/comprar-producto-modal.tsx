@@ -10,7 +10,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { useCreateCompra, useUpdateBilleteraProveedorSaldo } from '../../queries/compra'
-import { useRemoveIdFromStockProductos, useStockProductosIds, useUpdateStockProductoStatusVendido } from '../../queries/productos'
+import { useStockProductosIds, useUpdateStockProductoStatusVendido } from '../../queries/productos'
 import { Producto } from '../../services'
 import { PhoneInput } from './phone-input'
 import { useConfiguracionSistema } from '../../queries'
@@ -39,7 +39,6 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
   const { data: configuracion } = useConfiguracionSistema()
   const { data: stockProductosIds } = useStockProductosIds(productoId)
   const { mutate: updateProveedorBilletera } = useUpdateBilleteraProveedorSaldo()
-  const { mutate: removeIdFromStockProductos } = useRemoveIdFromStockProductos()
   const { mutate: updateStockProductoStatusVendido } = useUpdateStockProductoStatusVendido()
 
   const form = useForm<FormData>({
@@ -72,6 +71,10 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       return
     }
     if (!producto?.proveedor_id || !producto?.id) return
+    if (!stockProductosIds?.[0] || stockProductosIds.length === 0) {
+      toast.error("No hay stock disponible", { duration: 3000 })
+      return
+    }
     createCompra({
       proveedor_id: producto.proveedor_id,
       producto_id: producto.id,
@@ -82,23 +85,19 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
       monto_reembolso: producto.precio_vendedor,
       telefono_cliente: data.telefono_cliente.replace(/\s/g, ''),
       fecha_inicio: producto.disponibilidad === 'a_pedido' || producto.disponibilidad === 'activacion' ? null : new Date().toISOString(),
-      stock_producto_id: stockProductosIds?.[0] || 0,
+      stock_producto_id: stockProductosIds?.[0],
       fecha_expiracion: producto.disponibilidad === 'a_pedido' || producto.disponibilidad === 'activacion' ? null : fecha_expiracion,
     })
     actualizarSaldo(
       { id: billetera?.id, nuevoSaldo: monto - producto?.precio_vendedor },
       {
         onSuccess: () => {
-          removeIdFromStockProductos(
-            { productoId: producto.id },
-            {
-              onSuccess: () => {
-                updateStockProductoStatusVendido({ id: stockProductosIds?.[0] || 0 })
-                updateProveedorBilletera({ idBilletera: producto.usuarios.billetera_id, precioProducto: producto?.precio_vendedor })
-                navigate({ to: '/compras' })
-              }
+          updateStockProductoStatusVendido({ id: stockProductosIds?.[0], productoId: productoId }, {
+            onSuccess: () => {
+              updateProveedorBilletera({ idBilletera: producto.usuarios.billetera_id, precioProducto: producto?.precio_vendedor })
+              navigate({ to: '/compras' })
             }
-          )
+          })
         }
       }
     )

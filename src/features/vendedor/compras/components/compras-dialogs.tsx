@@ -3,7 +3,6 @@ import { useCompras } from '../context/compras-context'
 import { useReciclarCompra } from '../queries'
 import ComprasProductoDialog from './compras-producto-dialog'
 import { ComprasSoporteModal } from './compras-soporte-modal'
-import { ComprasActivacionModal } from './compras-activacion-modal'
 
 export function ComprasDialogs() {
   const { open, setOpen, currentRow, setCurrentRow } = useCompras()
@@ -24,12 +23,7 @@ export function ComprasDialogs() {
               }, 500)
             }}
           />
-          <ComprasActivacionModal
-            key='compras-activacion'
-            open={open === 'activacion'}
-            onOpenChange={() => setOpen('activacion')}
-            currentRow={currentRow}
-          />
+
           <ComprasProductoDialog
             key={`compras-producto-${currentRow.id}`}
             open={open === 'ver_producto'}

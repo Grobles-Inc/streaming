@@ -32,20 +32,13 @@ export const useStockProductosIds = (productoId: number) => {
   })
 }
 
-export const useRemoveIdFromStockProductos = () => {
+export const useUpdateStockProductoStatusVendido = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ productoId }: { productoId: number }) => stockProductosService.removeIdFromStockProductos(productoId),
+    mutationFn: ({ id }: { id: number; productoId: number }) => stockProductosService.updateStockProductoStatusVendido(id),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['stock-productos-ids', variables.productoId] })
-      queryClient.invalidateQueries({ queryKey: ['productos'] })
     },
-  })
-}
-
-export const useUpdateStockProductoStatusVendido = () => {
-  return useMutation({
-    mutationFn: ({ id }: { id: number }) => stockProductosService.updateStockProductoStatusVendido(id),
   })
 }
 

@@ -32,8 +32,8 @@ interface SoporteMessage {
   usuario: string
   asunto: string
   mensaje: string
-  id_producto: number
-  id_cliente: string
+  id_compra: number
+ 
 }
 
 
@@ -93,8 +93,7 @@ export async function SoporteMessage(
 - *Usuario:* 👤 ${message.usuario}
 - *Asunto:* 📋 ${message.asunto}
 - *Mensaje:* 💬 ${message.mensaje}
-- *ID Cliente:* 🆔 ${message.id_cliente}
-- *ID Producto:* 📦 ${message.id_producto}`
+- *ID Compra:* 🆔 ${message.id_compra}`
 
   return EnviarWhatsAppMessage(formattedMessage, businessPhone, device)
 }

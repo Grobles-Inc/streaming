@@ -4,22 +4,23 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { PhoneInput } from '@/features/landing/categorias/components/phone-input'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { CompraMessage } from '@/lib/whatsapp'
-import { IconEdit, IconHeadphones, IconLoader2, IconPackage, IconRefresh } from '@tabler/icons-react'
+import { useBilleteraByUsuario } from '@/queries'
+import { useAuth } from '@/stores/authStore'
+import { IconAlertTriangle, IconEdit, IconHeadset, IconLoader2, IconPackage, IconRefresh } from '@tabler/icons-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { useCompras } from '../context/compras-context'
 import { estadosMap, productoOpciones } from '../data/data'
 import { Compra, CompraEstado, compraSchema } from '../data/schema'
 import { useRenovarCompra, useUpdateBilleteraProveedorSaldo, useUpdateCompra, useUpdateCompraStatusVencido } from '../queries'
 import { DataTableColumnHeader } from './data-table-column-header'
-import { useBilleteraByUsuario } from '@/queries'
-import { useAuth } from '@/stores/authStore'
-import { Label } from '@/components/ui/label'
 
 
 const DiasRestantesCell = ({ fecha_expiracion, id }: { fecha_expiracion: string, id: number | undefined }) => {
@@ -169,28 +170,16 @@ const SoporteCell = ({ row }: { row: Compra }) => {
   const { setOpen, setCurrentRow } = useCompras()
   return (
     <div className='flex justify-center'>
-      <Button variant='outline' size='icon' onClick={() => {
+      <Button variant='secondary' size='icon' onClick={() => {
         setOpen('soporte')
         setCurrentRow(row)
       }}>
-        <IconHeadphones color='purple' />
+        <IconHeadset />
       </Button>
     </div>
   )
 }
-const ActivacionCell = ({ row }: { row: Compra }) => {
-  const { setOpen, setCurrentRow } = useCompras()
-  return (
-    <div className='flex justify-center'>
-      <Button variant='outline' size='sm' className='text-xs' onClick={() => {
-        setOpen('activacion')
-        setCurrentRow(row)
-      }}>
-        Solicitar Activación
-      </Button>
-    </div>
-  )
-}
+
 
 const RenovacionCell = ({ row }: { row: Compra }) => {
   const { mutate: renovarCompra, isPending } = useRenovarCompra()
@@ -201,6 +190,14 @@ const RenovacionCell = ({ row }: { row: Compra }) => {
   const { mutate: updateProveedorBilletera } = useUpdateBilleteraProveedorSaldo
     ()
   const handleRenovar = () => {
+    if (saldo < 0) {
+      toast.error('No tienes saldo suficiente para renovar', { duration: 3000 })
+      return
+    }
+    if (row.estado === 'soporte' || row.productos?.renovable === false) {
+      toast.error('Operacion no permitida', { duration: 3000, description: 'El producto no es renovable o la compra esta en estado soporte' })
+      return
+    }
     if (row.id && row.fecha_expiracion !== null) {
       renovarCompra({ id: row.id, tiempo_uso: row.productos?.tiempo_uso || 0, fecha_expiracion: row.fecha_expiracion, billeteraId: billetera?.id as string, saldo })
       updateProveedorBilletera({ idBilletera: row.usuarios?.billetera_id as string, precioRenovacion: row.productos?.precio_renovacion || 0 })
@@ -212,7 +209,7 @@ const RenovacionCell = ({ row }: { row: Compra }) => {
     <div className='flex justify-center'>
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogTrigger asChild>
-          <Button size='icon' disabled={row.estado === 'soporte' || row.productos?.renovable === false}>
+          <Button size='icon'>
             <IconRefresh />
           </Button>
         </AlertDialogTrigger>
@@ -248,14 +245,16 @@ const RenovacionCell = ({ row }: { row: Compra }) => {
                 $ {saldo?.toFixed(2)}
               </span>
               {saldo < 0 && (
-                <p className="text-xs text-destructive">No tienes saldo suficiente para renovar</p>
+                <Badge variant='destructive'>
+                  <IconAlertTriangle />
+                  No tienes saldo suficiente para renovar</Badge>
               )}
             </div>
           </div>
 
           <AlertDialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button onClick={handleRenovar} disabled={isPending}>
+            <Button onClick={handleRenovar} disabled={isPending || saldo < 0 || row.estado === 'soporte' || row.productos?.renovable === false}>
               {isPending ? <IconLoader2 className="animate-spin" /> : 'Renovar'}
             </Button>
           </AlertDialogFooter>
@@ -272,7 +271,7 @@ const ProductoCell = ({ row }: { row: Compra }) => {
     setCurrentRow(compraSchema.parse(row))
   }
   return <div className='flex justify-center'>
-    <Button variant="secondary" size='icon' onClick={handleClick}>
+    <Button variant="outline" size='icon' onClick={handleClick}>
       <IconPackage />
     </Button>
   </div>
@@ -360,7 +359,10 @@ export const columns: ColumnDef<Compra>[] = [
     ),
     cell: ({ row }) => {
       const { stock_productos } = row.original
-      return <PasswordCell value={stock_productos?.clave || ''} />
+      if (stock_productos?.clave) {
+        return <PasswordCell value={stock_productos?.clave} />
+      }
+      return <span>Sin clave</span>
     },
     enableSorting: false,
   },
@@ -424,7 +426,7 @@ export const columns: ColumnDef<Compra>[] = [
     ),
     enableSorting: false,
     cell: ({ row }) => {
-      return <div className='flex justify-center'>{row.original.fecha_inicio ? new Date(row.original.fecha_inicio).toLocaleDateString('es-ES') : <ActivacionCell row={row.original} />}</div>
+      return <div className='flex justify-center'>{row.original.fecha_inicio ? new Date(row.original.fecha_inicio).toLocaleDateString('es-ES') : 'Sin activar'}</div>
     },
   },
   {

@@ -17,7 +17,7 @@ type TransaccionCompleta = {
   estado: string
   created_at: string
   updated_at: string
-  tipo: 'recarga' | 'retiro' | 'compra'
+  tipo: 'recarga' | 'retiro' | 'compra' | 'gasto_publicacion'
   // Propiedades específicas para compras
   nombre_cliente?: string
   telefono_cliente?: string
@@ -31,6 +31,10 @@ type TransaccionCompleta = {
     email: string
     telefono: string | null
   } | null
+  producto_publicado?: {
+    id: number
+    nombre: string
+  }
 }
 
 // Componente para mostrar el monto con conversión
@@ -74,6 +78,11 @@ const MontoCell = ({ transaccion }: { transaccion: TransaccionCompleta }) => {
       signo = '+'
       descripcion = 'Venta: '
       break
+    case 'gasto_publicacion':
+      colorClass = 'text-orange-600'
+      signo = '-'
+      descripcion = 'Gasto de publicación: '
+      break
     default:
       colorClass = 'text-gray-600'
       descripcion = 'Dólares: '
@@ -87,11 +96,6 @@ const MontoCell = ({ transaccion }: { transaccion: TransaccionCompleta }) => {
       <div className='text-muted-foreground text-sm'>
         Equivale a {formattedSoles}
       </div>
-      {transaccion.tipo === 'compra' && transaccion.nombre_cliente && (
-        <div className='text-muted-foreground text-xs'>
-          Cliente: {transaccion.nombre_cliente}
-        </div>
-      )}
     </div>
   )
 }
@@ -172,6 +176,11 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
           className = 'bg-blue-100 text-blue-800'
           texto = 'Venta'
           break
+        case 'gasto_publicacion':
+          variant = 'outline'
+          className = 'bg-orange-100 text-orange-800'
+          texto = 'Publicación'
+          break
         default:
           texto = tipo
       }
@@ -184,6 +193,11 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
           {tipo === 'compra' && transaccion.productos && (
             <div className="text-xs text-muted-foreground">
               {transaccion.productos.nombre}
+            </div>
+          )}
+          {tipo === 'gasto_publicacion' && transaccion.producto_publicado && (
+            <div className="text-xs text-muted-foreground">
+              {transaccion.producto_publicado.nombre}
             </div>
           )}
         </div>
@@ -245,6 +259,19 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
                   Tel: {transaccion.usuarios.telefono}
                 </div>
               )}
+            </div>
+          )
+        case 'gasto_publicacion':
+          return (
+            <div className='space-y-1'>
+              <div className='text-sm'>
+                <span className='font-medium'>Producto publicado:</span>
+              </div>
+              {transaccion.producto_publicado && (
+                <div className='text-xs text-muted-foreground'>
+                  ID: {transaccion.producto_publicado.id}
+                </div>
+              )}                
             </div>
           )
         case 'recarga':

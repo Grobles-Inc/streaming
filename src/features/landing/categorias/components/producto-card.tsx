@@ -47,7 +47,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
           ></feColorMatrix>
         </filter>
       </svg>
-      <div className="card-container md:h-[420px] h-[340px] w-44 md:w-56">
+      <div className="card-container md:h-[410px] h-[340px] w-44 md:w-56">
         <div className="spin spin-blur"></div>
         <div className="spin spin-intense"></div>
         <div className="card-border">
@@ -104,22 +104,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
 
             </div>
           </CardHeader>
-          {producto.stock_de_productos.length > 0 && (
-            <div className="absolute top-0 left-0 z-50">
-              <div
-                className="bg-blue-600 text-white px-5 py-1 text-xs font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"
-                style={{
-                  transform: 'rotate(-45deg)',
-                  transformOrigin: 'center',
-                  position: 'relative',
-                  left: '-23px',
-                  top: '10px'
-                }}
-              >
-                En Stock
-              </div>
-            </div>
-          )}
+
 
           {producto.disponibilidad === 'a_pedido' && (
             <div className="absolute top-0 left-0 z-50">
@@ -140,7 +125,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
           {producto.disponibilidad === 'activacion' && (
             <div className="absolute top-0 left-0 z-50">
               <div
-                className="bg-yellow-600  text-white px-5 py-1 text-xs font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"
+                className="bg-purple-600  text-white px-5 py-1 text-xs font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"
                 style={{
                   transform: 'rotate(-45deg)',
                   transformOrigin: 'center',
@@ -155,16 +140,20 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
           )}
           <CardContent className='flex flex-col px-4 flex-grow'>
             <span className="text-xs text-gray-500 font-semibold  mb-1">{producto.usuarios.usuario.toUpperCase()}</span>
-            <span className="font-bold md:text-lg mb-1 hidden md:block  leading-tight">{producto.nombre}</span>
+            <span className="font-bold  mb-1 hidden md:block  leading-tight">{producto.nombre}</span>
             <span className="font-bold md:text-lg text-sm mb-1 md:hidden truncate  leading-tight">{producto.nombre}</span>
             <div className="md:flex flex-row hidden justify-between items-center w-full mb-2">
-              <span className="text-xs text-green-600 ">Renovable: <strong>$ {producto.precio_renovacion?.toFixed(2)}</strong></span>
+              {producto.renovable ? (
+                <span className="text-xs text-green-600 ">Renovable: <strong>$ {producto.precio_renovacion?.toFixed(2)}</strong></span>
+              ) : (
+                <span className="text-xs text-red-600 ">No renovable</span>
+              )}
             </div>
 
 
             {/* Stock y precios */}
             <div className="flex flex-col md:flex-row justify-between md:items-center w-full ">
-              <Badge className='hidden md:block'>Stock: {producto.stock_de_productos.length} </Badge>
+              <Badge>Stock: {producto.stock_de_productos.length} </Badge>
 
               <div className='flex md:flex-col flex-row-reverse justify-between md:justify-start items-center'>
                 <span className="font-bold md:text-xl text-foreground">${precio_producto.toFixed(2)}</span><span className="text-xs text-muted-foreground">S/.{(precio_producto * (configuracion?.conversion ?? 1)).toFixed(2)}</span>

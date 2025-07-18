@@ -102,6 +102,7 @@ export const columns: ColumnDef<Producto>[] = [
       )
     },
     meta: { className: 'w-48' },
+    enableSorting: false,
   },
   {
     accessorKey: 'categorias',
@@ -120,6 +121,7 @@ export const columns: ColumnDef<Producto>[] = [
       )
     },
     meta: { className: 'w-32' },
+    enableSorting: false,
   },
   {
     accessorKey: 'precio_vendedor',
@@ -135,6 +137,7 @@ export const columns: ColumnDef<Producto>[] = [
       )
     },
     meta: { className: 'w-32' },
+    enableSorting: false,
   },
   {
     accessorKey: 'precio_publico',
@@ -150,6 +153,7 @@ export const columns: ColumnDef<Producto>[] = [
       )
     },
     meta: { className: 'w-32' },
+    enableSorting: false,
   },
   {
     accessorKey: 'precio_renovacion',
@@ -165,6 +169,7 @@ export const columns: ColumnDef<Producto>[] = [
       )
     },
     meta: { className: 'w-32' },
+    enableSorting: false,
   },
   {
     accessorKey: 'stock_de_productos',
@@ -187,6 +192,7 @@ export const columns: ColumnDef<Producto>[] = [
       )
     },
     meta: { className: 'w-28' },
+    enableSorting: false,
   },
   {
     accessorKey: 'disponibilidad',
@@ -210,6 +216,7 @@ export const columns: ColumnDef<Producto>[] = [
       return value.includes(row.getValue(id))
     },
     meta: { className: 'w-32' },
+    enableSorting: false,
   },
   {
     accessorKey: 'estado',
@@ -237,6 +244,7 @@ export const columns: ColumnDef<Producto>[] = [
       return value.includes(row.getValue(id))
     },
     meta: { className: 'w-24' },
+    enableSorting: false,
   },
   {
     accessorKey: 'fecha_expiracion',
@@ -305,6 +313,7 @@ export const columns: ColumnDef<Producto>[] = [
       )
     },
     meta: { className: 'w-36' },
+    enableSorting: false,
   },
   {
     accessorKey: 'tiempo_uso',
@@ -320,6 +329,7 @@ export const columns: ColumnDef<Producto>[] = [
       )
     },
     meta: { className: 'w-24' },
+    enableSorting: false,
   },
   {
     accessorKey: 'renovable',
@@ -346,6 +356,7 @@ export const columns: ColumnDef<Producto>[] = [
       return value.includes(row.getValue(id))
     },
     meta: { className: 'w-24' },
+    enableSorting: false,
   },
   {
     accessorKey: 'created_at',
@@ -361,6 +372,7 @@ export const columns: ColumnDef<Producto>[] = [
       )
     },
     meta: { className: 'w-28' },
+    enableSorting: false,
   },
   {
     accessorKey: 'nuevo',
@@ -387,6 +399,7 @@ export const columns: ColumnDef<Producto>[] = [
       return value.includes(row.getValue(id))
     },
     meta: { className: 'w-24' },
+    enableSorting: false,
   },
   {
     accessorKey: 'descripcion_completa',
@@ -404,6 +417,7 @@ export const columns: ColumnDef<Producto>[] = [
       )
     },
     meta: { className: 'w-48' },
+    enableSorting: false,
   },
   {
     accessorKey: 'solicitud',
@@ -421,6 +435,7 @@ export const columns: ColumnDef<Producto>[] = [
       )
     },
     meta: { className: 'w-32' },
+    enableSorting: false,
   },
   {
     accessorKey: 'muestra_disponibilidad_stock',
@@ -447,6 +462,7 @@ export const columns: ColumnDef<Producto>[] = [
       return value.includes(row.getValue(id))
     },
     meta: { className: 'w-24' },
+    enableSorting: false,
   },
   {
     accessorKey: 'deshabilitar_boton_comprar',
@@ -473,6 +489,7 @@ export const columns: ColumnDef<Producto>[] = [
       return value.includes(row.getValue(id))
     },
     meta: { className: 'w-24' },
+    enableSorting: false,
   },
   {
     id: 'actions',

@@ -26,7 +26,7 @@ import { useConfiguracionSistema } from '@/features/proveedor/productos/queries'
 import { useCreateRetiro } from '../queries'
 import { Loader2, AlertTriangle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { useIsMobile } from '@/hooks/use-mobile'
+import { useIsRealMobile } from '@/hooks/use-mobile'
 import { RetiroMessage } from '@/lib/whatsapp'
 
 interface RetirarFondosModalProps {
@@ -45,7 +45,7 @@ export function RetirarFondosModal({
   const { user } = useAuth()
   const { data: configuracion } = useConfiguracionSistema()
   const { mutate: crearRetiro, isPending } = useCreateRetiro()
-  const isMobile = useIsMobile()
+  const isRealMobile = useIsRealMobile()
 
   // Obtener tasa de conversión y comisión de la configuración del sistema
   const tasaConversion = configuracion?.conversion || 3.7
@@ -112,7 +112,7 @@ export function RetirarFondosModal({
         monto_neto: calculosRetiro.montoNetoUsuario,
         comision: calculosRetiro.comisionDolares,
         id_cliente: user?.id || '',
-      }, '51913190401', isMobile ? 'mobile' : 'web')
+      }, '51913190401', isRealMobile ? 'mobile' : 'web')
     } catch (error) {
       console.error('Error:', error)
     }

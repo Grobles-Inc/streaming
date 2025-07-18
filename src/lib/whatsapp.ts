@@ -32,8 +32,8 @@ interface SoporteMessage {
   usuario: string
   asunto: string
   mensaje: string
-  id_producto: number
-  id_cliente: string
+  id_compra: number
+ 
 }
 
 
@@ -49,7 +49,7 @@ export async function EnviarWhatsAppMessage(
   try {
     // For mobile devices, try to open in the same window first
     if (device === 'mobile') {
-      window.location.href = mobileUrl
+      window.open(mobileUrl, '_blank')
     } else {
       window.open(webUrl, '_blank')
     }
@@ -72,12 +72,12 @@ export async function RecargaMessage(
   businessPhone: string,
   device: 'mobile' | 'web' = 'mobile'
 ) {
-  const formattedMessage = `Hola, quiero hacer una *recarga* con los siguientes datos:
+  const formattedMessage = `Hola, quiero hacer una *recarga* 🔄 con los siguientes datos:
 
 *DETALLES DE LA RECARGA:*
-- *Usuario:* ${message.usuario}
-- *Monto:* S/. ${message.monto.toFixed(2)}
-- *ID Cliente:* ${message.id_cliente}`
+- *Usuario:* 👤 ${message.usuario}
+- *Monto:* 💵 ${message.monto.toFixed(2)}
+- *ID Cliente:* 🆔 ${message.id_cliente}`
 
   return EnviarWhatsAppMessage(formattedMessage, businessPhone, device)
 }
@@ -87,14 +87,13 @@ export async function SoporteMessage(
   businessPhone: string,
   device: 'mobile' | 'web' = 'mobile'
 ) {
-  const formattedMessage = `Hola, necesito *soporte* con los siguientes datos:
+  const formattedMessage = `Hola, necesito *soporte* 🆘 con los siguientes datos:
 
 *DETALLES DEL SOPORTE:*
-- *Usuario:* ${message.usuario}
-- *Asunto:* ${message.asunto}
-- *Mensaje:* ${message.mensaje}
-- *ID Cliente:* ${message.id_cliente}
-- *ID Producto:* ${message.id_producto}`
+- *Usuario:* 👤 ${message.usuario}
+- *Asunto:* 📋 ${message.asunto}
+- *Mensaje:* 💬 ${message.mensaje}
+- *ID Compra:* 🆔 ${message.id_compra}`
 
   return EnviarWhatsAppMessage(formattedMessage, businessPhone, device)
 }
@@ -104,21 +103,20 @@ export async function CompraMessage(
   businessPhone: string,
   device: 'mobile' | 'web' = 'mobile'
 ) {
-  const formattedMessage = `Hola, estos son los datos de tu *compra*:
+  const formattedMessage = `Hola, estos son los datos de tu *compra* 🛒:
 
 *DETALLES DE LA COMPRA:*
-- *Producto:* ${message.producto_nombre}
-- *Precio:* S/. ${message.producto_precio.toFixed(2)}
-- *Email:* ${message.email_cuenta}
-- *Clave:* ${message.clave_cuenta}
-- *Perfil:* ${message.perfil}
-- *PIN:* ${message.pin}
-- *Fecha de inicio:* ${message.fecha_inicio}
-- *Fecha de término:* ${message.fecha_expiracion || 'Sin activar'}
-- *Ciclo de facturación:* ${message.ciclo_facturacion}
-- *Descripción:* ${message.descripcion}
-- *Información:* ${message.informacion}
-- *Condiciones:* ${message.condiciones}`
+- *Producto:* 📦 ${message.producto_nombre}
+- *Email:* 📧 ${message.email_cuenta}
+- *Clave:* 🔑 ${message.clave_cuenta}
+- *Perfil:* 👤 ${message.perfil}
+- *PIN:* 🔢 ${message.pin}
+- *Fecha de inicio:* 📅 ${message.fecha_inicio}
+- *Fecha de término:* 📅 ${message.fecha_expiracion || 'Sin activar'}
+- *Ciclo de facturación:* 🔄 ${message.ciclo_facturacion}
+- *Descripción:* 📝 ${message.descripcion}
+- *Información:* ℹ️ ${message.informacion}
+- *Condiciones:* ⚠️ ${message.condiciones}`
 
   return EnviarWhatsAppMessage(formattedMessage, businessPhone, device)
 }
@@ -128,16 +126,16 @@ export async function RetiroMessage(
   businessPhone: string,
   device: 'mobile' | 'web' = 'mobile'
 ) {
-  const formattedMessage = `Hola, quiero hacer un *retiro* con los siguientes datos:
+  const formattedMessage = `Hola, quiero hacer un *retiro* 📤 con los siguientes datos:
 
 *DETALLES DEL RETIRO:*
-- *Usuario:* ${message.usuario}
-- *Monto solicitado:* S/. ${message.monto_soles.toFixed(2)}
-- *Valor en USD:* $${message.monto_dolares.toFixed(2)}
-- *Comisión (${((message.comision / message.monto_dolares) * 100).toFixed(0)}%):* $${message.comision.toFixed(2)}
-- *Monto neto a recibir:* $${message.monto_neto.toFixed(2)}
-- *Monto neto en soles:* S/. ${(message.monto_neto * (message.monto_soles / message.monto_dolares)).toFixed(2)}
-- *ID Cliente:* ${message.id_cliente}`
+- *Usuario:* 👤 ${message.usuario}
+- *Monto solicitado:* 💵 ${message.monto_soles.toFixed(2)}
+- *Valor en USD:* 💲 ${message.monto_dolares.toFixed(2)}
+- *Comisión (${((message.comision / message.monto_dolares) * 100).toFixed(0)}%):* 📉 $${message.comision.toFixed(2)}
+- *Monto neto a recibir:* 💰 $${message.monto_neto.toFixed(2)}
+- *Monto neto en soles:* 💵 S/. ${(message.monto_neto * (message.monto_soles / message.monto_dolares)).toFixed(2)}
+- *ID Cliente:* 🆔 ${message.id_cliente}`
 
   return EnviarWhatsAppMessage(formattedMessage, businessPhone, device)
 }

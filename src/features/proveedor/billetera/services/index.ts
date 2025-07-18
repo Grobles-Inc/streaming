@@ -248,12 +248,83 @@ export const getHistorialCompras = async (proveedorId: string) => {
   return data || []
 }
 
+// Get historial de gastos por publicación de productos
+export const getHistorialGastosPublicacion = async (proveedorId: string) => {
+  try {
+    // 1. Obtener todos los productos publicados del proveedor
+    const { data: productos, error: productosError } = await supabase
+      .from('productos')
+      .select(`
+        id,
+        nombre,
+        estado,
+        updated_at,
+        created_at
+      `)
+      .eq('proveedor_id', proveedorId)
+      .eq('estado', 'publicado')
+      .order('updated_at', { ascending: false })
+
+    if (productosError) {
+      console.error('Error fetching productos publicados:', productosError)
+      return []
+    }
+
+    if (!productos || productos.length === 0) {
+      return []
+    }
+
+    // 2. Obtener configuraciones para calcular comisiones históricas
+    const { data: configuraciones, error: configError } = await supabase
+      .from('configuracion')
+      .select('comision_publicacion_producto, updated_at')
+      .order('updated_at', { ascending: false })
+
+    if (configError) {
+      console.error('Error fetching configuraciones:', configError)
+      return []
+    }
+
+    // 3. Mapear productos a gastos de publicación
+    const gastosPublicacion = productos.map(producto => {
+      // Encontrar la configuración vigente al momento de la publicación
+      const fechaPublicacion = new Date(producto.updated_at)
+      const configVigente = configuraciones?.find(config => 
+        new Date(config.updated_at) <= fechaPublicacion
+      ) || configuraciones?.[configuraciones.length - 1]
+
+      const montoComision = configVigente?.comision_publicacion_producto || 1.35
+
+      return {
+        id: `gasto_pub_${producto.id}`,
+        usuario_id: proveedorId,
+        monto: montoComision,
+        estado: 'completado',
+        created_at: producto.updated_at,
+        updated_at: producto.updated_at,
+        tipo: 'gasto_publicacion' as const,
+        // Información adicional del producto
+        producto_publicado: {
+          id: producto.id,
+          nombre: producto.nombre
+        }
+      }
+    })
+
+    return gastosPublicacion
+  } catch (error) {
+    console.error('Error fetching gastos publicación:', error)
+    return []
+  }
+}
+
 // Get historial completo (recargas + retiros + compras del proveedor)
 export const getHistorialCompleto = async (usuarioId: string) => {
-  const [recargas, retiros, compras] = await Promise.all([
+  const [recargas, retiros, compras, gastosPublicacion] = await Promise.all([
     getHistorialTransacciones(usuarioId),
     getHistorialRetiros(usuarioId),
-    getHistorialCompras(usuarioId) // usuarioId = proveedorId cuando es un proveedor
+    getHistorialCompras(usuarioId),
+    getHistorialGastosPublicacion(usuarioId)
   ])
 
   // Combinar y marcar el tipo
@@ -262,12 +333,19 @@ export const getHistorialCompleto = async (usuarioId: string) => {
   const comprasConTipo = compras.map(c => ({ 
     ...c, 
     tipo: 'compra' as const,
-    monto: c.precio, // Usar el precio de la compra como monto
-    estado: c.estado || 'completado' // Las compras generalmente están completadas
+    monto: c.precio,
+    estado: c.estado || 'completado'
   }))
 
+  const gastosPublicacionConTipo = gastosPublicacion
+
   // Combinar y ordenar por fecha
-  const historialCompleto = [...recargasConTipo, ...retirosConTipo, ...comprasConTipo]
+  const historialCompleto = [
+    ...recargasConTipo, 
+    ...retirosConTipo, 
+    ...comprasConTipo,
+    ...gastosPublicacionConTipo
+  ]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   return historialCompleto

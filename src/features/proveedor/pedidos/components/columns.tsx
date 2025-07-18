@@ -59,7 +59,6 @@ export const columns: ColumnDef<Pedido>[] = [
       return id.toString().includes(value)
     },
     enableSorting: false,
-    enableHiding: false,
   },
   {
     accessorKey: 'producto_nombre',
@@ -112,16 +111,17 @@ export const columns: ColumnDef<Pedido>[] = [
   {
     accessorKey: 'cliente_nombre',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Cliente' />
+      <DataTableColumnHeader column={column} title='Vendedor' />
     ),
     enableSorting: false,
     cell: ({ row }) => {
       const usuario = row.original.usuarios
-      return <div className='flex justify-center'>{usuario?.nombres || row.getValue('nombre_cliente')}</div>
+      const nombreCompleto = `${usuario?.nombres} ${usuario?.apellidos}`
+      return <div className='flex justify-center'>{nombreCompleto || 'Sin Vendedor'}</div>
     },
     filterFn: (row, _id, value) => {
       const usuario = row.original.usuarios
-      const nombreCliente = usuario?.nombres || row.original.nombre_cliente || ''
+      const nombreCliente = usuario?.nombres || ''
       const apellidoCliente = usuario?.apellidos || ''
       const nombreCompleto = `${nombreCliente} ${apellidoCliente}`.toLowerCase()
       return nombreCompleto.includes(value.toLowerCase())
@@ -135,7 +135,7 @@ export const columns: ColumnDef<Pedido>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const usuario = row.original.usuarios
-      const telefono = usuario?.telefono || row.original.telefono_cliente
+      const telefono = usuario?.telefono
       
       if (!telefono) {
         return <div className='flex justify-center text-gray-400'>Sin teléfono</div>
@@ -152,7 +152,7 @@ export const columns: ColumnDef<Pedido>[] = [
           >
             <div className='flex items-center space-x-1'>
               <Phone className='h-4 w-4 text-green-600' />
-              <span className='text-xs text-green-600'>+{telefono}</span>
+              <span className='text-xs text-green-600'>{telefono}</span>
             </div>
           </Button>
         </div>

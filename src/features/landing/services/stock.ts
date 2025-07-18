@@ -6,12 +6,12 @@ export type StockProductoInsert = Database['public']['Tables']['stock_productos'
 export type StockProductoUpdate = Database['public']['Tables']['stock_productos']['Update']
 
 
-// Get all stock productos
 export const getStockProductosIds = async (productoId: number): Promise<number[]> => {
   const { data, error } = await supabase
     .from('stock_productos')
     .select('id')
     .eq('producto_id', productoId)
+    .eq('estado', 'disponible')
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -21,7 +21,7 @@ export const getStockProductosIds = async (productoId: number): Promise<number[]
   return data?.map((stock) => stock.id as number) || []
 }
 
-export const removeIdFromStockProductos = async (productoId: number): Promise<boolean> => {
+export const removeStockIdFromProducto = async ({ productoId, stockProductoId }: { productoId: number, stockProductoId: number }): Promise<boolean> => {
   const { data: producto, error: fetchError } = await supabase
     .from('productos')
     .select('stock_de_productos')
@@ -29,23 +29,24 @@ export const removeIdFromStockProductos = async (productoId: number): Promise<bo
     .single()
 
   if (fetchError || !producto) {
-    console.error('Error fetching producto:', fetchError)
+    console.error('Error fetching producto for stock update:', fetchError)
     return false
   }
 
-  const stockDeProductos = producto.stock_de_productos as { id: number }[]
-  const updatedStockProducts = stockDeProductos.slice(1)
+  const currentStock = producto.stock_de_productos as { id: number }[] | null
+  if (!currentStock) {
+    return true
+  }
+
+  const updatedStock = currentStock.filter(stock => stock.id !== stockProductoId)
 
   const { error: updateError } = await supabase
     .from('productos')
-    .update({
-      stock_de_productos: updatedStockProducts
-    })
+    .update({ stock_de_productos: updatedStock })
     .eq('id', productoId)
 
-
   if (updateError) {
-    console.error('Error updating producto:', updateError)
+    console.error('Error updating stock_de_productos array:', updateError)
     return false
   }
 
@@ -63,7 +64,7 @@ export const updateStockProductoStatusVendido = async (id: number): Promise<bool
 // Get stock productos with pagination
 export const getStockProductosPaginated = async (
   page: number = 1,
-  pageSize: number = 10
+  pageSize: number = 200
 ): Promise<{ data: StockProducto[]; count: number }> => {
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1

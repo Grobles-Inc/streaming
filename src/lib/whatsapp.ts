@@ -49,7 +49,7 @@ export async function EnviarWhatsAppMessage(
   try {
     // For mobile devices, try to open in the same window first
     if (device === 'mobile') {
-      window.location.href = mobileUrl
+      window.open(mobileUrl, '_blank')
     } else {
       window.open(webUrl, '_blank')
     }

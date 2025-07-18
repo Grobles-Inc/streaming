@@ -426,7 +426,7 @@ export const columns: ColumnDef<Compra>[] = [
     ),
     enableSorting: false,
     cell: ({ row }) => {
-      return <div className='flex justify-center'>{row.original.fecha_expiracion ? new Date(row.original.fecha_expiracion).toLocaleDateString('es-ES') : 'Sin activar'}</div>
+      return <div className='flex justify-center'>{row.original.fecha_inicio ? new Date(row.original.fecha_inicio).toLocaleDateString('es-ES') : 'Sin activar'}</div>
     },
   },
   {

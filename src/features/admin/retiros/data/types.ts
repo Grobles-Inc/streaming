@@ -13,6 +13,7 @@ export type UpdateRetiroData = Database['public']['Tables']['retiros']['Update']
 export type RetiroWithUser = SupabaseRetiro & {
   usuarios?: {
     id: string
+    usuario: string
     nombres: string
     apellidos: string
     telefono: string | null
@@ -47,6 +48,7 @@ export type EstadisticasRetiros = {
 export type MappedRetiro = {
   id: number
   usuarioId: string
+  usuario: string          // Nuevo campo: username del usuario
   usuarioNombre: string
   usuarioNombres: string
   usuarioApellidos: string

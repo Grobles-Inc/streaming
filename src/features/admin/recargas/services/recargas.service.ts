@@ -17,6 +17,7 @@ export class RecargasService {
         *,
         usuario:usuarios!usuario_id (
           id,
+          usuario,
           nombres,
           apellidos,
           telefono
@@ -65,6 +66,7 @@ export class RecargasService {
         *,
         usuario:usuarios!usuario_id (
           id,
+          usuario,
           nombres,
           apellidos,
           telefono

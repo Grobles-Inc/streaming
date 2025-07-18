@@ -112,7 +112,7 @@ export class RetirosService {
         try {
           const { data: usuario, error: errorUsuario } = await supabase
             .from('usuarios')
-            .select('id, nombres, apellidos, telefono, billetera_id')
+            .select('id, usuario, nombres, apellidos, telefono, billetera_id')
             .eq('id', retiro.usuario_id)
             .single()
 
@@ -175,7 +175,7 @@ export class RetirosService {
     try {
       const { data: usuario, error: errorUsuario } = await supabase
         .from('usuarios')
-        .select('id, nombres, apellidos, telefono, billetera_id')
+        .select('id, usuario, nombres, apellidos, telefono, billetera_id')
         .eq('id', retiro.usuario_id)
         .single()
 

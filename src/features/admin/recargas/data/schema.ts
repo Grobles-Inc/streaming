@@ -22,6 +22,7 @@ const recargaBaseSchema = z.object({
 const recargaWithUserSchema = recargaBaseSchema.extend({
   usuario: z.object({
     id: z.string(),
+    usuario: z.string(),
     nombres: z.string(),
     apellidos: z.string(),
     telefono: z.string().nullable(),
@@ -32,6 +33,7 @@ const recargaWithUserSchema = recargaBaseSchema.extend({
 const mappedRecargaSchema = z.object({
   id: z.number(),  // Cambiado de string a number
   usuarioId: z.string(),
+  usuario: z.string(),
   usuarioNombre: z.string(),
   usuarioNombres: z.string(),
   usuarioApellidos: z.string(),
@@ -73,6 +75,7 @@ export function mapSupabaseRecargaToComponent(recarga: RecargaWithUser): MappedR
   return {
     id: recarga.id,  // Ahora es number
     usuarioId: recarga.usuario_id,
+    usuario: recarga.usuario?.usuario || '',
     usuarioNombre: nombreCompleto,
     usuarioNombres: recarga.usuario?.nombres || '',
     usuarioApellidos: recarga.usuario?.apellidos || '',

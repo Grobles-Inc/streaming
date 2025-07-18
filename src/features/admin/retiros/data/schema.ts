@@ -23,6 +23,7 @@ const retiroBaseSchema = z.object({
 const mappedRetiroSchema = z.object({
   id: z.number(),
   usuarioId: z.string(),
+  usuario: z.string(),
   usuarioNombre: z.string(),
   usuarioNombres: z.string(),
   usuarioApellidos: z.string(),
@@ -84,6 +85,7 @@ export function mapSupabaseRetiroToComponent(retiro: RetiroWithUser): MappedReti
   return {
     id: retiro.id,
     usuarioId: retiro.usuario_id,
+    usuario: usuario?.usuario || '',
     usuarioNombre: nombreCompleto,
     usuarioNombres: usuario?.nombres || '',
     usuarioApellidos: usuario?.apellidos || '',

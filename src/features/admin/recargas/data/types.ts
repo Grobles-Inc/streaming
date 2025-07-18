@@ -13,6 +13,7 @@ export type UpdateRecargaData = Database['public']['Tables']['recargas']['Update
 export type RecargaWithUser = SupabaseRecarga & {
   usuario?: {
     id: string
+    usuario: string
     nombres: string
     apellidos: string
     telefono: string | null
@@ -46,6 +47,7 @@ export type EstadisticasRecargas = {
 export type MappedRecarga = {
   id: number  // Cambiado de string a number
   usuarioId: string
+  usuario: string          // Nuevo campo: username del usuario
   usuarioNombre: string
   usuarioNombres: string
   usuarioApellidos: string

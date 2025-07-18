@@ -133,8 +133,20 @@ export function createRetirosColumns(
       enableHiding: false,
     },
     {
-      accessorKey: 'usuarioNombre',
+      accessorKey: 'usuario',
       header: 'Usuario',
+      cell: ({ row }) => {
+        const usuario = row.getValue('usuario') as string
+        return (
+          <div className="font-mono text-sm">
+            @{usuario}
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: 'usuarioNombre',
+      header: 'Nombres y Apellidos',
       cell: ({ row }) => {
         const nombre = row.getValue('usuarioNombre') as string
         const telefono = row.original.usuarioTelefono

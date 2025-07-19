@@ -104,7 +104,22 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
 
             </div>
           </CardHeader>
-
+          {producto.stock_de_productos.length > 0 && (
+            <div className="absolute top-0 left-0 z-50">
+              <div
+                className="bg-blue-600  text-white px-5 py-1 text-xs font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"
+                style={{
+                  transform: 'rotate(-45deg)',
+                  transformOrigin: 'center',
+                  position: 'relative',
+                  left: '-23px',
+                  top: '10px'
+                }}
+              >
+                En stock
+              </div>
+            </div>
+          )}
 
           {producto.disponibilidad === 'a_pedido' && (
             <div className="absolute top-0 left-0 z-50">

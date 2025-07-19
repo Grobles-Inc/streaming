@@ -87,7 +87,7 @@ export const getComisionesRetiroColumns = (
               {usuario.nombres} {usuario.apellidos}
             </p>
             <p className="text-xs text-muted-foreground">
-              @{usuario.usuario}
+              {usuario.usuario}
             </p>
           </div>
         </div>

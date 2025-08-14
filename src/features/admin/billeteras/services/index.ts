@@ -10,6 +10,7 @@ export class BilleterasService {
         *,
         usuario:usuarios!usuario_id(
           id,
+          usuario,
           nombres,
           apellidos,
           email,
@@ -35,6 +36,7 @@ export class BilleterasService {
         *,
         usuario:usuarios!usuario_id(
           id,
+          usuario,
           nombres,
           apellidos,
           email,
@@ -61,6 +63,7 @@ export class BilleterasService {
         *,
         usuario:usuarios!usuario_id(
           id,
+          usuario,
           nombres,
           apellidos,
           email,
@@ -86,6 +89,7 @@ export class BilleterasService {
         *,
         usuario:usuarios!usuario_id(
           id,
+          usuario,
           nombres,
           apellidos,
           email,
@@ -112,6 +116,7 @@ export class BilleterasService {
         *,
         usuario:usuarios!usuario_id(
           id,
+          usuario,
           nombres,
           apellidos,
           email,
@@ -137,6 +142,7 @@ export class BilleterasService {
         *,
         usuario:usuarios!usuario_id(
           id,
+          usuario,
           nombres,
           apellidos,
           email,
@@ -168,6 +174,7 @@ export class BilleterasService {
         *,
         usuario:usuarios!usuario_id(
           id,
+          usuario,
           nombres,
           apellidos,
           email,
@@ -198,6 +205,7 @@ export class BilleterasService {
         *,
         usuario:usuarios!usuario_id(
           id,
+          usuario,
           nombres,
           apellidos,
           email,
@@ -225,6 +233,7 @@ export class BilleterasService {
         *,
         usuario:usuarios!usuario_id(
           id,
+          usuario,
           nombres,
           apellidos,
           email,
@@ -252,6 +261,7 @@ export class BilleterasService {
         *,
         usuario:usuarios!usuario_id(
           id,
+          usuario,
           nombres,
           apellidos,
           email,

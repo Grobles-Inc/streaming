@@ -70,6 +70,7 @@ export function BilleterasTable({ billeteras, onViewMovimientos }: BilleterasTab
           <thead>
             <tr className="border-b">
               <th className="px-4 py-3 font-medium">Usuario</th>
+              <th className="px-4 py-3 font-medium">Nombres y Apellidos</th>
               <th className="px-4 py-3 font-medium">Email</th>
               <th className="px-4 py-3 font-medium">Rol</th>
               <th className="px-4 py-3 font-medium">Saldo</th>
@@ -79,6 +80,11 @@ export function BilleterasTable({ billeteras, onViewMovimientos }: BilleterasTab
           <tbody>
             {paginatedBilleteras.map(billetera => (
               <tr key={billetera.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
+                <td className="px-4 py-3">
+                  <div className="font-mono text-sm">
+                    {billetera.usuario?.usuario || 'N/A'}
+                  </div>
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-col">
                     <span className="font-medium">

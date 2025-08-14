@@ -6,6 +6,7 @@ export type Billetera = {
   updated_at: string
   usuario?: {
     id: string
+    usuario: string
     nombres: string
     apellidos: string
     email: string
@@ -23,6 +24,7 @@ export type Recarga = {
   updated_at: string
   usuario?: {
     id: string
+    usuario: string
     nombres: string
     apellidos: string
     email: string
@@ -40,6 +42,7 @@ export type Retiro = {
   updated_at: string
   usuario?: {
     id: string
+    usuario: string
     nombres: string
     apellidos: string
     email: string

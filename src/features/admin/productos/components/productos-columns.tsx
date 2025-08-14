@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { getProxiedImageUrl } from '@/hooks/use-image-proxy'
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -127,7 +128,7 @@ export function createProductosColumns(
         return (
           <div className="flex items-center space-x-3 max-w-[300px]">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={producto.imagenUrl || ''} alt={producto.nombre} />
+              <AvatarImage src={getProxiedImageUrl(producto.imagenUrl)} alt={producto.nombre} />
               <AvatarFallback>
                 <IconPackage className="h-4 w-4" />
               </AvatarFallback>

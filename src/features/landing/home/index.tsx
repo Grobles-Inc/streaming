@@ -4,6 +4,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Link } from '@tanstack/react-router'
 import ProductoCard from '../categorias/components/producto-card'
 import { useCategorias } from '../queries'
+import { useImageProxy } from '@/hooks/use-image-proxy'
 import { useProductos } from '../queries/productos'
 import { Categoria } from '../services'
 import CategoriaCard from './categoria-card'
@@ -11,6 +12,7 @@ import { useSearch } from '@/stores/searchStore'
 
 export default function Home() {
   const { data: categorias, isLoading: loadingCategorias } = useCategorias()
+  const { getProxiedImageUrl } = useImageProxy()
   const { data: productos, isLoading: loadingProductos } = useProductos()
   const { searchInput } = useSearch()
   const filteredProductos = productos?.data.filter((producto) =>
@@ -29,7 +31,7 @@ export default function Home() {
               <Link className='w-20' key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <img src={categoria.imagen_url || ''} alt={categoria.nombre} className="size-16" />
+                    <img src={getProxiedImageUrl(categoria.imagen_url)} alt={categoria.nombre} className="size-16" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>{categoria.nombre}</p>

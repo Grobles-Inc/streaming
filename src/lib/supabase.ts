@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { getProxiedImageUrl } from '@/hooks/use-image-proxy'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL!
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY!
@@ -14,7 +15,14 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 // Servicio para subir archivos a Supabase Storage
 export class SupabaseStorageService {
   /**
-   * Sube una imagen al bucket de productos
+   * Obtiene la URL optimizada de una imagen (con proxy de Netlify para reducir egreso de Supabase)
+   */
+  static getOptimizedImageUrl(imageUrl: string): string {
+    return getProxiedImageUrl(imageUrl)
+  }
+
+  /**
+   * Sube una imagen al bucket de productos y retorna la URL optimizada
    */
   static async uploadProductImage(file: File, userId: string): Promise<string> {
     const fileExtension = file.name.split('.').pop()

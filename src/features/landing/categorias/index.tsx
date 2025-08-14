@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/tooltip"
 import { Link } from '@tanstack/react-router'
 import { useCategorias } from '../queries'
+import { useImageProxy } from '@/hooks/use-image-proxy'
 import { ProductsByCategory } from './components/products-by-category'
 import { useState, useMemo, useEffect } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -17,6 +18,7 @@ import type { Categoria } from "../services/index"
 
 export default function Categoria({ nombre }: { nombre: string }) {
   const { data: categorias, isLoading: loadingCategorias } = useCategorias()
+  const { getProxiedImageUrl } = useImageProxy()
   const { data: productos } = useProductos()
   const [focusedCategory, setFocusedCategory] = useState<string | null>(null)
 
@@ -56,7 +58,7 @@ export default function Categoria({ nombre }: { nombre: string }) {
                 <Link className="w-20" key={categoria.id} to="/categoria/$name" params={{ name: categoria.nombre.toLowerCase() }}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <img src={categoria.imagen_url || ''} alt={categoria.nombre} className="size-16" />
+                      <img src={getProxiedImageUrl(categoria.imagen_url)} alt={categoria.nombre} className="size-16" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>{categoria.nombre}</p>

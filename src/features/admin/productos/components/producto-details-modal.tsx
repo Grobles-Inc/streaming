@@ -7,6 +7,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { getProxiedImageUrl } from '@/hooks/use-image-proxy'
 import { 
   IconPackage, 
   IconUser, 
@@ -94,7 +95,7 @@ export function ProductoDetailsModal({
               <div className="space-y-4">
                 <div className="flex items-center space-x-4">
                   <Avatar className="h-16 w-16">
-                    <AvatarImage src={producto.imagenUrl || ''} alt={producto.nombre} />
+                    <AvatarImage src={getProxiedImageUrl(producto.imagenUrl)} alt={producto.nombre} />
                     <AvatarFallback>
                       <IconPackage className="h-6 w-6" />
                     </AvatarFallback>

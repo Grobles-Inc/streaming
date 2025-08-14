@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useBilleteraByUsuario, useUpdateBilleteraSaldo } from '@/queries'
+import { useImageProxy } from '@/hooks/use-image-proxy'
 import { useAuthStore } from '@/stores/authStore'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -31,6 +32,7 @@ type ComprarProductoModalProps = {
 
 export default function ComprarProductoModal({ open, onOpenChange, producto }: ComprarProductoModalProps) {
   const { user } = useAuthStore()
+  const { getProxiedImageUrl } = useImageProxy()
   const productoId = producto?.id || 0
   const navigate = useNavigate()
   const { mutate: createCompra } = useCreateCompra()
@@ -125,7 +127,7 @@ export default function ComprarProductoModal({ open, onOpenChange, producto }: C
         <div className='flex justify-between'>
           <div className='flex items-center gap-4'>
 
-            <img src={producto.imagen_url || ''} alt={producto.nombre} className='size-14 rounded' />
+            <img src={getProxiedImageUrl(producto.imagen_url)} alt={producto.nombre} className='size-14 rounded' />
             <div className='flex flex-col gap-1'>
 
 

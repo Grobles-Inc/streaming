@@ -1,8 +1,10 @@
 
 import { Categoria } from '../services';
+import { useImageProxy } from '@/hooks/use-image-proxy';
 import "../styles/card.css"
 
 export default function CategoriaCard({ categoria }: { categoria: Categoria }) {
+  const { getProxiedImageUrl } = useImageProxy();
 
 
   return (
@@ -42,7 +44,7 @@ export default function CategoriaCard({ categoria }: { categoria: Categoria }) {
         </div>
         <div className="card bg-card">
           <div className='flex flex-col justify-center items-center h-full gap-2 md:p-4'>
-            <img src={categoria.imagen_url || ''} alt={categoria.nombre} className='md:size-28 size-16 mix-blend-multiply dark:mix-blend-normal' />
+            <img src={getProxiedImageUrl(categoria.imagen_url)} alt={categoria.nombre} className='md:size-28 size-16 mix-blend-multiply dark:mix-blend-normal' />
             <p className='md:text-xl text-[9px] md:font-bold text-center  text-black dark:text-white'>{categoria.nombre}</p>
           </div>
         </div>

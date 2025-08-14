@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
+import { useImageProxy } from '@/hooks/use-image-proxy'
 import { useAuth } from '@/stores/authStore'
 import { IconFileInfo, IconHandClick, IconHeartHandshake } from '@tabler/icons-react'
 import { useState } from 'react'
@@ -14,6 +15,7 @@ import ProductoInfoModal from './producto-info-modal'
 export default function ProductoCard({ producto }: { producto: Producto }) {
   const [open, setOpen] = useState(false)
   const { user } = useAuth()
+  const { getProxiedImageUrl } = useImageProxy()
   const [infoModalOpen, setInfoModalOpen] = useState(false)
   const [infoModalType, setInfoModalType] = useState<'informacion' | 'descripcion' | 'condiciones'>('informacion')
   const isAgotado = producto?.stock_de_productos?.length === 0
@@ -55,7 +57,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
         </div>
         <Card className='relative  overflow-hidden rounded-md max-w-sm pt-0 gap-4 flex flex-col h-full'>
           <CardHeader className="relative z-0 p-0 -mt-0 ">
-            <img src={producto.imagen_url || ''} alt={producto.nombre} className='w-full -mt-9 md:-mt-4 h-44 object-contain ' />
+            <img src={getProxiedImageUrl(producto.imagen_url)} alt={producto.nombre} className='w-full -mt-9 md:-mt-4 h-44 object-contain ' />
             <div className='flex items-center gap-1 mt-0 px-4'>
 
               {producto.nuevo && (

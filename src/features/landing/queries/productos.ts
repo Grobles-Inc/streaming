@@ -6,7 +6,14 @@ export const useProductos = (page: number = 1) => {
   return useQuery({
     queryKey: ['productos', page],
     queryFn: () => productosService.getProductosPaginated(page, 20),
-    keepPreviousData: true,
+  })
+}
+
+export const useAllProductos = () => {
+  return useQuery({
+    queryKey: ['productos-all'],
+    queryFn: () => productosService.getProductos(),
+    staleTime: 1000 * 60 * 5, // 5 minutes
   })
 }
 

@@ -11,15 +11,15 @@ import { ProductsByCategory } from './components/products-by-category'
 import { useState, useMemo, useEffect } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
-import { useProductos } from "../queries/productos"
+import { useAllProductos } from "../queries/productos"
 
 import type { Categoria } from "../services/index"
 
 
-export default function Categoria({ nombre }: { nombre: string }) {
+export default function Categoria({ nombre, categoriaId }: { nombre: string, categoriaId: string }) {
   const { data: categorias, isLoading: loadingCategorias } = useCategorias()
   const { getProxiedImageUrl } = useImageProxy()
-  const { data: productos } = useProductos()
+  const { data: allProductos } = useAllProductos()
   const [focusedCategory, setFocusedCategory] = useState<string | null>(null)
 
 
@@ -27,20 +27,19 @@ export default function Categoria({ nombre }: { nombre: string }) {
   // Validaciones adicionales
   const categoriasData = categorias || []
   const categoria = categoriasData.find(c => c.nombre.toLowerCase() === nombre.toLowerCase())
-  const categoriaId = categoria?.id || ''
 
   // Calculate products count per category
   const productosCountByCategory = useMemo(() => {
-    if (!productos?.data) return {}
+    if (!allProductos || !Array.isArray(allProductos)) return {}
 
-    return productos.data.reduce((acc, producto) => {
+    return allProductos.reduce((acc: Record<string, number>, producto: any) => {
       const catId = producto.categoria_id
       if (catId) {
         acc[catId] = (acc[catId] || 0) + 1
       }
       return acc
     }, {} as Record<string, number>)
-  }, [productos?.data])
+  }, [allProductos])
 
 
   useEffect(() => {

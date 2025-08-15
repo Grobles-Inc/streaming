@@ -12,14 +12,7 @@ export const useCategorias = () => {
   })
 }
 
-export const useCategoriasPaginated = (page: number = 1) => {
-  return useQuery({
-    queryKey: ['categorias-paginated', page],
-    queryFn: () => categoriasService.getCategoriasPaginated(page, 20),
-    keepPreviousData: true,
-    staleTime: 1000 * 60 * 60 * 24,
-  })
-}
+
 
 export const useCategoriaById = (id: string) => {
   return useQuery({

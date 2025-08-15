@@ -90,7 +90,7 @@ export const getCategorias = async (): Promise<Categoria[]> => {
 // Get categorias with pagination
 export const getCategoriasPaginated = async (
   page: number = 1,
-  pageSize: number = 21
+  pageSize: number = 50
 ): Promise<{ data: Categoria[]; count: number }> => {
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1

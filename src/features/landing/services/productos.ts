@@ -70,7 +70,7 @@ export const getProductos = async (): Promise<Producto[]> => {
 // Get productos with pagination
 export const getProductosPaginated = async (
   page: number = 1,
-  pageSize: number = 200
+  pageSize: number = 6
 ): Promise<{ data: Producto[]; count: number }> => {
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1

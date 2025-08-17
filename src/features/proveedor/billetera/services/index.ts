@@ -135,10 +135,11 @@ export const createRetiro = async (retiroData: CreateRetiroData): Promise<Retiro
   }
 }
 
-// Nueva función para procesar el retiro cuando el admin lo apruebe
+// Función simplificada - el trigger se encarga del procesamiento de fondos
 export const procesarRetiroAprobado = async (retiroId: number): Promise<boolean> => {
   try {
-    // 1. Obtener el retiro
+    // Solo verificamos que el retiro existe
+    // El trigger se encargará de manejar los fondos y comisiones automáticamente
     const { data: retiro, error: retiroError } = await supabase
       .from('retiros')
       .select('*')
@@ -149,46 +150,7 @@ export const procesarRetiroAprobado = async (retiroId: number): Promise<boolean>
       throw new Error('Retiro no encontrado')
     }
 
-    // 2. Obtener configuración para la comisión
-    const configuracion = await getConfiguracionActual()
-    if (!configuracion) {
-      throw new Error('No se pudo obtener la configuración del sistema')
-    }
-
-    const comisionPorcentaje = configuracion.comision || 10
-
-    // 3. El monto en la tabla 'retiros' es el monto NETO que recibirá el usuario
-    // Necesitamos calcular el monto BRUTO que se retirará de la billetera
-    const montoNetoUsuario = retiro.monto
-    const montoTotalConComision = parseFloat((montoNetoUsuario / (1 - comisionPorcentaje / 100)).toFixed(2))
-    const comisionAdmin = parseFloat((montoTotalConComision - montoNetoUsuario).toFixed(2))
-
-    // 4. Verificar saldo actual del usuario
-    const billeteraUsuario = await getBilleteraByUsuarioId(retiro.usuario_id)
-    if (!billeteraUsuario || billeteraUsuario.saldo < montoTotalConComision) {
-      throw new Error(`El usuario ya no tiene saldo suficiente para este retiro. Saldo actual: $${billeteraUsuario?.saldo || 0}, Requerido: $${montoTotalConComision}`)
-    }
-
-    // 5. Realizar las transferencias de fondos
-    const billeteraActualizada = await retirarFondos(retiro.usuario_id, montoTotalConComision)
-    if (!billeteraActualizada) {
-      throw new Error('Error al retirar fondos de la billetera del usuario')
-    }
-
-    // 6. Agregar la comisión al administrador
-    const ADMIN_ID_ESTATICO = 'bc934460-c7c6-4137-ba47-bfcb7eac619e'
-    if (ADMIN_ID_ESTATICO) {
-      const billeteraAdmin = await agregarFondos(ADMIN_ID_ESTATICO, comisionAdmin)
-      if (!billeteraAdmin) {
-        console.error('❌ Error al agregar comisión al administrador, revirtiendo retiro...')
-        // Revertir el retiro si falla la comisión
-        await agregarFondos(retiro.usuario_id, montoTotalConComision)
-        throw new Error('Error al procesar la comisión del administrador')
-      }
-      console.log('Comisión agregada al administrador correctamente')
-    }
-
-    console.log('Retiro procesado correctamente')
+    console.log('Retiro procesado correctamente por el trigger')
     return true
   } catch (error) {
     console.error('Error procesando retiro aprobado:', error)

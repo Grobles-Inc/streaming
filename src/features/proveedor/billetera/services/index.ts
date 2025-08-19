@@ -280,13 +280,101 @@ export const getHistorialGastosPublicacion = async (proveedorId: string) => {
   }
 }
 
-// Get historial completo (recargas + retiros + compras del proveedor)
+// Get historial de renovaciones de productos
+export const getHistorialRenovaciones = async (proveedorId: string) => {
+  try {
+    // Obtener productos del proveedor que han sido actualizados (posibles renovaciones)
+    const { data: productos, error: productosError } = await supabase
+      .from('productos')
+      .select(`
+        id,
+        nombre,
+        estado,
+        fecha_expiracion,
+        updated_at,
+        created_at
+      `)
+      .eq('proveedor_id', proveedorId)
+      .eq('estado', 'publicado')
+      .not('fecha_expiracion', 'is', null)
+      .order('updated_at', { ascending: false })
+
+    if (productosError) {
+      console.error('Error fetching productos para renovaciones:', productosError)
+      return []
+    }
+
+    if (!productos || productos.length === 0) {
+      return []
+    }
+
+    // Obtener configuraciones para calcular comisiones históricas
+    const { data: configuraciones, error: configError } = await supabase
+      .from('configuracion')
+      .select('comision_publicacion_producto, updated_at')
+      .order('updated_at', { ascending: false })
+
+    if (configError) {
+      console.error('Error fetching configuraciones para renovaciones:', configError)
+      return []
+    }
+
+    // Filtrar productos que posiblemente han sido renovados
+    // Un producto renovado tiene updated_at diferente a created_at y fecha_expiracion > created_at + 30 días
+    const renovaciones = productos
+      .filter(producto => {
+        const fechaCreacion = new Date(producto.created_at)
+        const fechaActualizacion = new Date(producto.updated_at)
+        const fechaExpiracion = new Date(producto.fecha_expiracion)
+        
+        // Diferencia mayor a 1 minuto entre creación y actualización
+        const diferenciaMinutos = (fechaActualizacion.getTime() - fechaCreacion.getTime()) / (1000 * 60)
+        
+        // La fecha de expiración es mayor a 30 días desde la creación (indica renovación)
+        const diasDesdeCreacion = (fechaExpiracion.getTime() - fechaCreacion.getTime()) / (1000 * 60 * 60 * 24)
+        
+        return diferenciaMinutos > 1 && diasDesdeCreacion > 30
+      })
+      .map(producto => {
+        // Encontrar la configuración vigente al momento de la renovación
+        const fechaRenovacion = new Date(producto.updated_at)
+        const configVigente = configuraciones?.find(config => 
+          new Date(config.updated_at) <= fechaRenovacion
+        ) || configuraciones?.[configuraciones.length - 1]
+
+        const montoComision = configVigente?.comision_publicacion_producto || 1.35
+
+        return {
+          id: `renovacion_${producto.id}`,
+          usuario_id: proveedorId,
+          monto: montoComision,
+          estado: 'completado',
+          created_at: producto.updated_at,
+          updated_at: producto.updated_at,
+          tipo: 'renovacion' as const,
+          // Información adicional del producto
+          producto_publicado: {
+            id: producto.id,
+            nombre: producto.nombre
+          }
+        }
+      })
+
+    return renovaciones
+  } catch (error) {
+    console.error('Error fetching historial renovaciones:', error)
+    return []
+  }
+}
+
+// Get historial completo (recargas + retiros + compras del proveedor + renovaciones)
 export const getHistorialCompleto = async (usuarioId: string) => {
-  const [recargas, retiros, compras, gastosPublicacion] = await Promise.all([
+  const [recargas, retiros, compras, gastosPublicacion, renovaciones] = await Promise.all([
     getHistorialTransacciones(usuarioId),
     getHistorialRetiros(usuarioId),
     getHistorialCompras(usuarioId),
-    getHistorialGastosPublicacion(usuarioId)
+    getHistorialGastosPublicacion(usuarioId),
+    getHistorialRenovaciones(usuarioId)
   ])
 
   // Combinar y marcar el tipo
@@ -300,13 +388,15 @@ export const getHistorialCompleto = async (usuarioId: string) => {
   }))
 
   const gastosPublicacionConTipo = gastosPublicacion
+  const renovacionesConTipo = renovaciones
 
   // Combinar y ordenar por fecha
   const historialCompleto = [
     ...recargasConTipo, 
     ...retirosConTipo, 
     ...comprasConTipo,
-    ...gastosPublicacionConTipo
+    ...gastosPublicacionConTipo,
+    ...renovacionesConTipo
   ]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 

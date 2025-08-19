@@ -17,7 +17,7 @@ type TransaccionCompleta = {
   estado: string
   created_at: string
   updated_at: string
-  tipo: 'recarga' | 'retiro' | 'compra' | 'gasto_publicacion'
+  tipo: 'recarga' | 'retiro' | 'compra' | 'gasto_publicacion' | 'renovacion'
   // Propiedades específicas para compras
   nombre_cliente?: string
   telefono_cliente?: string
@@ -82,6 +82,11 @@ const MontoCell = ({ transaccion }: { transaccion: TransaccionCompleta }) => {
       colorClass = 'text-orange-600'
       signo = '-'
       descripcion = 'Gasto de publicación: '
+      break
+    case 'renovacion':
+      colorClass = 'text-purple-600'
+      signo = '-'
+      descripcion = 'Renovación: '
       break
     default:
       colorClass = 'text-gray-600'
@@ -181,6 +186,11 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
           className = 'bg-orange-100 text-orange-800'
           texto = 'Publicación'
           break
+        case 'renovacion':
+          variant = 'outline'
+          className = 'bg-purple-100 text-purple-800'
+          texto = 'Renovación'
+          break
         default:
           texto = tipo
       }
@@ -196,6 +206,11 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
             </div>
           )}
           {tipo === 'gasto_publicacion' && transaccion.producto_publicado && (
+            <div className="text-xs text-muted-foreground">
+              {transaccion.producto_publicado.nombre}
+            </div>
+          )}
+          {tipo === 'renovacion' && transaccion.producto_publicado && (
             <div className="text-xs text-muted-foreground">
               {transaccion.producto_publicado.nombre}
             </div>
@@ -270,6 +285,19 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
               {transaccion.producto_publicado && (
                 <div className='text-xs text-muted-foreground'>
                   ID: {transaccion.producto_publicado.id}
+                </div>
+              )}                
+            </div>
+          )
+        case 'renovacion':
+          return (
+            <div className='space-y-1'>
+              <div className='text-sm'>
+                <span className='font-medium'>Producto renovado:</span>
+              </div>
+              {transaccion.producto_publicado && (
+                <div className='text-xs text-muted-foreground'>
+                  ID: {transaccion.producto_publicado.id} • +30 días
                 </div>
               )}                
             </div>

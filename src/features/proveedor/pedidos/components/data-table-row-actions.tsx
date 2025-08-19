@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Row } from '@tanstack/react-table'
-import { IconHeadset, IconEdit, IconDots } from '@tabler/icons-react'
+import { IconHeadset, IconEdit, IconDots, IconTrash } from '@tabler/icons-react'
 import { useState } from 'react'
 import {
   DropdownMenu,
@@ -13,6 +13,9 @@ import { SoporteModal } from './soporte-modal'
 import { EditAccountModal } from './edit-account-modal'
 import { Pedido } from '../data/schema'
 import { SoporteCompra } from '../data/types'
+import { ConfirmDialog } from '@/components/confirm-dialog'
+import { eliminarPedidoExpirado } from '../services'
+import { toast } from 'sonner'
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>
@@ -23,6 +26,7 @@ export function DataTableRowActions<TData>({
 }: DataTableRowActionsProps<TData>) {
   const [showSoporteModal, setShowSoporteModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const pedido = row.original as Pedido
 
   // Convertir Pedido a SoporteCompra para el modal
@@ -73,6 +77,35 @@ export function DataTableRowActions<TData>({
     setShowEditModal(false)
   }
 
+  // Verificar si el pedido está expirado
+  const isExpired = () => {
+    const fechaCreacion = pedido.created_at
+    const tiempoUso = pedido.productos?.tiempo_uso
+    
+    if (!fechaCreacion || !tiempoUso) return false
+    
+    const fechaInicio = new Date(fechaCreacion)
+    const fechaFin = new Date(fechaInicio.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
+    const ahora = new Date()
+    
+    return fechaFin < ahora
+  }
+
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    try {
+      // Función para eliminar pedido y cuenta asociada
+      await eliminarPedidoExpirado(pedido.id!, pedido.stock_producto_id)
+      setShowDeleteDialog(false)
+      window.location.reload()
+    } catch (error) {
+      toast.error('Error al eliminar pedido')
+    }
+  }
+
   return (
     <>
       <DropdownMenu>
@@ -98,6 +131,20 @@ export function DataTableRowActions<TData>({
               <DropdownMenuItem onClick={handleEditClick}>
                 <IconEdit className="mr-2 h-4 w-4" />
                 Editar cuenta
+              </DropdownMenuItem>
+            </>
+          )}
+
+          {/* Solo mostrar opción de eliminar si está expirado */}
+          {isExpired() && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={handleDeleteClick}
+                className="text-red-600 focus:text-red-600"
+              >
+                <IconTrash className="mr-2 h-4 w-4" />
+                Eliminar
               </DropdownMenuItem>
             </>
           )}
@@ -134,6 +181,18 @@ export function DataTableRowActions<TData>({
           onClose={handleCloseEditModal}
         />
       )}
+
+      {/* Diálogo de confirmación para eliminar */}
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Eliminar pedido expirado"
+        desc="Esto eliminará tanto el pedido como la cuenta asociada a esta. ¿Estás seguro de que deseas continuar?"
+        handleConfirm={handleConfirmDelete}
+        confirmText="Eliminar"
+        cancelBtnText="Cancelar"
+        destructive={true}
+      />
     </>
   )
 } 

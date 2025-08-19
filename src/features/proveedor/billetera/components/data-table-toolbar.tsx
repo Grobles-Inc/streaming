@@ -24,6 +24,10 @@ const tiposTransaccion = [
   {
     value: 'gasto_publicacion',
     label: 'Publicación',
+  },
+  {
+    value: 'renovacion',
+    label: 'Renovación',
   }
 ]
 

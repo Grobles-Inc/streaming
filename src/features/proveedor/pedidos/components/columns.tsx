@@ -333,18 +333,52 @@ export const columns: ColumnDef<Pedido>[] = [
     },
   },
   {
-    accessorKey: 'dias_duracion',
+    accessorKey: 'dias_restantes',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Días Duración' />
+      <DataTableColumnHeader column={column} title='Días Restantes' />
     ),
     enableSorting: false,
     cell: ({ row }) => {
+      const fechaCreacion = row.original.created_at
       const tiempoUso = row.original.productos?.tiempo_uso
+      
+      if (!fechaCreacion || !tiempoUso) {
+        return (
+          <div className='flex justify-center'>
+            <Badge variant='secondary' className='text-xs'>
+              N/A
+            </Badge>
+          </div>
+        )
+      }
+      
+      const fechaInicio = new Date(fechaCreacion)
+      const fechaFin = new Date(fechaInicio.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
+      const ahora = new Date()
+      const diasRestantes = Math.ceil((fechaFin.getTime() - ahora.getTime()) / (24 * 60 * 60 * 1000))
+      
+      let badgeVariant: 'default' | 'secondary' | 'destructive' | 'outline' = 'default'
+      let badgeColor = ''
+      
+      if (diasRestantes <= 0) {
+        badgeVariant = 'destructive'
+        badgeColor = 'text-red-600 bg-red-50 border-red-200'
+      } else if (diasRestantes <= 3) {
+        badgeVariant = 'outline'
+        badgeColor = 'text-orange-600 border-orange-300'
+      } else if (diasRestantes <= 7) {
+        badgeVariant = 'outline'
+        badgeColor = 'text-yellow-600 border-yellow-300'
+      } else {
+        badgeVariant = 'default'
+        badgeColor = 'text-green-600 bg-green-50 border-green-200'
+      }
+      
       return (
         <div className='flex justify-center'>
-          <span className='text-sm font-medium'>
-            {tiempoUso ? `${tiempoUso} días` : 'N/A'}
-          </span>
+          <Badge variant={badgeVariant} className={cn('text-xs font-medium', badgeColor)}>
+            {diasRestantes <= 0 ? 'Expirado' : `${diasRestantes} días restantes`}
+          </Badge>
         </div>
       )
     },

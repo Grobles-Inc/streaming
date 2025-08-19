@@ -478,6 +478,52 @@ export const procesarReembolsoProveedor = async (
   }
 } 
 
+// Eliminar pedido expirado y cuenta asociada
+export const eliminarPedidoExpirado = async (
+  compraId: number,
+  stockProductoId?: number | null
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    console.log('Eliminando pedido expirado:', { compraId, stockProductoId })
+
+    // 1. Eliminar el registro del stock_producto si existe
+    if (stockProductoId) {
+      const { error: stockError } = await supabase
+        .from('stock_productos')
+        .delete()
+        .eq('id', stockProductoId)
+
+      if (stockError) {
+        console.error('Error eliminando stock_producto:', stockError)
+        return { success: false, error: 'Error al eliminar la cuenta del stock' }
+      }
+
+      console.log('✅ Stock producto eliminado:', stockProductoId)
+    }
+
+    // 2. Eliminar el registro del pedido (compra)
+    const { error: compraError } = await supabase
+      .from('compras')
+      .delete()
+      .eq('id', compraId)
+
+    if (compraError) {
+      console.error('Error eliminando compra:', compraError)
+      return { success: false, error: 'Error al eliminar el pedido' }
+    }
+
+    console.log('✅ Pedido eliminado exitosamente:', compraId)
+    return { success: true }
+
+  } catch (error) {
+    console.error('❌ Error al eliminar pedido expirado:', error)
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Error desconocido' 
+    }
+  }
+}
+
 // Completar soporte - solo actualiza el estado del stock y respuesta
 export const completarSoporte = async (
   compraId: string,

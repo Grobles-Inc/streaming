@@ -1,6 +1,5 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,8 +7,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { cn } from '@/lib/utils'
-import { IconCheck, IconDots, IconEye, IconX, IconTrash } from '@tabler/icons-react'
+import { IconCheck, IconDots, IconEye, IconPhone, IconTrash, IconX } from '@tabler/icons-react'
 import { ColumnDef } from '@tanstack/react-table'
 import type { MappedRecarga } from '../data/types'
 
@@ -114,40 +112,20 @@ export function createRecargasColumns(
   onVer: (recarga: MappedRecarga) => void | Promise<void>
 ): ColumnDef<MappedRecarga>[] {
   return [
-    {
-      id: 'select',
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && 'indeterminate')
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Seleccionar todo"
-          className="translate-y-[2px]"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Seleccionar fila"
-          className="translate-y-[2px]"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
+
     {
       accessorKey: 'usuario',
       header: 'Usuario',
       cell: ({ row }) => {
         const usuario = row.getValue('usuario') as string
         return (
-          <div className="font-mono text-sm">
+          <div className="font-bold">
             {usuario}
           </div>
         )
+      },
+      meta: {
+        className: 'text-center',
       },
     },
     {
@@ -158,9 +136,12 @@ export function createRecargasColumns(
         const telefono = row.original.usuarioTelefono
         return (
           <div className="space-y-1">
-            <div className="font-medium">{nombre}</div>
+            <div >{nombre}</div>
             {telefono && (
-              <div className="text-sm text-muted-foreground">{telefono}</div>
+              <div className="text-xs text-green-500 flex items-center">
+                <IconPhone className=" h-4 w-4" />
+                {telefono}
+              </div>
             )}
           </div>
         )
@@ -170,24 +151,16 @@ export function createRecargasColumns(
       accessorKey: 'montoFormateado',
       header: 'Monto',
       cell: ({ row }) => {
-        const monto = row.original.monto
         const montoFormateado = row.getValue('montoFormateado') as string
         return (
-          <div className="text-right">
-            <span className={cn(
-              'inline-flex items-center px-2 py-1 rounded-md text-sm font-medium',
-              monto > 0
-                ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                : 'bg-gray-50 text-gray-700 border border-gray-200'
-            )}>
-              {montoFormateado}
-            </span>
-          </div>
+
+          <Badge className='text-md' >
+            {montoFormateado}
+          </Badge>
+
         )
       },
-      meta: {
-        className: 'text-right',
-      },
+
     },
     {
       accessorKey: 'estado',
@@ -212,14 +185,10 @@ export function createRecargasColumns(
         const fecha = row.getValue('fechaCreacion') as Date
         return (
           <div className="space-y-1">
-            <div className="text-sm">
-              {fecha.toLocaleDateString('es-PE', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-              })}
+            <div className="text-xs">
+              {fecha.toLocaleDateString()}
             </div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs">
               {fecha.toLocaleTimeString('es-PE', {
                 hour: '2-digit',
                 minute: '2-digit'

@@ -1,4 +1,20 @@
-import { useState } from 'react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  IconCheck,
+  IconSearch,
+  IconTrash,
+  IconX
+} from '@tabler/icons-react'
 import {
   flexRender,
   getCoreRowModel,
@@ -11,35 +27,9 @@ import {
   type SortingState,
   type VisibilityState,
 } from '@tanstack/react-table'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { 
-  IconChevronDown, 
-  IconChevronLeft, 
-  IconChevronRight,
-  IconChevronsLeft,
-  IconChevronsRight,
-  IconSearch,
-  IconCheck,
-  IconX,
-  IconTrash
-} from '@tabler/icons-react'
-import { Badge } from '@/components/ui/badge'
+import { useState } from 'react'
 import type { MappedRecarga } from '../data/types'
+import { DataTablePagination } from './data-table-pagination'
 
 interface RecargasTableProps {
   data: MappedRecarga[]
@@ -50,9 +40,9 @@ interface RecargasTableProps {
   onEliminarSeleccionadas?: (ids: string[]) => Promise<void>
 }
 
-export function RecargasTable({ 
-  data, 
-  columns, 
+export function RecargasTable({
+  data,
+  columns,
   loading = false,
   onAprobarSeleccionadas,
   onRechazarSeleccionadas,
@@ -139,33 +129,9 @@ export function RecargasTable({
               onChange={(event) =>
                 table.getColumn('usuarioNombre')?.setFilterValue(event.target.value)
               }
-              className="pl-8 max-w-sm"
+              className="pl-8 max-w-md"
             />
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                Columnas <IconChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  )
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
 
         {/* Acciones masivas */}
@@ -225,9 +191,9 @@ export function RecargasTable({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                     </TableHead>
                   )
                 })}
@@ -265,74 +231,8 @@ export function RecargasTable({
           </TableBody>
         </Table>
       </div>
+      <DataTablePagination table={table} />
 
-      {/* Paginación */}
-      <div className="flex items-center justify-between space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} de{' '}
-          {table.getFilteredRowModel().rows.length} fila(s) seleccionada(s).
-        </div>
-        <div className="flex items-center space-x-6 lg:space-x-8">
-          <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">Filas por página</p>
-            <select
-              value={table.getState().pagination.pageSize}
-              onChange={(e) => {
-                table.setPageSize(Number(e.target.value))
-              }}
-              className="h-8 w-[80px] rounded border border-input bg-background px-3 py-1 text-sm"
-            >
-              {[10, 20, 50, 100, 200].map((pageSize) => (
-                <option key={pageSize} value={pageSize}>
-                  {pageSize}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-            Página {table.getState().pagination.pageIndex + 1} de{' '}
-            {table.getPageCount()}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              className="hidden h-8 w-8 p-0 lg:flex"
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <span className="sr-only">Ir a la primera página</span>
-              <IconChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              className="h-8 w-8 p-0"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <span className="sr-only">Ir a la página anterior</span>
-              <IconChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              className="h-8 w-8 p-0"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <span className="sr-only">Ir a la página siguiente</span>
-              <IconChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              className="hidden h-8 w-8 p-0 lg:flex"
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
-            >
-              <span className="sr-only">Ir a la última página</span>
-              <IconChevronsRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

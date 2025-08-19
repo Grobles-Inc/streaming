@@ -367,14 +367,73 @@ export const getHistorialRenovaciones = async (proveedorId: string) => {
   }
 }
 
-// Get historial completo (recargas + retiros + compras del proveedor + renovaciones)
+// Get historial de reembolsos procesados por el proveedor
+export const getHistorialReembolsos = async (proveedorId: string) => {
+  try {
+    // Obtener compras reembolsadas donde el proveedor tuvo que pagar el reembolso
+    const { data: comprasReembolsadas, error: comprasError } = await supabase
+      .from('compras')
+      .select(`
+        id,
+        monto_reembolso,
+        estado,
+        updated_at,
+        created_at,
+        productos:producto_id(nombre, precio_publico),
+        usuarios:vendedor_id(nombres, apellidos, email, telefono)
+      `)
+      .eq('proveedor_id', proveedorId)
+      .eq('estado', 'reembolsado')
+      .gt('monto_reembolso', 0)
+      .order('updated_at', { ascending: false })
+
+    if (comprasError) {
+      console.error('Error fetching compras reembolsadas:', comprasError)
+      return []
+    }
+
+    if (!comprasReembolsadas || comprasReembolsadas.length === 0) {
+      return []
+    }
+
+    // Mapear compras reembolsadas a transacciones de reembolso
+    const reembolsos = comprasReembolsadas.map(compra => ({
+      id: `reembolso_${compra.id}`,
+      usuario_id: proveedorId,
+      monto: compra.monto_reembolso,
+      estado: 'completado',
+      created_at: compra.updated_at, // Usar updated_at como fecha del reembolso
+      updated_at: compra.updated_at,
+      tipo: 'reembolso' as const,
+      // Información adicional del producto y vendedor
+      productos: compra.productos ? {
+        nombre: (compra.productos as any).nombre,
+        precio_publico: (compra.productos as any).precio_publico
+      } : undefined,
+      usuarios: compra.usuarios ? {
+        nombres: (compra.usuarios as any).nombres,
+        apellidos: (compra.usuarios as any).apellidos,
+        email: (compra.usuarios as any).email,
+        telefono: (compra.usuarios as any).telefono
+      } : null
+    }))
+
+    return reembolsos
+  } catch (error) {
+    console.error('Error fetching historial reembolsos:', error)
+    return []
+  }
+}
+
+// Get historial completo (recargas + retiros + compras del proveedor + renovaciones + reembolsos)
 export const getHistorialCompleto = async (usuarioId: string) => {
-  const [recargas, retiros, compras, gastosPublicacion, renovaciones] = await Promise.all([
+  const [recargas, retiros, compras, gastosPublicacion, renovaciones, reembolsos] = await Promise.all([
     getHistorialTransacciones(usuarioId),
     getHistorialRetiros(usuarioId),
     getHistorialCompras(usuarioId),
     getHistorialGastosPublicacion(usuarioId),
-    getHistorialRenovaciones(usuarioId)
+    getHistorialRenovaciones(usuarioId),
+    getHistorialReembolsos(usuarioId)
   ])
 
   // Combinar y marcar el tipo
@@ -389,6 +448,7 @@ export const getHistorialCompleto = async (usuarioId: string) => {
 
   const gastosPublicacionConTipo = gastosPublicacion
   const renovacionesConTipo = renovaciones
+  const reembolsosConTipo = reembolsos
 
   // Combinar y ordenar por fecha
   const historialCompleto = [
@@ -396,7 +456,8 @@ export const getHistorialCompleto = async (usuarioId: string) => {
     ...retirosConTipo, 
     ...comprasConTipo,
     ...gastosPublicacionConTipo,
-    ...renovacionesConTipo
+    ...renovacionesConTipo,
+    ...reembolsosConTipo
   ]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 

@@ -17,7 +17,7 @@ type TransaccionCompleta = {
   estado: string
   created_at: string
   updated_at: string
-  tipo: 'recarga' | 'retiro' | 'compra' | 'gasto_publicacion' | 'renovacion'
+  tipo: 'recarga' | 'retiro' | 'compra' | 'gasto_publicacion' | 'renovacion' | 'reembolso'
   // Propiedades específicas para compras
   nombre_cliente?: string
   telefono_cliente?: string
@@ -87,6 +87,11 @@ const MontoCell = ({ transaccion }: { transaccion: TransaccionCompleta }) => {
       colorClass = 'text-purple-600'
       signo = '-'
       descripcion = 'Renovación: '
+      break
+    case 'reembolso':
+      colorClass = 'text-red-600'
+      signo = '-'
+      descripcion = 'Reembolso: '
       break
     default:
       colorClass = 'text-gray-600'
@@ -191,6 +196,11 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
           className = 'bg-purple-100 text-purple-800'
           texto = 'Renovación'
           break
+        case 'reembolso':
+          variant = 'secondary'
+          className = 'bg-red-100 text-red-800'
+          texto = 'Reembolso'
+          break
         default:
           texto = tipo
       }
@@ -213,6 +223,11 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
           {tipo === 'renovacion' && transaccion.producto_publicado && (
             <div className="text-xs text-muted-foreground">
               {transaccion.producto_publicado.nombre}
+            </div>
+          )}
+          {tipo === 'reembolso' && transaccion.productos && (
+            <div className="text-xs text-muted-foreground">
+              {transaccion.productos.nombre}
             </div>
           )}
         </div>
@@ -298,6 +313,24 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
               {transaccion.producto_publicado && (
                 <div className='text-xs text-muted-foreground'>
                   ID: {transaccion.producto_publicado.id} • +30 días
+                </div>
+              )}                
+            </div>
+          )
+        case 'reembolso':
+          return (
+            <div className='space-y-1'>
+              <div className='text-sm'>
+                <span className='font-medium'>Reembolso procesado:</span>
+              </div>
+              {transaccion.usuarios && (
+                <div className='text-xs text-muted-foreground'>
+                  Vendedor: {transaccion.usuarios.nombres} {transaccion.usuarios.apellidos}
+                </div>
+              )}
+              {transaccion.productos && (
+                <div className='text-xs text-muted-foreground'>
+                  Producto: {transaccion.productos.nombre}
                 </div>
               )}                
             </div>

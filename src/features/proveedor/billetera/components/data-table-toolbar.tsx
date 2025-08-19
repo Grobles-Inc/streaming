@@ -28,6 +28,10 @@ const tiposTransaccion = [
   {
     value: 'renovacion',
     label: 'Renovación',
+  },
+  {
+    value: 'reembolso',
+    label: 'Reembolso',
   }
 ]
 

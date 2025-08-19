@@ -182,20 +182,19 @@ export default function RecargasPage() {
 
           <div className="flex items-center space-x-2">
             <Select value={filtroEstado} onValueChange={handleFiltroEstado}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger >
                 <SelectValue placeholder="Filtrar por estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="todos">Todos los estados</SelectItem>
+                <SelectItem value="todos">Ver Todos</SelectItem>
                 <SelectItem value="pendiente">Pendientes</SelectItem>
                 <SelectItem value="aprobado">Aprobadas</SelectItem>
                 <SelectItem value="rechazado">Rechazadas</SelectItem>
               </SelectContent>
             </Select>
 
-            <Button variant="outline" onClick={refreshRecargas} disabled={loading}>
-              <IconRefresh className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              Actualizar
+            <Button variant="outline" size="icon" onClick={refreshRecargas} disabled={loading}>
+              <IconRefresh className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             </Button>
 
             {/* <Button variant="outline" disabled>
@@ -205,15 +204,16 @@ export default function RecargasPage() {
           </div>
         </div>
 
-
-        <RecargasTable
-          data={recargasFiltradas}
-          columns={columns}
-          loading={loading}
-          onAprobarSeleccionadas={handleAprobarSeleccionadas}
-          onRechazarSeleccionadas={handleRechazarSeleccionadas}
-          onEliminarSeleccionadas={handleEliminarSeleccionadas}
-        />
+        <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
+          <RecargasTable
+            data={recargasFiltradas}
+            columns={columns}
+            loading={loading}
+            onAprobarSeleccionadas={handleAprobarSeleccionadas}
+            onRechazarSeleccionadas={handleRechazarSeleccionadas}
+            onEliminarSeleccionadas={handleEliminarSeleccionadas}
+          />
+        </div>
 
       </Main>
 

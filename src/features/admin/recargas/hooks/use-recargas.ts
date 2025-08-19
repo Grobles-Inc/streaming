@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/stores/authStore'
 import { RecargasService } from '../services/recargas.service'
 import { mapSupabaseRecargaToComponent } from '../data/schema'
 import type { 
@@ -9,11 +11,26 @@ import type {
 } from '../data/types'
 
 export function useRecargas(filtrosIniciales?: FiltroRecarga) {
+  const { user } = useAuth()
   const [recargas, setRecargas] = useState<MappedRecarga[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [estadisticas, setEstadisticas] = useState<EstadisticasRecargas | null>(null)
   const [filtros, setFiltros] = useState<FiltroRecarga>(filtrosIniciales || {})
+  const subscriptionRef = useRef<any>(null)
+
+  // Function to play notification sound
+  const playNotificationSound = useCallback(() => {
+    try {
+      const audio = new Audio('/src/assets/sound/yape.mp3')
+      audio.volume = 0.7 // Set volume to 70%
+      audio.play().catch(error => {
+        console.warn('Could not play notification sound:', error)
+      })
+    } catch (error) {
+      console.warn('Error creating audio element:', error)
+    }
+  }, [])
 
   // Cargar recargas
   const loadRecargas = useCallback(async (nuevosFiltros?: FiltroRecarga) => {
@@ -42,11 +59,58 @@ export function useRecargas(filtrosIniciales?: FiltroRecarga) {
     }
   }, [])
 
-  // Cargar datos iniciales
+  // Setup realtime subscription for new recargas
+  const setupRealtimeSubscription = useCallback(() => {
+    // Only setup subscription for admin users
+    if (!user || user.rol !== 'admin') {
+      return
+    }
+
+    // Clean up existing subscription
+    if (subscriptionRef.current) {
+      subscriptionRef.current.unsubscribe()
+    }
+
+    // Create new subscription
+    subscriptionRef.current = supabase
+      .channel('recargas-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'recargas'
+        },
+        (payload) => {
+          console.log('Nueva recarga detectada:', payload)
+          
+          // Play notification sound
+          playNotificationSound()
+          
+          // Refresh data to show the new recarga
+          loadRecargas()
+          loadEstadisticas()
+        }
+      )
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status)
+      })
+  }, [user, playNotificationSound, loadRecargas, loadEstadisticas])
+
+  // Cargar datos iniciales y configurar suscripción
   useEffect(() => {
     loadRecargas()
     loadEstadisticas()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    setupRealtimeSubscription()
+
+    // Cleanup on unmount
+    return () => {
+      if (subscriptionRef.current) {
+        subscriptionRef.current.unsubscribe()
+        subscriptionRef.current = null
+      }
+    }
+  }, [loadRecargas, loadEstadisticas, setupRealtimeSubscription]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Aprobar recarga
   const aprobarRecarga = async (id: number): Promise<boolean> => {

@@ -17,7 +17,7 @@ type TransaccionCompleta = {
   estado: string
   created_at: string
   updated_at: string
-  tipo: 'recarga' | 'retiro' | 'compra' | 'gasto_publicacion' | 'renovacion' | 'reembolso'
+  tipo: 'recarga' | 'retiro' | 'compra' | 'gasto_publicacion' | 'renovacion' | 'renovacion_pedido' | 'reembolso'
   // Propiedades específicas para compras
   nombre_cliente?: string
   telefono_cliente?: string
@@ -87,6 +87,11 @@ const MontoCell = ({ transaccion }: { transaccion: TransaccionCompleta }) => {
       colorClass = 'text-purple-600'
       signo = '-'
       descripcion = 'Renovación: '
+      break
+    case 'renovacion_pedido':
+      colorClass = 'text-purple-600'
+      signo = '+'
+      descripcion = 'Renovación vendedor: '
       break
     case 'reembolso':
       colorClass = 'text-red-600'
@@ -196,6 +201,11 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
           className = 'bg-purple-100 text-purple-800'
           texto = 'Renovación'
           break
+        case 'renovacion_pedido':
+          variant = 'outline'
+          className = 'bg-purple-100 text-purple-800'
+          texto = 'Renovación Vendedor'
+          break
         case 'reembolso':
           variant = 'secondary'
           className = 'bg-red-100 text-red-800'
@@ -223,6 +233,11 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
           {tipo === 'renovacion' && transaccion.producto_publicado && (
             <div className="text-xs text-muted-foreground">
               {transaccion.producto_publicado.nombre}
+            </div>
+          )}
+          {tipo === 'renovacion_pedido' && transaccion.productos && (
+            <div className="text-xs text-muted-foreground">
+              {transaccion.productos.nombre}
             </div>
           )}
           {tipo === 'reembolso' && transaccion.productos && (
@@ -313,6 +328,24 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
               {transaccion.producto_publicado && (
                 <div className='text-xs text-muted-foreground'>
                   ID: {transaccion.producto_publicado.id} • +30 días
+                </div>
+              )}                
+            </div>
+          )
+        case 'renovacion_pedido':
+          return (
+            <div className='space-y-1'>
+              <div className='text-sm'>
+                <span className='font-medium'>Pedido renovado por vendedor:</span>
+              </div>
+              {transaccion.usuarios && (
+                <div className='text-xs text-muted-foreground'>
+                  Vendedor: {transaccion.usuarios.nombres} {transaccion.usuarios.apellidos}
+                </div>
+              )}
+              {transaccion.productos && (
+                <div className='text-xs text-muted-foreground'>
+                  Producto: {transaccion.productos.nombre}
                 </div>
               )}                
             </div>

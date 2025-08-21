@@ -3,10 +3,11 @@ import {
   IconExclamationCircle,
   IconFlag,
   IconHelpOctagon,
-  IconStopwatch
+  IconStopwatch,
+  IconRefresh
 } from '@tabler/icons-react'
 
-export type PedidoEstado = 'resuelto' | 'soporte' | 'vencido' | 'pedido' | 'entregado'
+export type PedidoEstado = 'resuelto' | 'soporte' | 'vencido' | 'pedido' | 'entregado' | 'renovado'
 
 export const estadosMap = new Map<PedidoEstado, string>([
   ['resuelto', 'bg-green-500 text-white dark:text-white border-green-500'],
@@ -14,6 +15,7 @@ export const estadosMap = new Map<PedidoEstado, string>([
   ['vencido', 'bg-red-500 text-white dark:text-white border-red-500'],
   ['pedido', 'bg-blue-500 text-white dark:text-white border-blue-500'],
   ['entregado', 'bg-gray-600/30 text-white dark:text-white border-gray-200'],
+  ['renovado', 'bg-purple-500 text-white dark:text-white border-purple-500'],
 ])
 
 export const diasRestantesMap = new Map<number, string>([
@@ -52,5 +54,11 @@ export const estados = [
     label: 'Entregado',
     icon: IconFlag,
     color: 'bg-gray-600/30 text-white dark:text-white border-gray-200',
+  },
+  {
+    value: 'renovado',
+    label: 'Renovado',
+    icon: IconRefresh,
+    color: 'bg-purple-500 text-white dark:text-white border-purple-500',
   },
 ] 

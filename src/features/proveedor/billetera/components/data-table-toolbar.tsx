@@ -30,6 +30,10 @@ const tiposTransaccion = [
     label: 'Renovación',
   },
   {
+    value: 'renovacion_pedido',
+    label: 'Renovación Vendedor',
+  },
+  {
     value: 'reembolso',
     label: 'Reembolso',
   }

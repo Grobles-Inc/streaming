@@ -91,17 +91,58 @@ export const columns: ColumnDef<Pedido>[] = [
     ),
     cell: ({ row }) => {
       const { estado } = row.original
-      const badgeColor = estadosMap.get(estado as PedidoEstado)
+      const fechaExpiracion = row.original.fecha_expiracion
+      const fechaCreacion = row.original.created_at
+      const tiempoUso = row.original.productos?.tiempo_uso
+      
+      // Un pedido está renovado por vendedor si:
+      // Tiene fecha_expiracion explícita Y es MAYOR que la calculada originalmente (extensión por vendedor)
+      let esRenovacion = false
+      
+      if (fechaExpiracion && fechaCreacion && tiempoUso) {
+        // Calcular la fecha que debería tener originalmente
+        const fechaOriginal = new Date(fechaCreacion)
+        const fechaFinOriginal = new Date(fechaOriginal.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
+        const fechaExpiracionActual = new Date(fechaExpiracion)
+        
+        // Si la fecha de expiración es MAYOR que la calculada originalmente, fue renovado por vendedor
+        // (Las renovaciones del proveedor no extienden, solo cambian, por eso > en lugar de !=)
+        esRenovacion = fechaExpiracionActual.getTime() > fechaFinOriginal.getTime()
+      }
+      
+      const estadoMostrar = esRenovacion ? 'renovado' : estado
+      
+      const badgeColor = estadosMap.get(estadoMostrar as PedidoEstado)
       return (
         <div className='flex justify-center space-x-2'>
           <Badge variant='outline' className={cn('capitalize', badgeColor)}>
-            {row.getValue('estado')}
+            {estadoMostrar}
           </Badge>
         </div>
       )
     },
     filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
+      const estado = row.getValue(id) as string
+      const fechaExpiracion = row.original.fecha_expiracion
+      const fechaCreacion = row.original.created_at
+      const tiempoUso = row.original.productos?.tiempo_uso
+      
+      // Si el filtro incluye "renovado", verificar si es una renovación por vendedor
+      if (value.includes('renovado')) {
+        let esRenovacion = false
+        
+        if (fechaExpiracion && fechaCreacion && tiempoUso) {
+          const fechaOriginal = new Date(fechaCreacion)
+          const fechaFinOriginal = new Date(fechaOriginal.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
+          const fechaExpiracionActual = new Date(fechaExpiracion)
+          
+          esRenovacion = fechaExpiracionActual.getTime() > fechaFinOriginal.getTime()
+        }
+        
+        if (esRenovacion) return true
+      }
+      
+      return value.includes(estado)
     },
     enableHiding: false,
     enableSorting: false,
@@ -293,13 +334,40 @@ export const columns: ColumnDef<Pedido>[] = [
     ),
     enableSorting: false,
     cell: ({ row }) => {
+      const fechaInicio = row.original.fecha_inicio
       const fechaCreacion = row.original.created_at
+      const fechaExpiracion = row.original.fecha_expiracion
+      const tiempoUso = row.original.productos?.tiempo_uso
+      
+      // Verificar si es una renovación por vendedor
+      let esRenovacion = false
+      if (fechaExpiracion && fechaCreacion && tiempoUso) {
+        const fechaOriginal = new Date(fechaCreacion)
+        const fechaFinOriginal = new Date(fechaOriginal.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
+        const fechaExpiracionActual = new Date(fechaExpiracion)
+        
+        esRenovacion = fechaExpiracionActual.getTime() > fechaFinOriginal.getTime()
+      }
+      
+      // Si tiene fecha_inicio explícita, usar esa
+      if (fechaInicio) {
+        const fecha = new Date(fechaInicio)
+        return (
+          <div className='flex justify-center'>
+            <span className={`text-sm ${esRenovacion ? 'text-purple-600 font-medium' : ''}`}>
+              {fecha.toLocaleDateString('es-ES')}
+            </span>
+          </div>
+        )
+      }
+      
+      // Si no, usar created_at (fecha original)
       if (!fechaCreacion) return <div className='flex justify-center text-sm'>N/A</div>
       
       const fecha = new Date(fechaCreacion)
       return (
         <div className='flex justify-center'>
-          <span className='text-sm'>
+          <span className={`text-sm ${esRenovacion ? 'text-purple-600 font-medium' : ''}`}>
             {fecha.toLocaleDateString('es-ES')}
           </span>
         </div>
@@ -313,19 +381,49 @@ export const columns: ColumnDef<Pedido>[] = [
     ),
     enableSorting: false,
     cell: ({ row }) => {
+      const fechaExpiracion = row.original.fecha_expiracion
+      const fechaInicio = row.original.fecha_inicio
       const fechaCreacion = row.original.created_at
       const tiempoUso = row.original.productos?.tiempo_uso
       
-      if (!fechaCreacion || !tiempoUso) {
+      // Verificar si es una renovación por vendedor
+      let esRenovacion = false
+      if (fechaExpiracion && fechaCreacion && tiempoUso) {
+        const fechaOriginal = new Date(fechaCreacion)
+        const fechaFinOriginal = new Date(fechaOriginal.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
+        const fechaExpiracionActual = new Date(fechaExpiracion)
+        
+        esRenovacion = fechaExpiracionActual.getTime() > fechaFinOriginal.getTime()
+      }
+      
+      // Si tiene fecha_expiracion explícita (renovación), usar esa
+      if (fechaExpiracion) {
+        const fecha = new Date(fechaExpiracion)
+        return (
+          <div className='flex justify-center'>
+            <span className={`text-sm ${esRenovacion ? 'text-purple-600 font-medium' : ''}`}>
+              {fecha.toLocaleDateString('es-ES')}
+            </span>
+          </div>
+        )
+      }
+      
+      // Si no, calcular usando la fecha de inicio (renovada o original) + tiempo_uso
+      let fechaInicioCalcular = fechaCreacion
+      if (fechaInicio) {
+        fechaInicioCalcular = fechaInicio
+      }
+      
+      if (!fechaInicioCalcular || !tiempoUso) {
         return <div className='flex justify-center text-sm'>N/A</div>
       }
       
-      const fechaInicio = new Date(fechaCreacion)
-      const fechaFin = new Date(fechaInicio.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
+      const fechaInicioDate = new Date(fechaInicioCalcular)
+      const fechaFin = new Date(fechaInicioDate.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
       
       return (
         <div className='flex justify-center'>
-          <span className='text-sm'>
+          <span className={`text-sm ${esRenovacion ? 'text-purple-600 font-medium' : ''}`}>
             {fechaFin.toLocaleDateString('es-ES')}
           </span>
         </div>
@@ -339,23 +437,60 @@ export const columns: ColumnDef<Pedido>[] = [
     ),
     enableSorting: false,
     cell: ({ row }) => {
+      const fechaExpiracion = row.original.fecha_expiracion
+      const fechaInicio = row.original.fecha_inicio
       const fechaCreacion = row.original.created_at
       const tiempoUso = row.original.productos?.tiempo_uso
       
-      if (!fechaCreacion || !tiempoUso) {
+      // Verificar si es una renovación por vendedor
+      let esRenovacion = false
+      if (fechaExpiracion && fechaCreacion && tiempoUso) {
+        const fechaOriginal = new Date(fechaCreacion)
+        const fechaFinOriginal = new Date(fechaOriginal.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
+        const fechaExpiracionActual = new Date(fechaExpiracion)
+        
+        esRenovacion = fechaExpiracionActual.getTime() > fechaFinOriginal.getTime()
+      }
+      
+      // Calcular fecha fin
+      let fechaFin: Date
+      
+      if (fechaExpiracion) {
+        // Si tiene fecha_expiracion explícita, usar esa
+        fechaFin = new Date(fechaExpiracion)
+      } else {
+        // Calcular usando fecha inicio (renovada o original) + tiempo_uso
+        let fechaInicioCalcular = fechaCreacion
+        if (fechaInicio) {
+          fechaInicioCalcular = fechaInicio
+        }
+        
+        if (!fechaInicioCalcular || !tiempoUso) {
+          return (
+            <div className='flex justify-center'>
+              <Badge variant='secondary' className='text-xs'>
+                N/A
+              </Badge>
+            </div>
+          )
+        }
+        
+        const fechaInicioDate = new Date(fechaInicioCalcular)
+        fechaFin = new Date(fechaInicioDate.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
+      }
+      
+      const ahora = new Date()
+      const diasRestantes = Math.ceil((fechaFin.getTime() - ahora.getTime()) / (24 * 60 * 60 * 1000))
+      
+      if (esRenovacion) {
         return (
           <div className='flex justify-center'>
-            <Badge variant='secondary' className='text-xs'>
-              N/A
+            <Badge variant='outline' className='text-xs font-medium text-purple-600 border-purple-300 bg-purple-50'>
+              Renovado por {diasRestantes > 0 ? diasRestantes : 0} días
             </Badge>
           </div>
         )
       }
-      
-      const fechaInicio = new Date(fechaCreacion)
-      const fechaFin = new Date(fechaInicio.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
-      const ahora = new Date()
-      const diasRestantes = Math.ceil((fechaFin.getTime() - ahora.getTime()) / (24 * 60 * 60 * 1000))
       
       let badgeVariant: 'default' | 'secondary' | 'destructive' | 'outline' = 'default'
       let badgeColor = ''

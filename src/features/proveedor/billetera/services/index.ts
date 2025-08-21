@@ -367,6 +367,94 @@ export const getHistorialRenovaciones = async (proveedorId: string) => {
   }
 }
 
+// Get historial de renovaciones de pedidos hechas por vendedores
+export const getHistorialRenovacionesPedidos = async (proveedorId: string) => {
+  try {
+    // Obtener pedidos del proveedor que han sido renovados por vendedores
+    const { data: compras, error: comprasError } = await supabase
+      .from('compras')
+      .select(`
+        id,
+        precio,
+        estado,
+        created_at,
+        updated_at,
+        fecha_expiracion,
+        productos:producto_id(nombre, precio_publico, tiempo_uso, precio_renovacion),
+        usuarios:vendedor_id(nombres, apellidos, email, telefono)
+      `)
+      .eq('proveedor_id', proveedorId)
+      .not('fecha_expiracion', 'is', null)
+      .order('created_at', { ascending: false })
+
+    if (comprasError) {
+      console.error('Error fetching compras para renovaciones de pedidos:', comprasError)
+      return []
+    }
+
+    if (!compras || compras.length === 0) {
+      return []
+    }
+
+    // Filtrar solo las compras que fueron renovadas por vendedores
+    const renovacionesPedidos = compras
+      .filter(compra => {
+        const fechaCreacion = compra.created_at
+        const fechaExpiracion = compra.fecha_expiracion
+        const producto = Array.isArray(compra.productos) ? compra.productos[0] : compra.productos
+        const tiempoUso = producto?.tiempo_uso
+
+        if (!fechaCreacion || !fechaExpiracion || !tiempoUso) {
+          return false
+        }
+
+        // Calcular la fecha que debería tener originalmente
+        const fechaOriginal = new Date(fechaCreacion)
+        const fechaFinOriginal = new Date(fechaOriginal.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
+        const fechaExpiracionActual = new Date(fechaExpiracion)
+
+        // Si la fecha de expiración es MAYOR que la calculada originalmente, fue renovado por vendedor
+        return fechaExpiracionActual.getTime() > fechaFinOriginal.getTime()
+      })
+      .map(compra => {
+        const producto = Array.isArray(compra.productos) ? compra.productos[0] : compra.productos
+        const usuario = Array.isArray(compra.usuarios) ? compra.usuarios[0] : compra.usuarios
+        const precioRenovacion = producto?.precio_renovacion || 0
+
+        // La fecha de renovación es cuando se actualizó la compra (cuando el vendedor renovó)
+        // Si no hay updated_at disponible, usar created_at como fallback
+        const fechaRenovacion = compra.updated_at || compra.created_at
+
+        return {
+          id: `renovacion_pedido_${compra.id}`,
+          usuario_id: proveedorId,
+          vendedor_id: usuario?.nombres || null,
+          monto: precioRenovacion,
+          estado: 'completado',
+          created_at: fechaRenovacion, // Usar fecha calculada de renovación
+          updated_at: fechaRenovacion,
+          tipo: 'renovacion_pedido' as const,
+          // Información adicional del producto y vendedor
+          productos: producto ? {
+            nombre: producto.nombre,
+            precio_publico: producto.precio_publico
+          } : undefined,
+          usuarios: usuario ? {
+            nombres: usuario.nombres,
+            apellidos: usuario.apellidos,
+            email: usuario.email,
+            telefono: usuario.telefono
+          } : null
+        }
+      })
+
+    return renovacionesPedidos
+  } catch (error) {
+    console.error('Error fetching historial renovaciones pedidos:', error)
+    return []
+  }
+}
+
 // Get historial de reembolsos procesados por el proveedor
 export const getHistorialReembolsos = async (proveedorId: string) => {
   try {
@@ -397,26 +485,31 @@ export const getHistorialReembolsos = async (proveedorId: string) => {
     }
 
     // Mapear compras reembolsadas a transacciones de reembolso
-    const reembolsos = comprasReembolsadas.map(compra => ({
-      id: `reembolso_${compra.id}`,
-      usuario_id: proveedorId,
-      monto: compra.monto_reembolso,
-      estado: 'completado',
-      created_at: compra.updated_at, // Usar updated_at como fecha del reembolso
-      updated_at: compra.updated_at,
-      tipo: 'reembolso' as const,
-      // Información adicional del producto y vendedor
-      productos: compra.productos ? {
-        nombre: (compra.productos as any).nombre,
-        precio_publico: (compra.productos as any).precio_publico
-      } : undefined,
-      usuarios: compra.usuarios ? {
-        nombres: (compra.usuarios as any).nombres,
-        apellidos: (compra.usuarios as any).apellidos,
-        email: (compra.usuarios as any).email,
-        telefono: (compra.usuarios as any).telefono
-      } : null
-    }))
+    const reembolsos = comprasReembolsadas.map(compra => {
+      const producto = Array.isArray(compra.productos) ? compra.productos[0] : compra.productos
+      const usuario = Array.isArray(compra.usuarios) ? compra.usuarios[0] : compra.usuarios
+      
+      return {
+        id: `reembolso_${compra.id}`,
+        usuario_id: proveedorId,
+        monto: compra.monto_reembolso,
+        estado: 'completado',
+        created_at: compra.updated_at, // Usar updated_at como fecha del reembolso
+        updated_at: compra.updated_at,
+        tipo: 'reembolso' as const,
+        // Información adicional del producto y vendedor
+        productos: producto ? {
+          nombre: producto.nombre,
+          precio_publico: producto.precio_publico
+        } : undefined,
+        usuarios: usuario ? {
+          nombres: usuario.nombres,
+          apellidos: usuario.apellidos,
+          email: usuario.email,
+          telefono: usuario.telefono
+        } : null
+      }
+    })
 
     return reembolsos
   } catch (error) {
@@ -425,14 +518,15 @@ export const getHistorialReembolsos = async (proveedorId: string) => {
   }
 }
 
-// Get historial completo (recargas + retiros + compras del proveedor + renovaciones + reembolsos)
+// Get historial completo (recargas + retiros + compras del proveedor + renovaciones + renovaciones pedidos + reembolsos)
 export const getHistorialCompleto = async (usuarioId: string) => {
-  const [recargas, retiros, compras, gastosPublicacion, renovaciones, reembolsos] = await Promise.all([
+  const [recargas, retiros, compras, gastosPublicacion, renovaciones, renovacionesPedidos, reembolsos] = await Promise.all([
     getHistorialTransacciones(usuarioId),
     getHistorialRetiros(usuarioId),
     getHistorialCompras(usuarioId),
     getHistorialGastosPublicacion(usuarioId),
     getHistorialRenovaciones(usuarioId),
+    getHistorialRenovacionesPedidos(usuarioId),
     getHistorialReembolsos(usuarioId)
   ])
 
@@ -448,6 +542,7 @@ export const getHistorialCompleto = async (usuarioId: string) => {
 
   const gastosPublicacionConTipo = gastosPublicacion
   const renovacionesConTipo = renovaciones
+  const renovacionesPedidosConTipo = renovacionesPedidos
   const reembolsosConTipo = reembolsos
 
   // Combinar y ordenar por fecha
@@ -457,6 +552,7 @@ export const getHistorialCompleto = async (usuarioId: string) => {
     ...comprasConTipo,
     ...gastosPublicacionConTipo,
     ...renovacionesConTipo,
+    ...renovacionesPedidosConTipo,
     ...reembolsosConTipo
   ]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())

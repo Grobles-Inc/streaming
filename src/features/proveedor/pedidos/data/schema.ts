@@ -6,6 +6,7 @@ const pedidoEstadoSchema = z.union([
   z.literal('vencido'),
   z.literal('pedido'),
   z.literal('entregado'),
+  z.literal('renovado'),
 ])
 
 export const pedidoSchema = z.object({

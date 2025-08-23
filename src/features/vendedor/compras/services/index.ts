@@ -129,7 +129,7 @@ export const renovarCompra = async (id: number, tiempo_uso: number, fecha_expira
 
   const { data: compraData, error } = await supabase
     .from('compras')
-    .update({ fecha_expiracion: newDate.toISOString() })
+    .update({ fecha_expiracion: newDate.toISOString(), renovado: true })
     .eq('id', id)
     .select()
     .single()

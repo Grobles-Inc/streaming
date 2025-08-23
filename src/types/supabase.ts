@@ -317,6 +317,7 @@ export interface Database {
           monto_reembolso: number
           created_at: string
           updated_at: string
+          renovado: boolean
         }
         Insert: {
           id?: number
@@ -336,6 +337,7 @@ export interface Database {
           monto_reembolso?: number
           created_at?: string
           updated_at?: string
+          renovado?: boolean
         }
         Update: {
           id?: number
@@ -355,6 +357,7 @@ export interface Database {
           monto_reembolso?: number
           created_at?: string
           updated_at?: string
+          renovado?: boolean
         }
         Relationships: [
           {

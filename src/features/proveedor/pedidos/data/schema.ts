@@ -18,6 +18,7 @@ export const pedidoSchema = z.object({
   precio: z.number().min(0, 'Precio debe ser positivo.'),
   fecha_inicio: z.string().nullable().optional(),
   fecha_expiracion: z.string().nullable().optional(),
+  renovado: z.boolean().optional(), // Nueva columna para detectar renovaciones por vendedor
   productos: z.object({
     nombre: z.string().optional(),
     precio_publico: z.number().optional(),

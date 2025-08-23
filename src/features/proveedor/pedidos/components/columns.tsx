@@ -90,27 +90,12 @@ export const columns: ColumnDef<Pedido>[] = [
       <DataTableColumnHeader column={column} title='Estado' />
     ),
     cell: ({ row }) => {
-      const { estado } = row.original
-      const fechaExpiracion = row.original.fecha_expiracion
-      const fechaCreacion = row.original.created_at
-      const tiempoUso = row.original.productos?.tiempo_uso
+      const { estado, renovado } = row.original
       
-      // Un pedido está renovado por vendedor si:
-      // Tiene fecha_expiracion explícita Y es MAYOR que la calculada originalmente (extensión por vendedor)
-      let esRenovacion = false
+      // Un pedido está renovado por vendedor si la columna 'renovado' es true
+      const esRenovadoPorVendedor = renovado === true
       
-      if (fechaExpiracion && fechaCreacion && tiempoUso) {
-        // Calcular la fecha que debería tener originalmente
-        const fechaOriginal = new Date(fechaCreacion)
-        const fechaFinOriginal = new Date(fechaOriginal.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
-        const fechaExpiracionActual = new Date(fechaExpiracion)
-        
-        // Si la fecha de expiración es MAYOR que la calculada originalmente, fue renovado por vendedor
-        // (Las renovaciones del proveedor no extienden, solo cambian, por eso > en lugar de !=)
-        esRenovacion = fechaExpiracionActual.getTime() > fechaFinOriginal.getTime()
-      }
-      
-      const estadoMostrar = esRenovacion ? 'renovado' : estado
+      const estadoMostrar = esRenovadoPorVendedor ? 'renovado' : estado
       
       const badgeColor = estadosMap.get(estadoMostrar as PedidoEstado)
       return (
@@ -123,23 +108,11 @@ export const columns: ColumnDef<Pedido>[] = [
     },
     filterFn: (row, id, value) => {
       const estado = row.getValue(id) as string
-      const fechaExpiracion = row.original.fecha_expiracion
-      const fechaCreacion = row.original.created_at
-      const tiempoUso = row.original.productos?.tiempo_uso
+      const renovado = row.original.renovado
       
-      // Si el filtro incluye "renovado", verificar si es una renovación por vendedor
+      // Si el filtro incluye "renovado", verificar la columna renovado de la BD
       if (value.includes('renovado')) {
-        let esRenovacion = false
-        
-        if (fechaExpiracion && fechaCreacion && tiempoUso) {
-          const fechaOriginal = new Date(fechaCreacion)
-          const fechaFinOriginal = new Date(fechaOriginal.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
-          const fechaExpiracionActual = new Date(fechaExpiracion)
-          
-          esRenovacion = fechaExpiracionActual.getTime() > fechaFinOriginal.getTime()
-        }
-        
-        if (esRenovacion) return true
+        if (renovado === true) return true
       }
       
       return value.includes(estado)
@@ -336,25 +309,17 @@ export const columns: ColumnDef<Pedido>[] = [
     cell: ({ row }) => {
       const fechaInicio = row.original.fecha_inicio
       const fechaCreacion = row.original.created_at
-      const fechaExpiracion = row.original.fecha_expiracion
-      const tiempoUso = row.original.productos?.tiempo_uso
+      const renovado = row.original.renovado
       
-      // Verificar si es una renovación por vendedor
-      let esRenovacion = false
-      if (fechaExpiracion && fechaCreacion && tiempoUso) {
-        const fechaOriginal = new Date(fechaCreacion)
-        const fechaFinOriginal = new Date(fechaOriginal.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
-        const fechaExpiracionActual = new Date(fechaExpiracion)
-        
-        esRenovacion = fechaExpiracionActual.getTime() > fechaFinOriginal.getTime()
-      }
+      // Verificar si es una renovación por vendedor usando la columna renovado
+      const esRenovadoPorVendedor = renovado === true
       
       // Si tiene fecha_inicio explícita, usar esa
       if (fechaInicio) {
         const fecha = new Date(fechaInicio)
         return (
           <div className='flex justify-center'>
-            <span className={`text-sm ${esRenovacion ? 'text-purple-600 font-medium' : ''}`}>
+            <span className={`text-sm ${esRenovadoPorVendedor ? 'text-purple-600 font-medium' : ''}`}>
               {fecha.toLocaleDateString('es-ES')}
             </span>
           </div>
@@ -367,7 +332,7 @@ export const columns: ColumnDef<Pedido>[] = [
       const fecha = new Date(fechaCreacion)
       return (
         <div className='flex justify-center'>
-          <span className={`text-sm ${esRenovacion ? 'text-purple-600 font-medium' : ''}`}>
+          <span className={`text-sm ${esRenovadoPorVendedor ? 'text-purple-600 font-medium' : ''}`}>
             {fecha.toLocaleDateString('es-ES')}
           </span>
         </div>
@@ -385,23 +350,17 @@ export const columns: ColumnDef<Pedido>[] = [
       const fechaInicio = row.original.fecha_inicio
       const fechaCreacion = row.original.created_at
       const tiempoUso = row.original.productos?.tiempo_uso
+      const renovado = row.original.renovado
       
-      // Verificar si es una renovación por vendedor
-      let esRenovacion = false
-      if (fechaExpiracion && fechaCreacion && tiempoUso) {
-        const fechaOriginal = new Date(fechaCreacion)
-        const fechaFinOriginal = new Date(fechaOriginal.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
-        const fechaExpiracionActual = new Date(fechaExpiracion)
-        
-        esRenovacion = fechaExpiracionActual.getTime() > fechaFinOriginal.getTime()
-      }
+      // Verificar si es una renovación por vendedor usando la columna renovado
+      const esRenovadoPorVendedor = renovado === true
       
       // Si tiene fecha_expiracion explícita (renovación), usar esa
       if (fechaExpiracion) {
         const fecha = new Date(fechaExpiracion)
         return (
           <div className='flex justify-center'>
-            <span className={`text-sm ${esRenovacion ? 'text-purple-600 font-medium' : ''}`}>
+            <span className={`text-sm ${esRenovadoPorVendedor ? 'text-purple-600 font-medium' : ''}`}>
               {fecha.toLocaleDateString('es-ES')}
             </span>
           </div>
@@ -423,7 +382,7 @@ export const columns: ColumnDef<Pedido>[] = [
       
       return (
         <div className='flex justify-center'>
-          <span className={`text-sm ${esRenovacion ? 'text-purple-600 font-medium' : ''}`}>
+          <span className={`text-sm ${esRenovadoPorVendedor ? 'text-purple-600 font-medium' : ''}`}>
             {fechaFin.toLocaleDateString('es-ES')}
           </span>
         </div>
@@ -441,16 +400,10 @@ export const columns: ColumnDef<Pedido>[] = [
       const fechaInicio = row.original.fecha_inicio
       const fechaCreacion = row.original.created_at
       const tiempoUso = row.original.productos?.tiempo_uso
+      const renovado = row.original.renovado
       
-      // Verificar si es una renovación por vendedor
-      let esRenovacion = false
-      if (fechaExpiracion && fechaCreacion && tiempoUso) {
-        const fechaOriginal = new Date(fechaCreacion)
-        const fechaFinOriginal = new Date(fechaOriginal.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
-        const fechaExpiracionActual = new Date(fechaExpiracion)
-        
-        esRenovacion = fechaExpiracionActual.getTime() > fechaFinOriginal.getTime()
-      }
+      // Verificar si es una renovación por vendedor usando la columna renovado
+      const esRenovadoPorVendedor = renovado === true
       
       // Calcular fecha fin
       let fechaFin: Date
@@ -482,7 +435,7 @@ export const columns: ColumnDef<Pedido>[] = [
       const ahora = new Date()
       const diasRestantes = Math.ceil((fechaFin.getTime() - ahora.getTime()) / (24 * 60 * 60 * 1000))
       
-      if (esRenovacion) {
+      if (esRenovadoPorVendedor) {
         return (
           <div className='flex justify-center'>
             <Badge variant='outline' className='text-xs font-medium text-purple-600 border-purple-300 bg-purple-50'>

@@ -465,7 +465,7 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <IconWallet className="h-5 w-5" />
-                Comisiones por Retiro
+                Detalles de Retiro
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -477,7 +477,7 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
                       <th className="px-4 py-3 font-medium">Monto Retiro</th>
                       <th className="px-4 py-3 font-medium">% Comisión</th>
                       <th className="px-4 py-3 font-medium">Comisión (USD)</th>
-                      <th className="px-4 py-3 font-medium">Comisión (PEN)</th>
+                      <th className="px-4 py-3 font-medium">Total (USD)</th>
                       <th className="px-4 py-3 font-medium">Fecha</th>
                     </tr>
                   </thead>

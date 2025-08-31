@@ -177,7 +177,7 @@ export class MiBilleteraService {
 
       // Obtener configuración de comisiones de retiro
       // Manejo temporal para cuando la columna comision_retiro no existe aún
-      let configuraciones: any[] = []
+      let configuraciones = []
       const { data: configData, error: configError } = await supabase
         .from('configuracion')
         .select('comision_retiro, updated_at')
@@ -186,8 +186,8 @@ export class MiBilleteraService {
       if (configError) {
         // Si el error es que la columna no existe, usar valor por defecto
         if (configError.code === '42703' && configError.message.includes('comision_retiro')) {
-          console.warn('Campo comision_retiro no existe aún. Usando valor por defecto 2.5%')
-          configuraciones = [{ comision_retiro: 2.5, updated_at: new Date().toISOString() }]
+          console.warn('Campo comision_retiro no existe aún. Usando valor por defecto 10%')
+          configuraciones = [{ comision_retiro: 10, updated_at: new Date().toISOString() }]
         } else {
           throw configError
         }
@@ -222,8 +222,8 @@ export class MiBilleteraService {
           configVigente = configuraciones[configuraciones.length - 1]
         }
 
-        const comisionPorcentaje = configVigente?.comision_retiro || 2.5 // Valor por defecto temporal
-        const comisionEnDolares = (retiro.monto * comisionPorcentaje) / 100
+        const comisionPorcentaje = configVigente?.comision_retiro || 10 // Valor por defecto temporal
+        const comisionEnDolares = ((retiro.monto * 100)/90 * comisionPorcentaje) / 100
         const usuarioData = Array.isArray(retiro.usuarios) ? retiro.usuarios[0] : retiro.usuarios
 
         return {

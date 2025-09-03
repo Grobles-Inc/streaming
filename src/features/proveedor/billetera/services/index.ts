@@ -377,6 +377,7 @@ export const getHistorialRenovacionesPedidos = async (proveedorId: string) => {
         id,
         precio,
         estado,
+        renovado,
         created_at,
         updated_at,
         fecha_expiracion,
@@ -384,8 +385,8 @@ export const getHistorialRenovacionesPedidos = async (proveedorId: string) => {
         usuarios:vendedor_id(nombres, apellidos, email, telefono)
       `)
       .eq('proveedor_id', proveedorId)
-      .not('fecha_expiracion', 'is', null)
-      .order('created_at', { ascending: false })
+      .eq('estado', 'renovado')
+      .order('updated_at', { ascending: false })
 
     if (comprasError) {
       console.error('Error fetching compras para renovaciones de pedidos:', comprasError)
@@ -396,26 +397,8 @@ export const getHistorialRenovacionesPedidos = async (proveedorId: string) => {
       return []
     }
 
-    // Filtrar solo las compras que fueron renovadas por vendedores
+    // Mapear las compras renovadas (ya filtradas por la consulta)
     const renovacionesPedidos = compras
-      .filter(compra => {
-        const fechaCreacion = compra.created_at
-        const fechaExpiracion = compra.fecha_expiracion
-        const producto = Array.isArray(compra.productos) ? compra.productos[0] : compra.productos
-        const tiempoUso = producto?.tiempo_uso
-
-        if (!fechaCreacion || !fechaExpiracion || !tiempoUso) {
-          return false
-        }
-
-        // Calcular la fecha que debería tener originalmente
-        const fechaOriginal = new Date(fechaCreacion)
-        const fechaFinOriginal = new Date(fechaOriginal.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
-        const fechaExpiracionActual = new Date(fechaExpiracion)
-
-        // Si la fecha de expiración es MAYOR que la calculada originalmente, fue renovado por vendedor
-        return fechaExpiracionActual.getTime() > fechaFinOriginal.getTime()
-      })
       .map(compra => {
         const producto = Array.isArray(compra.productos) ? compra.productos[0] : compra.productos
         const usuario = Array.isArray(compra.usuarios) ? compra.usuarios[0] : compra.usuarios

@@ -81,28 +81,27 @@ export function calcularEstadoExpiracion(
 
 /**
  * Calcula la nueva fecha de expiración para renovar un producto
- * @param fechaActual - Fecha actual de expiración (puede ser null)
- * @param diasRenovacion - Días a agregar (por defecto 30)
+ * Usa la misma lógica que el vendedor: fecha_expiracion + tiempo_uso
+ * @param fechaExpiracion - Fecha actual de expiración
+ * @param tiempoUso - Días del tiempo de uso del producto
  */
 export function calcularNuevaFechaExpiracion(
-  fechaActual: string | null,
-  diasRenovacion: number = 30
+  fechaExpiracion: string,
+  tiempoUso: number
 ): string {
+  const endDate = new Date(fechaExpiracion)
+  const newDate = new Date(endDate.setDate(endDate.getDate() + tiempoUso))
+  
+  return newDate.toISOString()
+}
+
+/**
+ * Calcula fecha de expiración inicial (desde ahora)
+ * @param dias - Días desde hoy
+ */
+export function calcularFechaExpiracionInicial(dias: number): string {
   const ahora = new Date()
-  let fechaBase: Date
-
-  if (fechaActual) {
-    const fechaExp = new Date(fechaActual)
-    // Si la fecha actual está en el futuro, usarla como base
-    // Si ya venció, usar la fecha actual
-    fechaBase = fechaExp > ahora ? fechaExp : ahora
-  } else {
-    // Si no hay fecha, usar la fecha actual
-    fechaBase = ahora
-  }
-
-  const nuevaFecha = new Date(fechaBase)
-  nuevaFecha.setDate(nuevaFecha.getDate() + diasRenovacion)
+  const nuevaFecha = new Date(ahora.setDate(ahora.getDate() + dias))
   
   return nuevaFecha.toISOString()
 }
@@ -123,21 +122,4 @@ export function formatearFechaExpiracion(fecha: string | null): string {
   })
 }
 
-/**
- * Verifica si un producto necesita renovación (vencido o por vencer)
- */
-export function necesitaRenovacion(estado: string, fechaExpiracion: string | null): boolean {
-  const info = calcularEstadoExpiracion(estado, fechaExpiracion)
-  return info.estado === 'vencido' || info.estado === 'por_vencer'
-}
-
-/**
- * Obtiene productos que necesitan atención (vencidos o por vencer)
- */
-export function obtenerProductosConAlerta<T extends { estado: string; fecha_expiracion: string | null }>(
-  productos: T[]
-): T[] {
-  return productos.filter(producto => 
-    necesitaRenovacion(producto.estado, producto.fecha_expiracion)
-  )
-} 
+ 

@@ -77,18 +77,14 @@ export function DataTableRowActions<TData>({
     setShowEditModal(false)
   }
 
-  // Verificar si el pedido está expirado
+  // Verificar si el pedido está expirado usando fecha_expiracion
   const isExpired = () => {
-    const fechaCreacion = pedido.created_at
-    const tiempoUso = pedido.productos?.tiempo_uso
+    if (!pedido.fecha_expiracion) return false
     
-    if (!fechaCreacion || !tiempoUso) return false
-    
-    const fechaInicio = new Date(fechaCreacion)
-    const fechaFin = new Date(fechaInicio.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
+    const fechaExpiracion = new Date(pedido.fecha_expiracion)
     const ahora = new Date()
     
-    return fechaFin < ahora
+    return fechaExpiracion < ahora
   }
 
   const handleDeleteClick = () => {

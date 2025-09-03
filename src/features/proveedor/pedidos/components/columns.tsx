@@ -90,31 +90,19 @@ export const columns: ColumnDef<Pedido>[] = [
       <DataTableColumnHeader column={column} title='Estado' />
     ),
     cell: ({ row }) => {
-      const { estado, renovado } = row.original
+      const { estado } = row.original
       
-      // Un pedido está renovado por vendedor si la columna 'renovado' es true
-      const esRenovadoPorVendedor = renovado === true
-      
-      const estadoMostrar = esRenovadoPorVendedor ? 'renovado' : estado
-      
-      const badgeColor = estadosMap.get(estadoMostrar as PedidoEstado)
+      const badgeColor = estadosMap.get(estado as PedidoEstado)
       return (
         <div className='flex justify-center space-x-2'>
           <Badge variant='outline' className={cn('capitalize', badgeColor)}>
-            {estadoMostrar}
+            {estado}
           </Badge>
         </div>
       )
     },
     filterFn: (row, id, value) => {
       const estado = row.getValue(id) as string
-      const renovado = row.original.renovado
-      
-      // Si el filtro incluye "renovado", verificar la columna renovado de la BD
-      if (value.includes('renovado')) {
-        if (renovado === true) return true
-      }
-      
       return value.includes(estado)
     },
     enableHiding: false,

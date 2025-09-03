@@ -3,6 +3,7 @@ import {
   IconExclamationCircle,
   IconFlag,
   IconHelpOctagon,
+  IconRefresh,
   IconStopwatch
 } from '@tabler/icons-react'
 import { CompraEstado } from './schema'
@@ -90,6 +91,13 @@ export const estados = [
     icon: IconFlag,
     color: 'bg-gray-600/30 text-white  hover:bg-gray-600/40 dark:text-white border-gray-200',
   },
+  {
+    value: 'renovado',
+    label: 'Renovado',
+    icon: IconRefresh,
+    color: 'bg-purple-500 text-white  hover:bg-purple-600 dark:text-white border-purple-500',
+  },
+  
 ]
 
 

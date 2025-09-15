@@ -12,6 +12,7 @@ export const getStockProductosIds = async (productoId: number): Promise<number[]
     .select('id')
     .eq('producto_id', productoId)
     .eq('estado', 'disponible')
+    .eq('publicado', true)
     .order('created_at', { ascending: false })
 
   if (error) {

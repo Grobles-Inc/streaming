@@ -10,7 +10,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { useUpdateStockProductoAccountData, useUpdateProductoPrecioRenovacion, useUpdatePedidoFechas, useUpdateProductoTiempoUso } from '../queries'
+import { useUpdateStockProductoAccountData, useUpdateProductoPrecioRenovacion, useUpdatePedidoFechas } from '../queries'
 import { formatearFechaParaInput, calcularDuracionEnDias } from '../utils/fecha-utils'
 import { Loader2 } from 'lucide-react'
 
@@ -48,7 +48,6 @@ export function EditAccountModal({
   const updateStockProducto = useUpdateStockProductoAccountData()
   const updatePrecioRenovacion = useUpdateProductoPrecioRenovacion()
   const updatePedidoFechas = useUpdatePedidoFechas()
-  const updateTiempoUso = useUpdateProductoTiempoUso()
   
   const [formData, setFormData] = useState({
     email: currentData.email || '',
@@ -88,6 +87,13 @@ export function EditAccountModal({
       return
     }
 
+    // Validar que la duración calculada no exceda el tiempo_uso original del producto
+    const tiempoUsoOriginal = currentData.tiempo_uso || 30
+    if (diasUsoCalculado > tiempoUsoOriginal) {
+      toast.error(`La duración calculada (${diasUsoCalculado} días) no puede exceder el tiempo original del producto (${tiempoUsoOriginal} días)`)
+      return
+    }
+
     try {
       // Actualizar datos de cuenta
       await updateStockProducto.mutateAsync({
@@ -118,13 +124,8 @@ export function EditAccountModal({
         })
       }
 
-      // Actualizar tiempo de uso del producto basado en las fechas
-      if (productoId && diasUsoCalculado > 0) {
-        await updateTiempoUso.mutateAsync({
-          productoId,
-          tiempoUso: diasUsoCalculado
-        })
-      }
+      // REMOVIDO: Ya no actualizamos el tiempo_uso del producto para mantener el valor original
+      // Esto evita que se modifique el tiempo_uso base del producto
 
       toast.success('Datos actualizados correctamente')
       onSuccess?.()
@@ -150,7 +151,7 @@ export function EditAccountModal({
   // }
 
   const isLoading = updateStockProducto.isPending || updatePrecioRenovacion.isPending || 
-                   updatePedidoFechas.isPending || updateTiempoUso.isPending
+                   updatePedidoFechas.isPending
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

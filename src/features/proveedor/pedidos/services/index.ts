@@ -484,39 +484,42 @@ export const eliminarPedidoExpirado = async (
   stockProductoId?: number | null
 ): Promise<{ success: boolean; error?: string }> => {
   try {
-    console.log('Eliminando pedido expirado:', { compraId, stockProductoId })
-
-    // 1. Eliminar el registro del stock_producto si existe
-    if (stockProductoId) {
-      const { error: stockError } = await supabase
-        .from('stock_productos')
-        .delete()
-        .eq('id', stockProductoId)
-
-      if (stockError) {
-        console.error('Error eliminando stock_producto:', stockError)
-        return { success: false, error: 'Error al eliminar la cuenta del stock' }
-      }
-
-      console.log('✅ Stock producto eliminado:', stockProductoId)
-    }
-
-    // 2. Eliminar el registro del pedido (compra)
-    const { error: compraError } = await supabase
+    // ORDEN CORRECTO: Primero eliminar compra (que referencia stock_producto), después stock_producto
+    
+    // 1. Eliminar el registro del pedido (compra) PRIMERO
+    const { data: compraData, error: compraError } = await supabase
       .from('compras')
       .delete()
       .eq('id', compraId)
+      .select()
 
     if (compraError) {
       console.error('Error eliminando compra:', compraError)
-      return { success: false, error: 'Error al eliminar el pedido' }
+      return { success: false, error: `Error al eliminar el pedido: ${compraError.message}` }
     }
 
-    console.log('✅ Pedido eliminado exitosamente:', compraId)
+    if (!compraData || compraData.length === 0) {
+      return { success: false, error: 'No se encontró el pedido para eliminar' }
+    }
+
+    // 2. Eliminar el registro del stock_producto DESPUÉS (ahora que no hay referencias)
+    if (stockProductoId) {
+      const { data: _stockData, error: stockError } = await supabase
+        .from('stock_productos')
+        .delete()
+        .eq('id', stockProductoId)
+        .select()
+
+      if (stockError) {
+        console.error('Error eliminando stock_producto:', stockError)
+        return { success: false, error: `Error al eliminar la cuenta del stock: ${stockError.message}` }
+      }
+    }
+
     return { success: true }
 
   } catch (error) {
-    console.error('❌ Error al eliminar pedido expirado:', error)
+    console.error('Error al eliminar pedido expirado:', error)
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Error desconocido' 
@@ -558,6 +561,70 @@ export const completarSoporte = async (
     return { success: true }
   } catch (error) {
     console.error('Error completando soporte:', error)
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Error desconocido' 
+    }
+  }
+}
+
+// Actualizar pedido expirado a estado "vencido"
+export const updatePedidoStatusVencido = async (pedidoId: number): Promise<{ success: boolean; error?: string }> => {
+  try {
+    console.log('Actualizando pedido expirado a vencido:', pedidoId)
+
+    const { data, error } = await supabase
+      .from('compras')
+      .update({ 
+        estado: 'vencido',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', pedidoId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error al actualizar pedido a vencido:', error)
+      return { success: false, error: error.message }
+    }
+
+    console.log('Pedido actualizado a vencido exitosamente:', data)
+    return { success: true }
+
+  } catch (error) {
+    console.error('Error al actualizar pedido a vencido:', error)
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Error desconocido' 
+    }
+  }
+}
+
+// Corregir pedido marcado incorrectamente como "vencido" cuando aún le quedan días
+export const corregirPedidoVencidoIncorrecto = async (pedidoId: number, estadoOriginal: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    console.log(`Corrigiendo pedido marcado incorrectamente como vencido (${pedidoId}) a estado original: ${estadoOriginal}`)
+
+    const { data, error } = await supabase
+      .from('compras')
+      .update({ 
+        estado: estadoOriginal as Database['public']['Tables']['compras']['Row']['estado'], // Restaurar al estado original
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', pedidoId)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error al corregir pedido vencido incorrectamente:', error)
+      return { success: false, error: error.message }
+    }
+
+    console.log('Pedido corregido exitosamente:', data)
+    return { success: true }
+
+  } catch (error) {
+    console.error('Error al corregir pedido vencido incorrectamente:', error)
     return { 
       success: false, 
       error: error instanceof Error ? error.message : 'Error desconocido' 

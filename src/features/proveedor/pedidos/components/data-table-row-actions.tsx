@@ -16,6 +16,7 @@ import { SoporteCompra } from '../data/types'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { eliminarPedidoExpirado } from '../services'
 import { toast } from 'sonner'
+import { calcularDiasRestantes, calcularFechaExpiracion } from '../utils/fecha-utils'
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>
@@ -77,14 +78,31 @@ export function DataTableRowActions<TData>({
     setShowEditModal(false)
   }
 
-  // Verificar si el pedido está expirado usando fecha_expiracion
+  // Verificar si el pedido está expirado usando la misma lógica que DiasRestantesCell
   const isExpired = () => {
-    if (!pedido.fecha_expiracion) return false
+    // Calcular fecha fin y días restantes usando las mismas utilidades
+    let fechaFin: Date | null = null
+    let diasRestantes = 0
     
-    const fechaExpiracion = new Date(pedido.fecha_expiracion)
-    const ahora = new Date()
+    if (pedido.fecha_expiracion) {
+      // Si tiene fecha_expiracion explícita, usar esa
+      diasRestantes = calcularDiasRestantes(pedido.fecha_expiracion)
+      fechaFin = new Date(pedido.fecha_expiracion)
+    } else {
+      // Calcular usando fecha inicio + tiempo_uso
+      let fechaInicioCalcular = pedido.created_at
+      if (pedido.fecha_inicio) {
+        fechaInicioCalcular = pedido.fecha_inicio
+      }
+      
+      if (fechaInicioCalcular && pedido.productos?.tiempo_uso) {
+        fechaFin = calcularFechaExpiracion(fechaInicioCalcular, pedido.productos.tiempo_uso)
+        diasRestantes = calcularDiasRestantes(fechaFin)
+      }
+    }
     
-    return fechaExpiracion < ahora
+    // Un pedido está expirado si tiene días restantes < 0
+    return diasRestantes < 0
   }
 
   const handleDeleteClick = () => {
@@ -94,11 +112,18 @@ export function DataTableRowActions<TData>({
   const handleConfirmDelete = async () => {
     try {
       // Función para eliminar pedido y cuenta asociada
-      await eliminarPedidoExpirado(pedido.id!, pedido.stock_producto_id)
-      setShowDeleteDialog(false)
-      window.location.reload()
+      const result = await eliminarPedidoExpirado(pedido.id!, pedido.stock_producto_id)
+      
+      if (result.success) {
+        toast.success('Pedido eliminado correctamente')
+        setShowDeleteDialog(false)
+        window.location.reload()
+      } else {
+        toast.error(result.error || 'Error al eliminar pedido')
+      }
     } catch (error) {
-      toast.error('Error al eliminar pedido')
+      console.error('Error crítico en eliminación:', error)
+      toast.error('Error crítico al eliminar pedido')
     }
   }
 

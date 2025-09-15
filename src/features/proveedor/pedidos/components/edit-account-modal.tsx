@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useUpdateStockProductoAccountData, useUpdateProductoPrecioRenovacion, useUpdatePedidoFechas, useUpdateProductoTiempoUso } from '../queries'
+import { formatearFechaParaInput, calcularDuracionEnDias } from '../utils/fecha-utils'
 import { Loader2 } from 'lucide-react'
 
 interface EditAccountModalProps {
@@ -56,24 +57,12 @@ export function EditAccountModal({
     perfil: currentData.perfil || '',
     url: currentData.url || '',
     precio_renovacion: currentData.precio_renovacion?.toString() || '',
-    fecha_inicio: currentData.fecha_inicio ? new Date(currentData.fecha_inicio).toISOString().split('T')[0] : '',
-    fecha_expiracion: currentData.fecha_expiracion ? new Date(currentData.fecha_expiracion).toISOString().split('T')[0] : '',
+    fecha_inicio: formatearFechaParaInput(currentData.fecha_inicio ?? null),
+    fecha_expiracion: formatearFechaParaInput(currentData.fecha_expiracion ?? null),
   })
 
-  // Calcular días de uso automáticamente
-  const calcularDiasUso = (fechaInicio: string, fechaExpiracion: string): number => {
-    if (!fechaInicio || !fechaExpiracion) return 0
-    
-    const inicio = new Date(fechaInicio)
-    const expiracion = new Date(fechaExpiracion)
-    const diferenciaMilisegundos = expiracion.getTime() - inicio.getTime()
-    const diferenciaDias = Math.ceil(diferenciaMilisegundos / (1000 * 60 * 60 * 24))
-    
-    return Math.max(0, diferenciaDias) // No permitir valores negativos
-  }
-
-  // Calcular días de uso actual
-  const diasUsoCalculado = calcularDiasUso(formData.fecha_inicio, formData.fecha_expiracion)
+  // Calcular días de uso actual usando la nueva utilidad
+  const diasUsoCalculado = calcularDuracionEnDias(formData.fecha_inicio, formData.fecha_expiracion)
 
   // Actualizar formulario cuando cambien los datos actuales o se abra el modal
   useEffect(() => {
@@ -85,8 +74,8 @@ export function EditAccountModal({
         perfil: currentData.perfil || '',
         url: currentData.url || '',
         precio_renovacion: currentData.precio_renovacion?.toString() || '',
-        fecha_inicio: currentData.fecha_inicio ? new Date(currentData.fecha_inicio).toISOString().split('T')[0] : '',
-        fecha_expiracion: currentData.fecha_expiracion ? new Date(currentData.fecha_expiracion).toISOString().split('T')[0] : '',
+        fecha_inicio: formatearFechaParaInput(currentData.fecha_inicio ?? null),
+        fecha_expiracion: formatearFechaParaInput(currentData.fecha_expiracion ?? null),
       })
     }
   }, [open, currentData])

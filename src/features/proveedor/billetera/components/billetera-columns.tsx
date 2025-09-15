@@ -338,6 +338,9 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
               <div className='text-sm'>
                 <span className='font-medium'>Pedido renovado por vendedor:</span>
               </div>
+              <div className='text-xs text-muted-foreground'>
+                <span className='font-medium'>ID de Pedido:</span> {transaccion.id.replace('renovacion_pedido_', '')}
+              </div>
               {transaccion.usuarios && (
                 <div className='text-xs text-muted-foreground'>
                   Vendedor: {transaccion.usuarios.nombres} {transaccion.usuarios.apellidos}

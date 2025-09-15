@@ -8,6 +8,9 @@ import { PedidoEstado, Pedido } from '../data/schema'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 import { Phone } from 'lucide-react'
+import { useUpdatePedidoStatusVencido, useCorregirPedidoVencidoIncorrecto } from '../queries'
+import { useEffect } from 'react'
+import { calcularDiasRestantes, calcularFechaExpiracion, formatearFechaParaMostrar } from '../utils/fecha-utils'
 
 
 
@@ -17,6 +20,126 @@ import { Phone } from 'lucide-react'
 const abrirWhatsApp = (telefono: string) => {
   const numeroLimpio = telefono.replace(/[^\d+]/g, '')
   window.open(`https://wa.me/${numeroLimpio}`, '_blank')
+}
+
+// Componente para manejar días restantes con actualización automática
+const DiasRestantesCell = ({ pedido }: { pedido: Pedido }) => {
+  const { mutate: updatePedidoStatusVencido } = useUpdatePedidoStatusVencido()
+  const { mutate: corregirPedidoVencidoIncorrecto } = useCorregirPedidoVencidoIncorrecto()
+  
+  const fechaExpiracion = pedido.fecha_expiracion
+  const fechaInicio = pedido.fecha_inicio
+  const fechaCreacion = pedido.created_at
+  const tiempoUso = pedido.productos?.tiempo_uso
+  const renovado = pedido.renovado
+  const estadoActual = pedido.estado
+  const pedidoId = pedido.id
+  
+  // Verificar si es una renovación por vendedor usando la columna renovado
+  const esRenovadoPorVendedor = renovado === true
+  
+  // Calcular fecha fin y días restantes usando utilidades
+  let fechaFin: Date | null = null
+  let diasRestantes = 0
+  
+  if (fechaExpiracion) {
+    // Si tiene fecha_expiracion explícita, usar esa
+    diasRestantes = calcularDiasRestantes(fechaExpiracion)
+    fechaFin = new Date(fechaExpiracion)
+  } else {
+    // Calcular usando fecha inicio (renovada o original) + tiempo_uso
+    let fechaInicioCalcular = fechaCreacion
+    if (fechaInicio) {
+      fechaInicioCalcular = fechaInicio
+    }
+    
+    if (fechaInicioCalcular && tiempoUso) {
+      fechaFin = calcularFechaExpiracion(fechaInicioCalcular, tiempoUso)
+      diasRestantes = calcularDiasRestantes(fechaFin)
+    }
+  }
+  
+  // Efecto para actualizar automáticamente el estado cuando expire
+  useEffect(() => {
+    // Estados que pueden actualizarse automáticamente a 'vencido' cuando expiran
+    // Excluimos 'renovado' para mantener el historial de renovación
+    const estadosActualizables = ['pedido', 'resuelto', 'entregado']
+    
+    // Solo actualizar cuando diasRestantes < 0 (ya expirado), no cuando = 0 (expira hoy)
+    if (diasRestantes < 0 && estadosActualizables.includes(estadoActual) && pedidoId) {
+      console.log(`Pedido expirado detectado (estado: ${estadoActual}), actualizando a vencido:`, pedidoId)
+      updatePedidoStatusVencido(pedidoId)
+    }
+  }, [diasRestantes, estadoActual, pedidoId, updatePedidoStatusVencido])
+
+  // Efecto para corregir pedidos marcados incorrectamente como "vencido" cuando aún tienen días restantes
+  useEffect(() => {
+    // Si el pedido está marcado como "vencido" pero aún tiene días restantes (> 0), corregirlo
+    if (estadoActual === 'vencido' && diasRestantes > 0 && pedidoId) {
+      console.log(`Pedido marcado incorrectamente como vencido (${pedidoId}) con ${diasRestantes} días restantes, corrigiendo a 'resuelto'`)
+      // Lo corregimos a 'resuelto' como estado por defecto para pedidos que no deberían estar vencidos
+      corregirPedidoVencidoIncorrecto({ pedidoId, estadoOriginal: 'resuelto' })
+    }
+  }, [diasRestantes, estadoActual, pedidoId, corregirPedidoVencidoIncorrecto])
+  
+  // Si no se puede calcular, mostrar N/A
+  if (!fechaFin) {
+    return (
+      <div className='flex justify-center'>
+        <Badge variant='secondary' className='text-xs'>
+          N/A
+        </Badge>
+      </div>
+    )
+  }
+  
+  // Si es renovado por vendedor
+  if (esRenovadoPorVendedor) {
+    // Si el pedido renovado ya expiró, mostrar "Expirado" en lugar de "Renovado (0 días restantes)"
+    if (diasRestantes <= 0) {
+      return (
+        <div className='flex justify-center'>
+          <Badge variant='destructive' className='text-xs font-medium text-red-600 bg-red-50 border-red-200'>
+            Expirado
+          </Badge>
+        </div>
+      )
+    }
+    
+    return (
+      <div className='flex justify-center'>
+        <Badge variant='outline' className='text-xs font-medium text-purple-600 border-purple-300 bg-purple-50'>
+          Renovado ({diasRestantes} días restantes)
+        </Badge>
+      </div>
+    )
+  }
+  
+  // Determinar estilo del badge
+  let badgeVariant: 'default' | 'secondary' | 'destructive' | 'outline' = 'default'
+  let badgeColor = ''
+  
+  if (diasRestantes <= 0) {
+    badgeVariant = 'destructive'
+    badgeColor = 'text-red-600 bg-red-50 border-red-200'
+  } else if (diasRestantes <= 3) {
+    badgeVariant = 'outline'
+    badgeColor = 'text-orange-600 border-orange-300'
+  } else if (diasRestantes <= 7) {
+    badgeVariant = 'outline'
+    badgeColor = 'text-yellow-600 border-yellow-300'
+  } else {
+    badgeVariant = 'default'
+    badgeColor = 'text-green-600 bg-green-50 border-green-200'
+  }
+  
+  return (
+    <div className='flex justify-center'>
+      <Badge variant={badgeVariant} className={cn('text-xs font-medium', badgeColor)}>
+        {diasRestantes <= 0 ? 'Expirado' : `${diasRestantes} días restantes`}
+      </Badge>
+    </div>
+  )
 }
 
 export const columns: ColumnDef<Pedido>[] = [
@@ -345,11 +468,10 @@ export const columns: ColumnDef<Pedido>[] = [
       
       // Si tiene fecha_expiracion explícita (renovación), usar esa
       if (fechaExpiracion) {
-        const fecha = new Date(fechaExpiracion)
         return (
           <div className='flex justify-center'>
             <span className={`text-sm ${esRenovadoPorVendedor ? 'text-purple-600 font-medium' : ''}`}>
-              {fecha.toLocaleDateString('es-ES')}
+              {formatearFechaParaMostrar(fechaExpiracion)}
             </span>
           </div>
         )
@@ -365,13 +487,12 @@ export const columns: ColumnDef<Pedido>[] = [
         return <div className='flex justify-center text-sm'>N/A</div>
       }
       
-      const fechaInicioDate = new Date(fechaInicioCalcular)
-      const fechaFin = new Date(fechaInicioDate.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
+      const fechaFin = calcularFechaExpiracion(fechaInicioCalcular, tiempoUso)
       
       return (
         <div className='flex justify-center'>
           <span className={`text-sm ${esRenovadoPorVendedor ? 'text-purple-600 font-medium' : ''}`}>
-            {fechaFin.toLocaleDateString('es-ES')}
+            {formatearFechaParaMostrar(fechaFin)}
           </span>
         </div>
       )
@@ -383,81 +504,7 @@ export const columns: ColumnDef<Pedido>[] = [
       <DataTableColumnHeader column={column} title='Días Restantes' />
     ),
     enableSorting: false,
-    cell: ({ row }) => {
-      const fechaExpiracion = row.original.fecha_expiracion
-      const fechaInicio = row.original.fecha_inicio
-      const fechaCreacion = row.original.created_at
-      const tiempoUso = row.original.productos?.tiempo_uso
-      const renovado = row.original.renovado
-      
-      // Verificar si es una renovación por vendedor usando la columna renovado
-      const esRenovadoPorVendedor = renovado === true
-      
-      // Calcular fecha fin
-      let fechaFin: Date
-      
-      if (fechaExpiracion) {
-        // Si tiene fecha_expiracion explícita, usar esa
-        fechaFin = new Date(fechaExpiracion)
-      } else {
-        // Calcular usando fecha inicio (renovada o original) + tiempo_uso
-        let fechaInicioCalcular = fechaCreacion
-        if (fechaInicio) {
-          fechaInicioCalcular = fechaInicio
-        }
-        
-        if (!fechaInicioCalcular || !tiempoUso) {
-          return (
-            <div className='flex justify-center'>
-              <Badge variant='secondary' className='text-xs'>
-                N/A
-              </Badge>
-            </div>
-          )
-        }
-        
-        const fechaInicioDate = new Date(fechaInicioCalcular)
-        fechaFin = new Date(fechaInicioDate.getTime() + (tiempoUso * 24 * 60 * 60 * 1000))
-      }
-      
-      const ahora = new Date()
-      const diasRestantes = Math.ceil((fechaFin.getTime() - ahora.getTime()) / (24 * 60 * 60 * 1000))
-      
-      if (esRenovadoPorVendedor) {
-        return (
-          <div className='flex justify-center'>
-            <Badge variant='outline' className='text-xs font-medium text-purple-600 border-purple-300 bg-purple-50'>
-              Renovado por {diasRestantes > 0 ? diasRestantes : 0} días
-            </Badge>
-          </div>
-        )
-      }
-      
-      let badgeVariant: 'default' | 'secondary' | 'destructive' | 'outline' = 'default'
-      let badgeColor = ''
-      
-      if (diasRestantes <= 0) {
-        badgeVariant = 'destructive'
-        badgeColor = 'text-red-600 bg-red-50 border-red-200'
-      } else if (diasRestantes <= 3) {
-        badgeVariant = 'outline'
-        badgeColor = 'text-orange-600 border-orange-300'
-      } else if (diasRestantes <= 7) {
-        badgeVariant = 'outline'
-        badgeColor = 'text-yellow-600 border-yellow-300'
-      } else {
-        badgeVariant = 'default'
-        badgeColor = 'text-green-600 bg-green-50 border-green-200'
-      }
-      
-      return (
-        <div className='flex justify-center'>
-          <Badge variant={badgeVariant} className={cn('text-xs font-medium', badgeColor)}>
-            {diasRestantes <= 0 ? 'Expirado' : `${diasRestantes} días restantes`}
-          </Badge>
-        </div>
-      )
-    },
+    cell: ({ row }) => <DiasRestantesCell pedido={row.original} />,
   },
   {
     id: 'actions',

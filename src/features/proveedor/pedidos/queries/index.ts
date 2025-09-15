@@ -260,3 +260,37 @@ export const useUpdateProductoTiempoUso = () => {
     },
   })
 }
+
+export const useUpdatePedidoStatusVencido = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (pedidoId: number) => 
+      pedidosService.updatePedidoStatusVencido(pedidoId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+      // No mostrar toast para evitar spam al usuario, es automático
+    },
+    onError: (error) => {
+      console.error('Error al actualizar pedido vencido:', error)
+      // Solo loggear el error, no mostrar toast al usuario
+    },
+  })
+}
+
+export const useCorregirPedidoVencidoIncorrecto = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ pedidoId, estadoOriginal }: { pedidoId: number; estadoOriginal: string }) => 
+      pedidosService.corregirPedidoVencidoIncorrecto(pedidoId, estadoOriginal),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+      // No mostrar toast para evitar spam al usuario, es automático
+    },
+    onError: (error) => {
+      console.error('Error al corregir pedido vencido incorrectamente:', error)
+      // Solo loggear el error, no mostrar toast al usuario
+    },
+  })
+}

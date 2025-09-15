@@ -30,13 +30,18 @@ const DiasRestantesCell = ({ fecha_expiracion, id }: { fecha_expiracion: string,
   const fecha_expiracion_date = fecha_expiracion ? new Date(fecha_expiracion) : null
   const dias_restantes = fecha_expiracion_date ? Math.ceil((fecha_expiracion_date.getTime() - fecha_actual.getTime()) / (1000 * 60 * 60 * 24)) : null
 
+  // For tablas grandes/infinite scroll, dispara el update solo una vez por id para evitar loops y race conditions.
+  // Usa un Set global para trackear ids ya actualizados en esta sesión.
+  const updatedIds = (window as any).__diasRestantesUpdatedIds || ((window as any).__diasRestantesUpdatedIds = new Set<number>())
+
   useEffect(() => {
-    if (dias_restantes === 0) {
-      if (id) {
-        updateCompraStatus(id)
-      }
+    if (dias_restantes === 0 && id && !updatedIds.has(id)) {
+      updatedIds.add(id)
+      updateCompraStatus(id)
     }
-  }, [dias_restantes, id, updateCompraStatus])
+    // No dependas de updateCompraStatus para evitar re-triggers innecesarios
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dias_restantes, id])
 
   let badgeColor = ''
   if (dias_restantes === null) {
@@ -346,7 +351,9 @@ export const columns: ColumnDef<Compra>[] = [
     ),
     cell: ({ row }) => {
       const { stock_productos } = row.original
-      return <span>{stock_productos?.email}</span>
+      const email = stock_productos?.email || ''
+      const displayEmail = email.length > 50 ? email.slice(0, 50) + '...' : email
+      return <span className='truncate max-w-32'>{displayEmail}</span>
     },
     enableSorting: false,
 

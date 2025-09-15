@@ -15,6 +15,7 @@ export const estadosMap = new Map<CompraEstado, string>([
   ['vencido', 'bg-red-500 text-white dark:text-white border-red-500'],
   ['pedido', 'bg-blue-500 text-white dark:text-white border-blue-500'],
   ['entregado', 'bg-gray-500/30 text-white dark:text-white border-gray-200'],
+  ['renovado', 'bg-purple-500 text-white dark:text-white border-purple-500'],
 ])
 
 

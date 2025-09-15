@@ -86,12 +86,12 @@ const MontoCell = ({ transaccion }: { transaccion: TransaccionCompleta }) => {
     case 'renovacion':
       colorClass = 'text-purple-600'
       signo = '-'
-      descripcion = 'Renovación: '
+      descripcion = 'Renovación Producto: '
       break
     case 'renovacion_pedido':
       colorClass = 'text-purple-600'
       signo = '+'
-      descripcion = 'Renovación vendedor: '
+      descripcion = 'Renovación Pedido: '
       break
     case 'reembolso':
       colorClass = 'text-red-600'
@@ -199,12 +199,12 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
         case 'renovacion':
           variant = 'outline'
           className = 'bg-purple-100 text-purple-800'
-          texto = 'Renovación'
+          texto = 'Renovación Producto'
           break
         case 'renovacion_pedido':
           variant = 'outline'
           className = 'bg-purple-100 text-purple-800'
-          texto = 'Renovación Vendedor'
+          texto = 'Renovación Pedido'
           break
         case 'reembolso':
           variant = 'secondary'

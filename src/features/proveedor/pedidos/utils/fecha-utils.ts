@@ -29,8 +29,8 @@ export function parseFechaLocal(fechaString: string): Date {
  * Calcula días restantes entre dos fechas de manera consistente
  * Usa solo la fecha (sin hora) para evitar problemas de zona horaria
  * 
- * Lógica: Si expira el 14/09 y hoy es 14/09, queda 1 día (el día actual)
- *         Solo expira cuando comienza el día siguiente (15/09)
+ * Lógica: Calcula la diferencia exacta sin incluir el día actual
+ *         Coherente con calcularDuracionEnDias para mostrar siempre 30 días
  */
 export function calcularDiasRestantes(fechaFin: Date | string): number {
   const fechaFinLocal = typeof fechaFin === 'string' 
@@ -40,10 +40,9 @@ export function calcularDiasRestantes(fechaFin: Date | string): number {
   const fechaActualLocal = getFechaActualLocal()
   
   const diferenciaMilisegundos = fechaFinLocal.getTime() - fechaActualLocal.getTime()
-  // Usamos Math.floor y sumamos 1 para incluir el día actual
-  // Si fechaFin = fechaActual, diferencia = 0, Math.floor(0) + 1 = 1 día restante
-  // Si fechaFin < fechaActual, diferencia < 0, resultado será <= 0 (expirado)
-  const diasRestantes = Math.floor(diferenciaMilisegundos / (24 * 60 * 60 * 1000)) + 1
+  // Removemos el +1 para que sea coherente con calcularDuracionEnDias
+  // Ambas funciones ahora calculan la diferencia exacta entre fechas
+  const diasRestantes = Math.floor(diferenciaMilisegundos / (24 * 60 * 60 * 1000))
   
   return diasRestantes
 }
@@ -89,7 +88,7 @@ export function formatearFechaParaInput(fecha: Date | string | null): string {
 /**
  * Calcula la duración en días entre dos fechas
  * Para usar en formularios de edición
- * Incluye tanto el día de inicio como el día de fin (ambos inclusive)
+ * Calcula la diferencia exacta entre fechas para coherencia con días restantes
  */
 export function calcularDuracionEnDias(fechaInicio: string, fechaExpiracion: string): number {
   if (!fechaInicio || !fechaExpiracion) return 0
@@ -98,7 +97,7 @@ export function calcularDuracionEnDias(fechaInicio: string, fechaExpiracion: str
   const fin = parseFechaLocal(fechaExpiracion)
   
   const diferenciaMilisegundos = fin.getTime() - inicio.getTime()
-  const diasDuracion = Math.floor(diferenciaMilisegundos / (24 * 60 * 60 * 1000)) + 1 // +1 para incluir ambos días
+  const diasDuracion = Math.floor(diferenciaMilisegundos / (24 * 60 * 60 * 1000)) // Diferencia exacta sin +1
   
   return Math.max(0, diasDuracion)
 }

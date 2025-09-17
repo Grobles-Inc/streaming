@@ -86,14 +86,6 @@ export function EditAccountModal({
       toast.error('ID de stock producto no válido')
       return
     }
-
-    // Validar que la duración calculada no exceda el tiempo_uso original del producto
-    const tiempoUsoOriginal = currentData.tiempo_uso || 30
-    if (diasUsoCalculado > tiempoUsoOriginal) {
-      toast.error(`La duración calculada (${diasUsoCalculado} días) no puede exceder el tiempo original del producto (${tiempoUsoOriginal} días)`)
-      return
-    }
-
     try {
       // Actualizar datos de cuenta
       await updateStockProducto.mutateAsync({

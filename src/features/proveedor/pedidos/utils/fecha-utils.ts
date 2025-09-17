@@ -15,10 +15,14 @@ export function getFechaActualLocal(): Date {
 /**
  * Convierte una fecha string a Date local a las 00:00:00
  * Evita problemas de zona horaria al interpretar fechas
+ * Usa split para evitar problemas de timezone con new Date(string)
  */
 export function parseFechaLocal(fechaString: string): Date {
-  const fecha = new Date(fechaString)
-  return new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate())
+  const partes = fechaString.split('-')
+  const año = parseInt(partes[0])
+  const mes = parseInt(partes[1]) - 1 // Los meses en Date son 0-indexed
+  const dia = parseInt(partes[2])
+  return new Date(año, mes, dia)
 }
 
 /**
@@ -66,7 +70,13 @@ export function calcularFechaExpiracion(fechaInicio: Date | string, diasDuracion
 export function formatearFechaParaInput(fecha: Date | string | null): string {
   if (!fecha) return ''
   
-  const fechaObj = typeof fecha === 'string' ? new Date(fecha) : fecha
+  let fechaObj: Date
+  if (typeof fecha === 'string') {
+    // Si es string, usar parseFechaLocal para evitar problemas de timezone
+    fechaObj = parseFechaLocal(fecha)
+  } else {
+    fechaObj = fecha
+  }
   
   // Usar la fecha local sin conversión UTC
   const año = fechaObj.getFullYear()
@@ -79,6 +89,7 @@ export function formatearFechaParaInput(fecha: Date | string | null): string {
 /**
  * Calcula la duración en días entre dos fechas
  * Para usar en formularios de edición
+ * Incluye tanto el día de inicio como el día de fin (ambos inclusive)
  */
 export function calcularDuracionEnDias(fechaInicio: string, fechaExpiracion: string): number {
   if (!fechaInicio || !fechaExpiracion) return 0
@@ -87,7 +98,7 @@ export function calcularDuracionEnDias(fechaInicio: string, fechaExpiracion: str
   const fin = parseFechaLocal(fechaExpiracion)
   
   const diferenciaMilisegundos = fin.getTime() - inicio.getTime()
-  const diasDuracion = Math.floor(diferenciaMilisegundos / (24 * 60 * 60 * 1000))
+  const diasDuracion = Math.floor(diferenciaMilisegundos / (24 * 60 * 60 * 1000)) + 1 // +1 para incluir ambos días
   
   return Math.max(0, diasDuracion)
 }
@@ -96,6 +107,12 @@ export function calcularDuracionEnDias(fechaInicio: string, fechaExpiracion: str
  * Formatea una fecha para mostrar en la UI
  */
 export function formatearFechaParaMostrar(fecha: Date | string): string {
-  const fechaObj = typeof fecha === 'string' ? new Date(fecha) : fecha
+  let fechaObj: Date
+  if (typeof fecha === 'string') {
+    // Si es string, usar parseFechaLocal para evitar problemas de timezone
+    fechaObj = parseFechaLocal(fecha)
+  } else {
+    fechaObj = fecha
+  }
   return fechaObj.toLocaleDateString('es-ES')
 }

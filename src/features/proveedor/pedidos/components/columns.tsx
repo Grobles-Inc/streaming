@@ -427,11 +427,10 @@ export const columns: ColumnDef<Pedido>[] = [
       
       // Si tiene fecha_inicio explícita, usar esa
       if (fechaInicio) {
-        const fecha = new Date(fechaInicio)
         return (
           <div className='flex justify-center'>
             <span className={`text-sm ${esRenovadoPorVendedor ? 'text-purple-600 font-medium' : ''}`}>
-              {fecha.toLocaleDateString('es-ES')}
+              {formatearFechaParaMostrar(fechaInicio)}
             </span>
           </div>
         )
@@ -440,11 +439,10 @@ export const columns: ColumnDef<Pedido>[] = [
       // Si no, usar created_at (fecha original)
       if (!fechaCreacion) return <div className='flex justify-center text-sm'>N/A</div>
       
-      const fecha = new Date(fechaCreacion)
       return (
         <div className='flex justify-center'>
           <span className={`text-sm ${esRenovadoPorVendedor ? 'text-purple-600 font-medium' : ''}`}>
-            {fecha.toLocaleDateString('es-ES')}
+            {formatearFechaParaMostrar(fechaCreacion)}
           </span>
         </div>
       )

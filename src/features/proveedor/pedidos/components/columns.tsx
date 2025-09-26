@@ -25,9 +25,8 @@ const abrirWhatsApp = (telefono: string) => {
 // Componente para manejar días restantes con actualización automática
 const DiasRestantesCell = ({
   fecha_expiracion,
-  fecha_inicio,
   id,
-}: { fecha_expiracion: string, fecha_inicio: string, id: number | undefined }) => {
+}: { fecha_expiracion: string, id: number | undefined }) => {
   const { mutate: updatePedidoStatusVencido } = useUpdatePedidoStatusVencido()
   const fechaActual = new Date()
   const fechaExpiracionDate = fecha_expiracion ? new Date(fecha_expiracion) : null

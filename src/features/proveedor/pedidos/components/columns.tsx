@@ -23,49 +23,62 @@ const abrirWhatsApp = (telefono: string) => {
 }
 
 // Componente para manejar días restantes con actualización automática
-const DiasRestantesCell = ({ fecha_expiracion, id }: { fecha_expiracion: string, id: number | undefined }) => {
+const DiasRestantesCell = ({
+  fecha_expiracion,
+  fecha_inicio,
+  id,
+}: { fecha_expiracion: string, fecha_inicio: string, id: number | undefined }) => {
   const { mutate: updatePedidoStatusVencido } = useUpdatePedidoStatusVencido()
-  const fecha_actual = new Date()
-  const fecha_expiracion_date = fecha_expiracion ? new Date(fecha_expiracion) : null
-  const dias_restantes = fecha_expiracion_date ? Math.ceil((fecha_expiracion_date.getTime() - fecha_actual.getTime()) / (1000 * 60 * 60 * 24)) : null
+  const fechaActual = new Date()
+  const fechaExpiracionDate = fecha_expiracion ? new Date(fecha_expiracion) : null
+
+  // Normaliza la fecha actual y la de expiración a solo año-mes-día (ignora horas/minutos/segundos)
+  const fechaActualUTC = new Date(Date.UTC(fechaActual.getFullYear(), fechaActual.getMonth(), fechaActual.getDate()))
+  let diasRestantes: number | null = null
+
+  if (fechaExpiracionDate) {
+    const fechaExpiracionUTC = new Date(Date.UTC(fechaExpiracionDate.getFullYear(), fechaExpiracionDate.getMonth(), fechaExpiracionDate.getDate()))
+    // El cálculo correcto es: (fechaExpiracion - fechaActual) / ms/día
+    // No sumes 1, solo usa Math.floor para que el día de hoy no cuente si ya pasó
+    diasRestantes = Math.floor((fechaExpiracionUTC.getTime() - fechaActualUTC.getTime()) / (1000 * 60 * 60 * 24))
+  } else {
+    diasRestantes = null
+  }
 
   // For tablas grandes/infinite scroll, dispara el update solo una vez por id para evitar loops y race conditions.
   // Usa un Set global para trackear ids ya actualizados en esta sesión.
   const updatedIds = (window as any).__diasRestantesUpdatedIds || ((window as any).__diasRestantesUpdatedIds = new Set<number>())
 
   useEffect(() => {
-    if (dias_restantes === 0 && id && !updatedIds.has(id)) {
+    if (diasRestantes === 0 && id && !updatedIds.has(id)) {
       updatedIds.add(id)
       updatePedidoStatusVencido(id)
     }
-    // No dependas de updateCompraStatus para evitar re-triggers innecesarios
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dias_restantes, id])
+  }, [diasRestantes, id])
 
   let badgeColor = ''
-  if (dias_restantes === null) {
+  if (diasRestantes === null) {
     badgeColor = 'bg-gray-500 text-white dark:text-white border-gray-500'
-  } else if (dias_restantes <= 0) {
+  } else if (diasRestantes <= 0) {
     badgeColor = 'bg-red-500 text-white dark:text-white border-red-500'
-  } else if (dias_restantes < 10) {
+  } else if (diasRestantes < 10) {
     badgeColor = 'bg-orange-400 text-white dark:text-white border-orange-500'
-  } else if (dias_restantes < 30) {
+  } else if (diasRestantes < 30) {
     badgeColor = 'bg-green-500 text-white dark:text-white border-green-500'
   }
+
   return (
     <div className='flex justify-center'>
-      {
-        dias_restantes === null ? (
-          <Badge variant='destructive' className={badgeColor}>
-            Sin activar
-          </Badge>
-        ) : (
-          <Badge className={cn('capitalize h-7 w-7 rounded-full', badgeColor)}>
-            {dias_restantes <= 0 ? '0' : dias_restantes}
-          </Badge>
-        )
-      }
-
+      {diasRestantes === null ? (
+        <Badge variant='destructive' className={badgeColor}>
+          Sin activar
+        </Badge>
+      ) : (
+        <Badge className={cn('capitalize h-7 w-7 rounded-full', badgeColor)}>
+          {diasRestantes <= 0 ? '0' : diasRestantes}
+        </Badge>
+      )}
     </div>
   )
 }
@@ -347,7 +360,6 @@ export const columns: ColumnDef<Pedido>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const fechaInicio = row.original.fecha_inicio
-      const fechaCreacion = row.original.created_at
       const renovado = row.original.renovado
 
       // Verificar si es una renovación por vendedor usando la columna renovado
@@ -365,12 +377,12 @@ export const columns: ColumnDef<Pedido>[] = [
       }
 
       // Si no, usar created_at (fecha original)
-      if (!fechaCreacion) return <div className='flex justify-center text-sm'>N/A</div>
+      if (!fechaInicio) return <div className='flex justify-center text-sm'>N/A</div>
 
       return (
         <div className='flex justify-center'>
           <span className={`text-sm ${esRenovadoPorVendedor ? 'text-purple-600 font-medium' : ''}`}>
-            {formatearFechaParaMostrar(fechaCreacion)}
+            {formatearFechaParaMostrar(fechaInicio)}
           </span>
         </div>
       )
@@ -430,7 +442,7 @@ export const columns: ColumnDef<Pedido>[] = [
       <DataTableColumnHeader column={column} title='Días Restantes' />
     ),
     enableSorting: false,
-    cell: ({ row }) => <DiasRestantesCell fecha_expiracion={row.original.fecha_expiracion as string} id={row.original.id} />,
+    cell: ({ row }) => <DiasRestantesCell fecha_expiracion={row.original.fecha_expiracion as string} fecha_inicio={row.original.fecha_inicio as string} id={row.original.id} />,
   },
   {
     id: 'actions',

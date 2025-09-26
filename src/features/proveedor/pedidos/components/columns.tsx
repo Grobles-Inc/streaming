@@ -3,14 +3,14 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 import { ColumnDef } from '@tanstack/react-table'
+import { Phone } from 'lucide-react'
+import { useEffect } from 'react'
 import { estadosMap } from '../data/data'
-import { PedidoEstado, Pedido } from '../data/schema'
+import { Pedido, PedidoEstado } from '../data/schema'
+import { useUpdatePedidoStatusVencido } from '../queries'
+import { calcularFechaExpiracion, formatearFechaParaMostrar } from '../utils/fecha-utils'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
-import { Phone } from 'lucide-react'
-import { useUpdatePedidoStatusVencido, useCorregirPedidoVencidoIncorrecto } from '../queries'
-import { useEffect } from 'react'
-import { calcularDiasRestantes, calcularFechaExpiracion, formatearFechaParaMostrar } from '../utils/fecha-utils'
 
 
 
@@ -23,121 +23,49 @@ const abrirWhatsApp = (telefono: string) => {
 }
 
 // Componente para manejar días restantes con actualización automática
-const DiasRestantesCell = ({ pedido }: { pedido: Pedido }) => {
+const DiasRestantesCell = ({ fecha_expiracion, id }: { fecha_expiracion: string, id: number | undefined }) => {
   const { mutate: updatePedidoStatusVencido } = useUpdatePedidoStatusVencido()
-  const { mutate: corregirPedidoVencidoIncorrecto } = useCorregirPedidoVencidoIncorrecto()
-  
-  const fechaExpiracion = pedido.fecha_expiracion
-  const fechaInicio = pedido.fecha_inicio
-  const fechaCreacion = pedido.created_at
-  const tiempoUso = pedido.productos?.tiempo_uso
-  const renovado = pedido.renovado
-  const estadoActual = pedido.estado
-  const pedidoId = pedido.id
-  
-  // Verificar si es una renovación por vendedor usando la columna renovado
-  const esRenovadoPorVendedor = renovado === true
-  
-  // Calcular fecha fin y días restantes usando utilidades
-  let fechaFin: Date | null = null
-  let diasRestantes = 0
-  
-  if (fechaExpiracion) {
-    // Si tiene fecha_expiracion explícita, usar esa
-    diasRestantes = calcularDiasRestantes(fechaExpiracion)
-    fechaFin = new Date(fechaExpiracion)
-  } else {
-    // Calcular usando fecha inicio (renovada o original) + tiempo_uso
-    let fechaInicioCalcular = fechaCreacion
-    if (fechaInicio) {
-      fechaInicioCalcular = fechaInicio
-    }
-    
-    if (fechaInicioCalcular && tiempoUso) {
-      fechaFin = calcularFechaExpiracion(fechaInicioCalcular, tiempoUso)
-      diasRestantes = calcularDiasRestantes(fechaFin)
-    }
-  }
-  
-  // Efecto para actualizar automáticamente el estado cuando expire
-  useEffect(() => {
-    // Estados que pueden actualizarse automáticamente a 'vencido' cuando expiran
-    // Excluimos 'renovado' para mantener el historial de renovación
-    const estadosActualizables = ['pedido', 'resuelto', 'entregado']
-    
-    // Solo actualizar cuando diasRestantes < 0 (ya expirado), no cuando = 0 (expira hoy)
-    if (diasRestantes < 0 && estadosActualizables.includes(estadoActual) && pedidoId) {
-      console.log(`Pedido expirado detectado (estado: ${estadoActual}), actualizando a vencido:`, pedidoId)
-      updatePedidoStatusVencido(pedidoId)
-    }
-  }, [diasRestantes, estadoActual, pedidoId, updatePedidoStatusVencido])
+  const fecha_actual = new Date()
+  const fecha_expiracion_date = fecha_expiracion ? new Date(fecha_expiracion) : null
+  const dias_restantes = fecha_expiracion_date ? Math.ceil((fecha_expiracion_date.getTime() - fecha_actual.getTime()) / (1000 * 60 * 60 * 24)) : null
 
-  // Efecto para corregir pedidos marcados incorrectamente como "vencido" cuando aún tienen días restantes
+  // For tablas grandes/infinite scroll, dispara el update solo una vez por id para evitar loops y race conditions.
+  // Usa un Set global para trackear ids ya actualizados en esta sesión.
+  const updatedIds = (window as any).__diasRestantesUpdatedIds || ((window as any).__diasRestantesUpdatedIds = new Set<number>())
+
   useEffect(() => {
-    // Si el pedido está marcado como "vencido" pero aún tiene días restantes (> 0), corregirlo
-    if (estadoActual === 'vencido' && diasRestantes > 0 && pedidoId) {
-      console.log(`Pedido marcado incorrectamente como vencido (${pedidoId}) con ${diasRestantes} días restantes, corrigiendo a 'resuelto'`)
-      // Lo corregimos a 'resuelto' como estado por defecto para pedidos que no deberían estar vencidos
-      corregirPedidoVencidoIncorrecto({ pedidoId, estadoOriginal: 'resuelto' })
+    if (dias_restantes === 0 && id && !updatedIds.has(id)) {
+      updatedIds.add(id)
+      updatePedidoStatusVencido(id)
     }
-  }, [diasRestantes, estadoActual, pedidoId, corregirPedidoVencidoIncorrecto])
-  
-  // Si no se puede calcular, mostrar N/A
-  if (!fechaFin) {
-    return (
-      <div className='flex justify-center'>
-        <Badge variant='secondary' className='text-xs'>
-          N/A
-        </Badge>
-      </div>
-    )
-  }
-  
-  // Si es renovado por vendedor
-  if (esRenovadoPorVendedor) {
-    // Si el pedido renovado ya expiró, mostrar "Expirado" en lugar de "Renovado (0 días restantes)"
-    if (diasRestantes <= 0) {
-      return (
-        <div className='flex justify-center'>
-          <Badge variant='destructive' className='text-xs font-medium text-red-600 bg-red-50 border-red-200'>
-            Expirado
-          </Badge>
-        </div>
-      )
-    }
-    
-    return (
-      <div className='flex justify-center'>
-        <Badge variant='outline' className='text-xs font-medium text-purple-600 border-purple-300 bg-purple-50'>
-          Renovado ({diasRestantes} días restantes)
-        </Badge>
-      </div>
-    )
-  }
-  
-  // Determinar estilo del badge
-  let badgeVariant: 'default' | 'secondary' | 'destructive' | 'outline' = 'default'
+    // No dependas de updateCompraStatus para evitar re-triggers innecesarios
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dias_restantes, id])
+
   let badgeColor = ''
-  
-  if (diasRestantes <= 0) {
-    badgeVariant = 'destructive'
-    badgeColor = 'text-red-600 bg-red-50 border-red-200'
-  } else if (diasRestantes <= 3) {
-    badgeVariant = 'outline'
-    badgeColor = 'text-orange-600 border-orange-300'
-  } else if (diasRestantes <= 7) {
-    badgeVariant = 'outline'
-    badgeColor = 'text-yellow-600 border-yellow-300'
-  } else {
-    badgeVariant = 'default'
-    badgeColor = 'text-green-600 bg-green-50 border-green-200'
+  if (dias_restantes === null) {
+    badgeColor = 'bg-gray-500 text-white dark:text-white border-gray-500'
+  } else if (dias_restantes <= 0) {
+    badgeColor = 'bg-red-500 text-white dark:text-white border-red-500'
+  } else if (dias_restantes < 10) {
+    badgeColor = 'bg-orange-400 text-white dark:text-white border-orange-500'
+  } else if (dias_restantes < 30) {
+    badgeColor = 'bg-green-500 text-white dark:text-white border-green-500'
   }
-  
   return (
     <div className='flex justify-center'>
-      <Badge variant={badgeVariant} className={cn('text-xs font-medium', badgeColor)}>
-        {diasRestantes <= 0 ? 'Expirado' : `${diasRestantes} días restantes`}
-      </Badge>
+      {
+        dias_restantes === null ? (
+          <Badge variant='destructive' className={badgeColor}>
+            Sin activar
+          </Badge>
+        ) : (
+          <Badge className={cn('capitalize h-7 w-7 rounded-full', badgeColor)}>
+            {dias_restantes <= 0 ? '0' : dias_restantes}
+          </Badge>
+        )
+      }
+
     </div>
   )
 }
@@ -174,7 +102,7 @@ export const columns: ColumnDef<Pedido>[] = [
     ),
     cell: ({ row }) => {
       const id = row.getValue('id') as string
-      
+
       return <div className='flex justify-center w-[80px] font-mono text-sm'>{id}</div>
     },
     filterFn: (row, _id, value) => {
@@ -190,7 +118,7 @@ export const columns: ColumnDef<Pedido>[] = [
     ),
     cell: ({ row }) => {
       const productoNombre = row.original.productos?.nombre
-      
+
       return (
         <div className='flex justify-center'>
           <span className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[20rem]'>
@@ -214,7 +142,7 @@ export const columns: ColumnDef<Pedido>[] = [
     ),
     cell: ({ row }) => {
       const { estado } = row.original
-      
+
       const badgeColor = estadosMap.get(estado as PedidoEstado)
       return (
         <div className='flex justify-center space-x-2'>
@@ -261,11 +189,11 @@ export const columns: ColumnDef<Pedido>[] = [
     cell: ({ row }) => {
       const usuario = row.original.usuarios
       const telefono = usuario?.telefono
-      
+
       if (!telefono) {
         return <div className='flex justify-center text-gray-400'>Sin teléfono</div>
       }
-      
+
       return (
         <div className='flex justify-center w-[100px]'>
           <Button
@@ -362,9 +290,9 @@ export const columns: ColumnDef<Pedido>[] = [
       return (
         <div className='flex justify-center'>
           {url ? (
-            <a 
-              href={url} 
-              target="_blank" 
+            <a
+              href={url}
+              target="_blank"
               rel="noopener noreferrer"
               className='text-blue-600 hover:text-blue-800 underline text-sm max-w-32 truncate'
             >
@@ -421,10 +349,10 @@ export const columns: ColumnDef<Pedido>[] = [
       const fechaInicio = row.original.fecha_inicio
       const fechaCreacion = row.original.created_at
       const renovado = row.original.renovado
-      
+
       // Verificar si es una renovación por vendedor usando la columna renovado
       const esRenovadoPorVendedor = renovado === true
-      
+
       // Si tiene fecha_inicio explícita, usar esa
       if (fechaInicio) {
         return (
@@ -435,10 +363,10 @@ export const columns: ColumnDef<Pedido>[] = [
           </div>
         )
       }
-      
+
       // Si no, usar created_at (fecha original)
       if (!fechaCreacion) return <div className='flex justify-center text-sm'>N/A</div>
-      
+
       return (
         <div className='flex justify-center'>
           <span className={`text-sm ${esRenovadoPorVendedor ? 'text-purple-600 font-medium' : ''}`}>
@@ -460,10 +388,10 @@ export const columns: ColumnDef<Pedido>[] = [
       const fechaCreacion = row.original.created_at
       const tiempoUso = row.original.productos?.tiempo_uso
       const renovado = row.original.renovado
-      
+
       // Verificar si es una renovación por vendedor usando la columna renovado
       const esRenovadoPorVendedor = renovado === true
-      
+
       // Si tiene fecha_expiracion explícita (renovación), usar esa
       if (fechaExpiracion) {
         return (
@@ -474,19 +402,19 @@ export const columns: ColumnDef<Pedido>[] = [
           </div>
         )
       }
-      
+
       // Si no, calcular usando la fecha de inicio (renovada o original) + tiempo_uso
       let fechaInicioCalcular = fechaCreacion
       if (fechaInicio) {
         fechaInicioCalcular = fechaInicio
       }
-      
+
       if (!fechaInicioCalcular || !tiempoUso) {
         return <div className='flex justify-center text-sm'>N/A</div>
       }
-      
+
       const fechaFin = calcularFechaExpiracion(fechaInicioCalcular, tiempoUso)
-      
+
       return (
         <div className='flex justify-center'>
           <span className={`text-sm ${esRenovadoPorVendedor ? 'text-purple-600 font-medium' : ''}`}>
@@ -502,7 +430,7 @@ export const columns: ColumnDef<Pedido>[] = [
       <DataTableColumnHeader column={column} title='Días Restantes' />
     ),
     enableSorting: false,
-    cell: ({ row }) => <DiasRestantesCell pedido={row.original} />,
+    cell: ({ row }) => <DiasRestantesCell fecha_expiracion={row.original.fecha_expiracion as string} id={row.original.id} />,
   },
   {
     id: 'actions',

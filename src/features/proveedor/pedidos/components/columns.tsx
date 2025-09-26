@@ -441,7 +441,7 @@ export const columns: ColumnDef<Pedido>[] = [
       <DataTableColumnHeader column={column} title='Días Restantes' />
     ),
     enableSorting: false,
-    cell: ({ row }) => <DiasRestantesCell fecha_expiracion={row.original.fecha_expiracion as string} fecha_inicio={row.original.fecha_inicio as string} id={row.original.id} />,
+    cell: ({ row }) => <DiasRestantesCell fecha_expiracion={row.original.fecha_expiracion as string} id={row.original.id} />,
   },
   {
     id: 'actions',

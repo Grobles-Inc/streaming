@@ -359,10 +359,8 @@ export const columns: ColumnDef<Pedido>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const fechaInicio = row.original.fecha_inicio
-      const renovado = row.original.renovado
 
       // Verificar si es una renovación por vendedor usando la columna renovado
-      const esRenovadoPorVendedor = renovado === true
 
       // Si tiene fecha_inicio explícita, usar esa
       if (fechaInicio) {
@@ -398,16 +396,14 @@ export const columns: ColumnDef<Pedido>[] = [
       const fechaInicio = row.original.fecha_inicio
       const fechaCreacion = row.original.created_at
       const tiempoUso = row.original.productos?.tiempo_uso
-      const renovado = row.original.renovado
 
       // Verificar si es una renovación por vendedor usando la columna renovado
-      const esRenovadoPorVendedor = renovado === true
 
       // Si tiene fecha_expiracion explícita (renovación), usar esa
       if (fechaExpiracion) {
         return (
           <div className='flex justify-center'>
-            <span className={`text-sm ${esRenovadoPorVendedor ? 'text-purple-600 font-medium' : ''}`}>
+            <span className="text-sm">
               {formatearFechaParaMostrar(fechaExpiracion)}
             </span>
           </div>
@@ -428,7 +424,7 @@ export const columns: ColumnDef<Pedido>[] = [
 
       return (
         <div className='flex justify-center'>
-          <span className={`text-sm ${esRenovadoPorVendedor ? 'text-purple-600 font-medium' : ''}`}>
+          <span className="text-sm">
             {formatearFechaParaMostrar(fechaFin)}
           </span>
         </div>

@@ -32,14 +32,14 @@ const DiasRestantesCell = ({
   const fechaExpiracionDate = fecha_expiracion ? new Date(fecha_expiracion) : null
 
   // Normaliza la fecha actual y la de expiración a solo año-mes-día (ignora horas/minutos/segundos)
-  const fechaActualUTC = new Date(Date.UTC(fechaActual.getFullYear(), fechaActual.getMonth(), fechaActual.getDate()))
+  const fechaActualLocal = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), fechaActual.getDate())
   let diasRestantes: number | null = null
 
   if (fechaExpiracionDate) {
-    const fechaExpiracionUTC = new Date(Date.UTC(fechaExpiracionDate.getFullYear(), fechaExpiracionDate.getMonth(), fechaExpiracionDate.getDate()))
+    const fechaExpiracionLocal = new Date(fechaExpiracionDate.getFullYear(), fechaExpiracionDate.getMonth(), fechaExpiracionDate.getDate())
     // El cálculo correcto es: (fechaExpiracion - fechaActual) / ms/día
     // No sumes 1, solo usa Math.floor para que el día de hoy no cuente si ya pasó
-    diasRestantes = Math.floor((fechaExpiracionUTC.getTime() - fechaActualUTC.getTime()) / (1000 * 60 * 60 * 24))
+    diasRestantes = Math.floor((fechaExpiracionLocal.getTime() - fechaActualLocal.getTime()) / (1000 * 60 * 60 * 24))
   } else {
     diasRestantes = null
   }

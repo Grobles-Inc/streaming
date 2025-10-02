@@ -16,6 +16,8 @@ import { DataTableRowActions } from './data-table-row-actions'
 
 
 
+
+
 // Función para abrir WhatsApp
 const abrirWhatsApp = (telefono: string) => {
   const numeroLimpio = telefono.replace(/[^\d+]/g, '')
@@ -49,19 +51,18 @@ const DiasRestantesCell = ({
   const updatedIds = (window as any).__diasRestantesUpdatedIds || ((window as any).__diasRestantesUpdatedIds = new Set<number>())
 
   useEffect(() => {
-    if (diasRestantes === 0 && id && !updatedIds.has(id)) {
+    if (diasRestantes && diasRestantes < 0 && id && !updatedIds.has(id)) {
       updatedIds.add(id)
-      updatePedidoStatusVencido(id)
+      updatePedidoStatusVencido(id as number)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diasRestantes, id])
 
   let badgeColor = ''
   if (diasRestantes === null) {
     badgeColor = 'bg-gray-500 text-white dark:text-white border-gray-500'
-  } else if (diasRestantes <= 0) {
+  } else if (diasRestantes < 0) {
     badgeColor = 'bg-red-500 text-white dark:text-white border-red-500'
-  } else if (diasRestantes < 10) {
+  } else if (diasRestantes === 0 || diasRestantes < 10) {
     badgeColor = 'bg-orange-400 text-white dark:text-white border-orange-500'
   } else if (diasRestantes < 30) {
     badgeColor = 'bg-green-500 text-white dark:text-white border-green-500'
@@ -75,7 +76,7 @@ const DiasRestantesCell = ({
         </Badge>
       ) : (
         <Badge className={cn('capitalize h-7 w-7 rounded-full', badgeColor)}>
-          {diasRestantes <= 0 ? '0' : diasRestantes}
+          {diasRestantes}
         </Badge>
       )}
     </div>
@@ -154,7 +155,6 @@ export const columns: ColumnDef<Pedido>[] = [
     ),
     cell: ({ row }) => {
       const { estado } = row.original
-
       const badgeColor = estadosMap.get(estado as PedidoEstado)
       return (
         <div className='flex justify-center space-x-2'>
@@ -368,7 +368,7 @@ export const columns: ColumnDef<Pedido>[] = [
       if (fechaInicio) {
         return (
           <div className='flex justify-center'>
-            <span className={`text-sm ${esRenovadoPorVendedor ? 'text-purple-600 font-medium' : ''}`}>
+            <span className="text-sm">
               {formatearFechaParaMostrar(fechaInicio)}
             </span>
           </div>
@@ -380,7 +380,7 @@ export const columns: ColumnDef<Pedido>[] = [
 
       return (
         <div className='flex justify-center'>
-          <span className={`text-sm ${esRenovadoPorVendedor ? 'text-purple-600 font-medium' : ''}`}>
+          <span className="text-sm">
             {formatearFechaParaMostrar(fechaInicio)}
           </span>
         </div>

@@ -139,13 +139,13 @@ const ComprasTableActions = memo(function ComprasTableActions({
   onVer
 }: ComprasTableActionsProps) {
   const [isProcessing, setIsProcessing] = useState(false)
-  
+
   // Obtener acciones permitidas según el estado actual
   const acciones = getAccionesPermitidas(compra.estado)
 
   const handleAction = useCallback(async (action: () => Promise<void>) => {
     if (isProcessing) return
-    
+
     setIsProcessing(true)
     try {
       await action()
@@ -189,7 +189,7 @@ const ComprasTableActions = memo(function ComprasTableActions({
       >
         <IconEye className="h-4 w-4" />
       </Button>
-      
+
       {/* Marcar como resuelto */}
       {acciones.puedeMarcarResuelto && (
         <Button
@@ -203,7 +203,7 @@ const ComprasTableActions = memo(function ComprasTableActions({
           <IconCheck className="h-4 w-4" />
         </Button>
       )}
-      
+
       {/* Marcar como vencido */}
       {acciones.puedeMarcarVencido && (
         <Button
@@ -217,7 +217,7 @@ const ComprasTableActions = memo(function ComprasTableActions({
           <IconX className="h-4 w-4" />
         </Button>
       )}
-      
+
       {/* Enviar a soporte */}
       {acciones.puedeEnviarASoporte && (
         <Button
@@ -567,7 +567,7 @@ export function createComprasColumns(
     },
     {
       accessorKey: 'tiempoTranscurrido',
-      header: 'Tiempo Restante',
+      header: 'Días restantes',
       cell: ({ row }) => {
         const tiempo = row.getValue('tiempoTranscurrido') as string
 
@@ -585,9 +585,9 @@ export function createComprasColumns(
           const matchDias = tiempoStr.match(/(\d+)\s+día/)
           if (matchDias) {
             const dias = parseInt(matchDias[1])
-            if (dias <= 5) {
+            if (dias < 0) {
               return 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
-            } else if (dias <= 15) {
+            } else if (dias <= 10) {
               return 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100'
             } else {
               return 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'

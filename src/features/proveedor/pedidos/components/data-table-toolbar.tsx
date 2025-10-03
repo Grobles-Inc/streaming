@@ -3,7 +3,20 @@ import { Table } from '@tanstack/react-table'
 import { estados } from '../data/data'
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
 import { DataTableViewOptions } from './data-table-view-options'
-import { IconUser, IconMail, IconPackage, IconHash } from '@tabler/icons-react'
+import { IconUser, IconMail, IconPackage, IconHash, IconTrash } from '@tabler/icons-react'
+import { Button } from '@/components/ui/button'
+import { useEliminarPedidosExpiradosEnBloque } from '../queries'
+import { useState } from 'react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -12,6 +25,24 @@ interface DataTableToolbarProps<TData> {
 export function DataTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const { mutate: eliminarPedidos, isPending } = useEliminarPedidosExpiradosEnBloque()
+
+  const selectedRows = table.getFilteredSelectedRowModel().rows
+  const hasSelectedRows = selectedRows.length > 0
+
+  const handleBulkDelete = () => {
+    const selectedIds = selectedRows.map(row => (row.original as any).id).filter(Boolean)
+    if (selectedIds.length > 0) {
+      eliminarPedidos(selectedIds, {
+        onSuccess: () => {
+          table.resetRowSelection()
+          setShowDeleteDialog(false)
+        }
+      })
+    }
+  }
+
   return (
     <div className='space-y-4'>
       {/* Filtros de búsqueda */}
@@ -80,9 +111,43 @@ export function DataTableToolbar<TData>({
             />
           )}
         </div>
+        <div className='flex items-center gap-2'>
 
-        <DataTableViewOptions table={table} />
+          {hasSelectedRows && (
+            <Button
+              variant='destructive'
+              onClick={() => setShowDeleteDialog(true)}
+              disabled={isPending}
+            >
+              <IconTrash size={16} />
+              Eliminar ({selectedRows.length}) seleccionados
+            </Button>
+          )}
+          <DataTableViewOptions table={table} />
+        </div>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar pedidos seleccionados?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente {selectedRows.length} pedido{selectedRows.length !== 1 ? 's' : ''} seleccionado{selectedRows.length !== 1 ? 's' : ''}.
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={isPending}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isPending ? 'Eliminando...' : 'Eliminar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 } 

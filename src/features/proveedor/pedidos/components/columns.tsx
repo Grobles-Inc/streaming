@@ -1,9 +1,7 @@
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 import { ColumnDef } from '@tanstack/react-table'
-import { Phone } from 'lucide-react'
 import { useEffect } from 'react'
 import { estadosMap } from '../data/data'
 import { Pedido, PedidoEstado } from '../data/schema'
@@ -11,11 +9,6 @@ import { useUpdatePedidoStatusVencido } from '../queries'
 import { calcularFechaExpiracion, formatearFechaParaMostrar } from '../utils/fecha-utils'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
-
-
-
-
-
 
 
 // Función para abrir WhatsApp
@@ -208,18 +201,14 @@ export const columns: ColumnDef<Pedido>[] = [
 
       return (
         <div className='flex justify-center w-[100px]'>
-          <Button
-            variant='ghost'
-            size='sm'
-            className='h-8 w-8 p-0 hover:bg-green-50'
+          <button
+            className='flex flex-col items-center hover:opacity-60'
             onClick={() => abrirWhatsApp(telefono as string)}
             title="Abrir en WhatsApp"
           >
-            <div className='flex items-center space-x-1'>
-              <Phone className='h-4 w-4 text-green-600' />
-              <span className='text-xs text-green-600'>{telefono}</span>
-            </div>
-          </Button>
+            <img src="https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000" className='size-6' />
+            <span className='text-green-500 text-[9px]'>{telefono}</span>
+          </button>
         </div>
       )
     },
@@ -284,7 +273,9 @@ export const columns: ColumnDef<Pedido>[] = [
       const clave = row.original.stock_productos?.clave
       return (
         <div className='flex justify-center'>
-          <span className='max-w-24 truncate text-sm font-mono'>
+          <span
+            className="text-sm font-mono"
+          >
             {clave || 'N/A'}
           </span>
         </div>
@@ -343,11 +334,9 @@ export const columns: ColumnDef<Pedido>[] = [
     cell: ({ row }) => {
       const pin = row.original.stock_productos?.pin
       return (
-        <div className='flex justify-center'>
-          <span className='text-sm font-mono'>
-            {pin || 'N/A'}
-          </span>
-        </div>
+        <span className='text-sm font-mono flex justify-center items-center  text-center'>
+          {pin || 'N/A'}
+        </span>
       )
     },
   },

@@ -19,7 +19,7 @@ export function DataTableFacetedFilter<TData, TValue>({
   const selectedValue = column?.getFilterValue() as string
 
   return (
-    <div className="grid grid-cols-3 gap-2 md:grid-cols-5 ">
+    <div className="grid grid-cols-3 gap-2 md:grid-cols-6 ">
       {options.map((option) => {
         const isSelected = selectedValue === option.value
         return (

@@ -14,9 +14,9 @@ import { EditAccountModal } from './edit-account-modal'
 import { Pedido } from '../data/schema'
 import { SoporteCompra } from '../data/types'
 import { ConfirmDialog } from '@/components/confirm-dialog'
-import { eliminarPedidoExpirado } from '../services'
 import { toast } from 'sonner'
 import { calcularDiasRestantes, calcularFechaExpiracion } from '../utils/fecha-utils'
+import { useEliminarPedidoExpirado } from '../queries'
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>
@@ -29,6 +29,7 @@ export function DataTableRowActions<TData>({
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const pedido = row.original as Pedido
+  const eliminarPedidoExpirado = useEliminarPedidoExpirado()
 
   // Convertir Pedido a SoporteCompra para el modal
   const soporteCompra: SoporteCompra = {
@@ -83,7 +84,7 @@ export function DataTableRowActions<TData>({
     // Calcular fecha fin y días restantes usando las mismas utilidades
     let fechaFin: Date | null = null
     let diasRestantes = 0
-    
+
     if (pedido.fecha_expiracion) {
       // Si tiene fecha_expiracion explícita, usar esa
       diasRestantes = calcularDiasRestantes(pedido.fecha_expiracion)
@@ -94,13 +95,13 @@ export function DataTableRowActions<TData>({
       if (pedido.fecha_inicio) {
         fechaInicioCalcular = pedido.fecha_inicio
       }
-      
+
       if (fechaInicioCalcular && pedido.productos?.tiempo_uso) {
         fechaFin = calcularFechaExpiracion(fechaInicioCalcular, pedido.productos.tiempo_uso)
         diasRestantes = calcularDiasRestantes(fechaFin)
       }
     }
-    
+
     // Un pedido está expirado si tiene días restantes < 0
     return diasRestantes < 0
   }
@@ -111,19 +112,14 @@ export function DataTableRowActions<TData>({
 
   const handleConfirmDelete = async () => {
     try {
-      // Función para eliminar pedido y cuenta asociada
-      const result = await eliminarPedidoExpirado(pedido.id!, pedido.stock_producto_id)
-      
-      if (result.success) {
-        toast.success('Pedido eliminado correctamente')
-        setShowDeleteDialog(false)
-        window.location.reload()
-      } else {
-        toast.error(result.error || 'Error al eliminar pedido')
-      }
-    } catch (error) {
+      await eliminarPedidoExpirado.mutateAsync({
+        compraId: pedido.id!,
+        stockProductoId: pedido.stock_producto_id,
+      })
+      setShowDeleteDialog(false)
+    } catch (error: any) {
+      toast.error(error?.error || error?.message || 'Error al eliminar pedido')
       console.error('Error crítico en eliminación:', error)
-      toast.error('Error crítico al eliminar pedido')
     }
   }
 
@@ -144,7 +140,7 @@ export function DataTableRowActions<TData>({
             <IconHeadset className="mr-2 h-4 w-4" />
             Gestionar soporte
           </DropdownMenuItem>
-          
+
           {/* Solo mostrar opción de edición si tiene stock_producto_id */}
           {pedido.stock_producto_id && (
             <>
@@ -160,7 +156,7 @@ export function DataTableRowActions<TData>({
           {isExpired() && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={handleDeleteClick}
                 className="text-red-600 focus:text-red-600"
               >

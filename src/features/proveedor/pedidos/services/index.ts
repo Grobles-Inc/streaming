@@ -527,6 +527,30 @@ export const eliminarPedidoExpirado = async (
   }
 }
 
+export const eliminarPedidosExpiradosEnBloque = async (
+  ids: number[]
+): Promise<{ success: boolean; error?: string }> => {
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return { success: false, error: 'No se proporcionaron IDs para eliminar' }
+  }
+  try {
+    const { error } = await supabase
+      .from('compras')
+      .delete()
+      .in('id', ids)
+
+    if (error) {
+      console.error('Error al eliminar pedidos expirados:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error al eliminar pedidos expirados:', error)
+    return { success: false, error: error instanceof Error ? error.message : 'Error desconocido' }
+  }
+}
+
 // Completar soporte - solo actualiza el estado del stock y respuesta
 export const completarSoporte = async (
   compraId: string,

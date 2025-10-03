@@ -48,7 +48,7 @@ export function EditAccountModal({
   const updateStockProducto = useUpdateStockProductoAccountData()
   const updatePrecioRenovacion = useUpdateProductoPrecioRenovacion()
   const updatePedidoFechas = useUpdatePedidoFechas()
-  
+
   const [formData, setFormData] = useState({
     email: currentData.email || '',
     clave: currentData.clave || '',
@@ -81,7 +81,7 @@ export function EditAccountModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!stockProductoId) {
       toast.error('ID de stock producto no válido')
       return
@@ -136,32 +136,31 @@ export function EditAccountModal({
 
   // const calcularFechaExpiracion = (fechaInicio: string, dias: number): string => {
   //   if (!fechaInicio || dias <= 0) return ''
-    
+
   //   const inicio = new Date(fechaInicio)
   //   const expiracion = new Date(inicio.getTime() + (dias * 24 * 60 * 60 * 1000))
   //   return expiracion.toISOString().split('T')[0]
   // }
 
-  const isLoading = updateStockProducto.isPending || updatePrecioRenovacion.isPending || 
-                   updatePedidoFechas.isPending
+  const isLoading = updateStockProducto.isPending || updatePrecioRenovacion.isPending ||
+    updatePedidoFechas.isPending
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Editar Datos de Cuenta y Fechas</DialogTitle>
+          <DialogTitle>Editar Pedido</DialogTitle>
           <DialogDescription>
-            Actualiza la información de acceso, fechas y duración para este producto vendido.
+            Actualiza la información del pedido seleccionado.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 gap-4">
-            
+
             {/* Sección de Fechas y Duración */}
-            <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
-              <h3 className="text-sm font-medium text-gray-900">Fechas y Duración</h3>
-              
+            <div className="space-y-4 p-4 border rounded-lg bg-card">
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Fecha Inicio */}
                 <div className="space-y-2">
@@ -204,7 +203,7 @@ export function EditAccountModal({
                 {/* Precio de Renovación */}
                 <div className="space-y-2">
                   <Label htmlFor="precio_renovacion">Precio de Renovación</Label>
-                  <Input 
+                  <Input
                     id="precio_renovacion"
                     type="number"
                     step="0.01"
@@ -218,9 +217,8 @@ export function EditAccountModal({
             </div>
 
             {/* Sección de Datos de Cuenta */}
-            <div className="space-y-4 p-4 border rounded-lg">
-              <h3 className="text-sm font-medium text-gray-900">Datos de la Cuenta</h3>
-              
+            <div className="space-y-4 p-4 border rounded-lg bg-card">
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Email */}
                 <div className="space-y-2">
@@ -298,7 +296,7 @@ export function EditAccountModal({
               disabled={isLoading}
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Guardar Cambios
+              Guardar
             </Button>
           </div>
         </form>

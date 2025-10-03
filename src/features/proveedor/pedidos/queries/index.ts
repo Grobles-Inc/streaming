@@ -294,3 +294,38 @@ export const useCorregirPedidoVencidoIncorrecto = () => {
     },
   })
 }
+
+export const useEliminarPedidoExpirado = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      compraId,
+      stockProductoId,
+    }: {
+      compraId: number
+      stockProductoId?: number | null
+    }) => pedidosService.eliminarPedidoExpirado(compraId, stockProductoId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+      toast.success('Pedido eliminado correctamente')
+    },
+    onError: (error: any) => {
+      toast.error(
+        error?.error ||
+          error?.message ||
+          'Error al eliminar el pedido'
+      )
+    },
+  })
+}
+
+export const useEliminarPedidosExpiradosEnBloque = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (ids: number[]) => pedidosService.eliminarPedidosExpiradosEnBloque(ids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+      toast.success('Pedidos eliminados correctamente')
+    },
+  })
+}

@@ -6,7 +6,7 @@ import { useEffect } from 'react'
 import { estadosMap } from '../data/data'
 import { Pedido, PedidoEstado } from '../data/schema'
 import { useUpdatePedidoStatusVencido } from '../queries'
-import { calcularFechaExpiracion, formatearFechaParaMostrar } from '../utils/fecha-utils'
+import { calcularDiasRestantes, calcularFechaExpiracion, formatearFechaParaMostrar } from '../utils/fecha-utils'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 
@@ -23,20 +23,13 @@ const DiasRestantesCell = ({
   id,
 }: { fecha_expiracion: string, id: number | undefined }) => {
   const { mutate: updatePedidoStatusVencido } = useUpdatePedidoStatusVencido()
-  const fechaActual = new Date()
-  const fechaExpiracionDate = fecha_expiracion ? new Date(fecha_expiracion) : null
 
-  // Normaliza la fecha actual y la de expiración a solo año-mes-día (ignora horas/minutos/segundos)
-  const fechaActualLocal = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), fechaActual.getDate())
+  // Calcular días restantes usando la función de utilidad que maneja correctamente las zonas horarias
+  // Solo usa la fecha (año-mes-día), ignorando completamente horas, minutos, segundos y timezone
   let diasRestantes: number | null = null
-
-  if (fechaExpiracionDate) {
-    const fechaExpiracionLocal = new Date(fechaExpiracionDate.getFullYear(), fechaExpiracionDate.getMonth(), fechaExpiracionDate.getDate())
-    // El cálculo correcto es: (fechaExpiracion - fechaActual) / ms/día
-    // No sumes 1, solo usa Math.floor para que el día de hoy no cuente si ya pasó
-    diasRestantes = Math.floor((fechaExpiracionLocal.getTime() - fechaActualLocal.getTime()) / (1000 * 60 * 60 * 24))
-  } else {
-    diasRestantes = null
+  
+  if (fecha_expiracion) {
+    diasRestantes = calcularDiasRestantes(fecha_expiracion)
   }
 
   // For tablas grandes/infinite scroll, dispara el update solo una vez por id para evitar loops y race conditions.
@@ -348,27 +341,10 @@ export const columns: ColumnDef<Pedido>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const fechaInicio = row.original.fecha_inicio
-
-      // Verificar si es una renovación por vendedor usando la columna renovado
-
-      // Si tiene fecha_inicio explícita, usar esa
-      if (fechaInicio) {
-        return (
-          <div className='flex justify-center'>
-            <span className="text-sm">
-              {formatearFechaParaMostrar(fechaInicio)}
-            </span>
-          </div>
-        )
-      }
-
-      // Si no, usar created_at (fecha original)
-      if (!fechaInicio) return <div className='flex justify-center text-sm'>N/A</div>
-
       return (
         <div className='flex justify-center'>
           <span className="text-sm">
-            {formatearFechaParaMostrar(fechaInicio)}
+            {formatearFechaParaMostrar(fechaInicio as string)}
           </span>
         </div>
       )

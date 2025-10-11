@@ -42,13 +42,21 @@ export function DataTableToolbar<TData>({
     const selectedIds = selectedRows
       .map((row) => (row.original as any).id)
       .filter(Boolean)
+
+    const selectedStockProductoIds = selectedRows
+      .map((row) => (row.original as any).stock_producto_id)
+      .filter(Boolean)
+
     if (selectedIds.length > 0) {
-      eliminarPedidos(selectedIds, {
-        onSuccess: () => {
-          table.resetRowSelection()
-          setShowDeleteDialog(false)
-        },
+      eliminarPedidos({
+        ids: selectedIds,
+        stockProductoIds:
+          selectedStockProductoIds.length > 0
+            ? selectedStockProductoIds
+            : undefined,
       })
+      setShowDeleteDialog(false)
+      table.resetRowSelection()
     }
   }
 

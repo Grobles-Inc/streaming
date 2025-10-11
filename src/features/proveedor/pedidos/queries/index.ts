@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import * as pedidosService from '../services'
-import { toast } from 'sonner'
 import type { Database } from '@/types/supabase'
+import { toast } from 'sonner'
 import { UpdateSoporteStatusParams } from '../data/types'
+import * as pedidosService from '../services'
 
 type CompraUpdate = Database['public']['Tables']['compras']['Update']
 
@@ -20,8 +20,20 @@ export const usePedidosPaginatedByProveedor = (
   pageSize: number = 10
 ) => {
   return useQuery({
-    queryKey: ['pedidos', 'proveedor', proveedorId, 'paginated', page, pageSize],
-    queryFn: () => pedidosService.getComprasPaginatedByProveedor(proveedorId, page, pageSize),
+    queryKey: [
+      'pedidos',
+      'proveedor',
+      proveedorId,
+      'paginated',
+      page,
+      pageSize,
+    ],
+    queryFn: () =>
+      pedidosService.getComprasPaginatedByProveedor(
+        proveedorId,
+        page,
+        pageSize
+      ),
     enabled: !!proveedorId,
   })
 }
@@ -52,9 +64,9 @@ export const usePedidosStatsByProveedor = (proveedorId: string) => {
 
 export const useUpdatePedidoStatus = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: CompraUpdate }) => 
+    mutationFn: ({ id, updates }: { id: string; updates: CompraUpdate }) =>
       pedidosService.updateCompraStatus(id, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
@@ -68,10 +80,12 @@ export const useUpdatePedidoStatus = () => {
 
 export const useConfirmarPedido = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: (id: string) => 
-      pedidosService.updateCompraStatus(id, { estado: 'confirmado' } as CompraUpdate),
+    mutationFn: (id: string) =>
+      pedidosService.updateCompraStatus(id, {
+        estado: 'confirmado',
+      } as CompraUpdate),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
       toast.success('Pedido confirmado correctamente')
@@ -84,10 +98,12 @@ export const useConfirmarPedido = () => {
 
 export const useRechazarPedido = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: (id: string) => 
-      pedidosService.updateCompraStatus(id, { estado: 'rechazado' } as CompraUpdate),
+    mutationFn: (id: string) =>
+      pedidosService.updateCompraStatus(id, {
+        estado: 'rechazado',
+      } as CompraUpdate),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
       toast.success('Pedido rechazado')
@@ -100,9 +116,9 @@ export const useRechazarPedido = () => {
 
 export const useUpdateSoporteStatus = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: (params: UpdateSoporteStatusParams) => 
+    mutationFn: (params: UpdateSoporteStatusParams) =>
       pedidosService.updateStockProductoSoporteStatus(params),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
@@ -116,12 +132,12 @@ export const useUpdateSoporteStatus = () => {
 
 export const useUpdateStockProductoAccountData = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: ({ 
-      stockProductoId, 
-      accountData 
-    }: { 
+    mutationFn: ({
+      stockProductoId,
+      accountData,
+    }: {
       stockProductoId: number
       accountData: {
         email?: string | null
@@ -130,7 +146,11 @@ export const useUpdateStockProductoAccountData = () => {
         perfil?: string | null
         url?: string | null
       }
-    }) => pedidosService.updateStockProductoAccountData(stockProductoId, accountData),
+    }) =>
+      pedidosService.updateStockProductoAccountData(
+        stockProductoId,
+        accountData
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
     },
@@ -142,40 +162,49 @@ export const useUpdateStockProductoAccountData = () => {
 
 export const useProcesarReembolso = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: ({ 
-      compraId, 
-      proveedorId, 
-      vendedorId, 
-      montoReembolso 
-    }: { 
+    mutationFn: ({
+      compraId,
+      proveedorId,
+      vendedorId,
+      montoReembolso,
+    }: {
       compraId: string
       proveedorId: string
       vendedorId: string
       montoReembolso: number
-    }) => pedidosService.procesarReembolsoProveedor(compraId, proveedorId, vendedorId, montoReembolso),
+    }) =>
+      pedidosService.procesarReembolsoProveedor(
+        compraId,
+        proveedorId,
+        vendedorId,
+        montoReembolso
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
       queryClient.invalidateQueries({ queryKey: ['billeteras'] })
       toast.success('Reembolso procesado correctamente')
     },
     onError: (error) => {
-      const errorMessage = error instanceof Error ? error.message : 'Error al procesar el reembolso'
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Error al procesar el reembolso'
       toast.error(errorMessage)
     },
   })
-} 
+}
 
 export const useCompletarSoporte = () => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: ({ 
-      compraId, 
-      stockProductoId, 
-      respuesta 
-    }: { 
+    mutationFn: ({
+      compraId,
+      stockProductoId,
+      respuesta,
+    }: {
       compraId: string
       stockProductoId: number
       respuesta?: string
@@ -189,11 +218,12 @@ export const useCompletarSoporte = () => {
       }
     },
     onError: (error) => {
-      const errorMessage = error instanceof Error ? error.message : 'Error al completar el soporte'
+      const errorMessage =
+        error instanceof Error ? error.message : 'Error al completar el soporte'
       toast.error(errorMessage)
     },
   })
-} 
+}
 
 export const useUpdateProductoPrecioRenovacion = () => {
   const queryClient = useQueryClient()
@@ -201,11 +231,15 @@ export const useUpdateProductoPrecioRenovacion = () => {
   return useMutation({
     mutationFn: ({
       productoId,
-      precioRenovacion
-    } : {
+      precioRenovacion,
+    }: {
       productoId: number
       precioRenovacion: number
-    }) => pedidosService.updateProductoPrecioRenovacion(productoId, precioRenovacion),
+    }) =>
+      pedidosService.updateProductoPrecioRenovacion(
+        productoId,
+        precioRenovacion
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
       queryClient.invalidateQueries({ queryKey: ['productos'] })
@@ -223,12 +257,13 @@ export const useUpdatePedidoFechas = () => {
     mutationFn: ({
       pedidoId,
       fechaInicio,
-      fechaExpiracion
-    } : {
+      fechaExpiracion,
+    }: {
       pedidoId: number
       fechaInicio: string | null
       fechaExpiracion: string | null
-    }) => pedidosService.updatePedidoFechas(pedidoId, fechaInicio, fechaExpiracion),
+    }) =>
+      pedidosService.updatePedidoFechas(pedidoId, fechaInicio, fechaExpiracion),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
       toast.success('Fechas del pedido actualizadas correctamente')
@@ -245,8 +280,8 @@ export const useUpdateProductoTiempoUso = () => {
   return useMutation({
     mutationFn: ({
       productoId,
-      tiempoUso
-    } : {
+      tiempoUso,
+    }: {
       productoId: number
       tiempoUso: number
     }) => pedidosService.updateProductoTiempoUso(productoId, tiempoUso),
@@ -265,7 +300,7 @@ export const useUpdatePedidoStatusVencido = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (pedidoId: number) => 
+    mutationFn: (pedidoId: number) =>
       pedidosService.updatePedidoStatusVencido(pedidoId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
@@ -282,7 +317,13 @@ export const useCorregirPedidoVencidoIncorrecto = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ pedidoId, estadoOriginal }: { pedidoId: number; estadoOriginal: string }) => 
+    mutationFn: ({
+      pedidoId,
+      estadoOriginal,
+    }: {
+      pedidoId: number
+      estadoOriginal: string
+    }) =>
       pedidosService.corregirPedidoVencidoIncorrecto(pedidoId, estadoOriginal),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
@@ -311,9 +352,7 @@ export const useEliminarPedidoExpirado = () => {
     },
     onError: (error: any) => {
       toast.error(
-        error?.error ||
-          error?.message ||
-          'Error al eliminar el pedido'
+        error?.error || error?.message || 'Error al eliminar el pedido'
       )
     },
   })
@@ -322,10 +361,22 @@ export const useEliminarPedidoExpirado = () => {
 export const useEliminarPedidosExpiradosEnBloque = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (ids: number[]) => pedidosService.eliminarPedidosExpiradosEnBloque(ids),
+    mutationFn: ({
+      ids,
+      stockProductoIds,
+    }: {
+      ids: number[]
+      stockProductoIds?: number[]
+    }) =>
+      pedidosService.eliminarPedidosExpiradosEnBloque(ids, stockProductoIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
       toast.success('Pedidos eliminados correctamente')
+    },
+    onError: (error: any) => {
+      toast.error(
+        error?.error || error?.message || 'Error al eliminar los pedidos'
+      )
     },
   })
 }

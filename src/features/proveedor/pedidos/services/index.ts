@@ -577,17 +577,39 @@ export const eliminarPedidoExpirado = async (
 }
 
 export const eliminarPedidosExpiradosEnBloque = async (
-  ids: number[]
+  ids: number[],
+  stockProductoIds?: number[]
 ): Promise<{ success: boolean; error?: string }> => {
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
     return { success: false, error: 'No se proporcionaron IDs para eliminar' }
   }
   try {
-    const { error } = await supabase.from('compras').delete().in('id', ids)
+    // 1. Eliminar pedidos expirados de 'compras'
+    const { error: comprasError } = await supabase
+      .from('compras')
+      .delete()
+      .in('id', ids)
 
-    if (error) {
-      console.error('Error al eliminar pedidos expirados:', error)
-      return { success: false, error: error.message }
+    if (comprasError) {
+      console.error('Error al eliminar pedidos expirados:', comprasError)
+      return { success: false, error: comprasError.message }
+    }
+
+    // 2. Si se proporcionan stockProductoIds, eliminar también de 'stock_productos'
+    if (
+      stockProductoIds &&
+      Array.isArray(stockProductoIds) &&
+      stockProductoIds.length > 0
+    ) {
+      const { error: stockError } = await supabase
+        .from('stock_productos')
+        .delete()
+        .in('id', stockProductoIds)
+
+      if (stockError) {
+        console.error('Error al eliminar cuentas asociadas:', stockError)
+        return { success: false, error: stockError.message }
+      }
     }
 
     return { success: true }

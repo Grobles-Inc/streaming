@@ -33,26 +33,43 @@ export function parseFechaLocal(fechaString: string): Date {
  *         Coherente con calcularDuracionEnDias para mostrar siempre 30 días
  */
 export function calcularDiasRestantes(fechaFin: Date | string): number {
-  const fechaFinLocal =
-    typeof fechaFin === 'string'
-      ? parseFechaLocal(fechaFin)
-      : new Date(
-          fechaFin.getFullYear(),
-          fechaFin.getMonth(),
-          fechaFin.getDate()
-        )
+  let fechaFinLocal: Date
+
+  if (typeof fechaFin === 'string') {
+    fechaFinLocal = parseFechaLocal(fechaFin)
+  } else {
+    fechaFinLocal = new Date(
+      fechaFin.getFullYear(),
+      fechaFin.getMonth(),
+      fechaFin.getDate()
+    )
+  }
 
   const fechaActualLocal = getFechaActualLocal()
 
-  const diferenciaMilisegundos =
-    fechaFinLocal.getTime() - fechaActualLocal.getTime()
-  // Removemos el +1 para que sea coherente con calcularDuracionEnDias
-  // Ambas funciones ahora calculan la diferencia exacta entre fechas
-  const diasRestantes = Math.floor(
-    diferenciaMilisegundos / (24 * 60 * 60 * 1000)
-  )
+  // Usar solo los días, ignorando horas y milisegundos
+  // Año, Mes y Día son los únicos valores usados
+  const dFin = fechaFinLocal.getDate()
+  const mFin = fechaFinLocal.getMonth()
+  const yFin = fechaFinLocal.getFullYear()
+  const dHoy = fechaActualLocal.getDate()
+  const mHoy = fechaActualLocal.getMonth()
+  const yHoy = fechaActualLocal.getFullYear()
 
-  return diasRestantes
+  // Calcular la diferencia de días usando solo año, mes, día
+  // Si es el mismo mes/año: diferencia simple, si no, convertir todo a días desde una fecha base (por ejemplo, Epoch)
+  // Para eso, vamos a usar la fecha UTC de ambos y restar los días absolutos
+  // (la lógica es igual que hacer new Date(y, m, d).getTime() / ms_por_dia, pero solo usando día, mes y año)
+
+  function getDiasAbsolutos(y: number, m: number, d: number): number {
+    // Número de días desde 1970-01-01 = Math.floor(Date.UTC(y, m, d) / ms_por_dia)
+    return Math.floor(Date.UTC(y, m, d) / (24 * 60 * 60 * 1000))
+  }
+
+  const diasFin = getDiasAbsolutos(yFin, mFin, dFin)
+  const diasHoy = getDiasAbsolutos(yHoy, mHoy, dHoy)
+
+  return diasFin - diasHoy
 }
 
 /**

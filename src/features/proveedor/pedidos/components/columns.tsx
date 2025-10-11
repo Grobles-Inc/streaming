@@ -1,15 +1,18 @@
+import { useEffect } from 'react'
+import { ColumnDef } from '@tanstack/react-table'
+import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { cn } from '@/lib/utils'
-import { ColumnDef } from '@tanstack/react-table'
-import { useEffect } from 'react'
 import { estadosMap } from '../data/data'
 import { Pedido, PedidoEstado } from '../data/schema'
 import { useUpdatePedidoStatusVencido } from '../queries'
-import { calcularDiasRestantes, calcularFechaExpiracion, formatearFechaParaMostrar } from '../utils/fecha-utils'
+import {
+  calcularDiasRestantes,
+  calcularFechaExpiracion,
+  formatearFechaParaMostrar,
+} from '../utils/fecha-utils'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
-
 
 // Función para abrir WhatsApp
 const abrirWhatsApp = (telefono: string) => {
@@ -21,20 +24,25 @@ const abrirWhatsApp = (telefono: string) => {
 const DiasRestantesCell = ({
   fecha_expiracion,
   id,
-}: { fecha_expiracion: string, id: number | undefined }) => {
+}: {
+  fecha_expiracion: string
+  id: number | undefined
+}) => {
   const { mutate: updatePedidoStatusVencido } = useUpdatePedidoStatusVencido()
 
   // Calcular días restantes usando la función de utilidad que maneja correctamente las zonas horarias
   // Solo usa la fecha (año-mes-día), ignorando completamente horas, minutos, segundos y timezone
   let diasRestantes: number | null = null
-  
+
   if (fecha_expiracion) {
     diasRestantes = calcularDiasRestantes(fecha_expiracion)
   }
 
   // For tablas grandes/infinite scroll, dispara el update solo una vez por id para evitar loops y race conditions.
   // Usa un Set global para trackear ids ya actualizados en esta sesión.
-  const updatedIds = (window as any).__diasRestantesUpdatedIds || ((window as any).__diasRestantesUpdatedIds = new Set<number>())
+  const updatedIds =
+    (window as any).__diasRestantesUpdatedIds ||
+    ((window as any).__diasRestantesUpdatedIds = new Set<number>())
 
   useEffect(() => {
     if (diasRestantes && diasRestantes < 0 && id && !updatedIds.has(id)) {
@@ -61,7 +69,7 @@ const DiasRestantesCell = ({
           Sin activar
         </Badge>
       ) : (
-        <Badge className={cn('capitalize h-7 w-7 rounded-full', badgeColor)}>
+        <Badge className={cn('h-7 w-7 rounded-full capitalize', badgeColor)}>
           {diasRestantes}
         </Badge>
       )}
@@ -102,7 +110,11 @@ export const columns: ColumnDef<Pedido>[] = [
     cell: ({ row }) => {
       const id = row.getValue('id') as string
 
-      return <div className='flex justify-center w-[80px] font-mono text-sm'>{id}</div>
+      return (
+        <div className='flex w-[80px] justify-center font-mono text-sm'>
+          {id}
+        </div>
+      )
     },
     filterFn: (row, _id, value) => {
       const id = row.getValue('id') as string
@@ -127,7 +139,8 @@ export const columns: ColumnDef<Pedido>[] = [
       )
     },
     filterFn: (row, _id, value) => {
-      const productoNombre = row.original?.productos?.nombre?.toLowerCase() || ''
+      const productoNombre =
+        row.original?.productos?.nombre?.toLowerCase() || ''
       return productoNombre.includes(value.toLowerCase())
     },
     enableHiding: false,
@@ -158,24 +171,24 @@ export const columns: ColumnDef<Pedido>[] = [
     enableSorting: false,
   },
 
-
   {
-    accessorKey: 'cliente_nombre',
+    accessorKey: 'usuario',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Vendedor' />
     ),
     enableSorting: false,
     cell: ({ row }) => {
       const usuario = row.original.usuarios
-      const nombreCompleto = `${usuario?.nombres} ${usuario?.apellidos}`
-      return <div className='flex justify-center'>{nombreCompleto || 'Sin Vendedor'}</div>
+      return (
+        <div className='flex justify-center'>
+          {usuario?.usuario || 'Sin Vendedor'}
+        </div>
+      )
     },
     filterFn: (row, _id, value) => {
       const usuario = row.original.usuarios
-      const nombreCliente = usuario?.nombres || ''
-      const apellidoCliente = usuario?.apellidos || ''
-      const nombreCompleto = `${nombreCliente} ${apellidoCliente}`.toLowerCase()
-      return nombreCompleto.includes(value.toLowerCase())
+      const nombreUsuario = usuario?.usuario || ''
+      return nombreUsuario.includes(value.toLowerCase())
     },
   },
   {
@@ -189,18 +202,23 @@ export const columns: ColumnDef<Pedido>[] = [
       const telefono = usuario?.telefono
 
       if (!telefono) {
-        return <div className='flex justify-center text-gray-400'>Sin teléfono</div>
+        return (
+          <div className='flex justify-center text-gray-400'>Sin teléfono</div>
+        )
       }
 
       return (
-        <div className='flex justify-center w-[100px]'>
+        <div className='flex w-[100px] justify-center'>
           <button
             className='flex flex-col items-center hover:opacity-60'
             onClick={() => abrirWhatsApp(telefono as string)}
-            title="Abrir en WhatsApp"
+            title='Abrir en WhatsApp'
           >
-            <img src="https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000" className='size-6' />
-            <span className='text-green-500 text-[9px]'>{telefono}</span>
+            <img
+              src='https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000'
+              className='size-6'
+            />
+            <span className='text-[9px] text-green-500'>{telefono}</span>
           </button>
         </div>
       )
@@ -229,8 +247,7 @@ export const columns: ColumnDef<Pedido>[] = [
         <div className='flex justify-center'>
           {precioRenovacion !== null && precioRenovacion !== undefined
             ? `$ ${precioRenovacion.toFixed(2)}`
-            : 'N/A'
-          }
+            : 'N/A'}
         </div>
       )
     },
@@ -266,11 +283,7 @@ export const columns: ColumnDef<Pedido>[] = [
       const clave = row.original.stock_productos?.clave
       return (
         <div className='flex justify-center'>
-          <span
-            className="text-sm font-mono"
-          >
-            {clave || 'N/A'}
-          </span>
+          <span className='font-mono text-sm'>{clave || 'N/A'}</span>
         </div>
       )
     },
@@ -288,9 +301,9 @@ export const columns: ColumnDef<Pedido>[] = [
           {url ? (
             <a
               href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className='text-blue-600 hover:text-blue-800 underline text-sm max-w-32 truncate'
+              target='_blank'
+              rel='noopener noreferrer'
+              className='max-w-32 truncate text-sm text-blue-600 underline hover:text-blue-800'
             >
               {url}
             </a>
@@ -311,9 +324,7 @@ export const columns: ColumnDef<Pedido>[] = [
       const perfil = row.original.stock_productos?.perfil
       return (
         <div className='flex justify-center'>
-          <span className='text-sm'>
-            {perfil || 'N/A'}
-          </span>
+          <span className='text-sm'>{perfil || 'N/A'}</span>
         </div>
       )
     },
@@ -327,7 +338,7 @@ export const columns: ColumnDef<Pedido>[] = [
     cell: ({ row }) => {
       const pin = row.original.stock_productos?.pin
       return (
-        <span className='text-sm font-mono flex justify-center items-center  text-center'>
+        <span className='flex items-center justify-center text-center font-mono text-sm'>
           {pin || 'N/A'}
         </span>
       )
@@ -343,8 +354,19 @@ export const columns: ColumnDef<Pedido>[] = [
       const fechaInicio = row.original.fecha_inicio
       return (
         <div className='flex justify-center'>
-          <span className="text-sm">
-            {formatearFechaParaMostrar(fechaInicio as string)}
+          <span className='text-sm'>
+            <>
+              {formatearFechaParaMostrar(fechaInicio as string)}
+              <br />
+              <span className='text-muted-foreground text-xs'>
+                {fechaInicio
+                  ? new Date(fechaInicio).toLocaleTimeString('es-PE', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
+                  : 'N/A'}
+              </span>
+            </>
           </span>
         </div>
       )
@@ -368,7 +390,7 @@ export const columns: ColumnDef<Pedido>[] = [
       if (fechaExpiracion) {
         return (
           <div className='flex justify-center'>
-            <span className="text-sm">
+            <span className='text-sm'>
               {formatearFechaParaMostrar(fechaExpiracion)}
             </span>
           </div>
@@ -389,9 +411,7 @@ export const columns: ColumnDef<Pedido>[] = [
 
       return (
         <div className='flex justify-center'>
-          <span className="text-sm">
-            {formatearFechaParaMostrar(fechaFin)}
-          </span>
+          <span className='text-sm'>{formatearFechaParaMostrar(fechaFin)}</span>
         </div>
       )
     },
@@ -402,7 +422,12 @@ export const columns: ColumnDef<Pedido>[] = [
       <DataTableColumnHeader column={column} title='Días Restantes' />
     ),
     enableSorting: false,
-    cell: ({ row }) => <DiasRestantesCell fecha_expiracion={row.original.fecha_expiracion as string} id={row.original.id} />,
+    cell: ({ row }) => (
+      <DiasRestantesCell
+        fecha_expiracion={row.original.fecha_expiracion as string}
+        id={row.original.id}
+      />
+    ),
   },
   {
     id: 'actions',
@@ -411,5 +436,4 @@ export const columns: ColumnDef<Pedido>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-
-] 
+]

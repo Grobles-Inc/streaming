@@ -1,28 +1,32 @@
-import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/supabase'
-import {  UpdateSoporteStatusParams } from '../data/types'
-
+import { supabase } from '@/lib/supabase'
 // Importar la función para actualizar el array stock_de_productos
 import { updateStockDeProductos } from '../../productos'
+import { UpdateSoporteStatusParams } from '../data/types'
 
 export type Compra = Database['public']['Tables']['compras']['Row']
 export type Usuario = Database['public']['Tables']['usuarios']['Row']
 export type Producto = Database['public']['Tables']['productos']['Row']
 export type CompraUpdate = Database['public']['Tables']['compras']['Update']
-export type StockProducto = Database['public']['Tables']['stock_productos']['Row']
+export type StockProducto =
+  Database['public']['Tables']['stock_productos']['Row']
 export type SupabasePedido = Database['public']['Tables']['compras']['Row']
 export type PedidoUpdate = Database['public']['Tables']['compras']['Update']
 
 // Get compras by proveedor ID (pedidos/ventas del proveedor)
-export const getComprasByProveedorId = async (proveedorId: string): Promise<Compra[]> => {
+export const getComprasByProveedorId = async (
+  proveedorId: string
+): Promise<Compra[]> => {
   const { data, error } = await supabase
     .from('compras')
-    .select(`
+    .select(
+      `
       *,
       productos:producto_id (nombre, precio_publico, tiempo_uso, precio_renovacion),
-      usuarios:vendedor_id (nombres, apellidos, telefono),
+      usuarios:vendedor_id (nombres, apellidos, telefono, usuario),
       stock_productos:stock_producto_id (id, email, clave, pin, perfil, url, soporte_stock_producto)
-    `)
+    `
+    )
     .eq('proveedor_id', proveedorId)
     .order('created_at', { ascending: false })
 
@@ -38,10 +42,12 @@ export const getComprasByProveedorId = async (proveedorId: string): Promise<Comp
 export const getCompraById = async (id: string): Promise<Compra | null> => {
   const { data, error } = await supabase
     .from('compras')
-    .select(`
+    .select(
+      `
       *,
       productos:producto_id (nombre, precio_publico, precio_renovacion)
-    `)
+    `
+    )
     .eq('id', id)
     .single()
 
@@ -54,7 +60,10 @@ export const getCompraById = async (id: string): Promise<Compra | null> => {
 }
 
 // Update compra status (para proveedor confirmar/rechazar pedidos)
-export const updateCompraStatus = async (id: string, updates: CompraUpdate): Promise<Compra | null> => {
+export const updateCompraStatus = async (
+  id: string,
+  updates: CompraUpdate
+): Promise<Compra | null> => {
   const { data, error } = await supabase
     .from('compras')
     .update(updates)
@@ -71,13 +80,17 @@ export const updateCompraStatus = async (id: string, updates: CompraUpdate): Pro
 }
 
 // Get latest compras/pedidos for proveedor
-export const getLatestComprasByProveedor = async (proveedorId: string): Promise<Compra[]> => {
+export const getLatestComprasByProveedor = async (
+  proveedorId: string
+): Promise<Compra[]> => {
   const { data, error } = await supabase
     .from('compras')
-    .select(`
+    .select(
+      `
       *,
       productos:producto_id (nombre, precio_publico, precio_renovacion)
-    `)
+    `
+    )
     .eq('proveedor_id', proveedorId)
     .order('created_at', { ascending: false })
     .limit(5)
@@ -101,10 +114,13 @@ export const getComprasPaginatedByProveedor = async (
 
   const { data, error, count } = await supabase
     .from('compras')
-    .select(`
+    .select(
+      `
       *,
       productos:producto_id (nombre, precio_publico, precio_renovacion)
-    `, { count: 'exact' })
+    `,
+      { count: 'exact' }
+    )
     .eq('proveedor_id', proveedorId)
     .range(from, to)
     .order('created_at', { ascending: false })
@@ -130,30 +146,33 @@ export const getComprasStatsByProveedor = async (proveedorId: string) => {
       total: 0,
       completadas: 0,
       pendientes: 0,
-      ingresos: 0
+      ingresos: 0,
     }
   }
 
   const stats = {
     total: data.length,
-    completadas: data.filter(c => c.estado === 'completado').length,
-    pendientes: data.filter(c => c.estado === 'pendiente').length,
+    completadas: data.filter((c) => c.estado === 'completado').length,
+    pendientes: data.filter((c) => c.estado === 'pendiente').length,
     ingresos: data
-      .filter(c => c.estado === 'completado')
-      .reduce((sum, c) => sum + c.precio, 0)
+      .filter((c) => c.estado === 'completado')
+      .reduce((sum, c) => sum + c.precio, 0),
   }
 
   return stats
 }
 
 // Update stock producto soporte status
-export const updateStockProductoSoporteStatus = async (params: UpdateSoporteStatusParams): Promise<StockProducto | null> => {
+export const updateStockProductoSoporteStatus = async (
+  params: UpdateSoporteStatusParams
+): Promise<StockProducto | null> => {
   const { stockProductoId, estado, respuesta } = params
-  
+
   // Preparar los datos de actualización
-  const updateData: Database['public']['Tables']['stock_productos']['Update'] = {
-    soporte_stock_producto: estado
-  }
+  const updateData: Database['public']['Tables']['stock_productos']['Update'] =
+    {
+      soporte_stock_producto: estado,
+    }
 
   // Si se proporciona una respuesta, también actualizar la compra correspondiente
   if (respuesta) {
@@ -200,7 +219,8 @@ export const updateStockProductoAccountData = async (
     url?: string | null
   }
 ): Promise<StockProducto | null> => {
-  const updateData: Database['public']['Tables']['stock_productos']['Update'] = {}
+  const updateData: Database['public']['Tables']['stock_productos']['Update'] =
+    {}
 
   // Solo incluir campos que fueron proporcionados
   if (accountData.email !== undefined) updateData.email = accountData.email
@@ -302,7 +322,7 @@ export const procesarReembolsoProveedor = async (
       compraId,
       proveedorId,
       vendedorId,
-      montoReembolso
+      montoReembolso,
     })
 
     // 0. Obtener información de la compra para el stock_producto_id
@@ -317,31 +337,39 @@ export const procesarReembolsoProveedor = async (
     }
 
     // 1. Obtener billeteras
-    const { data: billeteraProveedor, error: errorBilleteraProveedor } = await supabase
-      .from('billeteras')
-      .select('*')
-      .eq('usuario_id', proveedorId)
-      .single()
+    const { data: billeteraProveedor, error: errorBilleteraProveedor } =
+      await supabase
+        .from('billeteras')
+        .select('*')
+        .eq('usuario_id', proveedorId)
+        .single()
 
     if (errorBilleteraProveedor || !billeteraProveedor) {
-      return { success: false, error: 'No se encontró la billetera del proveedor' }
+      return {
+        success: false,
+        error: 'No se encontró la billetera del proveedor',
+      }
     }
 
-    const { data: billeteraVendedor, error: errorBilleteraVendedor } = await supabase
-      .from('billeteras')
-      .select('*')
-      .eq('usuario_id', vendedorId)
-      .single()
+    const { data: billeteraVendedor, error: errorBilleteraVendedor } =
+      await supabase
+        .from('billeteras')
+        .select('*')
+        .eq('usuario_id', vendedorId)
+        .single()
 
     if (errorBilleteraVendedor || !billeteraVendedor) {
-      return { success: false, error: 'No se encontró la billetera del vendedor' }
+      return {
+        success: false,
+        error: 'No se encontró la billetera del vendedor',
+      }
     }
 
     // 2. Verificar que el proveedor tenga saldo suficiente
     if (billeteraProveedor.saldo < montoReembolso) {
-      return { 
-        success: false, 
-        error: `Saldo insuficiente. Tienes $${billeteraProveedor.saldo.toFixed(2)} pero necesitas $${montoReembolso.toFixed(2)}` 
+      return {
+        success: false,
+        error: `Saldo insuficiente. Tienes $${billeteraProveedor.saldo.toFixed(2)} pero necesitas $${montoReembolso.toFixed(2)}`,
       }
     }
 
@@ -352,23 +380,29 @@ export const procesarReembolsoProveedor = async (
     // Actualizar billetera del proveedor
     const { error: errorProveedor } = await supabase
       .from('billeteras')
-      .update({ 
-        saldo: nuevoSaldoProveedor, 
-        updated_at: new Date().toISOString() 
+      .update({
+        saldo: nuevoSaldoProveedor,
+        updated_at: new Date().toISOString(),
       })
       .eq('usuario_id', proveedorId)
 
     if (errorProveedor) {
-      console.error('Error actualizando billetera del proveedor:', errorProveedor)
-      return { success: false, error: 'Error al descontar fondos del proveedor' }
+      console.error(
+        'Error actualizando billetera del proveedor:',
+        errorProveedor
+      )
+      return {
+        success: false,
+        error: 'Error al descontar fondos del proveedor',
+      }
     }
 
     // Actualizar billetera del vendedor
     const { error: errorVendedor } = await supabase
       .from('billeteras')
-      .update({ 
-        saldo: nuevoSaldoVendedor, 
-        updated_at: new Date().toISOString() 
+      .update({
+        saldo: nuevoSaldoVendedor,
+        updated_at: new Date().toISOString(),
       })
       .eq('usuario_id', vendedorId)
 
@@ -377,12 +411,12 @@ export const procesarReembolsoProveedor = async (
       // Revertir cambio en billetera del proveedor
       await supabase
         .from('billeteras')
-        .update({ 
-          saldo: billeteraProveedor.saldo, 
-          updated_at: new Date().toISOString() 
+        .update({
+          saldo: billeteraProveedor.saldo,
+          updated_at: new Date().toISOString(),
         })
         .eq('usuario_id', proveedorId)
-      
+
       return { success: false, error: 'Error al transferir fondos al vendedor' }
     }
 
@@ -390,9 +424,9 @@ export const procesarReembolsoProveedor = async (
     if (compra.stock_producto_id) {
       const { error: errorStock } = await supabase
         .from('stock_productos')
-        .update({ 
+        .update({
           estado: 'disponible',
-          soporte_stock_producto: 'activo'
+          soporte_stock_producto: 'activo',
         })
         .eq('id', compra.stock_producto_id)
 
@@ -403,23 +437,31 @@ export const procesarReembolsoProveedor = async (
           .from('billeteras')
           .update({ saldo: billeteraProveedor.saldo })
           .eq('usuario_id', proveedorId)
-        
+
         await supabase
           .from('billeteras')
           .update({ saldo: billeteraVendedor.saldo })
           .eq('usuario_id', vendedorId)
-        
-        return { success: false, error: 'Error al devolver el stock a disponible' }
+
+        return {
+          success: false,
+          error: 'Error al devolver el stock a disponible',
+        }
       }
 
       // 5. 🆕 ACTUALIZAR ARRAY: Sincronizar el array stock_de_productos
       try {
         await updateStockDeProductos(compra.producto_id)
-        console.log('✅ Stock devuelto al array stock_de_productos del producto:', compra.producto_id)
+        console.log(
+          '✅ Stock devuelto al array stock_de_productos del producto:',
+          compra.producto_id
+        )
       } catch (stockError) {
         console.error('Error actualizando stock_de_productos:', stockError)
         // Nota: No revertimos todo por este error, pero lo registramos
-        console.warn('⚠️ Reembolso procesado pero stock_de_productos no se pudo actualizar. Puede sincronizarse manualmente.')
+        console.warn(
+          '⚠️ Reembolso procesado pero stock_de_productos no se pudo actualizar. Puede sincronizarse manualmente.'
+        )
       }
     }
 
@@ -428,7 +470,7 @@ export const procesarReembolsoProveedor = async (
       .from('compras')
       .update({
         estado: 'reembolsado',
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq('id', compraId)
 
@@ -439,7 +481,7 @@ export const procesarReembolsoProveedor = async (
         .from('billeteras')
         .update({ saldo: billeteraProveedor.saldo })
         .eq('usuario_id', proveedorId)
-      
+
       await supabase
         .from('billeteras')
         .update({ saldo: billeteraVendedor.saldo })
@@ -449,14 +491,17 @@ export const procesarReembolsoProveedor = async (
       if (compra.stock_producto_id) {
         await supabase
           .from('stock_productos')
-          .update({ 
+          .update({
             estado: 'vendido',
-            soporte_stock_producto: 'soporte'
+            soporte_stock_producto: 'soporte',
           })
           .eq('id', compra.stock_producto_id)
       }
-      
-      return { success: false, error: 'Error al actualizar el estado de la compra' }
+
+      return {
+        success: false,
+        error: 'Error al actualizar el estado de la compra',
+      }
     }
 
     console.log('✅ Reembolso procesado exitosamente:', {
@@ -464,19 +509,18 @@ export const procesarReembolsoProveedor = async (
       proveedorDespues: nuevoSaldoProveedor,
       vendedorAntes: billeteraVendedor.saldo,
       vendedorDespues: nuevoSaldoVendedor,
-      stockDevuelto: compra.stock_producto_id ? 'Sí' : 'No'
+      stockDevuelto: compra.stock_producto_id ? 'Sí' : 'No',
     })
 
     return { success: true }
-
   } catch (error) {
     console.error('❌ Error al procesar reembolso:', error)
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Error desconocido' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
     }
   }
-} 
+}
 
 // Eliminar pedido expirado y cuenta asociada
 export const eliminarPedidoExpirado = async (
@@ -485,7 +529,7 @@ export const eliminarPedidoExpirado = async (
 ): Promise<{ success: boolean; error?: string }> => {
   try {
     // ORDEN CORRECTO: Primero eliminar compra (que referencia stock_producto), después stock_producto
-    
+
     // 1. Eliminar el registro del pedido (compra) PRIMERO
     const { data: compraData, error: compraError } = await supabase
       .from('compras')
@@ -495,7 +539,10 @@ export const eliminarPedidoExpirado = async (
 
     if (compraError) {
       console.error('Error eliminando compra:', compraError)
-      return { success: false, error: `Error al eliminar el pedido: ${compraError.message}` }
+      return {
+        success: false,
+        error: `Error al eliminar el pedido: ${compraError.message}`,
+      }
     }
 
     if (!compraData || compraData.length === 0) {
@@ -512,17 +559,19 @@ export const eliminarPedidoExpirado = async (
 
       if (stockError) {
         console.error('Error eliminando stock_producto:', stockError)
-        return { success: false, error: `Error al eliminar la cuenta del stock: ${stockError.message}` }
+        return {
+          success: false,
+          error: `Error al eliminar la cuenta del stock: ${stockError.message}`,
+        }
       }
     }
 
     return { success: true }
-
   } catch (error) {
     console.error('Error al eliminar pedido expirado:', error)
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Error desconocido' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
     }
   }
 }
@@ -534,10 +583,7 @@ export const eliminarPedidosExpiradosEnBloque = async (
     return { success: false, error: 'No se proporcionaron IDs para eliminar' }
   }
   try {
-    const { error } = await supabase
-      .from('compras')
-      .delete()
-      .in('id', ids)
+    const { error } = await supabase.from('compras').delete().in('id', ids)
 
     if (error) {
       console.error('Error al eliminar pedidos expirados:', error)
@@ -547,7 +593,10 @@ export const eliminarPedidosExpiradosEnBloque = async (
     return { success: true }
   } catch (error) {
     console.error('Error al eliminar pedidos expirados:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Error desconocido' }
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
+    }
   }
 }
 
@@ -566,7 +615,10 @@ export const completarSoporte = async (
 
     if (errorStock) {
       console.error('Error updating stock producto status:', errorStock)
-      return { success: false, error: 'Error al actualizar el estado del stock' }
+      return {
+        success: false,
+        error: 'Error al actualizar el estado del stock',
+      }
     }
 
     // 2. Actualizar la respuesta de soporte si se proporciona
@@ -578,30 +630,35 @@ export const completarSoporte = async (
 
       if (errorCompra) {
         console.error('Error updating compra response:', errorCompra)
-        return { success: false, error: 'Error al actualizar la respuesta de soporte' }
+        return {
+          success: false,
+          error: 'Error al actualizar la respuesta de soporte',
+        }
       }
     }
 
     return { success: true }
   } catch (error) {
     console.error('Error completando soporte:', error)
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Error desconocido' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
     }
   }
 }
 
 // Actualizar pedido expirado a estado "vencido"
-export const updatePedidoStatusVencido = async (pedidoId: number): Promise<{ success: boolean; error?: string }> => {
+export const updatePedidoStatusVencido = async (
+  pedidoId: number
+): Promise<{ success: boolean; error?: string }> => {
   try {
     console.log('Actualizando pedido expirado a vencido:', pedidoId)
 
     const { data, error } = await supabase
       .from('compras')
-      .update({ 
+      .update({
         estado: 'vencido',
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .eq('id', pedidoId)
       .select()
@@ -614,26 +671,31 @@ export const updatePedidoStatusVencido = async (pedidoId: number): Promise<{ suc
 
     console.log('Pedido actualizado a vencido exitosamente:', data)
     return { success: true }
-
   } catch (error) {
     console.error('Error al actualizar pedido a vencido:', error)
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Error desconocido' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
     }
   }
 }
 
 // Corregir pedido marcado incorrectamente como "vencido" cuando aún le quedan días
-export const corregirPedidoVencidoIncorrecto = async (pedidoId: number, estadoOriginal: string): Promise<{ success: boolean; error?: string }> => {
+export const corregirPedidoVencidoIncorrecto = async (
+  pedidoId: number,
+  estadoOriginal: string
+): Promise<{ success: boolean; error?: string }> => {
   try {
-    console.log(`Corrigiendo pedido marcado incorrectamente como vencido (${pedidoId}) a estado original: ${estadoOriginal}`)
+    console.log(
+      `Corrigiendo pedido marcado incorrectamente como vencido (${pedidoId}) a estado original: ${estadoOriginal}`
+    )
 
     const { data, error } = await supabase
       .from('compras')
-      .update({ 
-        estado: estadoOriginal as Database['public']['Tables']['compras']['Row']['estado'], // Restaurar al estado original
-        updated_at: new Date().toISOString()
+      .update({
+        estado:
+          estadoOriginal as Database['public']['Tables']['compras']['Row']['estado'], // Restaurar al estado original
+        updated_at: new Date().toISOString(),
       })
       .eq('id', pedidoId)
       .select()
@@ -646,12 +708,11 @@ export const corregirPedidoVencidoIncorrecto = async (pedidoId: number, estadoOr
 
     console.log('Pedido corregido exitosamente:', data)
     return { success: true }
-
   } catch (error) {
     console.error('Error al corregir pedido vencido incorrectamente:', error)
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Error desconocido' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error desconocido',
     }
   }
-} 
+}

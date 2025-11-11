@@ -73,6 +73,7 @@ export function ComprasSoporteModal({ open, onOpenChange, currentRow }: ComprasS
           status: 'soporte',
           message: data.message + `\n\nMonto a reembolsar: $ ${(monto_reembolso <= 0 ? 0 : monto_reembolso).toFixed(2)} USD `,
           subject: 'reembolso',
+          monto_reembolso: monto_reembolso <= 0 ? 0 : monto_reembolso,
         })
       } else {
         await updateCompraStatus({

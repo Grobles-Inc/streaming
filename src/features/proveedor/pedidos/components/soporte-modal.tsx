@@ -42,7 +42,8 @@ export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteMod
     },
   })
 
-  // Extraer el monto del reembolso del mensaje del vendedor
+  // Obtener el monto del reembolso directamente del campo monto_reembolso de la BD
+  // Si no existe (casos antiguos), extraer del mensaje como fallback
   const extraerMontoReembolso = (mensaje: string): number => {
     const regex = /Monto a reembolsar:\s*\$\s*([\d,]+\.?\d*)/i
     const match = mensaje.match(regex)
@@ -53,7 +54,7 @@ export function SoporteModal({ open, onOpenChange, compra, onClose }: SoporteMod
     return 0
   }
 
-  const montoReembolso = compra.soporte_mensaje ? extraerMontoReembolso(compra.soporte_mensaje) : 0
+  const montoReembolso = compra.monto_reembolso || (compra.soporte_mensaje ? extraerMontoReembolso(compra.soporte_mensaje) : 0)
   const esReembolso = compra.soporte_asunto === 'reembolso'
   const reembolsoYaProcesado = compra.estado === 'reembolsado'
 

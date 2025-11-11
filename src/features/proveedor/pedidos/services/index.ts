@@ -465,11 +465,12 @@ export const procesarReembolsoProveedor = async (
       }
     }
 
-    // 6. Actualizar el estado de la compra a "reembolsado"
+    // 6. Actualizar el estado de la compra a "reembolsado" y guardar el monto del reembolso
     const { error: errorCompraUpdate } = await supabase
       .from('compras')
       .update({
         estado: 'reembolsado',
+        monto_reembolso: montoReembolso,
         updated_at: new Date().toISOString(),
       })
       .eq('id', compraId)

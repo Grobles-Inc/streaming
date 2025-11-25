@@ -2,6 +2,7 @@
  * Utilidades para manejo correcto de fechas en pedidos
  * Evita problemas de zona horaria y cálculos inconsistentes
  */
+import { differenceInDays, startOfDay, parseISO } from 'date-fns'
 
 /**
  * Obtiene la fecha actual en la zona horaria local a las 00:00:00
@@ -16,60 +17,37 @@ export function getFechaActualLocal(): Date {
  * Convierte una fecha string a Date local a las 00:00:00
  * Evita problemas de zona horaria al interpretar fechas
  * Usa split para evitar problemas de timezone con new Date(string)
+ * Solo extrae año, mes y día, ignorando completamente horas, minutos y segundos
  */
 export function parseFechaLocal(fechaString: string): Date {
-  const partes = fechaString.split('-')
+  // Extraer solo la parte de fecha (YYYY-MM-DD), ignorando cualquier hora/minuto/segundo
+  const fechaSolo = fechaString.split('T')[0].split(' ')[0]
+  const partes = fechaSolo.split('-')
   const año = parseInt(partes[0])
   const mes = parseInt(partes[1]) - 1 // Los meses en Date son 0-indexed
   const dia = parseInt(partes[2])
   return new Date(año, mes, dia)
 }
 
-/**
- * Calcula días restantes entre dos fechas de manera consistente
- * Usa solo la fecha (sin hora) para evitar problemas de zona horaria
- *
- * Lógica: Calcula la diferencia exacta sin incluir el día actual
- *         Coherente con calcularDuracionEnDias para mostrar siempre 30 días
- */
 export function calcularDiasRestantes(fechaFin: Date | string): number {
-  let fechaFinLocal: Date
+  let fechaFinDate: Date
 
   if (typeof fechaFin === 'string') {
-    fechaFinLocal = parseFechaLocal(fechaFin)
+    // Si es string ISO con hora, parsear y tomar solo la fecha para
+    // asegurar que 'startOfDay' lo trate consistentemente.
+    // parseISO() es más robusto que un simple split.
+    const parsedDate = parseISO(fechaFin)
+    fechaFinDate = startOfDay(parsedDate)
   } else {
-    fechaFinLocal = new Date(
-      fechaFin.getFullYear(),
-      fechaFin.getMonth(),
-      fechaFin.getDate()
-    )
+    fechaFinDate = startOfDay(fechaFin)
   }
 
-  const fechaActualLocal = getFechaActualLocal()
+  // Obtenemos el inicio del día actual (sin componentes de hora).
+  const fechaActual = startOfDay(new Date())
 
-  // Usar solo los días, ignorando horas y milisegundos
-  // Año, Mes y Día son los únicos valores usados
-  const dFin = fechaFinLocal.getDate()
-  const mFin = fechaFinLocal.getMonth()
-  const yFin = fechaFinLocal.getFullYear()
-  const dHoy = fechaActualLocal.getDate()
-  const mHoy = fechaActualLocal.getMonth()
-  const yHoy = fechaActualLocal.getFullYear()
-
-  // Calcular la diferencia de días usando solo año, mes, día
-  // Si es el mismo mes/año: diferencia simple, si no, convertir todo a días desde una fecha base (por ejemplo, Epoch)
-  // Para eso, vamos a usar la fecha UTC de ambos y restar los días absolutos
-  // (la lógica es igual que hacer new Date(y, m, d).getTime() / ms_por_dia, pero solo usando día, mes y año)
-
-  function getDiasAbsolutos(y: number, m: number, d: number): number {
-    // Número de días desde 1970-01-01 = Math.floor(Date.UTC(y, m, d) / ms_por_dia)
-    return Math.floor(Date.UTC(y, m, d) / (24 * 60 * 60 * 1000))
-  }
-
-  const diasFin = getDiasAbsolutos(yFin, mFin, dFin)
-  const diasHoy = getDiasAbsolutos(yHoy, mHoy, dHoy)
-
-  return diasFin - diasHoy
+  // differenceInDays(fecha_posterior, fecha_anterior)
+  // Esto nos da cuántos días enteros hay entre la fecha de expiración y hoy.
+  return differenceInDays(fechaFinDate, fechaActual)
 }
 
 /**
@@ -121,7 +99,7 @@ export function formatearFechaParaInput(fecha: Date | string | null): string {
 /**
  * Calcula la duración en días entre dos fechas
  * Para usar en formularios de edición
- * Calcula la diferencia exacta entre fechas para coherencia con días restantes
+ * Usa solo días, ignorando horas, minutos y segundos
  */
 export function calcularDuracionEnDias(
   fechaInicio: string,
@@ -129,15 +107,13 @@ export function calcularDuracionEnDias(
 ): number {
   if (!fechaInicio || !fechaExpiracion) return 0
 
-  const inicio = parseFechaLocal(fechaInicio)
-  const fin = parseFechaLocal(fechaExpiracion)
+  const inicioSolo = fechaInicio.split('T')[0]
+  const finSolo = fechaExpiracion.split('T')[0]
 
-  const diferenciaMilisegundos = fin.getTime() - inicio.getTime()
-  const diasDuracion = Math.floor(
-    diferenciaMilisegundos / (24 * 60 * 60 * 1000)
-  ) // Diferencia exacta sin +1
+  const inicio = startOfDay(parseISO(inicioSolo))
+  const fin = startOfDay(parseISO(finSolo))
 
-  return Math.max(0, diasDuracion)
+  return Math.max(0, differenceInDays(fin, inicio))
 }
 
 /**

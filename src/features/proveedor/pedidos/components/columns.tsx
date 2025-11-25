@@ -8,7 +8,6 @@ import { Pedido, PedidoEstado } from '../data/schema'
 import { useUpdatePedidoStatusVencido } from '../queries'
 import {
   calcularDiasRestantes,
-  calcularFechaExpiracion,
   formatearFechaParaMostrar,
 } from '../utils/fecha-utils'
 import { DataTableColumnHeader } from './data-table-column-header'
@@ -30,16 +29,12 @@ const DiasRestantesCell = ({
 }) => {
   const { mutate: updatePedidoStatusVencido } = useUpdatePedidoStatusVencido()
 
-  // Calcular días restantes usando la función de utilidad que maneja correctamente las zonas horarias
-  // Solo usa la fecha (año-mes-día), ignorando completamente horas, minutos, segundos y timezone
   let diasRestantes: number | null = null
 
   if (fecha_expiracion) {
     diasRestantes = calcularDiasRestantes(fecha_expiracion)
   }
 
-  // For tablas grandes/infinite scroll, dispara el update solo una vez por id para evitar loops y race conditions.
-  // Usa un Set global para trackear ids ya actualizados en esta sesión.
   const updatedIds =
     (window as any).__diasRestantesUpdatedIds ||
     ((window as any).__diasRestantesUpdatedIds = new Set<number>())
@@ -380,40 +375,20 @@ export const columns: ColumnDef<Pedido>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const fechaExpiracion = row.original.fecha_expiracion
-      const fechaInicio = row.original.fecha_inicio
-      const fechaCreacion = row.original.created_at
-      const tiempoUso = row.original.productos?.tiempo_uso
-
-      // Verificar si es una renovación por vendedor usando la columna renovado
-
-      // Si tiene fecha_expiracion explícita (renovación), usar esa
       if (fechaExpiracion) {
+        const fechaExpDate = new Date(fechaExpiracion)
         return (
           <div className='flex justify-center'>
-            <span className='text-sm'>
-              {formatearFechaParaMostrar(fechaExpiracion)}
+            <span>
+              {fechaExpDate.toLocaleDateString('es-PE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+              })}
             </span>
           </div>
         )
       }
-
-      // Si no, calcular usando la fecha de inicio (renovada o original) + tiempo_uso
-      let fechaInicioCalcular = fechaCreacion
-      if (fechaInicio) {
-        fechaInicioCalcular = fechaInicio
-      }
-
-      if (!fechaInicioCalcular || !tiempoUso) {
-        return <div className='flex justify-center text-sm'>N/A</div>
-      }
-
-      const fechaFin = calcularFechaExpiracion(fechaInicioCalcular, tiempoUso)
-
-      return (
-        <div className='flex justify-center'>
-          <span className='text-sm'>{formatearFechaParaMostrar(fechaFin)}</span>
-        </div>
-      )
     },
   },
   {

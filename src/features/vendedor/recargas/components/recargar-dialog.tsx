@@ -173,9 +173,9 @@ export function RecargarDialog() {
                     <div className=''>
 
                       <p className=" font-bold">Binance</p>
-                      <p className=" text-xs">ID: 977731480</p>
-                      <p className=" text-xs">Nombre: Juan M.</p>
-                      <p className=" text-xs">1 USDT = 3.5 soles</p>
+                      <p className=" text-xs">ID: 1096171177</p>
+                      <p className=" text-xs">Nombre: Melvy L.</p>
+                      <p className=" text-xs">1 USDT = 3.2 soles</p>
                     </div>
                     <img src="https://images.seeklogo.com/logo-png/32/1/binance-coin-bnb-logo-png_seeklogo-325081.png" alt="Binance" className="md:size-14 size-10 " />
                   </div>

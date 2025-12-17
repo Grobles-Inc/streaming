@@ -76,7 +76,9 @@ export default function Home() {
       <div className='absolute top-0 left-0 h-full w-full'>
         <Snowfall snowflakeCount={100} />
       </div>
-      <LandingHeader />
+      <div className='relative z-10'>
+        <LandingHeader />
+      </div>
       {!loadingCategorias && categorias && categorias.length > 0 && (
         <ScrollArea className='m-4 hidden rounded-md border bg-white whitespace-nowrap md:block'>
           <div className='flex h-24 items-center gap-8 rounded-lg px-7'>

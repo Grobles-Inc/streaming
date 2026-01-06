@@ -33,17 +33,25 @@ export function calcularDiasRestantes(fechaFin: Date | string): number {
   let fechaFinDate: Date
 
   if (typeof fechaFin === 'string') {
-    // Si es string ISO con hora, parsear y tomar solo la fecha para
-    // asegurar que 'startOfDay' lo trate consistentemente.
-    // parseISO() es más robusto que un simple split.
-    const parsedDate = parseISO(fechaFin)
-    fechaFinDate = startOfDay(parsedDate)
+    // Usar parseFechaLocal para extraer solo año, mes y día del string de la DB
+    // sin conversión de timezone, ignorando completamente horas/minutos/segundos
+    fechaFinDate = parseFechaLocal(fechaFin)
   } else {
-    fechaFinDate = startOfDay(fechaFin)
+    // Si es Date, crear una nueva fecha solo con año, mes y día
+    fechaFinDate = new Date(
+      fechaFin.getFullYear(),
+      fechaFin.getMonth(),
+      fechaFin.getDate()
+    )
   }
 
-  // Obtenemos el inicio del día actual (sin componentes de hora).
-  const fechaActual = startOfDay(new Date())
+  // Obtener la fecha actual solo con año, mes y día (sin horas/minutos)
+  const ahora = new Date()
+  const fechaActual = new Date(
+    ahora.getFullYear(),
+    ahora.getMonth(),
+    ahora.getDate()
+  )
 
   // differenceInDays(fecha_posterior, fecha_anterior)
   // Esto nos da cuántos días enteros hay entre la fecha de expiración y hoy.
@@ -130,4 +138,73 @@ export function formatearFechaParaMostrar(fecha: Date | string): string {
   const mes = String(fechaObj.getMonth() + 1).padStart(2, '0')
   const año = String(fechaObj.getFullYear()).slice(-2)
   return `${dia}/${mes}/${año}`
+}
+
+/**
+ * Formatea la hora directamente desde el string de la DB sin conversión de timezone
+ * Extrae la hora tal como está almacenada en la base de datos
+ */
+export function formatearHoraDesdeDB(
+  fechaString: string | null | undefined
+): string {
+  if (!fechaString) return 'N/A'
+
+  // Extraer la parte de hora del string (formato: YYYY-MM-DD HH:MM:SS+00 o YYYY-MM-DDTHH:MM:SS+00)
+  const match = fechaString.match(/(\d{2}):(\d{2}):?\d{0,2}/)
+  if (!match) return 'N/A'
+
+  const horas = parseInt(match[1], 10)
+  const minutos = parseInt(match[2], 10)
+
+  // Formatear en 12 horas con AM/PM
+  const horas12 = horas === 0 ? 12 : horas > 12 ? horas - 12 : horas
+  const ampm = horas >= 12 ? 'p. m.' : 'a. m.'
+  const minutosStr = String(minutos).padStart(2, '0')
+
+  return `${horas12}:${minutosStr} ${ampm}`
+}
+
+/**
+ * Extrae la parte de hora (HH:MM:SS) y timezone desde el string de la DB
+ * Retorna solo la parte de tiempo sin la fecha
+ * Formato esperado: YYYY-MM-DD HH:MM:SS+00 o YYYY-MM-DDTHH:MM:SS+00
+ */
+export function extraerHoraDesdeDB(
+  fechaString: string | null | undefined
+): string | null {
+  if (!fechaString) return null
+
+  // Extraer la parte de hora completa (HH:MM:SS) y timezone (+00)
+  // Maneja formatos: YYYY-MM-DD HH:MM:SS+00 o YYYY-MM-DDTHH:MM:SS+00
+  const match = fechaString.match(/(\d{2}:\d{2}:\d{2}(?:\.\d+)?)([+-]\d{2})?/)
+  if (!match) return null
+
+  const horaCompleta = match[1] // HH:MM:SS o HH:MM:SS.mmm
+  const timezone = match[2] || '+00' // +00 o -05, etc.
+
+  // Si tiene milisegundos, removerlos
+  const horaSinMs = horaCompleta.split('.')[0]
+
+  return `${horaSinMs}${timezone}`
+}
+
+/**
+ * Combina una fecha (YYYY-MM-DD) con la hora extraída de un datetime string de la DB
+ * Preserva el timezone original
+ * Útil para mantener la hora cuando solo se edita la fecha
+ */
+export function combinarFechaYHora(
+  fechaNueva: string, // Formato: YYYY-MM-DD
+  fechaOriginalConHora: string | null | undefined // Formato: YYYY-MM-DD HH:MM:SS+00
+): string | null {
+  if (!fechaNueva || !fechaOriginalConHora) return null
+
+  const horaExtraida = extraerHoraDesdeDB(fechaOriginalConHora)
+  if (!horaExtraida) {
+    // Si no se puede extraer la hora, usar 00:00:00+00 como default
+    return `${fechaNueva} 00:00:00+00`
+  }
+
+  // Combinar la nueva fecha con la hora original
+  return `${fechaNueva} ${horaExtraida}`
 }

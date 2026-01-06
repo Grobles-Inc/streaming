@@ -1,7 +1,9 @@
-import { Button } from '@/components/ui/button'
-import { Row } from '@tanstack/react-table'
-import { IconHeadset, IconEdit, IconDots, IconTrash } from '@tabler/icons-react'
 import { useState } from 'react'
+import { Row } from '@tanstack/react-table'
+import { IconEdit, IconHeadset, IconTrash } from '@tabler/icons-react'
+import { EllipsisVertical } from 'lucide-react'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,14 +11,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { SoporteModal } from './soporte-modal'
-import { EditAccountModal } from './edit-account-modal'
+import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Pedido } from '../data/schema'
 import { SoporteCompra } from '../data/types'
-import { ConfirmDialog } from '@/components/confirm-dialog'
-import { toast } from 'sonner'
-import { calcularDiasRestantes, calcularFechaExpiracion } from '../utils/fecha-utils'
 import { useEliminarPedidoExpirado } from '../queries'
+import {
+  calcularDiasRestantes,
+  calcularFechaExpiracion,
+} from '../utils/fecha-utils'
+import { EditAccountModal } from './edit-account-modal'
+import { SoporteModal } from './soporte-modal'
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>
@@ -48,19 +52,24 @@ export function DataTableRowActions<TData>({
     monto_reembolso: pedido.monto_reembolso || 0,
     created_at: pedido.created_at || '',
     updated_at: new Date().toISOString(),
-    stock_productos: pedido.stock_productos ? {
-      id: Number(pedido.stock_productos.id || 0),
-      email: pedido.stock_productos.email,
-      clave: pedido.stock_productos.clave,
-      pin: pedido.stock_productos.pin,
-      perfil: pedido.stock_productos.perfil,
-      url: pedido.stock_productos.url,
-      soporte_stock_producto: pedido.stock_productos.soporte_stock_producto || 'activo'
-    } : null,
-    productos: pedido.productos ? {
-      nombre: pedido.productos.nombre || '',
-      tiempo_uso: pedido.productos.tiempo_uso || 0
-    } : null
+    stock_productos: pedido.stock_productos
+      ? {
+          id: Number(pedido.stock_productos.id || 0),
+          email: pedido.stock_productos.email,
+          clave: pedido.stock_productos.clave,
+          pin: pedido.stock_productos.pin,
+          perfil: pedido.stock_productos.perfil,
+          url: pedido.stock_productos.url,
+          soporte_stock_producto:
+            pedido.stock_productos.soporte_stock_producto || 'activo',
+        }
+      : null,
+    productos: pedido.productos
+      ? {
+          nombre: pedido.productos.nombre || '',
+          tiempo_uso: pedido.productos.tiempo_uso || 0,
+        }
+      : null,
   }
 
   const handleSoporteClick = () => {
@@ -97,7 +106,10 @@ export function DataTableRowActions<TData>({
       }
 
       if (fechaInicioCalcular && pedido.productos?.tiempo_uso) {
-        fechaFin = calcularFechaExpiracion(fechaInicioCalcular, pedido.productos.tiempo_uso)
+        fechaFin = calcularFechaExpiracion(
+          fechaInicioCalcular,
+          pedido.productos.tiempo_uso
+        )
         diasRestantes = calcularDiasRestantes(fechaFin)
       }
     }
@@ -128,17 +140,17 @@ export function DataTableRowActions<TData>({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="ghost"
-            className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+            variant='ghost'
+            size='icon'
+            className='data-[state=open]:bg-muted'
           >
-            <IconDots className="h-4 w-4" />
-            <span className="sr-only">Abrir menú</span>
+            <EllipsisVertical className='size-4' />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[160px]">
+        <DropdownMenuContent align='end' className='w-[180px]'>
           <DropdownMenuItem onClick={handleSoporteClick}>
-            <IconHeadset className="mr-2 h-4 w-4" />
-            Gestionar soporte
+            <IconHeadset className='size-4' />
+            Soporte
           </DropdownMenuItem>
 
           {/* Solo mostrar opción de edición si tiene stock_producto_id */}
@@ -146,7 +158,7 @@ export function DataTableRowActions<TData>({
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleEditClick}>
-                <IconEdit className="mr-2 h-4 w-4" />
+                <IconEdit className='size-4' />
                 Editar cuenta
               </DropdownMenuItem>
             </>
@@ -158,9 +170,9 @@ export function DataTableRowActions<TData>({
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={handleDeleteClick}
-                className="text-red-600 focus:text-red-600"
+                className='text-red-600 focus:text-red-600'
               >
-                <IconTrash className="mr-2 h-4 w-4" />
+                <IconTrash className='size-4' />
                 Eliminar
               </DropdownMenuItem>
             </>
@@ -193,7 +205,7 @@ export function DataTableRowActions<TData>({
             precio_renovacion: pedido.productos?.precio_renovacion,
             fecha_inicio: pedido.fecha_inicio || pedido.created_at,
             fecha_expiracion: pedido.fecha_expiracion,
-            tiempo_uso: pedido.productos?.tiempo_uso
+            tiempo_uso: pedido.productos?.tiempo_uso,
           }}
           onClose={handleCloseEditModal}
         />
@@ -203,13 +215,13 @@ export function DataTableRowActions<TData>({
       <ConfirmDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
-        title="Eliminar pedido expirado"
-        desc="Esto eliminará tanto el pedido como la cuenta asociada a esta. ¿Estás seguro de que deseas continuar?"
+        title='Eliminar pedido expirado'
+        desc='Esto eliminará tanto el pedido como la cuenta asociada a esta. ¿Estás seguro de que deseas continuar?'
         handleConfirm={handleConfirmDelete}
-        confirmText="Eliminar"
-        cancelBtnText="Cancelar"
+        confirmText='Eliminar'
+        cancelBtnText='Cancelar'
         destructive={true}
       />
     </>
   )
-} 
+}

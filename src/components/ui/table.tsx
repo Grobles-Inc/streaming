@@ -15,7 +15,10 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
     let scrollContainer = table.parentElement
     while (scrollContainer && scrollContainer !== document.body) {
       const computedStyle = window.getComputedStyle(scrollContainer)
-      if (computedStyle.overflowX === 'auto' || computedStyle.overflowX === 'scroll') {
+      if (
+        computedStyle.overflowX === 'auto' ||
+        computedStyle.overflowX === 'scroll'
+      ) {
         break
       }
       scrollContainer = scrollContainer.parentElement
@@ -34,8 +37,9 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
 
     // Ocultar la barra de scroll original del contenedor
     const originalScrollbarWidth = scrollContainer.style.scrollbarWidth
-    const originalMsOverflowStyle = (scrollContainer as any).style.msOverflowStyle
-    
+    const originalMsOverflowStyle = (scrollContainer as any).style
+      .msOverflowStyle
+
     scrollContainer.style.scrollbarWidth = 'none'
     ;(scrollContainer as any).style.msOverflowStyle = 'none'
     scrollContainer.classList.add('hide-scrollbar')
@@ -56,12 +60,14 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
         const containerRect = scrollContainer.getBoundingClientRect()
         stickyScrollbar.style.width = `${containerRect.width}px`
         stickyScrollbar.style.left = `${containerRect.left}px`
-        
-        const scrollContent = stickyScrollbar.querySelector('.scroll-content') as HTMLElement
+
+        const scrollContent = stickyScrollbar.querySelector(
+          '.scroll-content'
+        ) as HTMLElement
         if (scrollContent) {
           scrollContent.style.width = `${table.scrollWidth}px`
         }
-        
+
         // Mostrar/ocultar la barra según si hay scroll
         const needsScroll = table.scrollWidth > scrollContainer.clientWidth
         stickyScrollbar.style.display = needsScroll ? 'block' : 'none'
@@ -85,11 +91,12 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
       scrollContainer?.removeEventListener('scroll', handleContainerScroll)
       stickyScrollbar.removeEventListener('scroll', handleStickyScroll)
       resizeObserver.disconnect()
-      
+
       // Restaurar estilos originales
       if (scrollContainer) {
         scrollContainer.style.scrollbarWidth = originalScrollbarWidth
-        ;(scrollContainer as any).style.msOverflowStyle = originalMsOverflowStyle
+        ;(scrollContainer as any).style.msOverflowStyle =
+          originalMsOverflowStyle
         scrollContainer.classList.remove('hide-scrollbar')
       }
     }
@@ -143,14 +150,16 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
         pointer-events: none;
       }
     `
-    
+
     if (!document.getElementById('table-sticky-scrollbar-styles')) {
       style.id = 'table-sticky-scrollbar-styles'
       document.head.appendChild(style)
     }
-    
+
     return () => {
-      const existingStyle = document.getElementById('table-sticky-scrollbar-styles')
+      const existingStyle = document.getElementById(
+        'table-sticky-scrollbar-styles'
+      )
       if (existingStyle) {
         existingStyle.remove()
       }
@@ -168,13 +177,10 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
         className={cn('w-full caption-bottom text-sm', className)}
         {...props}
       />
-      
+
       {/* Barra de scroll horizontal fija */}
-      <div
-        ref={stickyScrollbarRef}
-        className="sticky-horizontal-scrollbar"
-      >
-        <div className="scroll-content"></div>
+      <div ref={stickyScrollbarRef} className='sticky-horizontal-scrollbar'>
+        <div className='scroll-content'></div>
       </div>
     </div>
   )

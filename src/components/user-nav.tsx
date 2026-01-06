@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
 import { IconLogout, IconMoon, IconSun, IconUser } from '@tabler/icons-react'
+import { ChevronRight } from 'lucide-react'
 import { useAuth } from '@/stores/authStore'
 import { useTheme } from '@/context/theme-context'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -14,11 +15,12 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { SidebarTrigger } from './ui/sidebar'
+import { useSidebar } from './ui/sidebar'
 
-export function ProfileDropdown() {
+export function UserNav() {
   const { user, signOut } = useAuth()
   const { theme, setTheme } = useTheme()
+  const { state, toggleSidebar } = useSidebar()
 
   useEffect(() => {
     const themeColor = theme === 'dark' ? '#020817' : '#fff'
@@ -32,14 +34,19 @@ export function ProfileDropdown() {
 
   return (
     <DropdownMenu modal={false}>
-      <DropdownMenuTrigger asChild>
-        <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
-          <Avatar className='h-8 w-8'>
+      <DropdownMenuTrigger>
+        <Button
+          variant='ghost'
+          className='w-full justify-start group-data-[collapsible=icon]:justify-center'
+        >
+          <Avatar className='size-6'>
             <AvatarImage src='https://img.icons8.com/?size=200&id=492ILERveW8G&format=png&color=000000' />
-            <AvatarFallback className='bg-gradient-to-r from-indigo-500 to-cyan-500 text-white'>
-              {user?.nombres?.charAt(0)}
-            </AvatarFallback>
+            <AvatarFallback className='bg-gradient-to-r from-indigo-500 to-cyan-500 text-white'></AvatarFallback>
           </Avatar>
+          <span className='font-medium group-data-[collapsible=icon]:hidden'>
+            {user?.nombres} {user?.apellidos.slice(0, 10)}
+          </span>
+          <ChevronRight className='ml-auto hidden transition-transform duration-200 group-data-[collapsible=icon]:hidden group-data-[state=open]/collapsible:rotate-90' />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className='w-56' align='end' forceMount>
@@ -71,9 +78,8 @@ export function ProfileDropdown() {
             )}
           </DropdownMenuShortcut>
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <SidebarTrigger />
-          Colapsar
+        <DropdownMenuItem onClick={toggleSidebar}>
+          {state === 'expanded' ? 'Expandir' : 'Colapsar'}
           <DropdownMenuShortcut>Ctrl + B</DropdownMenuShortcut>
         </DropdownMenuItem>
         <DropdownMenuSeparator />

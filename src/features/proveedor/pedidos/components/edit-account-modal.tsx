@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useUpdateStockProductoAccountData, useUpdateProductoPrecioRenovacion, useUpdatePedidoFechas } from '../queries'
-import { formatearFechaParaInput, calcularDuracionEnDias } from '../utils/fecha-utils'
+import { formatearFechaParaInput, calcularDuracionEnDias, combinarFechaYHora } from '../utils/fecha-utils'
 import { Loader2 } from 'lucide-react'
 
 interface EditAccountModalProps {
@@ -49,6 +49,24 @@ export function EditAccountModal({
   const updatePrecioRenovacion = useUpdateProductoPrecioRenovacion()
   const updatePedidoFechas = useUpdatePedidoFechas()
 
+  // Almacenar las fechas originales completas (con hora) desde la DB
+  const [originalDatetimes, setOriginalDatetimes] = useState<{
+    fecha_inicio: string | null
+    fecha_expiracion: string | null
+  }>({
+    fecha_inicio: currentData.fecha_inicio ?? null,
+    fecha_expiracion: currentData.fecha_expiracion ?? null,
+  })
+
+  // Rastrear qué campos de fecha fueron editados
+  const [dateFieldsEdited, setDateFieldsEdited] = useState<{
+    fecha_inicio: boolean
+    fecha_expiracion: boolean
+  }>({
+    fecha_inicio: false,
+    fecha_expiracion: false,
+  })
+
   const [formData, setFormData] = useState({
     email: currentData.email || '',
     clave: currentData.clave || '',
@@ -66,6 +84,18 @@ export function EditAccountModal({
   // Actualizar formulario cuando cambien los datos actuales o se abra el modal
   useEffect(() => {
     if (open) {
+      // Guardar las fechas originales completas (con hora) desde la DB
+      setOriginalDatetimes({
+        fecha_inicio: currentData.fecha_inicio ?? null,
+        fecha_expiracion: currentData.fecha_expiracion ?? null,
+      })
+
+      // Resetear el tracking de ediciones
+      setDateFieldsEdited({
+        fecha_inicio: false,
+        fecha_expiracion: false,
+      })
+
       setFormData({
         email: currentData.email || '',
         clave: currentData.clave || '',
@@ -108,12 +138,51 @@ export function EditAccountModal({
       }
 
       // Actualizar fechas del pedido si está disponible
-      if (pedidoId && (formData.fecha_inicio || formData.fecha_expiracion)) {
-        await updatePedidoFechas.mutateAsync({
-          pedidoId,
-          fechaInicio: formData.fecha_inicio || null,
-          fechaExpiracion: formData.fecha_expiracion || null
-        })
+      if (pedidoId) {
+        // Determinar qué fechas enviar:
+        // - Si el campo NO fue editado: enviar la fecha original completa (preserva hora)
+        // - Si el campo SÍ fue editado: combinar nueva fecha con hora original
+        let fechaInicioParaEnviar: string | null = null
+        let fechaExpiracionParaEnviar: string | null = null
+
+        if (formData.fecha_inicio) {
+          if (dateFieldsEdited.fecha_inicio) {
+            // Campo fue editado: combinar nueva fecha con hora original
+            const fechaCombinada = combinarFechaYHora(
+              formData.fecha_inicio,
+              originalDatetimes.fecha_inicio
+            )
+            // Si no se pudo combinar (porque original era null), usar nueva fecha con 00:00:00
+            fechaInicioParaEnviar = fechaCombinada || `${formData.fecha_inicio} 00:00:00+00`
+          } else {
+            // Campo NO fue editado: usar fecha original completa (preserva hora)
+            fechaInicioParaEnviar = originalDatetimes.fecha_inicio
+          }
+        }
+
+        if (formData.fecha_expiracion) {
+          if (dateFieldsEdited.fecha_expiracion) {
+            // Campo fue editado: combinar nueva fecha con hora original
+            const fechaCombinada = combinarFechaYHora(
+              formData.fecha_expiracion,
+              originalDatetimes.fecha_expiracion
+            )
+            // Si no se pudo combinar (porque original era null), usar nueva fecha con 00:00:00
+            fechaExpiracionParaEnviar = fechaCombinada || `${formData.fecha_expiracion} 00:00:00+00`
+          } else {
+            // Campo NO fue editado: usar fecha original completa (preserva hora)
+            fechaExpiracionParaEnviar = originalDatetimes.fecha_expiracion
+          }
+        }
+
+        // Solo actualizar si hay algo que cambiar
+        if (fechaInicioParaEnviar || fechaExpiracionParaEnviar) {
+          await updatePedidoFechas.mutateAsync({
+            pedidoId,
+            fechaInicio: fechaInicioParaEnviar,
+            fechaExpiracion: fechaExpiracionParaEnviar
+          })
+        }
       }
 
       // REMOVIDO: Ya no actualizamos el tiempo_uso del producto para mantener el valor original
@@ -132,6 +201,19 @@ export function EditAccountModal({
       ...prev,
       [field]: value
     }))
+
+    // Rastrear si los campos de fecha fueron editados
+    if (field === 'fecha_inicio') {
+      setDateFieldsEdited(prev => ({
+        ...prev,
+        fecha_inicio: true
+      }))
+    } else if (field === 'fecha_expiracion') {
+      setDateFieldsEdited(prev => ({
+        ...prev,
+        fecha_expiracion: true
+      }))
+    }
   }
 
   // const calcularFechaExpiracion = (fechaInicio: string, dias: number): string => {

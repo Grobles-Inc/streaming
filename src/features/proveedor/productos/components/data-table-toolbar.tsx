@@ -1,13 +1,11 @@
 import { Cross2Icon } from '@radix-ui/react-icons'
 import { Table } from '@tanstack/react-table'
 import { IconPackage, IconClock, IconShoppingCart } from '@tabler/icons-react'
-
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-
+import { useCategorias } from '../queries'
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
 import { DataTableViewOptions } from './data-table-view-options'
-import { useCategorias } from '../queries'
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -20,11 +18,13 @@ export function DataTableToolbar<TData>({
   const { data: categorias } = useCategorias()
 
   // Convertir categorías de la BD al formato esperado por el filtro
-  const categoriasOptions = Array.isArray(categorias) ? categorias.map(categoria => ({
-    label: categoria.nombre,
-    value: categoria.id,
-    icon: IconPackage, // Usar un icono genérico por ahora
-  })) : []
+  const categoriasOptions = Array.isArray(categorias)
+    ? categorias.map((categoria) => ({
+        label: categoria.nombre,
+        value: categoria.id,
+        icon: IconPackage, // Usar un icono genérico por ahora
+      }))
+    : []
 
   // Opciones para disponibilidad
   const disponibilidadOptions = [
@@ -48,25 +48,18 @@ export function DataTableToolbar<TData>({
   return (
     <div className='space-y-4'>
       {/* Fila superior: Búsqueda y opciones de vista */}
-      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-        <div className='flex flex-1 items-center space-x-2'>
+      <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+        <div className='grid w-fit grid-cols-2 gap-2 md:flex'>
           <Input
             placeholder='Buscar productos...'
-            value={(table.getColumn('nombre')?.getFilterValue() as string) ?? ''}
+            value={
+              (table.getColumn('nombre')?.getFilterValue() as string) ?? ''
+            }
             onChange={(event) =>
               table.getColumn('nombre')?.setFilterValue(event.target.value)
             }
-            className='h-8 w-full sm:w-[150px] lg:w-[250px]'
+            className='h-8 min-w-[150px] lg:w-[250px]'
           />
-        </div>
-        <div className='flex items-center space-x-2'>
-          <DataTableViewOptions table={table} />
-        </div>
-      </div>
-
-      {/* Fila inferior: Filtros */}
-      <div className='flex flex-col sm:flex-row sm:items-center gap-2'>
-        <div className='flex flex-wrap items-center gap-2'>
           {table.getColumn('categorias') && (
             <DataTableFacetedFilter
               column={table.getColumn('categorias')}
@@ -91,9 +84,14 @@ export function DataTableToolbar<TData>({
               ]}
             />
           )}
-
         </div>
-        
+        <DataTableViewOptions table={table} />
+      </div>
+
+      {/* Fila inferior: Filtros */}
+      <div className='flex flex-col gap-2 sm:flex-row sm:items-center'>
+        <div className='flex flex-wrap items-center gap-2'></div>
+
         <div className='flex items-center space-x-2'>
           {isFiltered && (
             <Button
@@ -109,4 +107,4 @@ export function DataTableToolbar<TData>({
       </div>
     </div>
   )
-} 
+}

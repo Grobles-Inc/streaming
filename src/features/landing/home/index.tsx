@@ -1,7 +1,5 @@
 import { useState, useMemo, useCallback } from 'react'
 import { Link } from '@tanstack/react-router'
-import Snowfall from 'react-snowfall'
-import Garland from '@/assets/garland-2.png'
 import { useSearch } from '@/stores/searchStore'
 import { useImageProxy } from '@/hooks/use-image-proxy'
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
@@ -66,19 +64,8 @@ export default function Home() {
   })
   return (
     <div className='bg-base-100 mx-auto min-h-screen max-w-[1500px]'>
-      <div className='absolute top-0 left-0'>
-        <img
-          src={Garland}
-          alt='Garland'
-          className='h-full w-screen object-cover'
-        />
-      </div>
-      <div className='absolute top-0 left-0 h-full w-full'>
-        <Snowfall snowflakeCount={100} />
-      </div>
-      <div className='relative z-10'>
-        <LandingHeader />
-      </div>
+      <LandingHeader />
+
       {!loadingCategorias && categorias && categorias.length > 0 && (
         <ScrollArea className='m-4 hidden rounded-md border bg-white whitespace-nowrap md:block'>
           <div className='flex h-24 items-center gap-8 rounded-lg px-7'>

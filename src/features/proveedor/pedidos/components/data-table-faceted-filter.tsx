@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Column } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 interface DataTableFacetedFilterProps<TData, TValue> {
   column?: Column<TData, TValue>
@@ -19,14 +20,15 @@ export function DataTableFacetedFilter<TData, TValue>({
   const selectedValue = column?.getFilterValue() as string
 
   return (
-    <div className="grid grid-cols-3 gap-2 md:grid-cols-6 ">
+    <div className='grid grid-cols-3 gap-2 md:grid-cols-6'>
       {options.map((option) => {
         const isSelected = selectedValue === option.value
         return (
-          <button
+          <Button
             key={option.value}
+            size='sm'
             className={cn(
-              `h-8 px-3 py-2 text-sm font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background`,
+              `focus-visible:ring-ring ring-offset-background rounded-md px-2 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50`,
               option.color,
               isSelected && option.color
             )}
@@ -38,13 +40,13 @@ export function DataTableFacetedFilter<TData, TValue>({
               }
             }}
           >
-            <div className="flex items-center gap-2">
-              {option.icon && <option.icon className="h-4 w-4" />}
+            <div className='flex items-center gap-2'>
+              {option.icon && <option.icon className='h-4 w-4' />}
               {option.label}
             </div>
-          </button>
+          </Button>
         )
       })}
     </div>
   )
-} 
+}

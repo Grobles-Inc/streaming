@@ -1,11 +1,11 @@
+import Cookies from 'js-cookie'
+import { Navigate, Outlet } from '@tanstack/react-router'
+import { useAuth } from '@/stores/authStore'
+import { cn } from '@/lib/utils'
+import { SearchProvider } from '@/context/search-context'
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import SkipToMain from '@/components/skip-to-main'
-import { SidebarProvider } from '@/components/ui/sidebar'
-import { SearchProvider } from '@/context/search-context'
-import { cn } from '@/lib/utils'
-import { useAuth } from '@/stores/authStore'
-import { Navigate, Outlet } from '@tanstack/react-router'
-import Cookies from 'js-cookie'
 
 interface Props {
   children?: React.ReactNode
@@ -15,7 +15,7 @@ export function AuthenticatedLayout({ children }: Props) {
   const defaultOpen = Cookies.get('sidebar_state') !== 'false'
   const { isAuthenticated } = useAuth()
   if (!isAuthenticated) {
-    return <Navigate to="/sign-in" />
+    return <Navigate to='/sign-in' />
   }
   return (
     <SearchProvider>
@@ -34,9 +34,9 @@ export function AuthenticatedLayout({ children }: Props) {
             'has-[main.fixed-main]:group-data-[scroll-locked=1]/body:h-svh'
           )}
         >
+          <SidebarTrigger className='mt-2 ml-2 scale-125 sm:scale-100 md:hidden' />
           {children ? children : <Outlet />}
         </div>
-
       </SidebarProvider>
     </SearchProvider>
   )

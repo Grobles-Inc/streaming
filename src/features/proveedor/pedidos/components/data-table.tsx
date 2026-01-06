@@ -13,6 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
   Table,
   TableBody,
@@ -21,7 +22,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Skeleton } from '@/components/ui/skeleton'
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
 
@@ -62,6 +62,28 @@ export function DataTable<TData, TValue>({
     },
     enableRowSelection: true,
     enableGlobalFilter: true,
+    globalFilterFn: (row, _columnId, filterValue) => {
+      const searchValue = filterValue.toLowerCase()
+      const pedido = row.original as any
+
+      // Buscar en ID
+      const id = pedido.id?.toString() || ''
+      if (id.toLowerCase().includes(searchValue)) return true
+
+      // Buscar en producto
+      const productoNombre = pedido.productos?.nombre?.toLowerCase() || ''
+      if (productoNombre.includes(searchValue)) return true
+
+      // Buscar en usuario
+      const usuario = pedido.usuarios?.usuario?.toLowerCase() || ''
+      if (usuario.includes(searchValue)) return true
+
+      // Buscar en email
+      const email = pedido.stock_productos?.email?.toLowerCase() || ''
+      if (email.includes(searchValue)) return true
+
+      return false
+    },
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -89,9 +111,9 @@ export function DataTable<TData, TValue>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
                   )
                 })}
@@ -104,7 +126,7 @@ export function DataTable<TData, TValue>({
                 <TableRow key={`loading-${i}`}>
                   {columns.map((_, colIndex) => (
                     <TableCell key={`loading-cell-${i}-${colIndex}`}>
-                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className='h-4 w-full' />
                     </TableCell>
                   ))}
                 </TableRow>
@@ -114,7 +136,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className="group/row"
+                  className='group/row'
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -142,4 +164,4 @@ export function DataTable<TData, TValue>({
       <DataTablePagination table={table} />
     </div>
   )
-} 
+}

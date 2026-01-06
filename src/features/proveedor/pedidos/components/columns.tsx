@@ -3,12 +3,18 @@ import { ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { estadosMap } from '../data/data'
 import { Pedido, PedidoEstado } from '../data/schema'
 import { useUpdatePedidoStatusVencido } from '../queries'
 import {
   calcularDiasRestantes,
   formatearFechaParaMostrar,
+  formatearHoraDesdeDB,
 } from '../utils/fecha-utils'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
@@ -99,18 +105,8 @@ export const columns: ColumnDef<Pedido>[] = [
   },
   {
     accessorKey: 'id',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='ID' />
-    ),
-    cell: ({ row }) => {
-      const id = row.getValue('id') as string
+    header: 'ID',
 
-      return (
-        <div className='flex w-[80px] justify-center font-mono text-sm'>
-          {id}
-        </div>
-      )
-    },
     filterFn: (row, _id, value) => {
       const id = row.getValue('id') as string
       return id.toString().includes(value)
@@ -119,18 +115,12 @@ export const columns: ColumnDef<Pedido>[] = [
   },
   {
     accessorKey: 'producto_nombre',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Producto' />
-    ),
+    header: 'Producto',
     cell: ({ row }) => {
       const productoNombre = row.original.productos?.nombre
 
       return (
-        <div className='flex justify-center'>
-          <span className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[20rem]'>
-            {productoNombre || 'Sin producto'}
-          </span>
-        </div>
+        <span className='truncate'>{productoNombre || 'Sin producto'}</span>
       )
     },
     filterFn: (row, _id, value) => {
@@ -144,18 +134,14 @@ export const columns: ColumnDef<Pedido>[] = [
 
   {
     accessorKey: 'estado',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Estado' />
-    ),
+    header: 'Estado',
     cell: ({ row }) => {
       const { estado } = row.original
       const badgeColor = estadosMap.get(estado as PedidoEstado)
       return (
-        <div className='flex justify-center space-x-2'>
-          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
-            {estado}
-          </Badge>
-        </div>
+        <Badge variant='outline' className={cn('capitalize', badgeColor)}>
+          {estado}
+        </Badge>
       )
     },
     filterFn: (row, id, value) => {
@@ -168,99 +154,88 @@ export const columns: ColumnDef<Pedido>[] = [
 
   {
     accessorKey: 'usuario',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Vendedor' />
-    ),
+    header: 'Vendedor',
     enableSorting: false,
     cell: ({ row }) => {
       const usuario = row.original.usuarios
       return (
-        <div className='flex justify-center'>
-          {usuario?.usuario || 'Sin Vendedor'}
-        </div>
+        <span className='truncate'>{usuario?.usuario || 'Sin Vendedor'}</span>
       )
     },
     filterFn: (row, _id, value) => {
       const usuario = row.original.usuarios
-      const nombreUsuario = usuario?.usuario || ''
+      const nombreUsuario = usuario?.usuario?.toLowerCase() || ''
       return nombreUsuario.includes(value.toLowerCase())
     },
   },
   {
     accessorKey: 'telefono_whatsapp',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Teléfono' />
-    ),
+    header: 'Teléfono',
     enableSorting: false,
     cell: ({ row }) => {
       const usuario = row.original.usuarios
       const telefono = usuario?.telefono
 
       if (!telefono) {
-        return (
-          <div className='flex justify-center text-gray-400'>Sin teléfono</div>
-        )
+        return <span className='text-gray-400'>Sin teléfono</span>
       }
 
       return (
-        <div className='flex w-[100px] justify-center'>
-          <button
-            className='flex flex-col items-center hover:opacity-60'
-            onClick={() => abrirWhatsApp(telefono as string)}
-            title='Abrir en WhatsApp'
-          >
-            <img
-              src='https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000'
-              className='size-6'
-            />
-            <span className='text-[9px] text-green-500'>{telefono}</span>
-          </button>
-        </div>
+        <button
+          className='flex flex-col items-center hover:opacity-60'
+          onClick={() => abrirWhatsApp(telefono as string)}
+          title='Abrir en WhatsApp'
+        >
+          <img
+            src='https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000'
+            className='size-6'
+          />
+          <span className='text-[9px] text-green-500'>{telefono}</span>
+        </button>
       )
     },
   },
   {
     accessorKey: 'precio',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Precio' />
-    ),
+    header: 'Precio',
     enableSorting: false,
     cell: ({ row }) => {
       const precio = row.getValue('precio') as number
-      return <div className='flex justify-center'>$ {precio.toFixed(2)}</div>
+      return <span>$ {precio.toFixed(2)}</span>
     },
   },
   {
     accessorKey: 'precio_renovacion',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Precio Renovación' />
-    ),
+    header: 'P. Renovación',
     enableSorting: false,
     cell: ({ row }) => {
       const precioRenovacion = row.original.productos?.precio_renovacion
       return (
-        <div className='flex justify-center'>
+        <span>
           {precioRenovacion !== null && precioRenovacion !== undefined
             ? `$ ${precioRenovacion.toFixed(2)}`
             : 'N/A'}
-        </div>
+        </span>
       )
     },
   },
   {
     accessorKey: 'cuenta_email',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Email Cuenta' />
-    ),
+    header: 'Email Cuenta',
     enableSorting: false,
     cell: ({ row }) => {
       const email = row.original.stock_productos?.email
       return (
-        <div className='flex justify-center'>
-          <span className='max-w-32 truncate text-sm sm:max-w-72 md:max-w-[15rem]'>
-            {email || 'N/A'}
-          </span>
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className='truncate text-sm'>
+              {email?.slice(0, 20) || 'N/A'}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{email || 'N/A'}</p>
+          </TooltipContent>
+        </Tooltip>
       )
     },
     filterFn: (row, _id, value) => {
@@ -270,29 +245,32 @@ export const columns: ColumnDef<Pedido>[] = [
   },
   {
     accessorKey: 'cuenta_clave',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Clave' />
-    ),
+    header: 'Clave',
     enableSorting: false,
     cell: ({ row }) => {
       const clave = row.original.stock_productos?.clave
       return (
-        <div className='flex justify-center'>
-          <span className='font-mono text-sm'>{clave || 'N/A'}</span>
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className='font-mono text-sm'>
+              {clave?.slice(0, 20) || 'N/A'}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{clave || 'N/A'}</p>
+          </TooltipContent>
+        </Tooltip>
       )
     },
   },
   {
     accessorKey: 'cuenta_url',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='URL' />
-    ),
+    header: 'URL',
     enableSorting: false,
     cell: ({ row }) => {
       const url = row.original.stock_productos?.url
       return (
-        <div className='flex justify-center'>
+        <div>
           {url ? (
             <a
               href={url}
@@ -311,57 +289,34 @@ export const columns: ColumnDef<Pedido>[] = [
   },
   {
     accessorKey: 'perfil',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Perfil' />
-    ),
+    header: 'Perfil',
     enableSorting: false,
     cell: ({ row }) => {
       const perfil = row.original.stock_productos?.perfil
-      return (
-        <div className='flex justify-center'>
-          <span className='text-sm'>{perfil || 'N/A'}</span>
-        </div>
-      )
+      return <span className='text-sm'>{perfil || 'N/A'}</span>
     },
   },
   {
     accessorKey: 'pin',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='PIN' />
-    ),
+    header: 'PIN',
     enableSorting: false,
     cell: ({ row }) => {
       const pin = row.original.stock_productos?.pin
-      return (
-        <span className='flex items-center justify-center text-center font-mono text-sm'>
-          {pin || 'N/A'}
-        </span>
-      )
+      return <span className='font-mono text-sm'>{pin || 'N/A'}</span>
     },
   },
   {
     accessorKey: 'fecha_inicio',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Fecha Inicio' />
-    ),
+    header: 'Inicio',
     enableSorting: false,
     cell: ({ row }) => {
       const fechaInicio = row.original.fecha_inicio
       return (
-        <div className='flex justify-center'>
-          <span className='text-sm'>
-            <>
-              {formatearFechaParaMostrar(fechaInicio as string)}
-              <br />
-              <span className='text-muted-foreground text-xs'>
-                {fechaInicio
-                  ? new Date(fechaInicio).toLocaleTimeString('es-PE', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })
-                  : 'N/A'}
-              </span>
-            </>
+        <div className='space-y-1'>
+          {formatearFechaParaMostrar(fechaInicio as string)}
+          <br />
+          <span className='text-muted-foreground text-xs'>
+            {formatearHoraDesdeDB(fechaInicio as string)}
           </span>
         </div>
       )
@@ -370,23 +325,14 @@ export const columns: ColumnDef<Pedido>[] = [
   {
     accessorKey: 'fecha_fin',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Fecha Fin' />
+      <DataTableColumnHeader column={column} title='Fin' />
     ),
     enableSorting: false,
     cell: ({ row }) => {
       const fechaExpiracion = row.original.fecha_expiracion
       if (fechaExpiracion) {
-        const fechaExpDate = new Date(fechaExpiracion)
         return (
-          <div className='flex justify-center'>
-            <span>
-              {fechaExpDate.toLocaleDateString('es-PE', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-              })}
-            </span>
-          </div>
+          <span>{formatearFechaParaMostrar(fechaExpiracion as string)}</span>
         )
       }
     },
@@ -394,7 +340,7 @@ export const columns: ColumnDef<Pedido>[] = [
   {
     accessorKey: 'dias_restantes',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Días Restantes' />
+      <DataTableColumnHeader column={column} title='Días' />
     ),
     enableSorting: false,
     cell: ({ row }) => (
@@ -406,7 +352,7 @@ export const columns: ColumnDef<Pedido>[] = [
   },
   {
     id: 'actions',
-    header: 'Acciones',
+    header: '',
     cell: ({ row }) => <DataTableRowActions row={row} />,
     enableSorting: false,
     enableHiding: false,

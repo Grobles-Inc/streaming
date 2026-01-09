@@ -42,7 +42,6 @@ import {
 } from '../../queries/productos'
 import { Producto } from '../../services'
 import { PhoneInput } from './phone-input'
-import { obtenerFechaInicioLima } from '@/features/proveedor/pedidos/utils/fecha-utils'
 
 const formSchema = z.object({
   nombre_cliente: z
@@ -156,7 +155,9 @@ export default function ComprarProductoModal({
         precio: producto.precio_vendedor,
         monto_reembolso: producto.precio_vendedor,
         telefono_cliente: data.telefono_cliente.replace(/\s/g, ''),
-        fecha_inicio: obtenerFechaInicioLima(),
+        fecha_inicio: new Date(
+          new Date().toLocaleString('en-US', { timeZone: 'America/Lima' })
+        ).toISOString(),
         stock_producto_id: stockProductosIds?.[0],
         fecha_expiracion: fecha_expiracion,
       },

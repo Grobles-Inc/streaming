@@ -11,11 +11,6 @@ import {
 import { estadosMap } from '../data/data'
 import { Pedido, PedidoEstado } from '../data/schema'
 import { useUpdatePedidoStatusVencido } from '../queries'
-import {
-  calcularDiasRestantes,
-  formatearFechaParaMostrar,
-  formatearHoraDesdeDB,
-} from '../utils/fecha-utils'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 
@@ -38,7 +33,10 @@ const DiasRestantesCell = ({
   let diasRestantes: number | null = null
 
   if (fecha_expiracion) {
-    diasRestantes = calcularDiasRestantes(fecha_expiracion)
+    const fechaExpiracion = new Date(fecha_expiracion as string)
+    const fechaActual = new Date()
+    const diferenciaMs = fechaExpiracion.getTime() - fechaActual.getTime()
+    diasRestantes = Math.ceil(diferenciaMs / (1000 * 60 * 60 * 24))
   }
 
   const updatedIds =
@@ -313,10 +311,17 @@ export const columns: ColumnDef<Pedido>[] = [
       const fechaInicio = row.original.fecha_inicio
       return (
         <div className='space-y-1'>
-          {formatearFechaParaMostrar(fechaInicio as string)}
+          {new Date(fechaInicio as string).toLocaleDateString('es-PE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          })}
           <br />
           <span className='text-muted-foreground text-xs'>
-            {formatearHoraDesdeDB(fechaInicio as string)}
+            {new Date(fechaInicio as string).toLocaleTimeString('es-PE', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
           </span>
         </div>
       )
@@ -332,7 +337,13 @@ export const columns: ColumnDef<Pedido>[] = [
       const fechaExpiracion = row.original.fecha_expiracion
       if (fechaExpiracion) {
         return (
-          <span>{formatearFechaParaMostrar(fechaExpiracion as string)}</span>
+          <span>
+            {new Date(fechaExpiracion as string).toLocaleDateString('es-PE', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+            })}
+          </span>
         )
       }
     },

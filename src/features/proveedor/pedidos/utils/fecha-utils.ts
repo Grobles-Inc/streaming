@@ -208,3 +208,38 @@ export function combinarFechaYHora(
   // Combinar la nueva fecha con la hora original
   return `${fechaNueva} ${horaExtraida}`
 }
+
+/**
+ * Obtiene la fecha y hora actual en la zona horaria de Lima (UTC-5)
+ * y la formatea como ISO string con offset +00 para almacenar en la base de datos.
+ * Esto permite almacenar la hora local de Lima como si fuera UTC.
+ * 
+ * Ejemplo: Si son las 12:39:06 en Lima, retorna '2026-01-09T12:39:06+00'
+ * en lugar de '2026-01-09T17:39:06+00' (que sería UTC real)
+ */
+export function obtenerFechaInicioLima(): string {
+  const ahora = new Date()
+  
+  // Obtener componentes de fecha/hora en Lima timezone
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Lima',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
+  
+  const partes = formatter.formatToParts(ahora)
+  const year = partes.find(p => p.type === 'year')?.value || ''
+  const month = partes.find(p => p.type === 'month')?.value || ''
+  const day = partes.find(p => p.type === 'day')?.value || ''
+  const hour = partes.find(p => p.type === 'hour')?.value || ''
+  const minute = partes.find(p => p.type === 'minute')?.value || ''
+  const second = partes.find(p => p.type === 'second')?.value || ''
+  
+  // Formatear como ISO string con offset +00 (representando Lima time como UTC)
+  return `${year}-${month}-${day}T${hour}:${minute}:${second}+00`
+}

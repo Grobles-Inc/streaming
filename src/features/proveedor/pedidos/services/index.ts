@@ -264,6 +264,14 @@ export const updateProductoPrecioRenovacion = async (
   return data
 }
 
+// Helper to calculate UTC day difference (same logic as columns.tsx)
+const getUtcDayDiff = (targetDate: Date, baseDate = new Date()) => {
+  const MS_PER_DAY = 1000 * 60 * 60 * 24
+  const getUtcMidnightMs = (date: Date) =>
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  return (getUtcMidnightMs(targetDate) - getUtcMidnightMs(baseDate)) / MS_PER_DAY
+}
+
 // Update pedido fechas
 export const updatePedidoFechas = async (
   pedidoId: number,
@@ -273,7 +281,12 @@ export const updatePedidoFechas = async (
   const updateData: Database['public']['Tables']['compras']['Update'] = {}
 
   if (fechaInicio) updateData.fecha_inicio = fechaInicio
-  if (fechaExpiracion) updateData.fecha_expiracion = fechaExpiracion
+  if (fechaExpiracion) {
+    updateData.fecha_expiracion = fechaExpiracion
+    // Update estado based on fecha_expiracion: resuelto if days > 0, vencido if <= 0
+    const diasRestantes = getUtcDayDiff(new Date(fechaExpiracion))
+    updateData.estado = diasRestantes <= 0 ? 'vencido' : 'resuelto'
+  }
 
   const { data, error } = await supabase
     .from('compras')

@@ -14,6 +14,26 @@ import { useUpdatePedidoStatusVencido } from '../queries'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 
+const MS_PER_DAY = 1000 * 60 * 60 * 24
+
+const getUtcMidnightMs = (date: Date) =>
+  Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+
+const getUtcDayDiff = (targetDate: Date, baseDate = new Date()) =>
+  (getUtcMidnightMs(targetDate) - getUtcMidnightMs(baseDate)) / MS_PER_DAY
+
+const getPedidoEstadoByFecha = (
+  estado: PedidoEstado,
+  fechaExpiracion?: string | null
+) => {
+  if (!fechaExpiracion) {
+    return estado
+  }
+
+  const diasRestantes = getUtcDayDiff(new Date(fechaExpiracion))
+  return diasRestantes <= 0 ? 'vencido' : 'resuelto'
+}
+
 // Función para abrir WhatsApp
 const abrirWhatsApp = (telefono: string) => {
   const numeroLimpio = telefono.replace(/[^\d+]/g, '')
@@ -33,10 +53,7 @@ const DiasRestantesCell = ({
   let diasRestantes: number | null = null
 
   if (fecha_expiracion) {
-    const fechaExpiracion = new Date(fecha_expiracion as string)
-    const fechaActual = new Date()
-    const diferenciaMs = fechaExpiracion.getTime() - fechaActual.getTime()
-    diasRestantes = Math.ceil(diferenciaMs / (1000 * 60 * 60 * 24))
+    diasRestantes = getUtcDayDiff(new Date(fecha_expiracion as string))
   }
 
   const updatedIds =
@@ -44,7 +61,12 @@ const DiasRestantesCell = ({
     ((window as any).__diasRestantesUpdatedIds = new Set<number>())
 
   useEffect(() => {
-    if (diasRestantes && diasRestantes < 0 && id && !updatedIds.has(id)) {
+    if (
+      diasRestantes !== null &&
+      diasRestantes <= 0 &&
+      id &&
+      !updatedIds.has(id)
+    ) {
       updatedIds.add(id)
       updatePedidoStatusVencido(id as number)
     }
@@ -53,9 +75,9 @@ const DiasRestantesCell = ({
   let badgeColor = ''
   if (diasRestantes === null) {
     badgeColor = 'bg-gray-500 text-white dark:text-white border-gray-500'
-  } else if (diasRestantes < 0) {
+  } else if (diasRestantes <= 0) {
     badgeColor = 'bg-red-500 text-white dark:text-white border-red-500'
-  } else if (diasRestantes === 0 || diasRestantes < 10) {
+  } else if (diasRestantes < 10) {
     badgeColor = 'bg-orange-400 text-white dark:text-white border-orange-500'
   } else if (diasRestantes < 30) {
     badgeColor = 'bg-green-500 text-white dark:text-white border-green-500'
@@ -134,16 +156,23 @@ export const columns: ColumnDef<Pedido>[] = [
     accessorKey: 'estado',
     header: 'Estado',
     cell: ({ row }) => {
-      const { estado } = row.original
-      const badgeColor = estadosMap.get(estado as PedidoEstado)
+      const { estado, fecha_expiracion: fechaExpiracion } = row.original
+      const estadoCalculado = getPedidoEstadoByFecha(
+        estado as PedidoEstado,
+        fechaExpiracion as string
+      )
+      const badgeColor = estadosMap.get(estadoCalculado)
       return (
         <Badge variant='outline' className={cn('capitalize', badgeColor)}>
-          {estado}
+          {estadoCalculado}
         </Badge>
       )
     },
-    filterFn: (row, id, value) => {
-      const estado = row.getValue(id) as string
+    filterFn: (row, _id, value) => {
+      const estado = getPedidoEstadoByFecha(
+        row.original.estado as PedidoEstado,
+        row.original.fecha_expiracion as string
+      )
       return value.includes(estado)
     },
     enableHiding: false,
@@ -315,6 +344,7 @@ export const columns: ColumnDef<Pedido>[] = [
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
+            timeZone: 'UTC',
           })}
           <br />
           <span className='text-muted-foreground text-xs'>
@@ -336,15 +366,16 @@ export const columns: ColumnDef<Pedido>[] = [
     cell: ({ row }) => {
       const fechaExpiracion = row.original.fecha_expiracion
       if (fechaExpiracion) {
-        return (
-          <span>
-            {new Date(fechaExpiracion as string).toLocaleDateString('es-PE', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-            })}
-          </span>
-        )
+        const formattedFechaExpiracion = new Intl.DateTimeFormat('es-PE', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          timeZone: 'UTC',
+        })
+          .format(new Date(fechaExpiracion as string))
+          .split('/')
+          .join('/')
+        return <span>{formattedFechaExpiracion}</span>
       }
     },
   },

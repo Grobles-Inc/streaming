@@ -250,6 +250,14 @@ export const useUpdateProductoPrecioRenovacion = () => {
   })
 }
 
+// Helper to calculate UTC day difference (same logic as columns.tsx and services)
+const getUtcDayDiff = (targetDate: Date, baseDate = new Date()) => {
+  const MS_PER_DAY = 1000 * 60 * 60 * 24
+  const getUtcMidnightMs = (date: Date) =>
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  return (getUtcMidnightMs(targetDate) - getUtcMidnightMs(baseDate)) / MS_PER_DAY
+}
+
 export const useUpdatePedidoFechas = () => {
   const queryClient = useQueryClient()
 
@@ -264,12 +272,68 @@ export const useUpdatePedidoFechas = () => {
       fechaExpiracion: string | null
     }) =>
       pedidosService.updatePedidoFechas(pedidoId, fechaInicio, fechaExpiracion),
+    onMutate: async ({ pedidoId, fechaInicio, fechaExpiracion }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['pedidos'] })
+
+      // Snapshot previous values for rollback
+      const previousQueries = queryClient.getQueriesData({ queryKey: ['pedidos'] })
+
+      // Calculate new estado based on fecha_expiracion
+      const nuevoEstado = fechaExpiracion
+        ? getUtcDayDiff(new Date(fechaExpiracion)) <= 0
+          ? 'vencido'
+          : 'resuelto'
+        : undefined
+
+      // Optimistically update all pedidos queries
+      queryClient.setQueriesData<unknown>({ queryKey: ['pedidos'] }, (old: unknown) => {
+        if (!old) return old
+
+        const updatePedido = (pedido: any) => {
+          if (pedido.id === pedidoId) {
+            return {
+              ...pedido,
+              ...(fechaInicio && { fecha_inicio: fechaInicio }),
+              ...(fechaExpiracion && { fecha_expiracion: fechaExpiracion }),
+              ...(nuevoEstado && { estado: nuevoEstado }),
+            }
+          }
+          return pedido
+        }
+
+        // Handle array format
+        if (Array.isArray(old)) {
+          return old.map(updatePedido)
+        }
+
+        // Handle { data, count } format
+        if (old && typeof old === 'object' && 'data' in old) {
+          return {
+            ...old,
+            data: Array.isArray((old as { data: unknown[] }).data)
+              ? (old as { data: unknown[] }).data.map(updatePedido)
+              : (old as { data: unknown }).data,
+          }
+        }
+
+        return old
+      })
+
+      return { previousQueries }
+    },
+    onError: (_error, _variables, context) => {
+      // Rollback on error
+      if (context?.previousQueries) {
+        context.previousQueries.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data)
+        })
+      }
+      toast.error('Error al actualizar las fechas del pedido')
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
       toast.success('Fechas del pedido actualizadas correctamente')
-    },
-    onError: () => {
-      toast.error('Error al actualizar las fechas del pedido')
     },
   })
 }

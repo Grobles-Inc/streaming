@@ -13,6 +13,9 @@ export type StockProducto =
 export type SupabasePedido = Database['public']['Tables']['compras']['Row']
 export type PedidoUpdate = Database['public']['Tables']['compras']['Update']
 
+const MAX_DEBUG_LOGS = 5
+let __serviceDebugCount = 0
+
 // Get compras by proveedor ID (pedidos/ventas del proveedor)
 export const getComprasByProveedorId = async (
   proveedorId: string
@@ -33,6 +36,21 @@ export const getComprasByProveedorId = async (
   if (error) {
     console.error('Error fetching compras by proveedor:', error)
     return []
+  }
+
+  // DEBUG: Log raw fecha_expiracion from DB (LIMITED TO 5)
+  if (data && data.length > 0 && __serviceDebugCount < MAX_DEBUG_LOGS) {
+    console.log(
+      `[DEBUG SERVICE ${__serviceDebugCount + 1}/${MAX_DEBUG_LOGS}] Raw DB fecha_expiracion values:`,
+      data.slice(0, MAX_DEBUG_LOGS - __serviceDebugCount).map((item) => ({
+        id: item.id,
+        fecha_expiracion: item.fecha_expiracion,
+        fecha_expiracion_raw: JSON.stringify(item.fecha_expiracion),
+        fecha_inicio: item.fecha_inicio,
+        browserTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      }))
+    )
+    __serviceDebugCount += MAX_DEBUG_LOGS - __serviceDebugCount
   }
 
   return data || []
@@ -269,7 +287,9 @@ const getUtcDayDiff = (targetDate: Date, baseDate = new Date()) => {
   const MS_PER_DAY = 1000 * 60 * 60 * 24
   const getUtcMidnightMs = (date: Date) =>
     Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
-  return (getUtcMidnightMs(targetDate) - getUtcMidnightMs(baseDate)) / MS_PER_DAY
+  return (
+    (getUtcMidnightMs(targetDate) - getUtcMidnightMs(baseDate)) / MS_PER_DAY
+  )
 }
 
 // Update pedido fechas
@@ -278,6 +298,16 @@ export const updatePedidoFechas = async (
   fechaInicio: string | null,
   fechaExpiracion: string | null
 ): Promise<Compra | null> => {
+  // DEBUG: Log incoming dates before any processing
+  console.log('[DEBUG updatePedidoFechas] INPUT:', {
+    pedidoId,
+    fechaInicio,
+    fechaExpiracion,
+    fechaExpiracion_type: typeof fechaExpiracion,
+    now: new Date().toISOString(),
+    browserTz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  })
+
   const updateData: Database['public']['Tables']['compras']['Update'] = {}
 
   if (fechaInicio) updateData.fecha_inicio = fechaInicio
@@ -286,7 +316,22 @@ export const updatePedidoFechas = async (
     // Update estado based on fecha_expiracion: resuelto if days > 0, vencido if <= 0
     const diasRestantes = getUtcDayDiff(new Date(fechaExpiracion))
     updateData.estado = diasRestantes <= 0 ? 'vencido' : 'resuelto'
+
+    // DEBUG: Log calculation for estado
+    console.log('[DEBUG updatePedidoFechas] Estado calculation:', {
+      fechaExpiracion,
+      dateObj: new Date(fechaExpiracion),
+      diasRestantes,
+      calculatedEstado: diasRestantes <= 0 ? 'vencido' : 'resuelto',
+    })
   }
+
+  // DEBUG: Log what will be sent to DB
+  console.log('[DEBUG updatePedidoFechas] UPDATE payload:', {
+    pedidoId,
+    updateData,
+    updateDataJSON: JSON.stringify(updateData),
+  })
 
   const { data, error } = await supabase
     .from('compras')
@@ -299,6 +344,14 @@ export const updatePedidoFechas = async (
     console.error('Error updating pedido fechas:', error)
     throw error
   }
+
+  // DEBUG: Log response from DB
+  console.log('[DEBUG updatePedidoFechas] RESPONSE:', {
+    id: data.id,
+    fecha_inicio: data.fecha_inicio,
+    fecha_expiracion: data.fecha_expiracion,
+    fecha_expiracion_raw: JSON.stringify(data.fecha_expiracion),
+  })
 
   return data
 }

@@ -22,6 +22,12 @@ const getUtcMidnightMs = (date: Date) =>
 const getUtcDayDiff = (targetDate: Date, baseDate = new Date()) =>
   (getUtcMidnightMs(targetDate) - getUtcMidnightMs(baseDate)) / MS_PER_DAY
 
+const MAX_DEBUG_LOGS = 5
+const __loggedIds = new Set<number>()
+let __diasDebugCount = 0
+let __fechaInicioDebugCount = 0
+let __fechaFinDebugCount = 0
+
 const getPedidoEstadoByFecha = (
   estado: PedidoEstado,
   fechaExpiracion?: string | null
@@ -54,6 +60,37 @@ const DiasRestantesCell = ({
 
   if (fecha_expiracion) {
     diasRestantes = getUtcDayDiff(new Date(fecha_expiracion as string))
+
+    // DEBUG: Log dias_restantes calculation (LIMITED TO 5)
+    if (id && !__loggedIds.has(id) && __diasDebugCount < MAX_DEBUG_LOGS) {
+      const dateObj = new Date(fecha_expiracion as string)
+      console.log(
+        `[DEBUG dias_restantes ${__diasDebugCount + 1}/${MAX_DEBUG_LOGS}] Calculation:`,
+        {
+          id,
+          fecha_expiracion: fecha_expiracion,
+          dateObj: dateObj,
+          dateObjUTC: dateObj.toUTCString(),
+          getHours: dateObj.getHours(),
+          getMinutes: dateObj.getMinutes(),
+          utcMidnight: Date.UTC(
+            dateObj.getUTCFullYear(),
+            dateObj.getUTCMonth(),
+            dateObj.getUTCDate()
+          ),
+          currentUtcMidnight: Date.UTC(
+            new Date().getUTCFullYear(),
+            new Date().getUTCMonth(),
+            new Date().getUTCDate()
+          ),
+          diasRestantes,
+          browserTz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          currentLocalDate: new Date().toString(),
+        }
+      )
+      __loggedIds.add(id)
+      __diasDebugCount++
+    }
   }
 
   const updatedIds =
@@ -338,6 +375,43 @@ export const columns: ColumnDef<Pedido>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const fechaInicio = row.original.fecha_inicio
+
+      // DEBUG: Log fecha_inicio formatting (LIMITED TO 5)
+      if (
+        fechaInicio &&
+        row.original.id !== undefined &&
+        !__loggedIds.has(row.original.id) &&
+        __fechaInicioDebugCount < MAX_DEBUG_LOGS
+      ) {
+        console.log(
+          `[DEBUG fecha_inicio ${__fechaInicioDebugCount + 1}/${MAX_DEBUG_LOGS}] Column rendering:`,
+          {
+            id: row.original.id,
+            raw: fechaInicio,
+            dateObj: new Date(fechaInicio as string),
+            localDateString: new Date(fechaInicio as string).toLocaleDateString(
+              'es-PE',
+              {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                timeZone: 'UTC',
+              }
+            ),
+            localTimeString: new Date(fechaInicio as string).toLocaleTimeString(
+              'es-PE',
+              {
+                hour: '2-digit',
+                minute: '2-digit',
+              }
+            ),
+            browserTz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          }
+        )
+        __loggedIds.add(row.original.id)
+        __fechaInicioDebugCount++
+      }
+
       return (
         <div className='space-y-1'>
           {new Date(fechaInicio as string).toLocaleDateString('es-PE', {
@@ -365,14 +439,48 @@ export const columns: ColumnDef<Pedido>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const fechaExpiracion = row.original.fecha_expiracion
+
+      // DEBUG: Log fecha_fin formatting (LIMITED TO 5)
       if (fechaExpiracion) {
+        if (
+          row.original.id !== undefined &&
+          !__loggedIds.has(row.original.id) &&
+          __fechaFinDebugCount < MAX_DEBUG_LOGS
+        ) {
+          const dateObj = new Date(fechaExpiracion as string)
+          console.log(
+            `[DEBUG fecha_fin ${__fechaFinDebugCount + 1}/${MAX_DEBUG_LOGS}] Column rendering:`,
+            {
+              id: row.original.id,
+              raw: fechaExpiracion,
+              dateObj: dateObj,
+              dateObjUTC: dateObj.toUTCString(),
+              getTime: dateObj.getTime(),
+              getHours: dateObj.getHours(),
+              getMinutes: dateObj.getMinutes(),
+              localOffset: dateObj.getTimezoneOffset(),
+              intlFormatted: new Intl.DateTimeFormat('es-PE', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                timeZone: 'UTC',
+              }).format(dateObj),
+              localDateString: dateObj.toLocaleDateString('es-PE'),
+              browserTz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            }
+          )
+          __loggedIds.add(row.original.id)
+          __fechaFinDebugCount++
+        }
+
+        const dateObj = new Date(fechaExpiracion as string)
         const formattedFechaExpiracion = new Intl.DateTimeFormat('es-PE', {
           day: '2-digit',
           month: '2-digit',
           year: 'numeric',
           timeZone: 'UTC',
         })
-          .format(new Date(fechaExpiracion as string))
+          .format(dateObj)
           .split('/')
           .join('/')
         return <span>{formattedFechaExpiracion}</span>

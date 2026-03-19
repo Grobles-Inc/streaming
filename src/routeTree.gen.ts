@@ -225,6 +225,7 @@ const AuthenticatedAdminAppsIndexRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '': typeof AuthenticatedRouteRouteWithChildren
   '/register': typeof authRegisterRoute
   '/sign-in': typeof authSignInRoute
   '/401': typeof errors401Route
@@ -258,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/proveedor/stock': typeof AuthenticatedProveedorStockIndexRoute
 }
 export interface FileRoutesByTo {
+  '': typeof AuthenticatedRouteRouteWithChildren
   '/register': typeof authRegisterRoute
   '/sign-in': typeof authSignInRoute
   '/401': typeof errors401Route
@@ -328,6 +330,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | ''
     | '/register'
     | '/sign-in'
     | '/401'
@@ -361,6 +364,7 @@ export interface FileRouteTypes {
     | '/proveedor/stock'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | ''
     | '/register'
     | '/sign-in'
     | '/401'

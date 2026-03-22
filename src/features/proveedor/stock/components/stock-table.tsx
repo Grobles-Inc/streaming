@@ -35,16 +35,14 @@ type StockProducto = Database['public']['Tables']['stock_productos']['Row'] & {
 interface StockTableProps {
   columns: ColumnDef<StockProducto>[]
   data: StockProducto[]
-  onAgregarStock: () => void
   onDeleteSelected?: (selectedIds: number[]) => void
   onTogglePublishedSelected?: (selectedIds: number[], published: boolean) => void
 }
 
-export function StockTable({ 
-  columns, 
-  data, 
-  onAgregarStock, 
-  onDeleteSelected, 
+export function StockTable({
+  columns,
+  data,
+  onDeleteSelected,
   onTogglePublishedSelected
 }: StockTableProps) {
   const [rowSelection, setRowSelection] = useState({})
@@ -83,9 +81,8 @@ export function StockTable({
 
   return (
     <div className='space-y-4'>
-      <StockToolbar 
-        table={table} 
-        onAgregarStock={onAgregarStock}
+      <StockToolbar
+        table={table}
         onDeleteSelected={onDeleteSelected}
         onTogglePublishedSelected={onTogglePublishedSelected}
       />
@@ -101,9 +98,9 @@ export function StockTable({
                         {header.isPlaceholder
                           ? null
                           : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                       </TableHead>
                     )
                   })}

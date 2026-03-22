@@ -1,6 +1,6 @@
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -27,15 +27,13 @@ type Producto = {
 interface StockToolbarProps {
   table: Table<StockProducto>
   productos?: Producto[]
-  onAgregarStock: () => void
   onDeleteSelected?: (selectedIds: number[]) => void
   onTogglePublishedSelected?: (selectedIds: number[], published: boolean) => void
 }
 
-export function StockToolbar({ 
-  table, 
-  onAgregarStock, 
-  onDeleteSelected, 
+export function StockToolbar({
+  table,
+  onDeleteSelected,
   onTogglePublishedSelected
 }: StockToolbarProps) {
   const globalFilter = table.getState().globalFilter ?? ''
@@ -101,7 +99,7 @@ export function StockToolbar({
           </div>
         </div>
       )}
-      
+
       {/* Filtros */}
       <div className='flex flex-col sm:flex-row gap-2 w-full sm:w-auto'>
         <div className='relative'>
@@ -113,8 +111,8 @@ export function StockToolbar({
             className='pl-10 w-full sm:w-64'
           />
         </div>
-        
-        
+
+
         <Select
           value={(table.getColumn('tipo')?.getFilterValue() as string) ?? ''}
           onValueChange={(value) => {
@@ -131,7 +129,7 @@ export function StockToolbar({
             <SelectItem value='combo'>Combo</SelectItem>
           </SelectContent>
         </Select>
-        
+
         <Select
           value={(table.getColumn('estado')?.getFilterValue() as string) ?? ''}
           onValueChange={(value) => {
@@ -147,7 +145,7 @@ export function StockToolbar({
             <SelectItem value='vendido'>Vendido</SelectItem>
           </SelectContent>
         </Select>
-        
+
         <DataTableViewOptions table={table} />
       </div>
     </div>

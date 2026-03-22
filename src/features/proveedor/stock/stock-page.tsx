@@ -7,8 +7,8 @@ import { IconPlus } from '@tabler/icons-react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { AgregarStockStockModal } from './components/agregar-stock-stock-modal'
 import { EditarStockModal } from '../productos/components/editar-stock-modal'
-import { 
-  useStockProductosByProveedor, 
+import {
+  useStockProductosByProveedor,
   useDeleteStockProducto,
   useUpdateStockProducto,
 } from './queries/index'
@@ -68,13 +68,13 @@ export function StockPage() {
   const handlePublicar = (stock: StockProducto) => {
     // Verificar si el producto está publicado
     const productoEstaPublicado = stock.producto?.estado === 'publicado'
-    
+
     if (!productoEstaPublicado) {
       setSelectedStock(stock)
       setShowAdvertenciaDialog(true)
       return
     }
-    
+
     setSelectedStock(stock)
     setShowPublicarDialog(true)
   }
@@ -116,7 +116,7 @@ export function StockPage() {
     // Verificar si algún stock está vendido
     const selectedStockItems = stockItems?.filter(item => selectedIds.includes(item.id))
     const hasVendidoItems = selectedStockItems?.some(item => item.estado === 'vendido')
-    
+
     if (hasVendidoItems) {
       toast.error('No se pueden eliminar elementos vendidos', {
         description: 'Algunos de los elementos seleccionados ya están vendidos y no se pueden eliminar.'
@@ -127,10 +127,10 @@ export function StockPage() {
     // Confirmar eliminación
     if (window.confirm(`¿Estás seguro de que deseas eliminar ${selectedIds.length} elemento(s)?`)) {
       Promise.all(
-        selectedIds.map(id => 
-          deleteStockMutation.mutateAsync({ 
-            id, 
-            productoId: parseInt(String(selectedStockItems?.find(item => item.id === id)?.producto_id || '0'), 10) 
+        selectedIds.map(id =>
+          deleteStockMutation.mutateAsync({
+            id,
+            productoId: parseInt(String(selectedStockItems?.find(item => item.id === id)?.producto_id || '0'), 10)
           })
         )
       ).then(() => {
@@ -143,10 +143,10 @@ export function StockPage() {
 
   const handleTogglePublishedSelected = (selectedIds: number[], published: boolean) => {
     const action = published ? 'publicar' : 'despublicar'
-    
+
     if (window.confirm(`¿Estás seguro de que deseas ${action} ${selectedIds.length} elemento(s)?`)) {
       Promise.all(
-        selectedIds.map(id => 
+        selectedIds.map(id =>
           updateStockMutation.mutateAsync({
             id,
             updates: { publicado: published }
@@ -212,10 +212,10 @@ export function StockPage() {
               <Skeleton className='h-10 w-full' />
             </div>
           ) : stockItems && stockItems.length > 0 ? (
-            <StockTable 
+            <StockTable
               // @ts-expect-error - Type conflict between tanstack versions
-              columns={columns} 
-              data={stockItems} 
+              columns={columns}
+              data={stockItems}
               onDeleteSelected={handleDeleteSelected}
               onTogglePublishedSelected={handleTogglePublishedSelected}
             />
@@ -241,7 +241,7 @@ export function StockPage() {
         onOpenChange={setShowDeleteDialog}
         title={stockEstaVendido ? "No se puede eliminar" : "¿Eliminar existencia?"}
         desc={
-          stockEstaVendido 
+          stockEstaVendido
             ? "No se puede eliminar esta cuenta porque ya está vendida y tiene referencias en el sistema. Las cuentas vendidas deben permanecer en el historial."
             : "Esta acción eliminará permanentemente esta existencia del stock. Esta acción no se puede deshacer."
         }

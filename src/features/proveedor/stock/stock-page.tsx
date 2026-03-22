@@ -1,10 +1,9 @@
-import { useState } from 'react'
-import { Header } from '@/components/layout/header'
+import { useState, useMemo } from 'react'
 import { Main } from '@/components/layout/main'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { IconPlus, IconRefresh } from '@tabler/icons-react'
+import { IconPlus } from '@tabler/icons-react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { AgregarStockStockModal } from './components/agregar-stock-stock-modal'
 import { EditarStockModal } from '../productos/components/editar-stock-modal'
@@ -15,11 +14,8 @@ import {
 } from './queries/index'
 import { useAuth } from '@/stores/authStore'
 import type { Database } from '@/types/supabase'
-import { ThemeSwitch } from '@/components/theme-switch'
-import { ProfileDropdown } from '@/components/profile-dropdown'
 import { StockTable } from './components/stock-table'
 import { createStockColumns } from './components/stock-columns'
-import { useMemo } from 'react'
 import { toast } from 'sonner'
 
 type StockProducto = Database['public']['Tables']['stock_productos']['Row'] & {
@@ -178,48 +174,32 @@ export function StockPage() {
 
   if (error) {
     return (
-      <>
-        <Header>
-          <div className='ml-auto flex items-center space-x-4'>
-            <Button className='rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()}>
-              <IconRefresh />
-            </Button>
-            <ThemeSwitch />
-            <ProfileDropdown />
-          </div>
-        </Header>
-        <Main>
-          <Alert variant="destructive">
-            <AlertDescription>
-              Error al cargar el stock. Por favor, intenta nuevamente.
-            </AlertDescription>
-          </Alert>
-        </Main>
-      </>
+      <Main>
+        <Alert variant="destructive">
+          <AlertDescription>
+            Error al cargar el stock. Por favor, intenta nuevamente.
+          </AlertDescription>
+        </Alert>
+      </Main>
     )
   }
 
   return (
     <>
-      <Header>
-        <div className='ml-auto flex items-center space-x-4'>
-          <Button className='rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()}>
-            <IconRefresh />
-          </Button>
-          <ThemeSwitch />
-          <ProfileDropdown />
-        </div>
-      </Header>
       <Main>
         <div className='space-y-6'>
           {/* Header de la página */}
-          <div className='space-y-4'>
+          <div className='flex items-center justify-between'>
             <div>
               <h1 className='text-3xl font-bold tracking-tight'>Gestión de Stock</h1>
               <p className='text-muted-foreground'>
                 Administra todas las existencias de tus productos desde un solo lugar.
               </p>
             </div>
+            <Button onClick={() => setShowAgregarStockDialog(true)}>
+              <IconPlus size={16} className="mr-2" />
+              Agregar Stock
+            </Button>
           </div>
 
           {/* Tabla de stock con paginación */}
@@ -236,7 +216,6 @@ export function StockPage() {
               // @ts-expect-error - Type conflict between tanstack versions
               columns={columns} 
               data={stockItems} 
-              onAgregarStock={() => setShowAgregarStockDialog(true)}
               onDeleteSelected={handleDeleteSelected}
               onTogglePublishedSelected={handleTogglePublishedSelected}
             />

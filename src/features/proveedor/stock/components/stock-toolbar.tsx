@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { IconSearch, IconPlus, IconTrash, IconEye, IconEyeOff } from '@tabler/icons-react'
+import { IconSearch, IconTrash, IconEye, IconEyeOff } from '@tabler/icons-react'
 import { DataTableViewOptions } from './data-table-view-options'
 import type { Table } from '@tanstack/react-table'
 import type { Database } from '@/types/supabase'
@@ -102,13 +102,6 @@ export function StockToolbar({
         </div>
       )}
       
-      {/* Toolbar principal */}
-      <div className='flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between'>
-        <Button onClick={onAgregarStock}>
-          <IconPlus className='mr-2 h-4 w-4' />
-          Agregar Stock
-        </Button>
-      </div>
       {/* Filtros */}
       <div className='flex flex-col sm:flex-row gap-2 w-full sm:w-auto'>
         <div className='relative'>

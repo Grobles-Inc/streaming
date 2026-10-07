@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { mapSupabaseUserToComponent, type MappedUser } from '../data/schema'
+import { USERS_QUERY_KEY } from '../queries'
 import {
   UsersService,
   type CreateUserData,
@@ -12,6 +14,13 @@ export function useUsers() {
   const [loading, setLoading] = useState(true)
   const [disabledUsersLoading, setDisabledUsersLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // La tabla de usuarios se pagina en el servidor; tras cada mutación hay que
+  // refrescar esa lista paginada (además del estado local de compatibilidad).
+  const queryClient = useQueryClient()
+  const invalidateUsersList = () => {
+    queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEY })
+  }
 
   // Cargar usuarios inicial
   useEffect(() => {
@@ -56,6 +65,7 @@ export function useUsers() {
   ): Promise<MappedUser | null> => {
     try {
       const newUser = await UsersService.createUser(userData)
+      invalidateUsersList()
       // Después de crear, obtenemos el usuario completo con billetera
       const userWithWallet = await UsersService.getUserById(newUser.id)
       if (userWithWallet) {
@@ -80,6 +90,7 @@ export function useUsers() {
   ): Promise<MappedUser | null> => {
     try {
       await UsersService.updateUser(id, userData)
+      invalidateUsersList()
       // Después de actualizar, obtenemos el usuario completo con billetera
       const userWithWallet = await UsersService.getUserById(id)
       if (userWithWallet) {
@@ -100,6 +111,7 @@ export function useUsers() {
   const deleteUser = async (id: string): Promise<boolean> => {
     try {
       await UsersService.deleteUser(id)
+      invalidateUsersList()
       // Remover de la lista de usuarios habilitados
       setUsers((prev) => prev.filter((u) => u.id !== id))
       // Si ya tenemos usuarios deshabilitados cargados, añadir el usuario a esa lista
@@ -121,6 +133,7 @@ export function useUsers() {
   const enableUser = async (id: string): Promise<boolean> => {
     try {
       await UsersService.enableUser(id)
+      invalidateUsersList()
       // Obtener el usuario actualizado
       const userWithWallet = await UsersService.getUserById(id)
       if (userWithWallet && userWithWallet.estado_habilitado) {
@@ -176,6 +189,7 @@ export function useUsers() {
   ): Promise<boolean> => {
     try {
       await UsersService.updateUserBalance(id, newBalance)
+      invalidateUsersList()
       // Después de actualizar, obtenemos el usuario completo con billetera
       const userWithWallet = await UsersService.getUserById(id)
       if (userWithWallet) {

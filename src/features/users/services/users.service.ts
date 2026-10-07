@@ -48,6 +48,37 @@ export type UpdateUserData = Partial<
   Omit<SupabaseUser, 'id' | 'created_at' | 'updated_at'>
 >
 
+export type GetUsersAdminParams = {
+  /** Búsqueda por nombre completo ("nombres apellidos"). Vacío = sin filtrar. */
+  search?: string
+  /** Filtra por estos roles; vacío u omitido = todos los roles. */
+  roles?: Array<SupabaseUser['rol']>
+  /** Página a devolver (base 1). */
+  page: number
+  /** Filas por página (50, 100 o 200 en la UI). */
+  pageSize: number
+  /** id de la columna por la que ordenar; el RPC aplica un whitelist. */
+  sortBy?: string
+  sortDir?: 'asc' | 'desc'
+}
+
+export type UsersPaginated = {
+  rows: SupabaseUserWithWallet[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+/** Forma cruda que devuelve el RPC `get_users_admin`. */
+type GetUsersAdminResponse = {
+  data: SupabaseUserWithWallet[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
 export class UsersService {
   // Obtener todos los usuarios con saldo desde billeteras
   static async getUsers(
@@ -169,6 +200,38 @@ export class UsersService {
     )
 
     return usersWithReferrals
+  }
+
+  /**
+   * Lista de usuarios (solo habilitados) con paginación, búsqueda por nombre
+   * y filtro por rol resueltos en el servidor por el RPC `get_users_admin`.
+   */
+  static async getUsersPaginated(
+    params: GetUsersAdminParams
+  ): Promise<UsersPaginated> {
+    const { data, error } = await supabase.rpc('get_users_admin', {
+      p_search: params.search?.trim() || null,
+      p_roles: params.roles && params.roles.length > 0 ? params.roles : null,
+      p_sort_by: params.sortBy || 'created_at',
+      p_sort_dir: params.sortDir || 'desc',
+      p_page: params.page,
+      p_page_size: params.pageSize,
+    })
+
+    if (error) {
+      console.error('Error fetching users paginated:', error)
+      throw error
+    }
+
+    const result = data as unknown as GetUsersAdminResponse | null
+
+    return {
+      rows: (result?.data ?? []) as SupabaseUserWithWallet[],
+      total: result?.total ?? 0,
+      page: result?.page ?? params.page,
+      pageSize: result?.pageSize ?? params.pageSize,
+      totalPages: result?.totalPages ?? 0,
+    }
   }
 
   // Obtener usuario por ID con saldo desde billeteras

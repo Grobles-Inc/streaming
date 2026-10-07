@@ -1,4 +1,5 @@
 
+import { Button } from '@/components/ui/button'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
@@ -8,21 +9,46 @@ import { UsersDialogs } from './components/users-dialogs'
 import { UsersPrimaryButtons } from './components/users-primary-buttons'
 import { UsersTable } from './components/users-table'
 import UsersProvider, { useUsersContext } from './context/users-context'
+import { useUsersTabla } from './hooks/use-users-tabla'
 
 function UsersContent() {
-  const { 
-    users, 
-    loading, 
-    error
+  const {
+    error,
+    refreshUsers
   } = useUsersContext()
 
-  if (error) {
+  const {
+    rows,
+    total,
+    isLoading,
+    error: tableError,
+    refetch,
+    pagination,
+    sorting,
+    columnFilters,
+    onPaginationChange,
+    onSortingChange,
+    onColumnFiltersChange,
+  } = useUsersTabla()
+
+  const loadError = tableError?.message ?? error
+
+  if (loadError) {
     return (
       <Main>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <h3 className="text-lg font-semibold text-red-600">Error al cargar usuarios</h3>
-            <p className="text-sm text-gray-600 mt-2">{error}</p>
+            <p className="text-sm text-gray-600 mt-2">{loadError}</p>
+            <Button
+              onClick={() => {
+                refetch()
+                refreshUsers()
+              }}
+              className="mt-4"
+            >
+              Intentar nuevamente
+            </Button>
           </div>
         </div>
       </Main>
@@ -60,16 +86,18 @@ function UsersContent() {
         </div>
         
         <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
-          {loading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-                <p className="mt-4 text-sm text-gray-600">Cargando usuarios...</p>
-              </div>
-            </div>
-          ) : (
-            <UsersTable data={users} columns={columns} />
-          )}
+          <UsersTable
+            data={rows}
+            columns={columns}
+            total={total}
+            loading={isLoading}
+            pagination={pagination}
+            onPaginationChange={onPaginationChange}
+            sorting={sorting}
+            onSortingChange={onSortingChange}
+            columnFilters={columnFilters}
+            onColumnFiltersChange={onColumnFiltersChange}
+          />
         </div>
       </Main>
 

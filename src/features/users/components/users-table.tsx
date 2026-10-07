@@ -2,6 +2,8 @@ import { useState } from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
+  OnChangeFn,
+  PaginationState,
   RowData,
   SortingState,
   VisibilityState,
@@ -9,11 +11,9 @@ import {
   getCoreRowModel,
   getFacetedRowModel,
   getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import { Inbox, Loader2 } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { CustomEmpty } from '@/components/custom-empty'
 import { MappedUser } from '../data/schema'
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
@@ -36,13 +37,31 @@ declare module '@tanstack/react-table' {
 interface DataTableProps {
   columns: ColumnDef<MappedUser>[]
   data: MappedUser[]
+  /** Total de filas que devuelve el servidor para los filtros activos. */
+  total: number
+  loading?: boolean
+  pagination: PaginationState
+  onPaginationChange: OnChangeFn<PaginationState>
+  sorting: SortingState
+  onSortingChange: OnChangeFn<SortingState>
+  columnFilters: ColumnFiltersState
+  onColumnFiltersChange: OnChangeFn<ColumnFiltersState>
 }
 
-export function UsersTable({ columns, data }: DataTableProps) {
+export function UsersTable({
+  columns,
+  data,
+  total,
+  loading = false,
+  pagination,
+  onPaginationChange,
+  sorting,
+  onSortingChange,
+  columnFilters,
+  onColumnFiltersChange,
+}: DataTableProps) {
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [sorting, setSorting] = useState<SortingState>([])
 
   const table = useReactTable({
     data,
@@ -52,21 +71,23 @@ export function UsersTable({ columns, data }: DataTableProps) {
       columnVisibility,
       rowSelection,
       columnFilters,
+      pagination,
     },
-    initialState: {
-      pagination: {
-        pageSize: 200,
-      },
-    },
+    // Búsqueda, filtrado, orden y paginación se resuelven en el servidor vía
+    // RPC; la tabla solo refleja el estado y lo propaga hacia arriba.
+    manualPagination: true,
+    manualFiltering: true,
+    manualSorting: true,
+    rowCount: total,
+    // Id estable para que la selección sobreviva al cambio de página
+    getRowId: (row) => String(row.id),
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
+    onSortingChange,
+    onColumnFiltersChange,
+    onPaginationChange,
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
@@ -120,19 +141,30 @@ export function UsersTable({ columns, data }: DataTableProps) {
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='h-24 text-center'
-                >
-                  No results.
+              <TableRow className='hover:bg-transparent'>
+                <TableCell colSpan={columns.length} className='p-0'>
+                  <div className='flex flex-col items-center gap-6 py-10'>
+                    {loading ? (
+                      <CustomEmpty
+                        title='Cargando usuarios...'
+                        description='Estamos obteniendo el listado de usuarios.'
+                        icon={<Loader2 className='size-10 animate-spin' />}
+                      />
+                    ) : (
+                      <CustomEmpty
+                        title='No hay usuarios disponibles'
+                        description='No se encontraron usuarios con los filtros actuales.'
+                        icon={<Inbox className='size-10' />}
+                      />
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
+      <DataTablePagination table={table} total={total} />
     </div>
   )
 }

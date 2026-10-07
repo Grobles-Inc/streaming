@@ -12,6 +12,7 @@ import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { useConfiguracion } from './hooks/use-configuracion'
 import { HistorialConfiguracionCard } from './components/historial-configuracion'
+import { SignupSettingsCard } from './components/signup-settings-card'
 
 export default function ConfiguracionSistemaPage() {
   const {
@@ -161,6 +162,9 @@ export default function ConfiguracionSistemaPage() {
         </div>
 
         <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-2 pt-10'>
+
+          {/* Registro de usuarios */}
+          <SignupSettingsCard />
 
           {/* Email de soporte */}
           <Card>

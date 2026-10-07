@@ -9,17 +9,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { MixerHorizontalIcon } from '@radix-ui/react-icons'
-import type { Database } from '@/types/supabase'
-
-type StockProducto = Database['public']['Tables']['stock_productos']['Row'] & {
-  producto?: {
-    id: string
-    nombre: string
-  }
-}
+import type { StockRow } from '../data/types'
 
 interface DataTableViewOptionsProps {
-  table: Table<StockProducto>
+  table: Table<StockRow>
 }
 
 export function DataTableViewOptions({ table }: DataTableViewOptionsProps) {

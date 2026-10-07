@@ -5,10 +5,51 @@ import type {
   RecargaWithUser,
   EstadoRecarga,
   EstadisticasRecargas,
-  FiltroRecarga
+  FiltroRecarga,
+  GetRecargasAdminParams,
+  GetRecargasAdminResponse,
+  RecargasPaginadas
 } from '../data/types'
 
 export class RecargasService {
+  /**
+   * Lista de recargas con paginación, búsqueda y filtro por estado resueltos en
+   * el servidor por el RPC `get_recargas_admin`.
+   */
+  static async getRecargasPaginadas(
+    params: GetRecargasAdminParams
+  ): Promise<RecargasPaginadas> {
+    const { data, error } = await supabase.rpc('get_recargas_admin', {
+      p_search: params.search || null,
+      p_estado: params.estado,
+      p_page: params.page,
+      p_page_size: params.pageSize,
+    })
+
+    if (error) {
+      console.error('Error fetching recargas paginadas:', error)
+      throw error
+    }
+
+    const result = data as unknown as GetRecargasAdminResponse | null
+
+    // El RPC devuelve las fechas como ISO string; la tabla y el modal esperan Date
+    const recargas = (result?.data ?? []).map((recarga) => ({
+      ...recarga,
+      fechaCreacion: new Date(recarga.fechaCreacion),
+      fechaActualizacion: new Date(recarga.fechaActualizacion),
+    }))
+
+    return {
+      recargas,
+      total: result?.total ?? 0,
+      page: result?.page ?? params.page,
+      pageSize: result?.pageSize ?? params.pageSize,
+      totalPages: result?.totalPages ?? 0,
+      totalPendientes: result?.totalPendientes ?? 0,
+    }
+  }
+
   // Obtener todas las recargas con información del usuario
   static async getRecargas(filtros?: FiltroRecarga): Promise<RecargaWithUser[]> {
     let query = supabase

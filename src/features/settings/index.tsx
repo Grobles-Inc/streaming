@@ -21,7 +21,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { PhoneInput } from '../landing/categorias/components/phone-input'
+import { PhoneInput } from '@/components/phone-input'
 import { usuarioSchema } from './data/schema'
 
 

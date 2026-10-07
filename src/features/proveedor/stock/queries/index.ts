@@ -1,47 +1,28 @@
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
-import type { Database } from '@/types/supabase'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import * as stockService from '../services'
+import type { GetStockProveedorParams } from '../data/types'
 
-type StockProducto = Database['public']['Tables']['stock_productos']['Row'] & {
-  producto?: {
-    id: string
-    nombre: string
-    estado: string
-  }
-}
-
-// Query para obtener todo el stock del proveedor
-export const useStockProductosByProveedor = (proveedorId: string) => {
+// Stock del proveedor con paginación, búsqueda y filtros resueltos en el
+// servidor vía RPC `get_stock_proveedor`.
+export const useStockProveedor = (params: GetStockProveedorParams) => {
   return useQuery({
-    queryKey: ['stock-productos', 'proveedor', proveedorId],
-    queryFn: async (): Promise<StockProducto[]> => {
-      const { data, error } = await supabase
-        .from('stock_productos')
-        .select(`
-          *,
-          producto:productos!inner (
-            id,
-            nombre,
-            estado
-          )
-        `)
-        .eq('proveedor_id', proveedorId)
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        console.error('Error al obtener stock del proveedor:', error)
-        throw new Error('Error al cargar el stock')
-      }
-
-      return data || []
-    },
-    enabled: !!proveedorId,
+    queryKey: [
+      'stock-productos',
+      'proveedor',
+      params.proveedorId,
+      'list',
+      params,
+    ],
+    queryFn: () => stockService.getStockProveedor(params),
+    enabled: !!params.proveedorId,
+    // evita el flash de tabla vacía al cambiar de página
+    placeholderData: keepPreviousData,
   })
 }
 
 // Reutilizar queries existentes de productos
-export { 
-  useDeleteStockProducto, 
-  useUpdateStockProducto, 
-  useProductosByProveedor 
-} from '../../productos/queries' 
+export {
+  useDeleteStockProducto,
+  useUpdateStockProducto,
+  useProductosByProveedor,
+} from '../../productos/queries'

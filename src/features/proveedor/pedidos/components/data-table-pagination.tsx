@@ -17,17 +17,25 @@ import {
 
 interface DataTablePaginationProps<TData> {
   table: Table<TData>
+  /** Total de filas que devuelve el servidor para los filtros activos. */
+  total: number
 }
 
 export function DataTablePagination<TData>({
   table,
+  total,
 }: DataTablePaginationProps<TData>) {
+  // La paginación es manual, así que no hay `getFilteredRowModel`; contamos la
+  // selección sobre las filas de la página actual.
+  const selectedCount = table
+    .getRowModel()
+    .rows.filter((row) => row.getIsSelected()).length
+
   return (
     <div className='flex items-center justify-between overflow-clip px-2'
     style={{ overflowClipMargin: 1 }}>
       <div className='flex-1 text-sm text-muted-foreground hidden sm:block'>
-        {table.getFilteredSelectedRowModel().rows.length} de{' '}
-        {table.getFilteredRowModel().rows.length} fila(s) seleccionada(s).
+        {selectedCount} de {total} fila(s) seleccionada(s).
       </div>
       <div className='flex items-center sm:space-x-6 lg:space-x-8'>
         <div className='flex items-center space-x-2'>
@@ -42,7 +50,7 @@ export function DataTablePagination<TData>({
               <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side='top'>
-              {[200, 400].map((pageSize) => (
+              {[50, 100, 200, 400].map((pageSize) => (
                 <SelectItem key={pageSize} value={`${pageSize}`}>
                   {pageSize}
                 </SelectItem>

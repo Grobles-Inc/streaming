@@ -2,12 +2,23 @@ import { useAuth } from '@/stores/authStore'
 import { Main } from '@/components/layout/main'
 import { columns } from './components/columns'
 import { DataTable } from './components/data-table'
-import { Pedido } from './data/schema'
-import { usePedidosByProveedor } from './queries'
+import { usePedidosTabla } from './hooks/use-pedidos-tabla'
 
 export function PedidosPage() {
   const { user } = useAuth()
-  const { data: pedidos } = usePedidosByProveedor(user?.id as string)
+  const {
+    rows,
+    total,
+    isLoading,
+    pagination,
+    sorting,
+    columnFilters,
+    globalFilter,
+    onPaginationChange,
+    onSortingChange,
+    onColumnFiltersChange,
+    onGlobalFilterChange,
+  } = usePedidosTabla(user?.id)
 
   return (
     <Main>
@@ -20,7 +31,20 @@ export function PedidosPage() {
         </div>
       </div>
       <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
-        <DataTable data={(pedidos || []) as Pedido[]} columns={columns} />
+        <DataTable
+          columns={columns}
+          data={rows}
+          total={total}
+          loading={isLoading && rows.length === 0}
+          pagination={pagination}
+          onPaginationChange={onPaginationChange}
+          sorting={sorting}
+          onSortingChange={onSortingChange}
+          columnFilters={columnFilters}
+          onColumnFiltersChange={onColumnFiltersChange}
+          globalFilter={globalFilter}
+          onGlobalFilterChange={onGlobalFilterChange}
+        />
       </div>
     </Main>
   )

@@ -2,7 +2,11 @@ import { Database } from '@/types/supabase'
 import { supabase } from '@/lib/supabase'
 // Importar la función para actualizar el array stock_de_productos
 import { updateStockDeProductos } from '../../productos'
-import { UpdateSoporteStatusParams } from '../data/types'
+import {
+  GetPedidosProveedorParams,
+  PedidosPaginados,
+  UpdateSoporteStatusParams,
+} from '../data/types'
 
 export type Compra = Database['public']['Tables']['compras']['Row']
 export type Usuario = Database['public']['Tables']['usuarios']['Row']
@@ -13,47 +17,38 @@ export type StockProducto =
 export type SupabasePedido = Database['public']['Tables']['compras']['Row']
 export type PedidoUpdate = Database['public']['Tables']['compras']['Update']
 
-const MAX_DEBUG_LOGS = 5
-let __serviceDebugCount = 0
-
-// Get compras by proveedor ID (pedidos/ventas del proveedor)
-export const getComprasByProveedorId = async (
-  proveedorId: string
-): Promise<Compra[]> => {
-  const { data, error } = await supabase
-    .from('compras')
-    .select(
-      `
-      *,
-      productos:producto_id (nombre, precio_publico, tiempo_uso, precio_renovacion),
-      usuarios:vendedor_id (nombres, apellidos, telefono, usuario),
-      stock_productos:stock_producto_id (id, email, clave, pin, perfil, url, soporte_stock_producto)
-    `
-    )
-    .eq('proveedor_id', proveedorId)
-    .order('created_at', { ascending: false })
+/**
+ * Lista de pedidos del proveedor con paginación, búsqueda, filtro y ordenamiento
+ * en el servidor. Todo el filtrado y el cálculo de `estado_calculado` /
+ * `dias_restantes` ocurren dentro del RPC.
+ */
+export const getPedidosProveedor = async (
+  params: GetPedidosProveedorParams
+): Promise<PedidosPaginados> => {
+  const { data, error } = await supabase.rpc('get_pedidos_proveedor', {
+    p_proveedor_id: params.proveedorId,
+    p_page: params.page,
+    p_page_size: params.pageSize,
+    p_search: params.search || null,
+    p_estados: params.estados.length > 0 ? params.estados : null,
+    p_fecha_desde: params.fechaDesde ?? null,
+    p_fecha_hasta: params.fechaHasta ?? null,
+    p_sort_by: params.sortBy,
+    p_sort_dir: params.sortDir,
+  })
 
   if (error) {
-    console.error('Error fetching compras by proveedor:', error)
-    return []
+    console.error('Error fetching pedidos paginados:', error)
+    throw error
   }
 
-  // DEBUG: Log raw fecha_expiracion from DB (LIMITED TO 5)
-  if (data && data.length > 0 && __serviceDebugCount < MAX_DEBUG_LOGS) {
-    console.log(
-      `[DEBUG SERVICE ${__serviceDebugCount + 1}/${MAX_DEBUG_LOGS}] Raw DB fecha_expiracion values:`,
-      data.slice(0, MAX_DEBUG_LOGS - __serviceDebugCount).map((item) => ({
-        id: item.id,
-        fecha_expiracion: item.fecha_expiracion,
-        fecha_expiracion_raw: JSON.stringify(item.fecha_expiracion),
-        fecha_inicio: item.fecha_inicio,
-        browserTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      }))
-    )
-    __serviceDebugCount += MAX_DEBUG_LOGS - __serviceDebugCount
-  }
+  const rows = data ?? []
 
-  return data || []
+  return {
+    rows,
+    // `total_count` viene repetido en cada fila; si la página va vacía no hay filas que leer
+    total: rows[0]?.total_count ?? 0,
+  }
 }
 
 // Get compra by ID (para proveedor)
@@ -119,36 +114,6 @@ export const getLatestComprasByProveedor = async (
   }
 
   return data || []
-}
-
-// Get compras with pagination (for proveedor dashboard)
-export const getComprasPaginatedByProveedor = async (
-  proveedorId: string,
-  page: number = 1,
-  pageSize: number = 10
-): Promise<{ data: Compra[]; count: number }> => {
-  const from = (page - 1) * pageSize
-  const to = from + pageSize - 1
-
-  const { data, error, count } = await supabase
-    .from('compras')
-    .select(
-      `
-      *,
-      productos:producto_id (nombre, precio_publico, precio_renovacion)
-    `,
-      { count: 'exact' }
-    )
-    .eq('proveedor_id', proveedorId)
-    .range(from, to)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching paginated compras:', error)
-    return { data: [], count: 0 }
-  }
-
-  return { data: data || [], count: count || 0 }
 }
 
 // Get compras stats for proveedor dashboard

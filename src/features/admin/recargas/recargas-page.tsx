@@ -21,7 +21,15 @@ import { RecargaDetailsModal } from './components/recarga-details-modal'
 import { createRecargasColumns } from './components/recargas-columns'
 import { RecargasTable } from './components/recargas-table'
 import type { EstadoRecarga, MappedRecarga } from './data/types'
-import { useRecargas } from './hooks/use-recargas'
+import { useRecargasTabla } from './hooks/use-recargas-tabla'
+import {
+  useAprobarRecarga,
+  useAprobarRecargas,
+  useEliminarRecarga,
+  useEliminarRecargas,
+  useRechazarRecarga,
+  useRechazarRecargas,
+} from './queries'
 
 export default function RecargasPage() {
   const [filtroEstado, setFiltroEstado] = useState<EstadoRecarga | 'todos'>('todos')
@@ -29,77 +37,81 @@ export default function RecargasPage() {
   const [modalOpen, setModalOpen] = useState(false)
 
   const {
-    recargas,
-    loading,
+    rows,
+    total,
+    totalPendientes,
+    isLoading,
     error,
-    aprobarRecarga,
-    rechazarRecarga,
-    eliminarRecarga,
-    aprobarRecargas,
-    rechazarRecargas,
-    eliminarRecargas,
-    aplicarFiltros,
-    refreshRecargas,
-    clearError,
-    cantidadPendientes
-  } = useRecargas()
+    refetch,
+    pagination,
+    globalFilter,
+    onPaginationChange,
+    onGlobalFilterChange,
+  } = useRecargasTabla(filtroEstado === 'todos' ? null : filtroEstado)
+
+  const aprobarRecarga = useAprobarRecarga()
+  const rechazarRecarga = useRechazarRecarga()
+  const eliminarRecarga = useEliminarRecarga()
+  const aprobarRecargas = useAprobarRecargas()
+  const rechazarRecargas = useRechazarRecargas()
+  const eliminarRecargas = useEliminarRecargas()
 
   // Manejar aprobación individual
   const handleAprobar = async (id: string) => {
-    const success = await aprobarRecarga(parseInt(id))
-    if (success) {
+    try {
+      await aprobarRecarga.mutateAsync(parseInt(id))
       toast.success('Recarga aprobada exitosamente')
-    } else {
+    } catch {
       toast.error('Error al aprobar la recarga')
     }
   }
 
   // Manejar rechazo individual
   const handleRechazar = async (id: string) => {
-    const success = await rechazarRecarga(parseInt(id))
-    if (success) {
+    try {
+      await rechazarRecarga.mutateAsync(parseInt(id))
       toast.success('Recarga rechazada exitosamente')
-    } else {
+    } catch {
       toast.error('Error al rechazar la recarga')
     }
   }
 
   // Manejar aprobación masiva
   const handleAprobarSeleccionadas = async (ids: string[]) => {
-    const success = await aprobarRecargas(ids.map(id => parseInt(id)))
-    if (success) {
+    try {
+      await aprobarRecargas.mutateAsync(ids.map(id => parseInt(id)))
       toast.success(`${ids.length} recarga(s) aprobada(s) exitosamente`)
-    } else {
+    } catch {
       toast.error('Error al aprobar las recargas seleccionadas')
     }
   }
 
   // Manejar rechazo masivo
   const handleRechazarSeleccionadas = async (ids: string[]) => {
-    const success = await rechazarRecargas(ids.map(id => parseInt(id)))
-    if (success) {
+    try {
+      await rechazarRecargas.mutateAsync(ids.map(id => parseInt(id)))
       toast.success(`${ids.length} recarga(s) rechazada(s) exitosamente`)
-    } else {
+    } catch {
       toast.error('Error al rechazar las recargas seleccionadas')
     }
   }
 
   // Manejar eliminación individual
   const handleEliminar = async (id: string) => {
-    const success = await eliminarRecarga(parseInt(id))
-    if (success) {
+    try {
+      await eliminarRecarga.mutateAsync(parseInt(id))
       toast.success('Recarga eliminada exitosamente')
-    } else {
+    } catch {
       toast.error('Error al eliminar la recarga')
     }
   }
 
   // Manejar eliminación masiva
   const handleEliminarSeleccionadas = async (ids: string[]) => {
-    const success = await eliminarRecargas(ids.map(id => parseInt(id)))
-    if (success) {
+    try {
+      await eliminarRecargas.mutateAsync(ids.map(id => parseInt(id)))
       toast.success(`${ids.length} recarga(s) eliminada(s) exitosamente`)
-    } else {
+    } catch {
       toast.error('Error al eliminar las recargas seleccionadas')
     }
   }
@@ -110,17 +122,6 @@ export default function RecargasPage() {
     setModalOpen(true)
   }
 
-
-  // Aplicar filtro por estado
-  const handleFiltroEstado = async (estado: EstadoRecarga | 'todos') => {
-    setFiltroEstado(estado)
-    if (estado === 'todos') {
-      await aplicarFiltros({})
-    } else {
-      await aplicarFiltros({ estado })
-    }
-  }
-
   // Crear columnas con callbacks
   const columns = createRecargasColumns(
     handleAprobar,
@@ -129,23 +130,15 @@ export default function RecargasPage() {
     handleVerRecarga
   )
 
-  // Filtrar recargas según el estado seleccionado
-  const recargasFiltradas = filtroEstado === 'todos'
-    ? recargas
-    : recargas.filter(r => r.estado === filtroEstado)
-
   if (error) {
     return (
       <Main>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <h3 className="text-lg font-semibold text-red-600">Error al cargar recargas</h3>
-            <p className="text-sm text-gray-600 mt-2">{error}</p>
+            <p className="text-sm text-gray-600 mt-2">{error.message}</p>
             <Button
-              onClick={() => {
-                clearError()
-                refreshRecargas()
-              }}
+              onClick={() => refetch()}
               className="mt-4"
             >
               Intentar nuevamente
@@ -172,16 +165,19 @@ export default function RecargasPage() {
             <h2 className='text-2xl font-bold tracking-tight'>Gestión de Recargas</h2>
             <p className='text-muted-foreground'>
               Administra las solicitudes de recarga de usuarios.
-              {cantidadPendientes > 0 && (
+              {totalPendientes > 0 && (
                 <Badge variant="secondary" className="ml-2">
-                  {cantidadPendientes} pendiente(s)
+                  {totalPendientes} pendiente(s)
                 </Badge>
               )}
             </p>
           </div>
 
           <div className="flex items-center space-x-2">
-            <Select value={filtroEstado} onValueChange={handleFiltroEstado}>
+            <Select
+              value={filtroEstado}
+              onValueChange={(value) => setFiltroEstado(value as EstadoRecarga | 'todos')}
+            >
               <SelectTrigger >
                 <SelectValue placeholder="Filtrar por estado" />
               </SelectTrigger>
@@ -193,8 +189,8 @@ export default function RecargasPage() {
               </SelectContent>
             </Select>
 
-            <Button variant="outline" size="icon" onClick={refreshRecargas} disabled={loading}>
-              <IconRefresh className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isLoading}>
+              <IconRefresh className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             </Button>
 
             {/* <Button variant="outline" disabled>
@@ -206,9 +202,14 @@ export default function RecargasPage() {
 
         <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
           <RecargasTable
-            data={recargasFiltradas}
+            data={rows}
             columns={columns}
-            loading={loading}
+            total={total}
+            loading={isLoading}
+            pagination={pagination}
+            onPaginationChange={onPaginationChange}
+            globalFilter={globalFilter}
+            onGlobalFilterChange={onGlobalFilterChange}
             onAprobarSeleccionadas={handleAprobarSeleccionadas}
             onRechazarSeleccionadas={handleRechazarSeleccionadas}
             onEliminarSeleccionadas={handleEliminarSeleccionadas}

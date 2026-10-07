@@ -14,110 +14,48 @@ import { useUpdatePedidoStatusVencido } from '../queries'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 
-const MS_PER_DAY = 1000 * 60 * 60 * 24
-
-const getUtcMidnightMs = (date: Date) =>
-  Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
-
-const getUtcDayDiff = (targetDate: Date, baseDate = new Date()) =>
-  (getUtcMidnightMs(targetDate) - getUtcMidnightMs(baseDate)) / MS_PER_DAY
-
-const MAX_DEBUG_LOGS = 5
-const __loggedIds = new Set<number>()
-let __diasDebugCount = 0
-let __fechaInicioDebugCount = 0
-let __fechaFinDebugCount = 0
-
-const getPedidoEstadoByFecha = (
-  estado: PedidoEstado,
-  fechaExpiracion?: string | null
-) => {
-  if (!fechaExpiracion) {
-    return estado
-  }
-
-  const diasRestantes = getUtcDayDiff(new Date(fechaExpiracion))
-  return diasRestantes <= 0 ? 'vencido' : 'resuelto'
-}
-
 // Función para abrir WhatsApp
 const abrirWhatsApp = (telefono: string) => {
   const numeroLimpio = telefono.replace(/[^\d+]/g, '')
   window.open(`https://wa.me/${numeroLimpio}`, '_blank')
 }
 
-// Componente para manejar días restantes con actualización automática
+// Evita disparar la actualización más de una vez por pedido durante la sesión
+const updatedVencidoIds = new Set<number>()
+
+// Componente para pintar los días restantes calculados por el servidor y
+// marcar automáticamente como "vencido" cuando ya no quedan días.
 const DiasRestantesCell = ({
-  fecha_expiracion,
+  diasRestantes,
   id,
 }: {
-  fecha_expiracion: string
-  id: number | undefined
+  diasRestantes: number | null
+  id: number
 }) => {
   const { mutate: updatePedidoStatusVencido } = useUpdatePedidoStatusVencido()
-
-  let diasRestantes: number | null = null
-
-  if (fecha_expiracion) {
-    diasRestantes = getUtcDayDiff(new Date(fecha_expiracion as string))
-
-    // DEBUG: Log dias_restantes calculation (LIMITED TO 5)
-    if (id && !__loggedIds.has(id) && __diasDebugCount < MAX_DEBUG_LOGS) {
-      const dateObj = new Date(fecha_expiracion as string)
-      console.log(
-        `[DEBUG dias_restantes ${__diasDebugCount + 1}/${MAX_DEBUG_LOGS}] Calculation:`,
-        {
-          id,
-          fecha_expiracion: fecha_expiracion,
-          dateObj: dateObj,
-          dateObjUTC: dateObj.toUTCString(),
-          getHours: dateObj.getHours(),
-          getMinutes: dateObj.getMinutes(),
-          utcMidnight: Date.UTC(
-            dateObj.getUTCFullYear(),
-            dateObj.getUTCMonth(),
-            dateObj.getUTCDate()
-          ),
-          currentUtcMidnight: Date.UTC(
-            new Date().getUTCFullYear(),
-            new Date().getUTCMonth(),
-            new Date().getUTCDate()
-          ),
-          diasRestantes,
-          browserTz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          currentLocalDate: new Date().toString(),
-        }
-      )
-      __loggedIds.add(id)
-      __diasDebugCount++
-    }
-  }
-
-  const updatedIds =
-    (window as any).__diasRestantesUpdatedIds ||
-    ((window as any).__diasRestantesUpdatedIds = new Set<number>())
 
   useEffect(() => {
     if (
       diasRestantes !== null &&
       diasRestantes <= 0 &&
-      id &&
-      !updatedIds.has(id)
+      !updatedVencidoIds.has(id)
     ) {
-      updatedIds.add(id)
-      updatePedidoStatusVencido(id as number)
+      updatedVencidoIds.add(id)
+      updatePedidoStatusVencido(id)
     }
-  }, [diasRestantes, id])
+  }, [diasRestantes, id, updatePedidoStatusVencido])
 
-  let badgeColor = ''
-  if (diasRestantes === null) {
-    badgeColor = 'bg-gray-500 text-white dark:text-white border-gray-500'
-  } else if (diasRestantes <= 0) {
+  let badgeColor = 'bg-gray-500 text-white dark:text-white border-gray-500'
+  if (diasRestantes !== null && diasRestantes > 0) {
+    if (diasRestantes < 10) {
+      badgeColor = 'bg-orange-400 text-white dark:text-white border-orange-500'
+    } else if (diasRestantes < 30) {
+      badgeColor = 'bg-green-500 text-white dark:text-white border-green-500'
+    } else {
+      badgeColor = ''
+    }
+  } else if (diasRestantes !== null) {
     badgeColor = 'bg-red-500 text-white dark:text-white border-red-500'
-  } else if (diasRestantes < 10) {
-    badgeColor = 'bg-orange-400 text-white dark:text-white border-orange-500'
-  } else if (diasRestantes < 30) {
-    badgeColor = 'bg-green-500 text-white dark:text-white border-green-500'
   }
 
   return (
@@ -162,42 +100,29 @@ export const columns: ColumnDef<Pedido>[] = [
   },
   {
     accessorKey: 'id',
-    header: 'ID',
-
-    filterFn: (row, _id, value) => {
-      const id = row.getValue('id') as string
-      return id.toString().includes(value)
-    },
-    enableSorting: false,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='ID' />
+    ),
   },
   {
     accessorKey: 'producto_nombre',
-    header: 'Producto',
-    cell: ({ row }) => {
-      const productoNombre = row.original.productos?.nombre
-
-      return (
-        <span className='truncate'>{productoNombre || 'Sin producto'}</span>
-      )
-    },
-    filterFn: (row, _id, value) => {
-      const productoNombre =
-        row.original?.productos?.nombre?.toLowerCase() || ''
-      return productoNombre.includes(value.toLowerCase())
-    },
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Producto' />
+    ),
+    cell: ({ row }) => (
+      <span className='truncate'>
+        {row.original.producto_nombre || 'Sin producto'}
+      </span>
+    ),
     enableHiding: false,
-    enableSorting: false,
   },
-
   {
-    accessorKey: 'estado',
-    header: 'Estado',
+    accessorKey: 'estado_calculado',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Estado' />
+    ),
     cell: ({ row }) => {
-      const { estado, fecha_expiracion: fechaExpiracion } = row.original
-      const estadoCalculado = getPedidoEstadoByFecha(
-        estado as PedidoEstado,
-        fechaExpiracion as string
-      )
+      const estadoCalculado = row.original.estado_calculado as PedidoEstado
       const badgeColor = estadosMap.get(estadoCalculado)
       return (
         <Badge variant='outline' className={cn('capitalize', badgeColor)}>
@@ -205,40 +130,26 @@ export const columns: ColumnDef<Pedido>[] = [
         </Badge>
       )
     },
-    filterFn: (row, _id, value) => {
-      const estado = getPedidoEstadoByFecha(
-        row.original.estado as PedidoEstado,
-        row.original.fecha_expiracion as string
-      )
-      return value.includes(estado)
-    },
     enableHiding: false,
-    enableSorting: false,
-  },
-
-  {
-    accessorKey: 'usuario',
-    header: 'Vendedor',
-    enableSorting: false,
-    cell: ({ row }) => {
-      const usuario = row.original.usuarios
-      return (
-        <span className='truncate'>{usuario?.usuario || 'Sin Vendedor'}</span>
-      )
-    },
-    filterFn: (row, _id, value) => {
-      const usuario = row.original.usuarios
-      const nombreUsuario = usuario?.usuario?.toLowerCase() || ''
-      return nombreUsuario.includes(value.toLowerCase())
-    },
   },
   {
-    accessorKey: 'telefono_whatsapp',
-    header: 'Teléfono',
-    enableSorting: false,
+    accessorKey: 'vendedor_usuario',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Vendedor' />
+    ),
+    cell: ({ row }) => (
+      <span className='truncate'>
+        {row.original.vendedor_usuario || 'Sin Vendedor'}
+      </span>
+    ),
+  },
+  {
+    accessorKey: 'vendedor_telefono',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Teléfono' />
+    ),
     cell: ({ row }) => {
-      const usuario = row.original.usuarios
-      const telefono = usuario?.telefono
+      const telefono = row.original.vendedor_telefono
 
       if (!telefono) {
         return <span className='text-gray-400'>Sin teléfono</span>
@@ -247,7 +158,7 @@ export const columns: ColumnDef<Pedido>[] = [
       return (
         <button
           className='flex flex-col items-center hover:opacity-60'
-          onClick={() => abrirWhatsApp(telefono as string)}
+          onClick={() => abrirWhatsApp(telefono)}
           title='Abrir en WhatsApp'
         >
           <img
@@ -261,19 +172,20 @@ export const columns: ColumnDef<Pedido>[] = [
   },
   {
     accessorKey: 'precio',
-    header: 'Precio',
-    enableSorting: false,
-    cell: ({ row }) => {
-      const precio = row.getValue('precio') as number
-      return <span>$ {precio.toFixed(2)}</span>
-    },
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Precio' />
+    ),
+    cell: ({ row }) => (
+      <span>$ {row.original.precio.toFixed(2)}</span>
+    ),
   },
   {
-    accessorKey: 'precio_renovacion',
-    header: 'P. Renovación',
-    enableSorting: false,
+    accessorKey: 'producto_precio_renovacion',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='P. Renovación' />
+    ),
     cell: ({ row }) => {
-      const precioRenovacion = row.original.productos?.precio_renovacion
+      const precioRenovacion = row.original.producto_precio_renovacion
       return (
         <span>
           {precioRenovacion !== null && precioRenovacion !== undefined
@@ -285,10 +197,11 @@ export const columns: ColumnDef<Pedido>[] = [
   },
   {
     accessorKey: 'cuenta_email',
-    header: 'Email Cuenta',
-    enableSorting: false,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Email Cuenta' />
+    ),
     cell: ({ row }) => {
-      const email = row.original.stock_productos?.email
+      const email = row.original.cuenta_email
       return (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -302,17 +215,13 @@ export const columns: ColumnDef<Pedido>[] = [
         </Tooltip>
       )
     },
-    filterFn: (row, _id, value) => {
-      const email = row.original.stock_productos?.email || ''
-      return email.toLowerCase().includes(value.toLowerCase())
-    },
   },
   {
     accessorKey: 'cuenta_clave',
     header: 'Clave',
     enableSorting: false,
     cell: ({ row }) => {
-      const clave = row.original.stock_productos?.clave
+      const clave = row.original.cuenta_clave
       return (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -332,7 +241,7 @@ export const columns: ColumnDef<Pedido>[] = [
     header: 'URL',
     enableSorting: false,
     cell: ({ row }) => {
-      const url = row.original.stock_productos?.url
+      const url = row.original.cuenta_url
       return (
         <div>
           {url ? (
@@ -352,69 +261,38 @@ export const columns: ColumnDef<Pedido>[] = [
     },
   },
   {
-    accessorKey: 'perfil',
+    accessorKey: 'cuenta_perfil',
     header: 'Perfil',
     enableSorting: false,
-    cell: ({ row }) => {
-      const perfil = row.original.stock_productos?.perfil
-      return <span className='text-sm'>{perfil || 'N/A'}</span>
-    },
+    cell: ({ row }) => (
+      <span className='text-sm'>{row.original.cuenta_perfil || 'N/A'}</span>
+    ),
   },
   {
-    accessorKey: 'pin',
+    accessorKey: 'cuenta_pin',
     header: 'PIN',
     enableSorting: false,
-    cell: ({ row }) => {
-      const pin = row.original.stock_productos?.pin
-      return <span className='font-mono text-sm'>{pin || 'N/A'}</span>
-    },
+    cell: ({ row }) => (
+      <span className='font-mono text-sm'>
+        {row.original.cuenta_pin || 'N/A'}
+      </span>
+    ),
   },
   {
     accessorKey: 'fecha_inicio',
-    header: 'Inicio',
-    enableSorting: false,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Inicio' />
+    ),
     cell: ({ row }) => {
       const fechaInicio = row.original.fecha_inicio
 
-      // DEBUG: Log fecha_inicio formatting (LIMITED TO 5)
-      if (
-        fechaInicio &&
-        row.original.id !== undefined &&
-        !__loggedIds.has(row.original.id) &&
-        __fechaInicioDebugCount < MAX_DEBUG_LOGS
-      ) {
-        console.log(
-          `[DEBUG fecha_inicio ${__fechaInicioDebugCount + 1}/${MAX_DEBUG_LOGS}] Column rendering:`,
-          {
-            id: row.original.id,
-            raw: fechaInicio,
-            dateObj: new Date(fechaInicio as string),
-            localDateString: new Date(fechaInicio as string).toLocaleDateString(
-              'es-PE',
-              {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                timeZone: 'UTC',
-              }
-            ),
-            localTimeString: new Date(fechaInicio as string).toLocaleTimeString(
-              'es-PE',
-              {
-                hour: '2-digit',
-                minute: '2-digit',
-              }
-            ),
-            browserTz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          }
-        )
-        __loggedIds.add(row.original.id)
-        __fechaInicioDebugCount++
+      if (!fechaInicio) {
+        return <span className='text-muted-foreground text-xs'>N/A</span>
       }
 
       return (
         <div className='space-y-1'>
-          {new Date(fechaInicio as string).toLocaleDateString('es-PE', {
+          {new Date(fechaInicio).toLocaleDateString('es-PE', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
@@ -422,7 +300,7 @@ export const columns: ColumnDef<Pedido>[] = [
           })}
           <br />
           <span className='text-muted-foreground text-xs'>
-            {new Date(fechaInicio as string).toLocaleTimeString('es-PE', {
+            {new Date(fechaInicio).toLocaleTimeString('es-PE', {
               hour: '2-digit',
               minute: '2-digit',
             })}
@@ -432,59 +310,24 @@ export const columns: ColumnDef<Pedido>[] = [
     },
   },
   {
-    accessorKey: 'fecha_fin',
+    accessorKey: 'fecha_expiracion',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Fin' />
     ),
-    enableSorting: false,
     cell: ({ row }) => {
       const fechaExpiracion = row.original.fecha_expiracion
 
-      // DEBUG: Log fecha_fin formatting (LIMITED TO 5)
-      if (fechaExpiracion) {
-        if (
-          row.original.id !== undefined &&
-          !__loggedIds.has(row.original.id) &&
-          __fechaFinDebugCount < MAX_DEBUG_LOGS
-        ) {
-          const dateObj = new Date(fechaExpiracion as string)
-          console.log(
-            `[DEBUG fecha_fin ${__fechaFinDebugCount + 1}/${MAX_DEBUG_LOGS}] Column rendering:`,
-            {
-              id: row.original.id,
-              raw: fechaExpiracion,
-              dateObj: dateObj,
-              dateObjUTC: dateObj.toUTCString(),
-              getTime: dateObj.getTime(),
-              getHours: dateObj.getHours(),
-              getMinutes: dateObj.getMinutes(),
-              localOffset: dateObj.getTimezoneOffset(),
-              intlFormatted: new Intl.DateTimeFormat('es-PE', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                timeZone: 'UTC',
-              }).format(dateObj),
-              localDateString: dateObj.toLocaleDateString('es-PE'),
-              browserTz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            }
-          )
-          __loggedIds.add(row.original.id)
-          __fechaFinDebugCount++
-        }
-
-        const dateObj = new Date(fechaExpiracion as string)
-        const formattedFechaExpiracion = new Intl.DateTimeFormat('es-PE', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          timeZone: 'UTC',
-        })
-          .format(dateObj)
-          .split('/')
-          .join('/')
-        return <span>{formattedFechaExpiracion}</span>
+      if (!fechaExpiracion) {
+        return <span className='text-muted-foreground text-xs'>N/A</span>
       }
+
+      const formattedFechaExpiracion = new Intl.DateTimeFormat('es-PE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }).format(new Date(fechaExpiracion))
+      return <span>{formattedFechaExpiracion}</span>
     },
   },
   {
@@ -492,10 +335,9 @@ export const columns: ColumnDef<Pedido>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Días' />
     ),
-    enableSorting: false,
     cell: ({ row }) => (
       <DiasRestantesCell
-        fecha_expiracion={row.original.fecha_expiracion as string}
+        diasRestantes={row.original.dias_restantes}
         id={row.original.id}
       />
     ),

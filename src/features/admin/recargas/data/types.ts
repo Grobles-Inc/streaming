@@ -43,6 +43,45 @@ export type EstadisticasRecargas = {
   montoRechazado: number
 }
 
+// Parámetros del RPC `get_recargas_admin`
+export type GetRecargasAdminParams = {
+  search: string
+  estado: EstadoRecarga | null
+  page: number
+  pageSize: number
+}
+
+// Fila cruda del RPC: igual a `MappedRecarga` pero con las fechas como ISO string
+// (jsonb serializa los `timestamptz` a ISO 8601)
+export type RecargaAdminRow = Omit<
+  MappedRecarga,
+  'fechaCreacion' | 'fechaActualizacion'
+> & {
+  fechaCreacion: string
+  fechaActualizacion: string
+}
+
+// Respuesta jsonb completa del RPC
+export type GetRecargasAdminResponse = {
+  data: RecargaAdminRow[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+  totalPendientes: number
+}
+
+// Resultado del listado ya mapeado para la tabla
+// (`fechaCreacion`/`fechaActualizacion` como `Date`)
+export type RecargasPaginadas = {
+  recargas: MappedRecarga[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+  totalPendientes: number
+}
+
 // Recarga mapeada para el componente
 export type MappedRecarga = {
   id: number  // Cambiado de string a number

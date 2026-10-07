@@ -1,108 +1,110 @@
-import { supabase } from '@/lib/supabase'
 import type { Database } from '@/types/supabase'
+import { supabase } from '@/lib/supabase'
 
 type ConfiguracionRow = Database['public']['Tables']['configuracion']['Row']
-type ConfiguracionUpdate = Database['public']['Tables']['configuracion']['Update']
+type ConfiguracionUpdate =
+  Database['public']['Tables']['configuracion']['Update']
 
 export class ConfigurationService {
-  
   /**
    * Genera un token único y PERMANENTE para links de registro
    * Este token será estable y no caducará por tiempo, solo cuando se regenere explícitamente
    */
   static generateRegistrationToken(): string {
-    console.log("Generando nuevo token de registro permanente");
-    
+    console.log('Generando nuevo token de registro permanente')
+
     // Crear un token estable usando datos que no cambien frecuentemente
-    const timestamp = Date.now();
-    const randomSeed = Math.random().toString(36).substring(2, 15);
-    
+    const timestamp = Date.now()
+    const randomSeed = Math.random().toString(36).substring(2, 15)
+
     // Crear una cadena base para encriptar
-    const baseString = `${timestamp}_${randomSeed}_permanent_reg`;
-    
+    const baseString = `${timestamp}_${randomSeed}_permanent_reg`
+
     // Convertir a Base64 para hacer el token más robusto
-    const stableToken = btoa(baseString).replace(/[+/=]/g, ''); // Remover caracteres problemáticos
-    
-    console.log("Token permanente generado:", stableToken);
-    return stableToken;
+    const stableToken = btoa(baseString).replace(/[+/=]/g, '') // Remover caracteres problemáticos
+
+    // No se registra el token generado.
+    return stableToken
   }
 
   /**
    * Almacena un token de registro en la configuración
    */
   static async storeRegistrationToken(token: string): Promise<boolean> {
-    console.log("Almacenando token:", token);
-    
+    // No se registra el token: es la credencial del link de invitación.
+
     if (!token || token.trim() === '') {
-      console.error('Error: intentando almacenar un token vacío');
-      return false;
+      console.error('Error: intentando almacenar un token vacío')
+      return false
     }
-    
+
     try {
       // Primero verificamos si ya existe un registro de configuración
       const { data: existingConfig, error: fetchError } = await supabase
         .from('configuracion')
         .select('id')
         .eq('id', '1')
-        .single();
-        
-      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 es "no se encontró ningún registro"
-        console.error('Error verificando configuración existente:', fetchError);
-        return false;
+        .single()
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        // PGRST116 es "no se encontró ningún registro"
+        console.error('Error verificando configuración existente:', fetchError)
+        return false
       }
-      
-      const now = new Date().toISOString();
-      
+
+      const now = new Date().toISOString()
+
       // Si existe, actualizamos. Si no, insertamos.
       if (existingConfig) {
-        console.log("Actualizando token existente");
+        console.log('Actualizando token existente')
         const { error } = await supabase
           .from('configuracion')
           .update({
             register_link: token,
-            updated_at: now
+            updated_at: now,
           })
-          .eq('id', '1');
-          
+          .eq('id', '1')
+
         if (error) {
-          console.error('Error actualizando token de registro:', error);
-          return false;
+          console.error('Error actualizando token de registro:', error)
+          return false
         }
       } else {
-        console.log("Creando registro de configuración nuevo");
-        const { error } = await supabase
-          .from('configuracion')
-          .insert({
-            id: '1', 
-            register_link: token,
-            updated_at: now,
-            mantenimiento: false,
-            comision: 0,
-            conversion: 1,
-            comision_publicacion_producto: 0,
-            comision_retiro: 0
-          });
-          
+        console.log('Creando registro de configuración nuevo')
+        const { error } = await supabase.from('configuracion').insert({
+          id: '1',
+          register_link: token,
+          updated_at: now,
+          mantenimiento: false,
+          comision: 0,
+          conversion: 1,
+          comision_publicacion_producto: 0,
+          comision_retiro: 0,
+        })
+
         if (error) {
-          console.error('Error creando registro de configuración:', error);
-          return false;
+          console.error('Error creando registro de configuración:', error)
+          return false
         }
       }
-      
+
       // Verificamos que se haya guardado correctamente
       const { data: verifyData, error: verifyError } = await supabase
         .from('configuracion')
         .select('register_link')
         .eq('id', '1')
-        .single();
-        
+        .single()
+
       if (verifyError) {
-        console.error('Error verificando almacenamiento del token:', verifyError);
-        return false;
+        console.error(
+          'Error verificando almacenamiento del token:',
+          verifyError
+        )
+        return false
       }
-      
-      console.log("Token almacenado correctamente:", verifyData.register_link);
-      return verifyData.register_link === token;
+
+      // No se registra register_link: es la credencial del link.
+      return verifyData.register_link === token
     } catch (error) {
       console.error('Error storing registration token:', error)
       return false
@@ -114,13 +116,13 @@ export class ConfigurationService {
    * NOTA: Los tokens ahora son PERMANENTES y solo se invalidan cuando se regeneran
    */
   static async validateRegistrationToken(token: string): Promise<boolean> {
-    console.log("Validando token permanente:", token);
-    
+    // No se registra el token: es la credencial del link de invitación.
+
     if (!token || token.trim() === '') {
-      console.error('Token inválido: token vacío');
-      return false;
+      console.error('Token inválido: token vacío')
+      return false
     }
-    
+
     try {
       const { data, error } = await supabase
         .from('configuracion')
@@ -134,23 +136,22 @@ export class ConfigurationService {
       }
 
       // Log para depuración
-      console.log('Token almacenado en BD:', data.register_link);
-      console.log('Token recibido para validar:', token);
-      
+      // No se registra register_link: es la credencial del link.
+      // No se registra el token recibido.
+
       // Verificar que el token coincida exactamente
-      const tokenMatches = data.register_link === token;
-      console.log('¿Los tokens coinciden?', tokenMatches);
-      
+      const tokenMatches = data.register_link === token
+      console.log('¿Los tokens coinciden?', tokenMatches)
+
       if (!tokenMatches) {
-        console.warn('Token no coincide con el almacenado');
-        return false;
+        console.warn('Token no coincide con el almacenado')
+        return false
       }
 
       // ✅ CAMBIO IMPORTANTE: Ya no validamos por tiempo
       // Los tokens ahora son permanentes hasta que se regeneren explícitamente
-      console.log('✅ Token permanente válido');
-      return true;
-      
+      console.log('✅ Token permanente válido')
+      return true
     } catch (error) {
       console.error('Error validating registration token:', error)
       return false
@@ -163,25 +164,24 @@ export class ConfigurationService {
    */
   static async regenerateInvitationToken(): Promise<string | null> {
     try {
-      console.log("🔄 Regenerando token de invitación...");
-      
+      console.log('🔄 Regenerando token de invitación...')
+
       // Generar nuevo token
-      const newToken = this.generateRegistrationToken();
-      
+      const newToken = this.generateRegistrationToken()
+
       // Almacenar el nuevo token
-      const stored = await this.storeRegistrationToken(newToken);
-      
+      const stored = await this.storeRegistrationToken(newToken)
+
       if (!stored) {
-        console.error('Error almacenando el nuevo token');
-        return null;
+        console.error('Error almacenando el nuevo token')
+        return null
       }
-      
-      console.log("✅ Token regenerado exitosamente:", newToken);
-      return newToken;
-      
+
+      console.log('✅ Token regenerado exitosamente')
+      return newToken
     } catch (error) {
-      console.error('Error regenerating invitation token:', error);
-      return null;
+      console.error('Error regenerating invitation token:', error)
+      return null
     }
   }
 
@@ -197,14 +197,14 @@ export class ConfigurationService {
         .single()
 
       if (error || !data) {
-        console.log('No hay token actual, se necesita generar uno');
-        return null;
+        console.log('No hay token actual, se necesita generar uno')
+        return null
       }
 
-      return data.register_link || null;
+      return data.register_link || null
     } catch (error) {
-      console.error('Error getting current token:', error);
-      return null;
+      console.error('Error getting current token:', error)
+      return null
     }
   }
 
@@ -234,15 +234,15 @@ export class ConfigurationService {
   /**
    * Actualiza la configuración
    */
-  static async updateConfiguration(updates: Partial<ConfiguracionUpdate>): Promise<boolean> {
+  static async updateConfiguration(
+    updates: Partial<ConfiguracionUpdate>
+  ): Promise<boolean> {
     try {
-      const { error } = await supabase
-        .from('configuracion')
-        .upsert({
-          id: '1',
-          updated_at: new Date().toISOString(),
-          ...updates
-        })
+      const { error } = await supabase.from('configuracion').upsert({
+        id: '1',
+        updated_at: new Date().toISOString(),
+        ...updates,
+      })
 
       if (error) {
         console.error('Error updating configuration:', error)
@@ -252,6 +252,35 @@ export class ConfigurationService {
       return true
     } catch (error) {
       console.error('Error updating configuration:', error)
+      return false
+    }
+  }
+
+  /**
+   * Actualiza únicamente los switches de registro.
+   *
+   * Deliberately does NOT touch updated_at. ConfiguracionService reads the
+   * newest row by updated_at, so bumping that column here would promote row
+   * '1' and make the admin page render whatever commissions it happens to
+   * hold, silently reverting values an admin just saved.
+   */
+  static async updateSignupSettings(updates: {
+    signup_mode?: string
+    registro_requiere_aprobacion?: boolean
+  }): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('configuracion')
+        .upsert({ id: '1', ...updates })
+
+      if (error) {
+        console.error('Error updating signup settings:', error)
+        return false
+      }
+
+      return true
+    } catch (error) {
+      console.error('Error updating signup settings:', error)
       return false
     }
   }

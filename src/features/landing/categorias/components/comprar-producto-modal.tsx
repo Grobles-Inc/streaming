@@ -41,7 +41,7 @@ import {
   useUpdateStockProductoStatusVendido,
 } from '../../queries/productos'
 import { Producto } from '../../services'
-import { PhoneInput } from './phone-input'
+import { PhoneInput } from '@/components/phone-input'
 
 const formSchema = z.object({
   nombre_cliente: z

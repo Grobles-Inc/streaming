@@ -34,7 +34,10 @@ export function DataTableToolbar<TData>({
   const queryClient = useQueryClient()
   const { user } = useAuth()
 
-  const selectedRows = table.getFilteredSelectedRowModel().rows
+  // Paginación manual: no hay `getFilteredRowModel`, la selección es de la página actual.
+  const selectedRows = table
+    .getRowModel()
+    .rows.filter((row) => row.getIsSelected())
   const hasSelectedRows = selectedRows.length > 0
 
   const handleRefresh = () => {
@@ -81,9 +84,9 @@ export function DataTableToolbar<TData>({
               className='h-9 pl-9'
             />
           </div>
-          {table.getColumn('estado') && (
+          {table.getColumn('estado_calculado') && (
             <DataTableFacetedFilter
-              column={table.getColumn('estado')}
+              column={table.getColumn('estado_calculado')}
               options={estados}
             />
           )}

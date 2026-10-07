@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react'
-import { UsersService, type CreateUserData, type UpdateUserData } from '../services/users.service'
 import { mapSupabaseUserToComponent, type MappedUser } from '../data/schema'
+import {
+  UsersService,
+  type CreateUserData,
+  type UpdateUserData,
+} from '../services/users.service'
 
 export function useUsers() {
   const [users, setUsers] = useState<MappedUser[]>([])
@@ -36,46 +40,58 @@ export function useUsers() {
       const mappedUsers = supabaseUsers.map(mapSupabaseUserToComponent)
       setDisabledUsers(mappedUsers)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar usuarios deshabilitados')
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Error al cargar usuarios deshabilitados'
+      )
       console.error('Error loading disabled users:', err)
     } finally {
       setDisabledUsersLoading(false)
     }
   }
 
-  const createUser = async (userData: CreateUserData): Promise<MappedUser | null> => {
+  const createUser = async (
+    userData: CreateUserData
+  ): Promise<MappedUser | null> => {
     try {
       const newUser = await UsersService.createUser(userData)
       // Después de crear, obtenemos el usuario completo con billetera
       const userWithWallet = await UsersService.getUserById(newUser.id)
       if (userWithWallet) {
         const mappedUser = mapSupabaseUserToComponent(userWithWallet)
-        setUsers(prev => [mappedUser, ...prev])
+        setUsers((prev) => [mappedUser, ...prev])
         return mappedUser
       }
       return null
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al crear usuario'
+      const errorMessage =
+        err instanceof Error ? err.message : 'Error al crear usuario'
       console.error('Error creating user:', err)
-      console.error('User data sent:', userData)
+      // No se registra userData: contiene el password en texto plano.
       setError(errorMessage)
       return null
     }
   }
 
-  const updateUser = async (id: string, userData: UpdateUserData): Promise<MappedUser | null> => {
+  const updateUser = async (
+    id: string,
+    userData: UpdateUserData
+  ): Promise<MappedUser | null> => {
     try {
       await UsersService.updateUser(id, userData)
       // Después de actualizar, obtenemos el usuario completo con billetera
       const userWithWallet = await UsersService.getUserById(id)
       if (userWithWallet) {
         const mappedUser = mapSupabaseUserToComponent(userWithWallet)
-        setUsers(prev => prev.map(u => u.id === id ? mappedUser : u))
+        setUsers((prev) => prev.map((u) => (u.id === id ? mappedUser : u)))
         return mappedUser
       }
       return null
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al actualizar usuario')
+      setError(
+        err instanceof Error ? err.message : 'Error al actualizar usuario'
+      )
       console.error('Error updating user:', err)
       return null
     }
@@ -85,16 +101,18 @@ export function useUsers() {
     try {
       await UsersService.deleteUser(id)
       // Remover de la lista de usuarios habilitados
-      setUsers(prev => prev.filter(u => u.id !== id))
+      setUsers((prev) => prev.filter((u) => u.id !== id))
       // Si ya tenemos usuarios deshabilitados cargados, añadir el usuario a esa lista
       const userWithWallet = await UsersService.getUserById(id)
       if (userWithWallet && !userWithWallet.estado_habilitado) {
         const mappedUser = mapSupabaseUserToComponent(userWithWallet)
-        setDisabledUsers(prev => [mappedUser, ...prev])
+        setDisabledUsers((prev) => [mappedUser, ...prev])
       }
       return true
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al deshabilitar usuario')
+      setError(
+        err instanceof Error ? err.message : 'Error al deshabilitar usuario'
+      )
       console.error('Error disabling user:', err)
       return false
     }
@@ -108,13 +126,15 @@ export function useUsers() {
       if (userWithWallet && userWithWallet.estado_habilitado) {
         const mappedUser = mapSupabaseUserToComponent(userWithWallet)
         // Añadir a la lista de usuarios habilitados
-        setUsers(prev => [mappedUser, ...prev])
+        setUsers((prev) => [mappedUser, ...prev])
         // Remover de la lista de usuarios deshabilitados
-        setDisabledUsers(prev => prev.filter(u => u.id !== id))
+        setDisabledUsers((prev) => prev.filter((u) => u.id !== id))
       }
       return true
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al habilitar usuario')
+      setError(
+        err instanceof Error ? err.message : 'Error al habilitar usuario'
+      )
       console.error('Error enabling user:', err)
       return false
     }
@@ -134,7 +154,9 @@ export function useUsers() {
     }
   }
 
-  const filterByRole = async (role: 'admin' | 'provider' | 'seller' | 'registered') => {
+  const filterByRole = async (
+    role: 'admin' | 'provider' | 'seller' | 'registered'
+  ) => {
     try {
       setLoading(true)
       const supabaseUsers = await UsersService.filterByRole(role)
@@ -148,18 +170,23 @@ export function useUsers() {
     }
   }
 
-  const updateUserBalance = async (id: string, newBalance: number): Promise<boolean> => {
+  const updateUserBalance = async (
+    id: string,
+    newBalance: number
+  ): Promise<boolean> => {
     try {
       await UsersService.updateUserBalance(id, newBalance)
       // Después de actualizar, obtenemos el usuario completo con billetera
       const userWithWallet = await UsersService.getUserById(id)
       if (userWithWallet) {
         const mappedUser = mapSupabaseUserToComponent(userWithWallet)
-        setUsers(prev => prev.map(u => u.id === id ? mappedUser : u))
+        setUsers((prev) => prev.map((u) => (u.id === id ? mappedUser : u)))
       }
       return true
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al actualizar balance')
+      setError(
+        err instanceof Error ? err.message : 'Error al actualizar balance'
+      )
       console.error('Error updating balance:', err)
       return false
     }
@@ -173,10 +200,14 @@ export function useUsers() {
     try {
       await UsersService.permanentDeleteUser(id)
       // Remover de la lista de usuarios deshabilitados
-      setDisabledUsers(prev => prev.filter(u => u.id !== id))
+      setDisabledUsers((prev) => prev.filter((u) => u.id !== id))
       return true
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al eliminar usuario permanentemente')
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Error al eliminar usuario permanentemente'
+      )
       console.error('Error permanently deleting user:', err)
       return false
     }
@@ -198,6 +229,6 @@ export function useUsers() {
     refreshUsers,
     loadDisabledUsers,
     clearError: () => setError(null),
-    permanentDeleteUser
+    permanentDeleteUser,
   }
 }

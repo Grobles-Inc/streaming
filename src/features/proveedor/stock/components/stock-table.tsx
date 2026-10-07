@@ -1,14 +1,13 @@
 import { useState } from 'react'
 import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
+  type ColumnDef,
+  type ColumnFiltersState,
+  type OnChangeFn,
+  type PaginationState,
+  type SortingState,
+  type VisibilityState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
 import {
@@ -19,22 +18,26 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Loader2, Package } from 'lucide-react'
+import { CustomEmpty } from '@/components/custom-empty'
 import { DataTablePagination } from './data-table-pagination'
 import { StockToolbar } from './stock-toolbar'
-import type { Database } from '@/types/supabase'
-
-type StockProducto = Database['public']['Tables']['stock_productos']['Row'] & {
-  producto?: {
-    id: string
-    nombre: string
-  }
-}
-
-
+import type { StockRow } from '../data/types'
 
 interface StockTableProps {
-  columns: ColumnDef<StockProducto>[]
-  data: StockProducto[]
+  columns: ColumnDef<StockRow>[]
+  data: StockRow[]
+  total: number
+  isLoading?: boolean
+  emptyAction?: React.ReactNode
+  pagination: PaginationState
+  onPaginationChange: OnChangeFn<PaginationState>
+  sorting: SortingState
+  onSortingChange: OnChangeFn<SortingState>
+  columnFilters: ColumnFiltersState
+  onColumnFiltersChange: OnChangeFn<ColumnFiltersState>
+  globalFilter: string
+  onGlobalFilterChange: OnChangeFn<string>
   onDeleteSelected?: (selectedIds: number[]) => void
   onTogglePublishedSelected?: (selectedIds: number[], published: boolean) => void
 }
@@ -42,14 +45,22 @@ interface StockTableProps {
 export function StockTable({
   columns,
   data,
+  total,
+  isLoading = false,
+  emptyAction,
+  pagination,
+  onPaginationChange,
+  sorting,
+  onSortingChange,
+  columnFilters,
+  onColumnFiltersChange,
+  globalFilter,
+  onGlobalFilterChange,
   onDeleteSelected,
-  onTogglePublishedSelected
+  onTogglePublishedSelected,
 }: StockTableProps) {
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
 
   const table = useReactTable({
     data,
@@ -60,23 +71,30 @@ export function StockTable({
       rowSelection,
       columnFilters,
       globalFilter,
+      pagination,
     },
     initialState: {
       pagination: {
-        pageSize: 200,
+        pageSize: 50,
       },
     },
+    // Búsqueda, filtrado, orden y paginación se resuelven en el servidor vía
+    // RPC; la tabla solo refleja el estado y lo propaga hacia arriba.
+    manualFiltering: true,
+    manualSorting: true,
+    manualPagination: true,
+    rowCount: total,
+    // Id estable para que la selección sobreviva al cambio de página
+    getRowId: (row) => String(row.id),
     enableRowSelection: true,
     enableGlobalFilter: true,
     onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
+    onSortingChange,
+    onPaginationChange,
+    onColumnFiltersChange,
     onColumnVisibilityChange: setColumnVisibility,
-    onGlobalFilterChange: setGlobalFilter,
+    onGlobalFilterChange,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
   })
 
   return (
@@ -98,9 +116,9 @@ export function StockTable({
                         {header.isPlaceholder
                           ? null
                           : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
                       </TableHead>
                     )
                   })}
@@ -125,12 +143,26 @@ export function StockTable({
                   </TableRow>
                 ))
               ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className='h-24 text-center'
-                  >
-                    No hay stock disponible.
+                <TableRow className='hover:bg-transparent'>
+                  <TableCell colSpan={columns.length} className='p-0'>
+                    <div className='flex flex-col items-center gap-6 py-10'>
+                      {isLoading ? (
+                        <CustomEmpty
+                          title='Cargando stock...'
+                          description='Estamos obteniendo las existencias de tus productos.'
+                          icon={<Loader2 className='size-10 animate-spin' />}
+                        />
+                      ) : (
+                        <>
+                          <CustomEmpty
+                            title='No hay stock disponible'
+                            description='Aún no has agregado ningún stock a tus productos.'
+                            icon={<Package className='size-10' />}
+                          />
+                          {emptyAction}
+                        </>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
@@ -138,7 +170,7 @@ export function StockTable({
           </Table>
         </div>
       </div>
-      <DataTablePagination table={table} />
+      <DataTablePagination table={table} total={total} />
     </div>
   )
-} 
+}

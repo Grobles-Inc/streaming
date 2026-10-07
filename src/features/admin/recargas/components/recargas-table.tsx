@@ -1,3 +1,4 @@
+import { CustomEmpty } from '@/components/custom-empty'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +12,8 @@ import {
 } from '@/components/ui/table'
 import {
   IconCheck,
+  IconInbox,
+  IconLoader2,
   IconSearch,
   IconTrash,
   IconX
@@ -18,13 +21,10 @@ import {
 import {
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
   type ColumnDef,
-  type ColumnFiltersState,
-  type SortingState,
+  type OnChangeFn,
+  type PaginationState,
   type VisibilityState,
 } from '@tanstack/react-table'
 import { useState } from 'react'
@@ -34,7 +34,13 @@ import { DataTablePagination } from './data-table-pagination'
 interface RecargasTableProps {
   data: MappedRecarga[]
   columns: ColumnDef<MappedRecarga>[]
+  /** Total de filas que devuelve el servidor para los filtros activos. */
+  total: number
   loading?: boolean
+  pagination: PaginationState
+  onPaginationChange: OnChangeFn<PaginationState>
+  globalFilter: string
+  onGlobalFilterChange: OnChangeFn<string>
   onAprobarSeleccionadas?: (ids: string[]) => Promise<void>
   onRechazarSeleccionadas?: (ids: string[]) => Promise<void>
   onEliminarSeleccionadas?: (ids: string[]) => Promise<void>
@@ -43,42 +49,49 @@ interface RecargasTableProps {
 export function RecargasTable({
   data,
   columns,
+  total,
   loading = false,
+  pagination,
+  onPaginationChange,
+  globalFilter,
+  onGlobalFilterChange,
   onAprobarSeleccionadas,
   onRechazarSeleccionadas,
   onEliminarSeleccionadas
 }: RecargasTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
 
   const table = useReactTable({
     data,
     columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
+    // Búsqueda y paginación se resuelven en el servidor vía RPC; la tabla solo
+    // refleja el estado y lo propaga hacia arriba.
+    manualPagination: true,
+    manualFiltering: true,
+    rowCount: total,
+    // Id estable para que la selección sobreviva al cambio de página
+    getRowId: (row) => String(row.id),
+    enableRowSelection: true,
+    enableGlobalFilter: true,
+    onPaginationChange,
+    onGlobalFilterChange,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    initialState: {
-      pagination: {
-        pageSize: 200,
-      },
-    },
     state: {
-      sorting,
-      columnFilters,
+      pagination,
+      globalFilter,
       columnVisibility,
       rowSelection,
     },
+    getCoreRowModel: getCoreRowModel(),
   })
 
-  const selectedRows = table.getFilteredSelectedRowModel().rows
-  const selectedRecargas = selectedRows.map(row => row.original)
+  // Paginación manual: no hay `getFilteredRowModel`; la selección es de la página actual.
+  const selectedRecargas = table
+    .getRowModel()
+    .rows.filter((row) => row.getIsSelected())
+    .map((row) => row.original)
   const selectedPendientes = selectedRecargas.filter(r => r.estado === 'pendiente')
   const selectedRechazadas = selectedRecargas.filter(r => r.estado === 'rechazado')
 
@@ -103,19 +116,6 @@ export function RecargasTable({
     }
   }
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="h-10 bg-gray-200 rounded animate-pulse" />
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-16 bg-gray-100 rounded animate-pulse" />
-          ))}
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="w-full space-y-4">
       {/* Barra de herramientas */}
@@ -125,10 +125,8 @@ export function RecargasTable({
             <IconSearch className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por usuario..."
-              value={(table.getColumn('usuarioNombre')?.getFilterValue() as string) ?? ''}
-              onChange={(event) =>
-                table.getColumn('usuarioNombre')?.setFilterValue(event.target.value)
-              }
+              value={globalFilter}
+              onChange={(event) => onGlobalFilterChange(event.target.value)}
               className="pl-8 max-w-md"
             />
           </div>
@@ -219,19 +217,30 @@ export function RecargasTable({
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No se encontraron recargas.
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={columns.length} className="p-0">
+                  <div className="flex flex-col items-center gap-6 py-10">
+                    {loading ? (
+                      <CustomEmpty
+                        title="Cargando recargas..."
+                        description="Estamos obteniendo las solicitudes de recarga."
+                        icon={<IconLoader2 className="size-10 animate-spin" />}
+                      />
+                    ) : (
+                      <CustomEmpty
+                        title="No hay recargas disponibles"
+                        description="No se encontraron recargas con los filtros actuales."
+                        icon={<IconInbox className="size-10" />}
+                      />
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
+      <DataTablePagination table={table} total={total} />
 
     </div>
   )

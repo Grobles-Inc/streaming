@@ -10,23 +10,10 @@ import {
 import { IconSearch, IconTrash, IconEye, IconEyeOff } from '@tabler/icons-react'
 import { DataTableViewOptions } from './data-table-view-options'
 import type { Table } from '@tanstack/react-table'
-import type { Database } from '@/types/supabase'
-
-type StockProducto = Database['public']['Tables']['stock_productos']['Row'] & {
-  producto?: {
-    id: string
-    nombre: string
-  }
-}
-
-type Producto = {
-  id: string
-  nombre: string
-}
+import type { StockRow } from '../data/types'
 
 interface StockToolbarProps {
-  table: Table<StockProducto>
-  productos?: Producto[]
+  table: Table<StockRow>
   onDeleteSelected?: (selectedIds: number[]) => void
   onTogglePublishedSelected?: (selectedIds: number[], published: boolean) => void
 }
@@ -34,22 +21,25 @@ interface StockToolbarProps {
 export function StockToolbar({
   table,
   onDeleteSelected,
-  onTogglePublishedSelected
+  onTogglePublishedSelected,
 }: StockToolbarProps) {
   const globalFilter = table.getState().globalFilter ?? ''
-  const selectedRows = table.getFilteredSelectedRowModel().rows
+  // Paginación manual: la selección es la de la página actual.
+  const selectedRows = table
+    .getRowModel()
+    .rows.filter((row) => row.getIsSelected())
   const hasSelectedRows = selectedRows.length > 0
 
   const handleDeleteSelected = () => {
     if (onDeleteSelected && selectedRows.length > 0) {
-      const selectedIds = selectedRows.map(row => row.original.id)
+      const selectedIds = selectedRows.map((row) => row.original.id)
       onDeleteSelected(selectedIds)
     }
   }
 
   const handleTogglePublishedSelected = (published: boolean) => {
     if (onTogglePublishedSelected && selectedRows.length > 0) {
-      const selectedIds = selectedRows.map(row => row.original.id)
+      const selectedIds = selectedRows.map((row) => row.original.id)
       onTogglePublishedSelected(selectedIds, published)
     }
   }
@@ -112,11 +102,12 @@ export function StockToolbar({
           />
         </div>
 
-
         <Select
           value={(table.getColumn('tipo')?.getFilterValue() as string) ?? ''}
           onValueChange={(value) => {
-            table.getColumn('tipo')?.setFilterValue(value === 'todos' ? '' : value)
+            table
+              .getColumn('tipo')
+              ?.setFilterValue(value === 'todos' ? '' : value)
           }}
         >
           <SelectTrigger className='w-full sm:w-32'>
@@ -133,7 +124,9 @@ export function StockToolbar({
         <Select
           value={(table.getColumn('estado')?.getFilterValue() as string) ?? ''}
           onValueChange={(value) => {
-            table.getColumn('estado')?.setFilterValue(value === 'todos' ? '' : value)
+            table
+              .getColumn('estado')
+              ?.setFilterValue(value === 'todos' ? '' : value)
           }}
         >
           <SelectTrigger className='w-full sm:w-32'>
@@ -150,4 +143,4 @@ export function StockToolbar({
       </div>
     </div>
   )
-} 
+}

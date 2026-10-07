@@ -52,22 +52,26 @@ export function DataTableRowActions<TData>({
     monto_reembolso: pedido.monto_reembolso || 0,
     created_at: pedido.created_at || '',
     updated_at: new Date().toISOString(),
-    stock_productos: pedido.stock_productos
+    stock_productos: pedido.cuenta_id
       ? {
-          id: Number(pedido.stock_productos.id || 0),
-          email: pedido.stock_productos.email,
-          clave: pedido.stock_productos.clave,
-          pin: pedido.stock_productos.pin,
-          perfil: pedido.stock_productos.perfil,
-          url: pedido.stock_productos.url,
+          id: pedido.cuenta_id,
+          email: pedido.cuenta_email,
+          clave: pedido.cuenta_clave,
+          pin: pedido.cuenta_pin,
+          perfil: pedido.cuenta_perfil,
+          url: pedido.cuenta_url,
           soporte_stock_producto:
-            pedido.stock_productos.soporte_stock_producto || 'activo',
+            (pedido.soporte_stock_producto as
+              | 'activo'
+              | 'vencido'
+              | 'soporte'
+              | null) || 'activo',
         }
       : null,
-    productos: pedido.productos
+    productos: pedido.producto_nombre
       ? {
-          nombre: pedido.productos.nombre || '',
-          tiempo_uso: pedido.productos.tiempo_uso || 0,
+          nombre: pedido.producto_nombre,
+          tiempo_uso: pedido.producto_tiempo_uso || 0,
         }
       : null,
   }
@@ -105,10 +109,10 @@ export function DataTableRowActions<TData>({
         fechaInicioCalcular = pedido.fecha_inicio
       }
 
-      if (fechaInicioCalcular && pedido.productos?.tiempo_uso) {
+      if (fechaInicioCalcular && pedido.producto_tiempo_uso) {
         fechaFin = calcularFechaExpiracion(
           fechaInicioCalcular,
-          pedido.productos.tiempo_uso
+          pedido.producto_tiempo_uso
         )
         diasRestantes = calcularDiasRestantes(fechaFin)
       }
@@ -197,15 +201,15 @@ export function DataTableRowActions<TData>({
           productoId={pedido.producto_id ?? null}
           pedidoId={pedido.id ?? null}
           currentData={{
-            email: pedido.stock_productos?.email,
-            clave: pedido.stock_productos?.clave,
-            pin: pedido.stock_productos?.pin,
-            perfil: pedido.stock_productos?.perfil,
-            url: pedido.stock_productos?.url,
-            precio_renovacion: pedido.productos?.precio_renovacion,
+            email: pedido.cuenta_email,
+            clave: pedido.cuenta_clave,
+            pin: pedido.cuenta_pin,
+            perfil: pedido.cuenta_perfil,
+            url: pedido.cuenta_url,
+            precio_renovacion: pedido.producto_precio_renovacion,
             fecha_inicio: pedido.fecha_inicio || pedido.created_at,
             fecha_expiracion: pedido.fecha_expiracion,
-            tiempo_uso: pedido.productos?.tiempo_uso,
+            tiempo_uso: pedido.producto_tiempo_uso,
           }}
           onClose={handleCloseEditModal}
         />

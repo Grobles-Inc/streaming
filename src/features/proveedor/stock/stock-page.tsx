@@ -1,30 +1,21 @@
 import { useState, useMemo } from 'react'
 import { Main } from '@/components/layout/main'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { IconPlus } from '@tabler/icons-react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { AgregarStockStockModal } from './components/agregar-stock-stock-modal'
 import { EditarStockModal } from '../productos/components/editar-stock-modal'
 import {
-  useStockProductosByProveedor,
   useDeleteStockProducto,
   useUpdateStockProducto,
 } from './queries/index'
+import { useStockTabla } from './hooks/use-stock-tabla'
 import { useAuth } from '@/stores/authStore'
-import type { Database } from '@/types/supabase'
 import { StockTable } from './components/stock-table'
 import { createStockColumns } from './components/stock-columns'
+import type { StockRow } from './data/types'
 import { toast } from 'sonner'
-
-type StockProducto = Database['public']['Tables']['stock_productos']['Row'] & {
-  producto?: {
-    id: string
-    nombre: string
-    estado: string
-  }
-}
 
 
 export function StockPage() {
@@ -35,18 +26,31 @@ export function StockPage() {
   const [showAgregarStockDialog, setShowAgregarStockDialog] = useState(false)
   const [showEditarStockDialog, setShowEditarStockDialog] = useState(false)
   const [showAdvertenciaDialog, setShowAdvertenciaDialog] = useState(false)
-  const [selectedStock, setSelectedStock] = useState<StockProducto | null>(null)
-  // Queries
-  const { data: stockItems, isLoading, error } = useStockProductosByProveedor(user?.id ?? '')
+  const [selectedStock, setSelectedStock] = useState<StockRow | null>(null)
+  // Estado de la tabla + datos paginados desde el RPC
+  const {
+    rows,
+    total,
+    isLoading,
+    error,
+    pagination,
+    sorting,
+    columnFilters,
+    globalFilter,
+    onPaginationChange,
+    onSortingChange,
+    onColumnFiltersChange,
+    onGlobalFilterChange,
+  } = useStockTabla(user?.id)
   const deleteStockMutation = useDeleteStockProducto()
   const updateStockMutation = useUpdateStockProducto()
 
-  const handleDelete = (stock: StockProducto) => {
+  const handleDelete = (stock: StockRow) => {
     setSelectedStock(stock)
     setShowDeleteDialog(true)
   }
 
-  const handleEdit = (stock: StockProducto) => {
+  const handleEdit = (stock: StockRow) => {
     setSelectedStock(stock)
     setShowEditarStockDialog(true)
   }
@@ -65,7 +69,7 @@ export function StockPage() {
     )
   }
 
-  const handlePublicar = (stock: StockProducto) => {
+  const handlePublicar = (stock: StockRow) => {
     // Verificar si el producto está publicado
     const productoEstaPublicado = stock.producto?.estado === 'publicado'
 
@@ -79,7 +83,7 @@ export function StockPage() {
     setShowPublicarDialog(true)
   }
 
-  const handleDespublicar = (stock: StockProducto) => {
+  const handleDespublicar = (stock: StockRow) => {
     setSelectedStock(stock)
     setShowDespublicarDialog(true)
   }
@@ -114,7 +118,7 @@ export function StockPage() {
 
   const handleDeleteSelected = (selectedIds: number[]) => {
     // Verificar si algún stock está vendido
-    const selectedStockItems = stockItems?.filter(item => selectedIds.includes(item.id))
+    const selectedStockItems = rows.filter(item => selectedIds.includes(item.id))
     const hasVendidoItems = selectedStockItems?.some(item => item.estado === 'vendido')
 
     if (hasVendidoItems) {
@@ -203,35 +207,28 @@ export function StockPage() {
           </div>
 
           {/* Tabla de stock con paginación */}
-          {isLoading ? (
-            <div className='space-y-4'>
-              <Skeleton className='h-10 w-full' />
-              <Skeleton className='h-10 w-full' />
-              <Skeleton className='h-10 w-full' />
-              <Skeleton className='h-10 w-full' />
-              <Skeleton className='h-10 w-full' />
-            </div>
-          ) : stockItems && stockItems.length > 0 ? (
-            <StockTable
-              // @ts-expect-error - Type conflict between tanstack versions
-              columns={columns}
-              data={stockItems}
-              onDeleteSelected={handleDeleteSelected}
-              onTogglePublishedSelected={handleTogglePublishedSelected}
-            />
-          ) : (
-            <div className="text-center py-12">
-              <div className="text-4xl mb-4">📦</div>
-              <h3 className="text-lg font-medium mb-2">No hay stock disponible</h3>
-              <p className="text-muted-foreground mb-4">
-                Aún no has agregado ningún stock a tus productos.
-              </p>
+          <StockTable
+            columns={columns}
+            data={rows}
+            total={total}
+            isLoading={isLoading && rows.length === 0}
+            emptyAction={
               <Button onClick={() => setShowAgregarStockDialog(true)}>
                 <IconPlus size={16} className="mr-2" />
                 Agregar Primer Stock
               </Button>
-            </div>
-          )}
+            }
+            pagination={pagination}
+            onPaginationChange={onPaginationChange}
+            sorting={sorting}
+            onSortingChange={onSortingChange}
+            columnFilters={columnFilters}
+            onColumnFiltersChange={onColumnFiltersChange}
+            globalFilter={globalFilter}
+            onGlobalFilterChange={onGlobalFilterChange}
+            onDeleteSelected={handleDeleteSelected}
+            onTogglePublishedSelected={handleTogglePublishedSelected}
+          />
         </div>
       </Main>
 

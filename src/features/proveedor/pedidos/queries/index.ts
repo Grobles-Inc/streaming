@@ -1,40 +1,23 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  keepPreviousData,
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query'
 import type { Database } from '@/types/supabase'
 import { toast } from 'sonner'
-import { UpdateSoporteStatusParams } from '../data/types'
+import { GetPedidosProveedorParams, UpdateSoporteStatusParams } from '../data/types'
 import * as pedidosService from '../services'
 
 type CompraUpdate = Database['public']['Tables']['compras']['Update']
 
-export const usePedidosByProveedor = (proveedorId: string) => {
+export const usePedidosProveedor = (params: GetPedidosProveedorParams) => {
   return useQuery({
-    queryKey: ['pedidos', 'proveedor', proveedorId],
-    queryFn: () => pedidosService.getComprasByProveedorId(proveedorId),
-    enabled: !!proveedorId,
-  })
-}
-
-export const usePedidosPaginatedByProveedor = (
-  proveedorId: string,
-  page: number = 1,
-  pageSize: number = 10
-) => {
-  return useQuery({
-    queryKey: [
-      'pedidos',
-      'proveedor',
-      proveedorId,
-      'paginated',
-      page,
-      pageSize,
-    ],
-    queryFn: () =>
-      pedidosService.getComprasPaginatedByProveedor(
-        proveedorId,
-        page,
-        pageSize
-      ),
-    enabled: !!proveedorId,
+    queryKey: ['pedidos', 'proveedor', params.proveedorId, 'list', params],
+    queryFn: () => pedidosService.getPedidosProveedor(params),
+    enabled: !!params.proveedorId,
+    // evita el flash de tabla vacía al cambiar de página
+    placeholderData: keepPreviousData,
   })
 }
 

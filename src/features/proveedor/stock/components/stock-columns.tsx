@@ -11,27 +11,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
-import type { Database } from '@/types/supabase'
-
-type StockProducto = Database['public']['Tables']['stock_productos']['Row'] & {
-  producto?: {
-    id: string
-    nombre: string
-    estado: string
-  }
-}
+import type { StockRow } from '../data/types'
 
 interface StockColumnActions {
-  onEdit: (stock: StockProducto) => void
-  onDelete: (stock: StockProducto) => void
-  onPublicar: (stock: StockProducto) => void
-  onDespublicar: (stock: StockProducto) => void
+  onEdit: (stock: StockRow) => void
+  onDelete: (stock: StockRow) => void
+  onPublicar: (stock: StockRow) => void
+  onDespublicar: (stock: StockRow) => void
   isUpdating: boolean
 }
 
 export const createStockColumns = (
   actions: StockColumnActions
-): ColumnDef<StockProducto>[] => [
+): ColumnDef<StockRow>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -75,7 +67,7 @@ export const createStockColumns = (
     accessorKey: 'producto',
     header: 'Producto',
     cell: ({ row }) => {
-      const producto = row.getValue('producto') as StockProducto['producto']
+      const producto = row.getValue('producto') as StockRow['producto']
       return (
         <div className="max-w-40">
           <div className="truncate font-medium" title={producto?.nombre || 'N/A'}>

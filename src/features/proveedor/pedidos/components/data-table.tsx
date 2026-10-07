@@ -2,18 +2,16 @@ import * as React from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
+  OnChangeFn,
+  PaginationState,
   SortingState,
   VisibilityState,
   flexRender,
   getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Loader2, PackageSearch } from 'lucide-react'
+import { CustomEmpty } from '@/components/custom-empty'
 import {
   Table,
   TableBody,
@@ -28,22 +26,35 @@ import { DataTableToolbar } from './data-table-toolbar'
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  total: number
   loading?: boolean
+  pagination: PaginationState
+  onPaginationChange: OnChangeFn<PaginationState>
+  sorting: SortingState
+  onSortingChange: OnChangeFn<SortingState>
+  columnFilters: ColumnFiltersState
+  onColumnFiltersChange: OnChangeFn<ColumnFiltersState>
+  globalFilter: string
+  onGlobalFilterChange: OnChangeFn<string>
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  total,
   loading = false,
+  pagination,
+  onPaginationChange,
+  sorting,
+  onSortingChange,
+  columnFilters,
+  onColumnFiltersChange,
+  globalFilter,
+  onGlobalFilterChange,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [globalFilter, setGlobalFilter] = React.useState('')
 
   const table = useReactTable({
     data,
@@ -54,47 +65,30 @@ export function DataTable<TData, TValue>({
       rowSelection,
       columnFilters,
       globalFilter,
+      pagination,
     },
     initialState: {
       pagination: {
-        pageSize: 200,
+        pageSize: 50,
       },
     },
+    // Búsqueda, filtrado, orden y paginación se resuelven en el servidor vía
+    // RPC; la tabla solo refleja el estado y lo propaga hacia arriba.
+    manualFiltering: true,
+    manualSorting: true,
+    manualPagination: true,
+    rowCount: total,
+    // Id estable para que la selección sobreviva al cambio de página
+    getRowId: (row) => String((row as { id?: number | string }).id ?? ''),
     enableRowSelection: true,
     enableGlobalFilter: true,
-    globalFilterFn: (row, _columnId, filterValue) => {
-      const searchValue = filterValue.toLowerCase()
-      const pedido = row.original as any
-
-      // Buscar en ID
-      const id = pedido.id?.toString() || ''
-      if (id.toLowerCase().includes(searchValue)) return true
-
-      // Buscar en producto
-      const productoNombre = pedido.productos?.nombre?.toLowerCase() || ''
-      if (productoNombre.includes(searchValue)) return true
-
-      // Buscar en usuario
-      const usuario = pedido.usuarios?.usuario?.toLowerCase() || ''
-      if (usuario.includes(searchValue)) return true
-
-      // Buscar en email
-      const email = pedido.stock_productos?.email?.toLowerCase() || ''
-      if (email.includes(searchValue)) return true
-
-      return false
-    },
     onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
+    onSortingChange,
+    onPaginationChange,
+    onColumnFiltersChange,
     onColumnVisibilityChange: setColumnVisibility,
-    onGlobalFilterChange: setGlobalFilter,
+    onGlobalFilterChange,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
   return (
@@ -121,17 +115,7 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={`loading-${i}`}>
-                  {columns.map((_, colIndex) => (
-                    <TableCell key={`loading-cell-${i}-${colIndex}`}>
-                      <Skeleton className='h-4 w-full' />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -149,19 +133,30 @@ export function DataTable<TData, TValue>({
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='h-24 text-center'
-                >
-                  No hay resultados.
+              <TableRow className='hover:bg-transparent'>
+                <TableCell colSpan={columns.length} className='p-0'>
+                  <div className='flex flex-col items-center gap-6 py-10'>
+                    {loading ? (
+                      <CustomEmpty
+                        title='Cargando pedidos...'
+                        description='Estamos obteniendo tus pedidos y ventas.'
+                        icon={<Loader2 className='size-10 animate-spin' />}
+                      />
+                    ) : (
+                      <CustomEmpty
+                        title='No hay pedidos disponibles'
+                        description='No se encontraron pedidos con los filtros actuales.'
+                        icon={<PackageSearch className='size-10' />}
+                      />
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
+      <DataTablePagination table={table} total={total} />
     </div>
   )
 }

@@ -21,7 +21,13 @@ import { RetiroDetailsModal } from './components/retiro-details-modal'
 import { createRetirosColumns } from './components/retiros-columns'
 import { RetirosTable } from './components/retiros-table'
 import type { EstadoRetiro, MappedRetiro } from './data/types'
-import { useRetiros } from './hooks/use-retiros'
+import { useRetirosTabla } from './hooks/use-retiros-tabla'
+import {
+  useAprobarRetiro,
+  useAprobarRetiros,
+  useRechazarRetiro,
+  useRechazarRetiros,
+} from './queries'
 
 export default function RetirosPage() {
   const [filtroEstado, setFiltroEstado] = useState<EstadoRetiro | 'todos'>('todos')
@@ -29,55 +35,59 @@ export default function RetirosPage() {
   const [modalOpen, setModalOpen] = useState(false)
 
   const {
-    retiros,
-    loading,
+    rows,
+    total,
+    totalPendientes,
+    isLoading,
     error,
-    aprobarRetiro,
-    rechazarRetiro,
-    aprobarRetiros,
-    rechazarRetiros,
-    aplicarFiltros,
-    refreshRetiros,
-    clearError,
-    cantidadPendientes
-  } = useRetiros()
+    refetch,
+    pagination,
+    globalFilter,
+    onPaginationChange,
+    onGlobalFilterChange,
+  } = useRetirosTabla(filtroEstado === 'todos' ? null : filtroEstado)
+
+  const aprobarRetiro = useAprobarRetiro()
+  const rechazarRetiro = useRechazarRetiro()
+  const aprobarRetiros = useAprobarRetiros()
+  const rechazarRetiros = useRechazarRetiros()
 
   // Manejar aprobación individual
   const handleAprobar = async (id: number) => {
-    const success = await aprobarRetiro(id)
-    if (success) {
+    try {
+      await aprobarRetiro.mutateAsync(id)
       toast.success('Retiro aprobado exitosamente')
-    } else {
+    } catch {
       toast.error('Error al aprobar el retiro')
     }
   }
 
   // Manejar rechazo individual
   const handleRechazar = async (id: number) => {
-    const success = await rechazarRetiro(id)
-    if (success) {
+    try {
+      await rechazarRetiro.mutateAsync(id)
       toast.success('Retiro rechazado exitosamente')
-    } else {
+    } catch {
       toast.error('Error al rechazar el retiro')
     }
   }
 
   // Manejar aprobación masiva
   const handleAprobarSeleccionados = async (ids: number[]) => {
-    const success = await aprobarRetiros(ids)
-    if (success) {
+    try {
+      await aprobarRetiros.mutateAsync(ids)
       toast.success(`${ids.length} retiro(s) aprobado(s) exitosamente`)
-    } else {
+    } catch {
       toast.error('Error al aprobar los retiros seleccionados')
     }
   }
 
   // Manejar rechazo masivo
   const handleRechazarSeleccionados = async (ids: number[]) => {
-    const success = await rechazarRetiros(ids)
-    if (success) {
+    try {
+      await rechazarRetiros.mutateAsync(ids)
       toast.success(`${ids.length} retiro(s) rechazado(s) exitosamente`)
-    } else {
+    } catch {
       toast.error('Error al rechazar los retiros seleccionados')
     }
   }
@@ -88,18 +98,6 @@ export default function RetirosPage() {
     setModalOpen(true)
   }
 
-
-
-  // Aplicar filtro por estado
-  const handleFiltroEstado = async (estado: EstadoRetiro | 'todos') => {
-    setFiltroEstado(estado)
-    if (estado === 'todos') {
-      await aplicarFiltros({})
-    } else {
-      await aplicarFiltros({ estado })
-    }
-  }
-
   // Crear columnas con callbacks
   const columns = createRetirosColumns(
     handleAprobar,
@@ -107,23 +105,15 @@ export default function RetirosPage() {
     handleVerRetiro
   )
 
-  // Filtrar retiros según el estado seleccionado
-  const retirosFiltrados = filtroEstado === 'todos'
-    ? retiros
-    : retiros.filter(r => r.estado === filtroEstado)
-
   if (error) {
     return (
       <Main>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <h3 className="text-lg font-semibold text-red-600">Error al cargar retiros</h3>
-            <p className="text-sm text-gray-600 mt-2">{error}</p>
+            <p className="text-sm text-gray-600 mt-2">{error.message}</p>
             <Button
-              onClick={() => {
-                clearError()
-                refreshRetiros()
-              }}
+              onClick={() => refetch()}
               className="mt-4"
             >
               Intentar nuevamente
@@ -150,16 +140,19 @@ export default function RetirosPage() {
             <h2 className='text-2xl font-bold tracking-tight'>Gestión de Retiros</h2>
             <p className='text-muted-foreground'>
               Administra las solicitudes de retiro de usuarios.
-              {cantidadPendientes > 0 && (
+              {totalPendientes > 0 && (
                 <Badge variant="secondary" className="ml-2">
-                  {cantidadPendientes} pendiente(s)
+                  {totalPendientes} pendiente(s)
                 </Badge>
               )}
             </p>
           </div>
 
           <div className="flex items-center space-x-2">
-            <Select value={filtroEstado} onValueChange={handleFiltroEstado}>
+            <Select
+              value={filtroEstado}
+              onValueChange={(value) => setFiltroEstado(value as EstadoRetiro | 'todos')}
+            >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filtrar por estado" />
               </SelectTrigger>
@@ -171,28 +164,27 @@ export default function RetirosPage() {
               </SelectContent>
             </Select>
 
-            <Button variant="outline" onClick={refreshRetiros} disabled={loading}>
-              <IconRefresh className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              Actualizar
+            <Button variant="outline" size="icon" onClick={() => refetch()} disabled={isLoading}>
+              <IconRefresh className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             </Button>
-
-
-
-            {/* <Button variant="outline" disabled>
-              <IconDownload className="mr-2 h-4 w-4" />
-              Exportar
-            </Button> */}
           </div>
         </div>
 
 
-        <RetirosTable
-          data={retirosFiltrados}
-          columns={columns}
-          loading={loading}
-          onAprobarSeleccionados={handleAprobarSeleccionados}
-          onRechazarSeleccionados={handleRechazarSeleccionados}
-        />
+        <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
+          <RetirosTable
+            data={rows}
+            columns={columns}
+            total={total}
+            loading={isLoading}
+            pagination={pagination}
+            onPaginationChange={onPaginationChange}
+            globalFilter={globalFilter}
+            onGlobalFilterChange={onGlobalFilterChange}
+            onAprobarSeleccionados={handleAprobarSeleccionados}
+            onRechazarSeleccionados={handleRechazarSeleccionados}
+          />
+        </div>
 
       </Main>
 

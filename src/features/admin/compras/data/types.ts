@@ -144,3 +144,43 @@ export type MappedCompra = {
   requiereReembolso: boolean
   tiempoTranscurrido: string
 }
+
+// Parámetros del RPC `get_compras_admin`
+export type GetComprasAdminParams = {
+  search: string
+  estado: EstadoCompra | null
+  page: number
+  pageSize: number
+}
+
+// Fila cruda del RPC: igual a `MappedCompra` pero con las fechas como ISO string
+// (jsonb serializa los `timestamptz` a ISO 8601)
+export type CompraAdminRow = Omit<
+  MappedCompra,
+  'fechaCreacion' | 'fechaActualizacion' | 'fechaExpiracion'
+> & {
+  fechaCreacion: string
+  fechaActualizacion: string
+  fechaExpiracion: string | null
+}
+
+// Respuesta jsonb completa del RPC
+export type GetComprasAdminResponse = {
+  data: CompraAdminRow[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+  totalSoporte: number
+}
+
+// Resultado del listado ya mapeado para la tabla
+// (`fechaCreacion`/`fechaActualizacion`/`fechaExpiracion` como `Date`)
+export type ComprasPaginadas = {
+  compras: MappedCompra[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+  totalSoporte: number
+}

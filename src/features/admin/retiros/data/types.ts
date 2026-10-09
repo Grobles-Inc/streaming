@@ -65,3 +65,42 @@ export type MappedRetiro = {
   puedeModificar: boolean
   puedeAprobar: boolean // True si el saldo es suficiente
 }
+
+// Parámetros del RPC `get_retiros_admin`
+export type GetRetirosAdminParams = {
+  search: string
+  estado: EstadoRetiro | null
+  page: number
+  pageSize: number
+}
+
+// Fila cruda del RPC: igual a `MappedRetiro` pero con las fechas como ISO string
+// (jsonb serializa los `timestamptz` a ISO 8601)
+export type RetiroAdminRow = Omit<
+  MappedRetiro,
+  'fechaCreacion' | 'fechaActualizacion'
+> & {
+  fechaCreacion: string
+  fechaActualizacion: string
+}
+
+// Respuesta jsonb completa del RPC
+export type GetRetirosAdminResponse = {
+  data: RetiroAdminRow[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+  totalPendientes: number
+}
+
+// Resultado del listado ya mapeado para la tabla
+// (`fechaCreacion`/`fechaActualizacion` como `Date`)
+export type RetirosPaginados = {
+  retiros: MappedRetiro[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+  totalPendientes: number
+}

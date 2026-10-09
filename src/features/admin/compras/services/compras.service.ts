@@ -1,14 +1,55 @@
 import { supabase } from '@/lib/supabase'
-import type { 
-  SupabaseCompra, 
-  UpdateCompraData, 
+import type {
+  SupabaseCompra,
+  UpdateCompraData,
   CompraWithRelations,
   EstadoCompra,
   EstadisticasCompras,
-  FiltroCompra
+  FiltroCompra,
+  GetComprasAdminParams,
+  GetComprasAdminResponse,
+  ComprasPaginadas,
 } from '../data/types'
 
 export class ComprasService {
+  /**
+   * Lista de compras con paginación, búsqueda y filtro por estado resueltos en
+   * el servidor por el RPC `get_compras_admin`.
+   */
+  static async getComprasPaginadas(
+    params: GetComprasAdminParams
+  ): Promise<ComprasPaginadas> {
+    const { data, error } = await supabase.rpc('get_compras_admin', {
+      p_search: params.search || null,
+      p_estado: params.estado,
+      p_page: params.page,
+      p_page_size: params.pageSize,
+    })
+
+    if (error) {
+      console.error('Error fetching compras paginadas:', error)
+      throw error
+    }
+
+    const result = data as unknown as GetComprasAdminResponse | null
+
+    // El RPC devuelve las fechas como ISO string; la tabla y el modal esperan Date
+    const compras = (result?.data ?? []).map((compra) => ({
+      ...compra,
+      fechaCreacion: new Date(compra.fechaCreacion),
+      fechaActualizacion: new Date(compra.fechaActualizacion),
+      fechaExpiracion: compra.fechaExpiracion ? new Date(compra.fechaExpiracion) : null,
+    }))
+
+    return {
+      compras,
+      total: result?.total ?? 0,
+      page: result?.page ?? params.page,
+      pageSize: result?.pageSize ?? params.pageSize,
+      totalPages: result?.totalPages ?? 0,
+      totalSoporte: result?.totalSoporte ?? 0,
+    }
+  }
   // Obtener todas las compras con información relacionada
   static async getCompras(filtros?: FiltroCompra): Promise<CompraWithRelations[]> {
     console.log('🔍 ComprasService.getCompras called with filters:', filtros)

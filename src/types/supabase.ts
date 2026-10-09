@@ -530,6 +530,24 @@ export interface Database {
         }
         Returns: Json
       }
+      get_retiros_admin: {
+        Args: {
+          p_search?: string | null
+          p_estado?: string | null
+          p_page?: number | null
+          p_page_size?: number | null
+        }
+        Returns: Json
+      }
+      get_compras_admin: {
+        Args: {
+          p_search?: string | null
+          p_estado?: string | null
+          p_page?: number | null
+          p_page_size?: number | null
+        }
+        Returns: Json
+      }
       get_pedidos_proveedor: {
         Args: {
           p_proveedor_id: string

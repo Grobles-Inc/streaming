@@ -1,16 +1,7 @@
-import { useState } from 'react'
-import {
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
-  type ColumnFiltersState,
-  type SortingState,
-  type VisibilityState,
-} from '@tanstack/react-table'
+import { CustomEmpty } from '@/components/custom-empty'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -19,73 +10,85 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { 
-  IconChevronDown, 
-  IconChevronLeft, 
-  IconChevronRight,
-  IconChevronsLeft,
-  IconChevronsRight,
-  IconSearch,
   IconCheck,
+  IconInbox,
+  IconLoader2,
+  IconSearch,
   IconX
 } from '@tabler/icons-react'
-import { Badge } from '@/components/ui/badge'
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  type ColumnDef,
+  type OnChangeFn,
+  type PaginationState,
+  type VisibilityState,
+} from '@tanstack/react-table'
+import { useState } from 'react'
 import type { MappedRetiro } from '../data/types'
+import { DataTablePagination } from './data-table-pagination'
 
 interface RetirosTableProps {
   data: MappedRetiro[]
   columns: ColumnDef<MappedRetiro>[]
+  /** Total de filas que devuelve el servidor para los filtros activos. */
+  total: number
   loading?: boolean
+  pagination: PaginationState
+  onPaginationChange: OnChangeFn<PaginationState>
+  globalFilter: string
+  onGlobalFilterChange: OnChangeFn<string>
   onAprobarSeleccionados?: (ids: number[]) => Promise<void>
   onRechazarSeleccionados?: (ids: number[]) => Promise<void>
 }
 
-export function RetirosTable({ 
-  data, 
-  columns, 
+export function RetirosTable({
+  data,
+  columns,
+  total,
   loading = false,
+  pagination,
+  onPaginationChange,
+  globalFilter,
+  onGlobalFilterChange,
   onAprobarSeleccionados,
-  onRechazarSeleccionados 
+  onRechazarSeleccionados,
 }: RetirosTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
 
   const table = useReactTable({
     data,
     columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
+    // Búsqueda y paginación se resuelven en el servidor vía RPC; la tabla solo
+    // refleja el estado y lo propaga hacia arriba.
+    manualPagination: true,
+    manualFiltering: true,
+    rowCount: total,
+    // Id estable para que la selección sobreviva al cambio de página
+    getRowId: (row) => String(row.id),
+    enableRowSelection: true,
+    enableGlobalFilter: true,
+    onPaginationChange,
+    onGlobalFilterChange,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    initialState: {
-      pagination: {
-        pageSize: 200,
-      },
-    },
     state: {
-      sorting,
-      columnFilters,
+      pagination,
+      globalFilter,
       columnVisibility,
       rowSelection,
     },
+    getCoreRowModel: getCoreRowModel(),
   })
 
-  const selectedRows = table.getFilteredSelectedRowModel().rows
-  const selectedRetiros = selectedRows.map(row => row.original)
+  // Paginación manual: no hay `getFilteredRowModel`; la selección es de la página actual.
+  const selectedRetiros = table
+    .getRowModel()
+    .rows.filter((row) => row.getIsSelected())
+    .map((row) => row.original)
   const selectedPendientes = selectedRetiros.filter(r => r.estado === 'pendiente')
   const selectedAprobables = selectedPendientes.filter(r => r.puedeAprobar)
   const selectedNoAprobables = selectedPendientes.filter(r => !r.puedeAprobar)
@@ -104,19 +107,6 @@ export function RetirosTable({
     }
   }
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="h-10 bg-gray-200 rounded animate-pulse" />
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-16 bg-gray-100 rounded animate-pulse" />
-          ))}
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="w-full space-y-4">
       {/* Barra de herramientas */}
@@ -126,37 +116,11 @@ export function RetirosTable({
             <IconSearch className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por usuario..."
-              value={(table.getColumn('usuarioNombre')?.getFilterValue() as string) ?? ''}
-              onChange={(event) =>
-                table.getColumn('usuarioNombre')?.setFilterValue(event.target.value)
-              }
-              className="pl-8 max-w-sm"
+              value={globalFilter}
+              onChange={(event) => onGlobalFilterChange(event.target.value)}
+              className="pl-8 max-w-md"
             />
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                Columnas <IconChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  )
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
 
         {/* Acciones masivas */}
@@ -235,86 +199,31 @@ export function RetirosTable({
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No se encontraron retiros.
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={columns.length} className="p-0">
+                  <div className="flex flex-col items-center gap-6 py-10">
+                    {loading ? (
+                      <CustomEmpty
+                        title="Cargando retiros..."
+                        description="Estamos obteniendo las solicitudes de retiro."
+                        icon={<IconLoader2 className="size-10 animate-spin" />}
+                      />
+                    ) : (
+                      <CustomEmpty
+                        title="No hay retiros disponibles"
+                        description="No se encontraron retiros con los filtros actuales."
+                        icon={<IconInbox className="size-10" />}
+                      />
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
+      <DataTablePagination table={table} total={total} />
 
-      {/* Paginación */}
-      <div className="flex items-center justify-between space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} de{' '}
-          {table.getFilteredRowModel().rows.length} fila(s) seleccionada(s).
-        </div>
-        <div className="flex items-center space-x-6 lg:space-x-8">
-          <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">Filas por página</p>
-            <select
-              value={table.getState().pagination.pageSize}
-              onChange={(e) => {
-                table.setPageSize(Number(e.target.value))
-              }}
-              className="h-8 w-[80px] rounded border border-input bg-background px-3 py-1 text-sm"
-            >
-              {[10, 20, 50, 100, 200].map((pageSize) => (
-                <option key={pageSize} value={pageSize}>
-                  {pageSize}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-            Página {table.getState().pagination.pageIndex + 1} de{' '}
-            {table.getPageCount()}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              className="hidden h-8 w-8 p-0 lg:flex"
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <span className="sr-only">Ir a la primera página</span>
-              <IconChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              className="h-8 w-8 p-0"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <span className="sr-only">Ir a la página anterior</span>
-              <IconChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              className="h-8 w-8 p-0"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <span className="sr-only">Ir a la página siguiente</span>
-              <IconChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              className="hidden h-8 w-8 p-0 lg:flex"
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
-            >
-              <span className="sr-only">Ir a la última página</span>
-              <IconChevronsRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }

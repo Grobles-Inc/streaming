@@ -19,8 +19,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import { CustomEmpty } from '@/components/custom-empty'
 import { Input } from '@/components/ui/input'
-import { Skeleton } from '@/components/ui/skeleton'
 import {
   Select,
   SelectContent,
@@ -42,7 +42,9 @@ import {
   ChevronsRight,
   Trash,
   Search,
-  Filter
+  Filter,
+  Loader2,
+  PackageSearch
 } from 'lucide-react'
 import { useProductos } from '../hooks/use-productos'
 import { ProductoDetailsModal } from './producto-details-modal'
@@ -117,7 +119,7 @@ export function ProductosTable() {
     },
     initialState: {
       pagination: {
-        pageSize: 200, // Cargar más filas por defecto para mostrar "todas"
+        pageSize: 50,
       },
     },
   })
@@ -133,22 +135,6 @@ export function ProductosTable() {
       await refreshProductos()
       setRowSelection({})
     }
-  }
-
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-10 w-32" />
-        </div>
-        <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full" />
-          ))}
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -272,12 +258,23 @@ export function ProductosTable() {
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No se encontraron productos.
+              <TableRow className='hover:bg-transparent'>
+                <TableCell colSpan={columns.length} className='p-0'>
+                  <div className='flex flex-col items-center gap-6 py-10'>
+                    {loading ? (
+                      <CustomEmpty
+                        title='Cargando productos...'
+                        description='Estamos obteniendo el listado de productos.'
+                        icon={<Loader2 className='size-10 animate-spin' />}
+                      />
+                    ) : (
+                      <CustomEmpty
+                        title='No hay productos disponibles'
+                        description='No se encontraron productos con los filtros actuales.'
+                        icon={<PackageSearch className='size-10' />}
+                      />
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             )}

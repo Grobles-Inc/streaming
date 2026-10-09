@@ -14,6 +14,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 
+import { CustomEmpty } from '@/components/custom-empty'
 import {
   Table,
   TableBody,
@@ -22,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Loader2, Wallet } from 'lucide-react'
 
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
@@ -29,11 +31,13 @@ import { DataTableToolbar } from './data-table-toolbar'
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  isLoading?: boolean
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  isLoading = false,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
@@ -54,7 +58,7 @@ export function DataTable<TData, TValue>({
     },
     initialState: {
       pagination: {
-        pageSize: 200,
+        pageSize: 50,
       },
     },
     enableRowSelection: true,
@@ -119,12 +123,23 @@ export function DataTable<TData, TValue>({
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='h-24 text-center'
-                >
-                  No hay transacciones.
+              <TableRow className='hover:bg-transparent'>
+                <TableCell colSpan={columns.length} className='p-0'>
+                  <div className='flex flex-col items-center gap-6 py-10'>
+                    {isLoading ? (
+                      <CustomEmpty
+                        title='Cargando transacciones...'
+                        description='Estamos obteniendo el historial de tu billetera.'
+                        icon={<Loader2 className='size-10 animate-spin' />}
+                      />
+                    ) : (
+                      <CustomEmpty
+                        title='No hay transacciones disponibles'
+                        description='Aún no tienes movimientos en tu billetera.'
+                        icon={<Wallet className='size-10' />}
+                      />
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             )}

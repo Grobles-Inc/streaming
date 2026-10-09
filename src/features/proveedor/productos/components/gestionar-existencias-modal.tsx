@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import { CustomEmpty } from '@/components/custom-empty'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { IconPlus, IconEdit, IconTrash, IconPackage, IconEye, IconEyeOff, IconDots } from '@tabler/icons-react'
+import { IconPlus, IconEdit, IconTrash, IconPackage, IconEye, IconEyeOff, IconDots, IconLoader2 } from '@tabler/icons-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -217,10 +217,12 @@ export function GestionarExistenciasModal({
 
             {/* Tabla de stock */}
             {isLoading ? (
-              <div className="p-4 space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
+              <div className='flex flex-col items-center gap-6 p-4'>
+                <CustomEmpty
+                  title='Cargando existencias...'
+                  description='Estamos obteniendo el stock del producto.'
+                  icon={<IconLoader2 className='size-10 animate-spin' />}
+                />
               </div>
             ) : error ? (
               <Alert variant="destructive" className="m-4">
@@ -360,12 +362,12 @@ export function GestionarExistenciasModal({
                 </Table>
               </div>
             ) : (
-              <div className="text-center py-12">
-                <IconPackage size={48} className="mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No hay existencias</h3>
-                <p className="text-muted-foreground mb-4">
-                  Este producto no tiene stock agregado aún
-                </p>
+              <div className='flex flex-col items-center gap-6 py-12'>
+                <CustomEmpty
+                  title='No hay existencias'
+                  description='Este producto no tiene stock agregado aún.'
+                  icon={<IconPackage className='size-10' />}
+                />
                 <Button onClick={() => setShowAgregarStockDialog(true)}>
                   <IconPlus size={16} className="mr-2" />
                   Agregar Primera Existencia

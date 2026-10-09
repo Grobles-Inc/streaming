@@ -2,7 +2,15 @@ import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { ThemeSwitch } from '@/components/theme-switch'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   IconRefresh
 } from '@tabler/icons-react'
@@ -12,101 +20,84 @@ import { CompraDetailsModal } from './components/compra-details-modal'
 import { createComprasColumns } from './components/compras-columns'
 import { ComprasTable } from './components/compras-table'
 import type { EstadoCompra, MappedCompra } from './data/types'
-import { useCompras } from './hooks/use-compras'
+import { useComprasTabla } from './hooks/use-compras-tabla'
+import { useCambiarEstadoCompra, useCambiarEstadoMasivo } from './queries'
 
 export function ComprasPage() {
-  const [searchTerm, _setSearchTerm] = useState('')
-  const [selectedStatus, _setSelectedStatus] = useState<EstadoCompra | 'all'>('all')
+  const [selectedStatus, setSelectedStatus] = useState<EstadoCompra | 'all'>('all')
   const [selectedCompra, setSelectedCompra] = useState<MappedCompra | null>(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
 
   const {
-    compras,
-    loading,
+    rows,
+    total,
+    totalSoporte,
+    isLoading,
     error,
-    marcarComoResuelto,
-    marcarComoVencido,
-    enviarASoporte,
-    procesarReembolso,
-    refreshCompras,
-  } = useCompras()
+    refetch,
+    pagination,
+    globalFilter,
+    onPaginationChange,
+    onGlobalFilterChange,
+  } = useComprasTabla(selectedStatus === 'all' ? null : selectedStatus)
 
-  // Filtrar compras
-  const comprasFiltradas = compras.filter(compra => {
-    const matchesSearch = searchTerm === '' ||
-      compra.nombreCliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      compra.productoNombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      compra.proveedorNombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (compra.vendedorNombre && compra.vendedorNombre.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      compra.telefonoCliente.includes(searchTerm)
-
-    const matchesStatus = selectedStatus === 'all' || compra.estado === selectedStatus
-
-    return matchesSearch && matchesStatus
-  })
+  const cambiarEstado = useCambiarEstadoCompra()
+  const cambiarEstadoMasivo = useCambiarEstadoMasivo()
 
   // Manejar acciones con useCallback para evitar re-renders
   const handleMarcarResuelto = useCallback(async (id: number) => {
     try {
-      const result = await marcarComoResuelto(id)
-      if (result.success) {
-        toast.success('Compra marcada como resuelta', {
-          description: 'El estado de la compra ha sido actualizado correctamente.'
-        })
-      }
-    } catch (error) {
+      await cambiarEstado.mutateAsync({ id, estado: 'resuelto' })
+      toast.success('Compra marcada como resuelta', {
+        description: 'El estado de la compra ha sido actualizado correctamente.'
+      })
+    } catch {
       toast.error('Error al actualizar el estado', {
         description: 'No se pudo actualizar el estado de la compra.'
       })
     }
-  }, [marcarComoResuelto])
+  }, [cambiarEstado])
 
   const handleMarcarVencido = useCallback(async (id: number) => {
     try {
-      const result = await marcarComoVencido(id)
-      if (result.success) {
-        toast.success('Compra marcada como vencida', {
-          description: 'El estado de la compra ha sido actualizado correctamente.'
-        })
-      }
-    } catch (error) {
+      await cambiarEstado.mutateAsync({ id, estado: 'vencido' })
+      toast.success('Compra marcada como vencida', {
+        description: 'El estado de la compra ha sido actualizado correctamente.'
+      })
+    } catch {
       toast.error('Error al actualizar el estado', {
         description: 'No se pudo actualizar el estado de la compra.'
       })
     }
-  }, [marcarComoVencido])
+  }, [cambiarEstado])
 
   const handleEnviarASoporte = useCallback(async (id: number) => {
     try {
-      const result = await enviarASoporte(id)
-      if (result.success) {
-        toast.success('Compra enviada a soporte', {
-          description: 'El estado de la compra ha sido actualizado correctamente.'
-        })
-      }
-    } catch (error) {
+      await cambiarEstado.mutateAsync({ id, estado: 'soporte' })
+      toast.success('Compra enviada a soporte', {
+        description: 'El estado de la compra ha sido actualizado correctamente.'
+      })
+    } catch {
       toast.error('Error al actualizar el estado', {
         description: 'No se pudo actualizar el estado de la compra.'
       })
     }
-  }, [enviarASoporte])
+  }, [cambiarEstado])
 
   const handleProcesarReembolso = useCallback(async (id: number) => {
     try {
-      const result = await procesarReembolso(id)
-      if (result.success) {
-        toast.success('Reembolso procesado', {
-          description: result.reembolsoProcessed
-            ? `Se ha reembolsado $. ${result.reembolsoAmount?.toFixed(2)} al usuario.`
-            : 'El estado de la compra ha sido actualizado correctamente.'
-        })
-      }
-    } catch (error) {
+      const result = await cambiarEstado.mutateAsync({ id, estado: 'reembolsado' })
+      toast.success('Reembolso procesado', {
+        description: result.reembolsoProcessed
+          ? `Se ha reembolsado $. ${result.reembolsoAmount?.toFixed(2)} al usuario.`
+          : 'El estado de la compra ha sido actualizado correctamente.'
+      })
+    } catch {
       toast.error('Error al procesar reembolso', {
         description: 'No se pudo procesar el reembolso.'
       })
     }
-  }, [procesarReembolso])
+  }, [cambiarEstado])
 
   const handleVerDetalles = useCallback((compra: MappedCompra) => {
     setSelectedCompra(compra)
@@ -115,16 +106,16 @@ export function ComprasPage() {
 
   const handleRefresh = useCallback(async () => {
     try {
-      await refreshCompras()
+      await refetch()
       toast.success('Datos actualizados', {
         description: 'La información de compras ha sido actualizada.'
       })
-    } catch (error) {
+    } catch {
       toast.error('Error al actualizar', {
         description: 'No se pudieron actualizar los datos.'
       })
     }
-  }, [refreshCompras])
+  }, [refetch])
 
   // Crear columnas con las acciones usando useMemo
   const columns = useMemo(() => createComprasColumns(
@@ -153,48 +144,35 @@ export function ComprasPage() {
     }
   }, [])
 
-  // Función para cambiar estado masivo
+  // Función para cambiar estado masivo (la selección vive en la página actual)
   const handleCambiarEstadoMasivo = useCallback(async (ids: number[], estado: EstadoCompra) => {
     try {
       // Filtrar solo las compras que pueden cambiar al estado solicitado
-      const comprasValidas = compras.filter(compra => 
+      const comprasValidas = rows.filter(compra =>
         ids.includes(compra.id) && puedecambiarAEstado(compra.estado, estado)
       )
-      
+
       if (comprasValidas.length === 0) {
         toast.error('Ninguna de las compras seleccionadas puede cambiar a este estado')
         return
       }
-      
+
       if (comprasValidas.length < ids.length) {
         toast.warning(`Solo ${comprasValidas.length} de ${ids.length} compras pueden cambiar a este estado`)
       }
-      
-      const promises = comprasValidas.map(compra => {
-        switch (estado) {
-          case 'resuelto':
-            return marcarComoResuelto(compra.id)
-          case 'vencido':
-            return marcarComoVencido(compra.id)
-          case 'soporte':
-            return enviarASoporte(compra.id)
-          case 'reembolsado':
-            return procesarReembolso(compra.id)
-          default:
-            return Promise.resolve({ success: false })
-        }
+
+      const result = await cambiarEstadoMasivo.mutateAsync({
+        ids: comprasValidas.map(c => c.id),
+        estado,
       })
-      
-      const results = await Promise.allSettled(promises)
-      const successCount = results.filter(r => r.status === 'fulfilled').length
-      
-      if (successCount > 0) {
-        toast.success(`${successCount} compras actualizadas exitosamente`)
+
+      if (result.success > 0) {
+        toast.success(`${result.success} compras actualizadas exitosamente`)
       }
-    } catch (error) {
+    } catch {
       toast.error('Error al actualizar las compras')
     }
-  }, [compras, puedecambiarAEstado, marcarComoResuelto, marcarComoVencido, enviarASoporte, procesarReembolso])
+  }, [rows, puedecambiarAEstado, cambiarEstadoMasivo])
 
   return (
     <>
@@ -210,16 +188,37 @@ export function ComprasPage() {
             <h2 className='text-2xl font-bold tracking-tight'>Gestión de Compras</h2>
             <p className='text-muted-foreground'>
               Administra todas las compras, edita estados y procesa reembolsos
+              {totalSoporte > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  {totalSoporte} en soporte
+                </Badge>
+              )}
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Select
+              value={selectedStatus}
+              onValueChange={(value) => setSelectedStatus(value as EstadoCompra | 'all')}
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Todos los estados" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectItem value="pedido_entregado">Pedido entregado</SelectItem>
+                <SelectItem value="soporte">Soporte</SelectItem>
+                <SelectItem value="reembolsado">Reembolsado</SelectItem>
+                <SelectItem value="resuelto">Resuelto</SelectItem>
+                <SelectItem value="vencido">Vencido</SelectItem>
+              </SelectContent>
+            </Select>
             <Button
               variant="outline"
               size="icon"
               onClick={handleRefresh}
-              disabled={loading}
+              disabled={isLoading}
             >
-              <IconRefresh className="h-4 w-4" />
+              <IconRefresh className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             </Button>
           </div>
         </div>
@@ -228,7 +227,7 @@ export function ComprasPage() {
 
           {error ? (
             <div className="text-center py-8">
-              <p className="text-red-600 mb-4">Error: {error}</p>
+              <p className="text-red-600 mb-4">Error: {error.message}</p>
               <Button onClick={handleRefresh} variant="outline">
                 <IconRefresh className="h-4 w-4 mr-2" />
                 Reintentar
@@ -236,9 +235,14 @@ export function ComprasPage() {
             </div>
           ) : (
             <ComprasTable
-              data={comprasFiltradas}
+              data={rows}
               columns={columns}
-              loading={loading}
+              total={total}
+              loading={isLoading}
+              pagination={pagination}
+              onPaginationChange={onPaginationChange}
+              globalFilter={globalFilter}
+              onGlobalFilterChange={onGlobalFilterChange}
               onCambiarEstadoMasivo={handleCambiarEstadoMasivo}
             />
           )}

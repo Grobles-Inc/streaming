@@ -21,7 +21,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Skeleton } from '@/components/ui/skeleton'
+import { CustomEmpty } from '@/components/custom-empty'
+import { Loader2, ShoppingBag } from 'lucide-react'
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
 import { useAuth } from '@/stores/authStore'
@@ -82,7 +83,7 @@ export function DataTable<TData, TValue>({
     },
     initialState: {
       pagination: {
-        pageSize: 200,
+        pageSize: 50,
       },
     },
     enableRowSelection: true,
@@ -124,17 +125,7 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={`loading-${i}`}>
-                  {columns.map((_, colIndex) => (
-                    <TableCell key={`loading-cell-${i}-${colIndex}`}>
-                      <Skeleton className="h-4 w-full" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -151,12 +142,23 @@ export function DataTable<TData, TValue>({
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='h-24 text-center'
-                >
-                  No hay resultados.
+              <TableRow className='hover:bg-transparent'>
+                <TableCell colSpan={columns.length} className='p-0'>
+                  <div className='flex flex-col items-center gap-6 py-10'>
+                    {isLoading ? (
+                      <CustomEmpty
+                        title='Cargando compras...'
+                        description='Estamos obteniendo el listado de tus compras.'
+                        icon={<Loader2 className='size-10 animate-spin' />}
+                      />
+                    ) : (
+                      <CustomEmpty
+                        title='No hay compras disponibles'
+                        description='No se encontraron compras con los filtros actuales.'
+                        icon={<ShoppingBag className='size-10' />}
+                      />
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             )}

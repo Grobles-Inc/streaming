@@ -25,7 +25,7 @@ export default function BilleterasPage() {
 
   // Obtener datos reales de la base de datos
   const { data: billetera } = useBilleteraByUsuario(user?.id || '')
-  const { data: transacciones = [] } = useHistorialTransacciones(user?.id || '')
+  const { data: transacciones = [], isLoading: isLoadingTransacciones } = useHistorialTransacciones(user?.id || '')
   const { data: configuracion } = useConfiguracionSistema()
 
   // Si no hay usuario autenticado
@@ -162,7 +162,7 @@ export default function BilleterasPage() {
               Retirar Fondos
             </Button>
           </div>
-          <DataTable columns={columns} data={transacciones} />
+          <DataTable columns={columns} data={transacciones} isLoading={isLoadingTransacciones} />
 
           {/* Modales */}
           <AgregarFondosModal

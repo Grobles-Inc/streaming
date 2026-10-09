@@ -3,7 +3,6 @@ import { AlertTriangle } from 'lucide-react'
 import { useAuth } from '@/stores/authStore'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProductoFormDialog } from './components/producto-form'
@@ -63,29 +62,11 @@ export function ProductosPage() {
             />
           </div>
         </div>
-        {isLoading ? (
-          <div className='space-y-4'>
-            <Skeleton className='h-10 w-full' />
-            <Skeleton className='h-10 w-full' />
-            <Skeleton className='h-10 w-full' />
-            <Skeleton className='h-10 w-full' />
-            <Skeleton className='h-10 w-full' />
-          </div>
-        ) : productos && productos.length > 0 ? (
-          <ProductosTable
-            columns={columns}
-            data={productList || ([] as Producto[])}
-          />
-        ) : (
-          <div className='py-12 text-center'>
-            <p className='text-muted-foreground mb-4'>
-              No tienes productos registrados
-            </p>
-            <p className='text-muted-foreground text-sm'>
-              Comienza agregando tu primer producto para comenzar a vender
-            </p>
-          </div>
-        )}
+        <ProductosTable
+          columns={columns}
+          data={productList || ([] as Producto[])}
+          isLoading={isLoading}
+        />
       </div>
     </Main>
   )

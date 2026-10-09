@@ -1,3 +1,4 @@
+import { CustomEmpty } from '@/components/custom-empty'
 import {
   Table,
   TableBody,
@@ -7,6 +8,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useAuth } from '@/stores/authStore'
+import { Inbox, Loader2 } from 'lucide-react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -25,7 +27,6 @@ import * as React from 'react'
 import { useRecargasByVendedor } from '../queries'
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
-import { Skeleton } from '@/components/ui/skeleton'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -57,7 +58,7 @@ export function DataTable<TData, TValue>({
     },
     initialState: {
       pagination: {
-        pageSize: 200,
+        pageSize: 50,
       },
     },
     enableRowSelection: true,
@@ -97,17 +98,7 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={`loading-${i}`}>
-                  {columns.map((_, colIndex) => (
-                    <TableCell key={`loading-cell-${i}-${colIndex}`}>
-                      <Skeleton className="h-4 w-full" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -124,12 +115,23 @@ export function DataTable<TData, TValue>({
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='h-24 text-center'
-                >
-                  No hay resultados.
+              <TableRow className='hover:bg-transparent'>
+                <TableCell colSpan={columns.length} className='p-0'>
+                  <div className='flex flex-col items-center gap-6 py-10'>
+                    {isLoading ? (
+                      <CustomEmpty
+                        title='Cargando recargas...'
+                        description='Estamos obteniendo el listado de recargas.'
+                        icon={<Loader2 className='size-10 animate-spin' />}
+                      />
+                    ) : (
+                      <CustomEmpty
+                        title='No hay recargas disponibles'
+                        description='No se encontraron recargas con los filtros actuales.'
+                        icon={<Inbox className='size-10' />}
+                      />
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             )}

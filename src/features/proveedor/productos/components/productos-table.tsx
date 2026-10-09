@@ -14,6 +14,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import { CustomEmpty } from '@/components/custom-empty'
 import {
   Table,
   TableBody,
@@ -22,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Loader2, PackageSearch } from 'lucide-react'
 import type { Producto } from '../data/schema'
 import { DataTablePagination } from './data-table-pagination'
 import { DataTableToolbar } from './data-table-toolbar'
@@ -36,9 +38,10 @@ declare module '@tanstack/react-table' {
 interface ProductosTableProps {
   columns: ColumnDef<Producto>[]
   data: Producto[]
+  isLoading?: boolean
 }
 
-export function ProductosTable({ columns, data }: ProductosTableProps) {
+export function ProductosTable({ columns, data, isLoading = false }: ProductosTableProps) {
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -55,7 +58,7 @@ export function ProductosTable({ columns, data }: ProductosTableProps) {
     },
     initialState: {
       pagination: {
-        pageSize: 200,
+        pageSize: 50,
       },
     },
     enableRowSelection: true,
@@ -120,12 +123,23 @@ export function ProductosTable({ columns, data }: ProductosTableProps) {
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='h-24 text-center'
-                >
-                  No hay productos disponibles.
+              <TableRow className='hover:bg-transparent'>
+                <TableCell colSpan={columns.length} className='p-0'>
+                  <div className='flex flex-col items-center gap-6 py-10'>
+                    {isLoading ? (
+                      <CustomEmpty
+                        title='Cargando productos...'
+                        description='Estamos obteniendo el listado de productos.'
+                        icon={<Loader2 className='size-10 animate-spin' />}
+                      />
+                    ) : (
+                      <CustomEmpty
+                        title='No hay productos disponibles'
+                        description='No se encontraron productos con los filtros actuales.'
+                        icon={<PackageSearch className='size-10' />}
+                      />
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             )}

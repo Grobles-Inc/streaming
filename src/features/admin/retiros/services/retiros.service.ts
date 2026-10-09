@@ -1,15 +1,55 @@
 import { supabase } from '@/lib/supabase'
 import { procesarRetiroAprobado } from '@/features/proveedor/billetera/services'
-import type { 
-  SupabaseRetiro, 
-  UpdateRetiroData, 
+import type {
+  SupabaseRetiro,
+  UpdateRetiroData,
   RetiroWithUser,
   EstadoRetiro,
   EstadisticasRetiros,
-  FiltroRetiro
+  FiltroRetiro,
+  GetRetirosAdminParams,
+  GetRetirosAdminResponse,
+  RetirosPaginados,
 } from '../data/types'
 
 export class RetirosService {
+  /**
+   * Lista de retiros con paginación, búsqueda y filtro por estado resueltos en
+   * el servidor por el RPC `get_retiros_admin`.
+   */
+  static async getRetirosPaginados(
+    params: GetRetirosAdminParams
+  ): Promise<RetirosPaginados> {
+    const { data, error } = await supabase.rpc('get_retiros_admin', {
+      p_search: params.search || null,
+      p_estado: params.estado,
+      p_page: params.page,
+      p_page_size: params.pageSize,
+    })
+
+    if (error) {
+      console.error('Error fetching retiros paginados:', error)
+      throw error
+    }
+
+    const result = data as unknown as GetRetirosAdminResponse | null
+
+    // El RPC devuelve las fechas como ISO string; la tabla y el modal esperan Date
+    const retiros = (result?.data ?? []).map((retiro) => ({
+      ...retiro,
+      fechaCreacion: new Date(retiro.fechaCreacion),
+      fechaActualizacion: new Date(retiro.fechaActualizacion),
+    }))
+
+    return {
+      retiros,
+      total: result?.total ?? 0,
+      page: result?.page ?? params.page,
+      pageSize: result?.pageSize ?? params.pageSize,
+      totalPages: result?.totalPages ?? 0,
+      totalPendientes: result?.totalPendientes ?? 0,
+    }
+  }
   // Función de prueba para verificar la conectividad
   static async testConnection(): Promise<void> {
     console.log('🔍 Testing database connection...')

@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu'
-import { IconSettings } from '@tabler/icons-react'
+import { Columns3 } from 'lucide-react'
 import { Table } from '@tanstack/react-table'
 
 interface DataTableViewOptionsProps<TData> {
@@ -25,7 +25,7 @@ export function DataTableViewOptions<TData>({
           size='icon'
           className='ml-auto hidden h-8 lg:flex'
         >
-          <IconSettings />
+          <Columns3 className='h-4 w-4' />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='w-[150px]'>

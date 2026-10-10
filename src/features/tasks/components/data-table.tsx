@@ -13,6 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import { CustomEmpty } from '@/components/custom-empty'
 import {
   Table,
   TableBody,
@@ -21,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { ListChecks } from 'lucide-react'
 import { DataTablePagination } from '../components/data-table-pagination'
 import { DataTableToolbar } from '../components/data-table-toolbar'
 
@@ -49,6 +51,11 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
       columnFilters,
+    },
+    initialState: {
+      pagination: {
+        pageSize: 50,
+      },
     },
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
@@ -104,12 +111,15 @@ export function DataTable<TData, TValue>({
                 </TableRow>
               ))
             ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className='h-24 text-center'
-                >
-                  No results.
+              <TableRow className='hover:bg-transparent'>
+                <TableCell colSpan={columns.length} className='p-0'>
+                  <div className='flex flex-col items-center gap-6 py-10'>
+                    <CustomEmpty
+                      title='No hay tareas disponibles'
+                      description='No se encontraron tareas con los filtros actuales.'
+                      icon={<ListChecks className='size-10' />}
+                    />
+                  </div>
                 </TableCell>
               </TableRow>
             )}

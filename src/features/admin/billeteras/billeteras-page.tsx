@@ -1,8 +1,5 @@
 import { useState } from 'react'
-import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
@@ -111,13 +108,6 @@ export default function BilleterasPage() {
   }
 
   return (
-    <>
-      <Header fixed>
-        <div className='ml-auto flex items-center space-x-4'>
-          <ThemeSwitch />
-          <ProfileDropdown />
-        </div>
-      </Header>
       <Main className='space-y-4'>
         <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
           <div>
@@ -277,6 +267,5 @@ export default function BilleterasPage() {
         />
 
       </Main>
-    </>
   )
 }

@@ -1,5 +1,7 @@
+import { CustomEmpty } from '@/components/custom-empty'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Loader2, Users } from 'lucide-react'
 import type { Usuario } from '../data/types'
 
 interface UsuariosTableProps {
@@ -9,28 +11,6 @@ interface UsuariosTableProps {
 }
 
 export function UsuariosTable({ usuarios, loading }: UsuariosTableProps) {
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Usuarios</CardTitle>
-          <CardDescription>Lista de usuarios registrados</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center space-x-4">
-                <div className="h-4 bg-gray-200 rounded w-32 animate-pulse" />
-                <div className="h-4 bg-gray-200 rounded w-48 animate-pulse" />
-                <div className="h-4 bg-gray-200 rounded w-20 animate-pulse" />
-                <div className="h-4 bg-gray-200 rounded w-16 animate-pulse" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
 
   const getRolBadgeVariant = (rol: string) => {
     switch (rol) {
@@ -71,7 +51,32 @@ export function UsuariosTable({ usuarios, loading }: UsuariosTableProps) {
               </tr>
             </thead>
             <tbody>
-              {usuarios.map((usuario) => (
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className='p-0'>
+                    <div className='flex flex-col items-center gap-6 py-10'>
+                      <CustomEmpty
+                        title='Cargando usuarios...'
+                        description='Estamos obteniendo el listado de usuarios.'
+                        icon={<Loader2 className='size-10 animate-spin' />}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ) : usuarios.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className='p-0'>
+                    <div className='flex flex-col items-center gap-6 py-10'>
+                      <CustomEmpty
+                        title='No hay usuarios disponibles'
+                        description='No se encontraron usuarios con los filtros actuales.'
+                        icon={<Users className='size-10' />}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+              usuarios.map((usuario) => (
                 <tr key={usuario.id} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-2 border-r">
                     {usuario.nombres} {usuario.apellidos}
@@ -113,7 +118,7 @@ export function UsuariosTable({ usuarios, loading }: UsuariosTableProps) {
                     </div>
                   </td> */}
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

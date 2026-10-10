@@ -3,11 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-
-import { ThemeSwitch } from '@/components/theme-switch'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { useConfiguracion } from './hooks/use-configuracion'
@@ -96,13 +92,6 @@ export default function ConfiguracionSistemaPage() {
 
   if (loading) {
     return (
-      <>
-        <Header fixed>
-          <div className='ml-auto flex items-center space-x-4'>
-            <ThemeSwitch />
-            <ProfileDropdown />
-          </div>
-        </Header>
         <Main>
           <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
             <div>
@@ -125,29 +114,10 @@ export default function ConfiguracionSistemaPage() {
             ))}
           </div>
         </Main>
-      </>
     )
   }
 
   return (
-    <>
-      <Header fixed>
-        <div className='ml-auto flex items-center space-x-4'>
-          <ThemeSwitch />
-          <ProfileDropdown />
-          <Button
-            variant="outline"
-            onClick={() => setShowHistorial(!showHistorial)}
-          >
-            {showHistorial ? 'Ocultar' : 'Ver'} Historial
-          </Button>
-          {hasChanges && (
-            <Badge variant="secondary">
-              Cambios pendientes
-            </Badge>
-          )}
-        </div>
-      </Header>
       <Main>
         <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
           <div>
@@ -157,6 +127,19 @@ export default function ConfiguracionSistemaPage() {
             </p>
             {error && (
               <p className="text-sm text-destructive mt-1">{error}</p>
+            )}
+          </div>
+          <div className='flex items-center gap-2'>
+            <Button
+              variant="outline"
+              onClick={() => setShowHistorial(!showHistorial)}
+            >
+              {showHistorial ? 'Ocultar' : 'Ver'} Historial
+            </Button>
+            {hasChanges && (
+              <Badge variant="secondary">
+                Cambios pendientes
+              </Badge>
             )}
           </div>
         </div>
@@ -338,6 +321,5 @@ export default function ConfiguracionSistemaPage() {
           onConfirm={confirmMantenimientoChange}
         /> */}
       </Main>
-    </>
   )
 }

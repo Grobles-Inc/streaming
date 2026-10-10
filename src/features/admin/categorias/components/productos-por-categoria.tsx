@@ -3,7 +3,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { CustomEmpty } from '@/components/custom-empty'
 import { IconEye, IconTrash, IconMenu2 } from '@tabler/icons-react'
+import { Package } from 'lucide-react'
 import { CategoriasService } from '../services'
 import { ProductoDetailsModal } from './producto-details-modal'
 import { ProductoEditModal } from './producto-edit-modal'
@@ -25,7 +27,7 @@ export function ProductosPorCategoria({
   const [currentPage, setCurrentPage] = useState(0)
   const [productoDetalles, setProductoDetalles] = useState<Producto | null>(null)
   const [productoEditando, setProductoEditando] = useState<Producto | null>(null)
-  const itemsPerPage = 10
+  const itemsPerPage = 50
 
   const startIndex = currentPage * itemsPerPage
   const endIndex = startIndex + itemsPerPage
@@ -60,7 +62,16 @@ export function ProductosPorCategoria({
             </tr>
           </thead>
           <tbody>
-            {paginatedProductos.map(producto => (
+            {paginatedProductos.length === 0 ? (
+              <tr>
+                <td colSpan={7} className='p-0'>
+                  <div className='flex flex-col items-center gap-6 py-10'>
+                    <CustomEmpty title='No hay productos en esta categoría' description='Aún no se han agregado productos a esta categoría.' icon={<Package className='size-10' />} />
+                  </div>
+                </td>
+              </tr>
+            ) : (
+            paginatedProductos.map(producto => (
               <tr key={producto.id} className="border-b">
                 <td className="px-4 py-2 font-medium">{producto.nombre}</td>
                 <td className="px-4 py-2">{producto.descripcion || 'Sin descripción'}</td>
@@ -121,7 +132,7 @@ export function ProductosPorCategoria({
                   </DropdownMenu>
                 </td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
 

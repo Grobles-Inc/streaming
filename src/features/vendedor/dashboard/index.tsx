@@ -1,8 +1,4 @@
-import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { ThemeSwitch } from '@/components/theme-switch'
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -14,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useBilleteraByUsuario } from '@/queries'
 import { useAuthStore } from '@/stores/authStore'
-import { IconRefresh, IconWallet } from '@tabler/icons-react'
+import { IconWallet } from '@tabler/icons-react'
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import { useState } from 'react'
 import { useComprasByVendedor } from '../compras/queries'
@@ -35,21 +31,7 @@ export default function Dashboard() {
   const saldo = billetera?.saldo || 0
   const totalCompras = compras?.count || 0
   return (
-    <>
-      {/* ===== Top Heading ===== */}
-
-      <Header>
-        <div className='ml-auto flex items-center space-x-4'>
-          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()} >
-            <IconRefresh />
-          </Button>
-          <ThemeSwitch />
-          <ProfileDropdown />
-        </div>
-      </Header>
-
-      {/* ===== Main ===== */}
-      <Main className='space-y-4'>
+    <Main className='space-y-4'>
         <div className='mb-2 flex flex-col md:flex-row md:items-center justify-between space-y-2'>
           <div>
             <h1 className='text-2xl font-bold tracking-tight'>Dashboard</h1>
@@ -199,7 +181,6 @@ export default function Dashboard() {
           </Card>
         </div>
       </Main>
-    </>
   )
 }
 

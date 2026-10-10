@@ -3,6 +3,7 @@ import useDialogState from '@/hooks/use-dialog-state'
 import { MappedUser } from '../data/schema'
 import { useUsers as useSupabaseUsers } from '../hooks/use-users'
 import { CreateUserData, UpdateUserData } from '../services/users.service'
+import type { DeleteUserSmartResult } from '../api/delete-user-smart'
 
 type UsersDialogType = 'invite' | 'add' | 'edit' | 'delete' | 'view' | 'changeRole' | 'enable' | 'disabledUsers' | 'permanentDelete'
 
@@ -21,7 +22,7 @@ interface UsersContextType {
   setShowDisabledUsers: (show: boolean) => void
   createUser: (userData: CreateUserData) => Promise<MappedUser | null>
   updateUser: (id: string, userData: UpdateUserData) => Promise<MappedUser | null>
-  deleteUser: (id: string) => Promise<boolean>
+  deleteUser: (id: string) => Promise<DeleteUserSmartResult | null>
   enableUser: (id: string) => Promise<boolean>
   permanentDeleteUser: (id: string) => Promise<boolean>
   searchUsersByName: (name: string) => Promise<void>

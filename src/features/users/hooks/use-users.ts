@@ -3,6 +3,10 @@ import { useQueryClient } from '@tanstack/react-query'
 import { mapSupabaseUserToComponent, type MappedUser } from '../data/schema'
 import { USERS_QUERY_KEY } from '../queries'
 import {
+  deleteUserSmart,
+  type DeleteUserSmartResult,
+} from '../api/delete-user-smart'
+import {
   UsersService,
   type CreateUserData,
   type UpdateUserData,
@@ -108,25 +112,32 @@ export function useUsers() {
     }
   }
 
-  const deleteUser = async (id: string): Promise<boolean> => {
+  const deleteUser = async (
+    id: string
+  ): Promise<DeleteUserSmartResult | null> => {
     try {
-      await UsersService.deleteUser(id)
+      const result = await deleteUserSmart(id)
       invalidateUsersList()
-      // Remover de la lista de usuarios habilitados
-      setUsers((prev) => prev.filter((u) => u.id !== id))
-      // Si ya tenemos usuarios deshabilitados cargados, añadir el usuario a esa lista
-      const userWithWallet = await UsersService.getUserById(id)
-      if (userWithWallet && !userWithWallet.estado_habilitado) {
-        const mappedUser = mapSupabaseUserToComponent(userWithWallet)
-        setDisabledUsers((prev) => [mappedUser, ...prev])
+      if (result.action === 'hard_delete') {
+        // Hard delete: row is gone, drop from both lists.
+        setUsers((prev) => prev.filter((u) => u.id !== id))
+        setDisabledUsers((prev) => prev.filter((u) => u.id !== id))
+      } else {
+        // Soft delete: move from enabled to disabled list.
+        setUsers((prev) => prev.filter((u) => u.id !== id))
+        const userWithWallet = await UsersService.getUserById(id)
+        if (userWithWallet && !userWithWallet.estado_habilitado) {
+          const mappedUser = mapSupabaseUserToComponent(userWithWallet)
+          setDisabledUsers((prev) => [mappedUser, ...prev])
+        }
       }
-      return true
+      return result
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Error al deshabilitar usuario'
       )
-      console.error('Error disabling user:', err)
-      return false
+      console.error('Error deleting user:', err)
+      return null
     }
   }
 

@@ -1,7 +1,9 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { CustomEmpty } from '@/components/custom-empty'
 import { DotsVerticalIcon } from '@radix-ui/react-icons'
+import { Wallet } from 'lucide-react'
 import { 
   IconChevronLeft, 
   IconChevronRight,
@@ -19,7 +21,7 @@ interface BilleterasTableProps {
 
 export function BilleterasTable({ billeteras, onViewMovimientos }: BilleterasTableProps) {
   const [currentPage, setCurrentPage] = useState(0)
-  const [itemsPerPage, setItemsPerPage] = useState(200)
+  const [itemsPerPage, setItemsPerPage] = useState(50)
 
   const startIndex = currentPage * itemsPerPage
   const endIndex = startIndex + itemsPerPage
@@ -78,7 +80,16 @@ export function BilleterasTable({ billeteras, onViewMovimientos }: BilleterasTab
             </tr>
           </thead>
           <tbody>
-            {paginatedBilleteras.map(billetera => (
+            {paginatedBilleteras.length === 0 ? (
+              <tr>
+                <td colSpan={6} className='p-0'>
+                  <div className='flex flex-col items-center gap-6 py-10'>
+                    <CustomEmpty title='No hay billeteras disponibles' description='No se encontraron billeteras con los filtros actuales.' icon={<Wallet className='size-10' />} />
+                  </div>
+                </td>
+              </tr>
+            ) : (
+            paginatedBilleteras.map(billetera => (
               <tr key={billetera.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
                 <td className="px-4 py-3">
                   <div className="font-mono text-sm">
@@ -130,15 +141,9 @@ export function BilleterasTable({ billeteras, onViewMovimientos }: BilleterasTab
                   </DropdownMenu>
                 </td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
-
-        {billeteras.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            No se encontraron billeteras
-          </div>
-        )}
       </div>
 
       {/* Paginación mejorada */}

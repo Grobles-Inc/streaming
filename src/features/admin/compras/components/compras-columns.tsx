@@ -608,7 +608,6 @@ export function createComprasColumns(
     },
     {
       id: 'actions',
-      header: 'Acciones',
       enableHiding: false,
       cell: ({ row }) => (
         <ComprasTableActions

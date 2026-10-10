@@ -30,7 +30,7 @@ export function CategoriaFilters({ categorias, onFilter, className }: CategoriaF
 
   return (
     <div className={className}>
-      <div className="relative">
+      <div className="relative max-w-sm">
         <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <Input
           placeholder="Buscar categorías por nombre o descripción..."

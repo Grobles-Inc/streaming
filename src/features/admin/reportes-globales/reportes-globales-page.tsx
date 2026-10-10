@@ -1,8 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { IconCreditCard, IconUsers } from '@tabler/icons-react'
@@ -46,13 +43,6 @@ export default function ReportesGlobalesPage() {
   }
 
   return (
-    <>
-      <Header fixed>
-        <div className='ml-auto flex items-center space-x-4'>
-          <ThemeSwitch />
-          <ProfileDropdown />
-        </div>
-      </Header>
       <Main>
         <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
           <div>
@@ -178,6 +168,5 @@ export default function ReportesGlobalesPage() {
           </TabsContent>
         </Tabs>
       </Main>
-    </>
   )
 }

@@ -5,7 +5,9 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { CustomEmpty } from '@/components/custom-empty'
 import {IconX, IconTrendingUp, IconTrendingDown, IconCalendar, IconFilter } from '@tabler/icons-react'
+import { History, Loader2 } from 'lucide-react'
 import { BilleterasService } from '../services'
 import type { Billetera, Recarga, Retiro, MovimientoBilletera } from '../data/types'
 
@@ -25,7 +27,7 @@ export function MovimientosBilleteraModal({ billetera, open, onClose }: Movimien
   const [fechaHasta, setFechaHasta] = useState('')
   const [tipoFiltro, setTipoFiltro] = useState<'todos' | 'recargas' | 'retiros'>('todos')
   const [estadoFiltro, setEstadoFiltro] = useState<'todos' | 'pendiente' | 'aprobado' | 'rechazado'>('todos')
-  const itemsPerPage = 10
+  const itemsPerPage = 50
 
   useEffect(() => {
     if (billetera && open) {
@@ -278,82 +280,94 @@ export function MovimientosBilleteraModal({ billetera, open, onClose }: Movimien
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {loading ? (
-              <div className="text-center py-8">Cargando movimientos...</div>
-            ) : movimientosFiltrados.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                {hasActiveFilters ? 'No hay movimientos que coincidan con los filtros' : 'No hay movimientos registrados'}
-              </div>
-            ) : (
-              <>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left">
-                    <thead>
-                      <tr className="border-b bg-gray-50 dark:bg-gray-800">
-                        <th className="px-4 py-3 font-medium">Tipo</th>
-                        <th className="px-4 py-3 font-medium">Monto</th>
-                        <th className="px-4 py-3 font-medium">Estado</th>
-                        <th className="px-4 py-3 font-medium">Fecha</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {paginatedMovimientos.map(movimiento => (
-                        <tr key={`${movimiento.tipo}-${movimiento.id}`} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                          <td className="px-4 py-4">
-                            <div className="flex items-center gap-2">
-                              {getTipoIcon(movimiento.tipo)}
-                              <span className="capitalize font-medium">
-                                {movimiento.tipo}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-4">
-                            <span className={`font-semibold text-lg ${movimiento.tipo === 'recarga' ? 'text-green-600' : 'text-red-600'}`}>
-                              {movimiento.tipo === 'recarga' ? '+' : '-'}{formatCurrency(movimiento.monto)}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="border-b bg-gray-50 dark:bg-gray-800">
+                    <th className="px-4 py-3 font-medium">Tipo</th>
+                    <th className="px-4 py-3 font-medium">Monto</th>
+                    <th className="px-4 py-3 font-medium">Estado</th>
+                    <th className="px-4 py-3 font-medium">Fecha</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={4} className='p-0'>
+                        <div className='flex flex-col items-center gap-6 py-10'>
+                          <CustomEmpty title='Cargando movimientos...' description='Estamos obteniendo el historial de movimientos.' icon={<Loader2 className='size-10 animate-spin' />} />
+                        </div>
+                      </td>
+                    </tr>
+                  ) : paginatedMovimientos.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className='p-0'>
+                        <div className='flex flex-col items-center gap-6 py-10'>
+                          <CustomEmpty
+                            title={hasActiveFilters ? 'Sin resultados' : 'No hay movimientos registrados'}
+                            description={hasActiveFilters ? 'No hay movimientos que coincidan con los filtros.' : 'Aún no se han registrado movimientos para esta billetera.'}
+                            icon={<History className='size-10' />}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedMovimientos.map(movimiento => (
+                      <tr key={`${movimiento.tipo}-${movimiento.id}`} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        <td className="px-4 py-4">
+                          <div className="flex items-center gap-2">
+                            {getTipoIcon(movimiento.tipo)}
+                            <span className="capitalize font-medium">
+                              {movimiento.tipo}
                             </span>
-                          </td>
-                          <td className="px-4 py-4">
-                            {getEstadoBadge(movimiento.estado)}
-                          </td>
-                          <td className="px-4 py-4 text-gray-500">
-                            <div className="text-sm">
-                              {formatDate(movimiento.fecha)}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className={`font-semibold text-lg ${movimiento.tipo === 'recarga' ? 'text-green-600' : 'text-red-600'}`}>
+                            {movimiento.tipo === 'recarga' ? '+' : '-'}{formatCurrency(movimiento.monto)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4">
+                          {getEstadoBadge(movimiento.estado)}
+                        </td>
+                        <td className="px-4 py-4 text-gray-500">
+                          <div className="text-sm">
+                            {formatDate(movimiento.fecha)}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-                {/* Paginación */}
-                {totalPages > 1 && (
-                  <div className="flex justify-between items-center mt-6 pt-4 border-t">
-                    <Button
-                      variant="outline"
-                      disabled={currentPage === 0}
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                    >
-                      Anterior
-                    </Button>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-600">
-                        Página {currentPage + 1} de {totalPages}
-                      </span>
-                      <Badge variant="outline">
-                        {startIndex + 1}-{Math.min(endIndex, movimientosFiltrados.length)} de {movimientosFiltrados.length}
-                      </Badge>
-                    </div>
-                    <Button
-                      variant="outline"
-                      disabled={currentPage >= totalPages - 1}
-                      onClick={() => setCurrentPage(currentPage + 1)}
-                    >
-                      Siguiente
-                    </Button>
-                  </div>
-                )}
-              </>
+            {/* Paginación */}
+            {!loading && totalPages > 1 && (
+              <div className="flex justify-between items-center mt-6 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  disabled={currentPage === 0}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                >
+                  Anterior
+                </Button>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">
+                    Página {currentPage + 1} de {totalPages}
+                  </span>
+                  <Badge variant="outline">
+                    {startIndex + 1}-{Math.min(endIndex, movimientosFiltrados.length)} de {movimientosFiltrados.length}
+                  </Badge>
+                </div>
+                <Button
+                  variant="outline"
+                  disabled={currentPage >= totalPages - 1}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                >
+                  Siguiente
+                </Button>
+              </div>
             )}
           </CardContent>
         </Card>

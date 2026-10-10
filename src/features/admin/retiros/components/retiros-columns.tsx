@@ -5,7 +5,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
@@ -65,7 +64,6 @@ function RetirosTableActions({ retiro, onAprobar, onRechazar, onVer }: RetirosTa
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
         <DropdownMenuItem onClick={() => onVer(retiro)}>
           <IconEye className="mr-2 h-4 w-4" />
           Ver detalles

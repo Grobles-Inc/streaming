@@ -3,7 +3,6 @@ import { AlertTriangle } from 'lucide-react'
 import { useAuth } from '@/stores/authStore'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ProductoFormDialog } from './components/producto-form'
 import { columns } from './components/productos-columns'
@@ -24,10 +23,6 @@ export function ProductosPage() {
 
   if (error) {
     return (
-      <>
-        <Header>
-          <div className='ml-auto flex items-center space-x-4'></div>
-        </Header>
         <Main>
           <Alert variant='destructive'>
             <AlertTriangle className='h-4 w-4' />
@@ -36,7 +31,6 @@ export function ProductosPage() {
             </AlertDescription>
           </Alert>
         </Main>
-      </>
     )
   }
 

@@ -7,7 +7,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useUsersContext } from '../context/users-context'
@@ -41,10 +40,8 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               setOpen('view')
             }}
           >
+            <IconEye size={16} />
             Ver detalles
-            <DropdownMenuShortcut>
-              <IconEye size={16} />
-            </DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
@@ -53,10 +50,8 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             }}
             disabled={isDisabled}
           >
+            <IconEdit size={16} />
             Editar
-            <DropdownMenuShortcut>
-              <IconEdit size={16} />
-            </DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
@@ -65,10 +60,8 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             }}
             disabled={isDisabled}
           >
+            <IconUserCog size={16} />
             Cambiar Rol
-            <DropdownMenuShortcut>
-              <IconUserCog size={16} />
-            </DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {isDisabled ? (
@@ -79,10 +72,8 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               }}
               className='text-green-600!'
             >
+              <IconUserCheck size={16} />
               Habilitar
-              <DropdownMenuShortcut>
-                <IconUserCheck size={16} />
-              </DropdownMenuShortcut>
             </DropdownMenuItem>
           ) : (
             <DropdownMenuItem
@@ -90,12 +81,10 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
                 setCurrentRow(row.original)
                 setOpen('delete')
               }}
-              className='text-red-500!'
+              variant='destructive'
             >
-              Deshabilitar
-              <DropdownMenuShortcut>
-                <IconUserX size={16} />
-              </DropdownMenuShortcut>
+              <IconUserX size={16} />
+              Eliminar
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>

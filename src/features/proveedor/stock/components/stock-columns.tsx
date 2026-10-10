@@ -228,7 +228,6 @@ export const createStockColumns = (
   },
   {
     id: 'actions',
-    header: 'Acciones',
     cell: ({ row }) => {
       const stock = row.original
       const productoEstaPublicado = stock.producto?.estado === 'publicado'

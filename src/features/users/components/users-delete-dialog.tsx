@@ -24,17 +24,17 @@ export function UsersDeleteDialog({ open, onOpenChange, currentRow }: Props) {
     if (value.trim() !== `${currentRow.nombres} ${currentRow.apellidos}`) return
 
     try {
-      const success = await deleteUser(currentRow.id)
-      if (success) {
-        toast.success('Usuario deshabilitado exitosamente')
+      const result = await deleteUser(currentRow.id)
+      if (result) {
+        toast.success(result.message)
         onOpenChange(false)
         setValue('')
       } else {
-        toast.error('Error al deshabilitar usuario')
+        toast.error('Error al eliminar usuario')
       }
     } catch (error) {
-      console.error('Error disabling user:', error)
-      toast.error('Error al deshabilitar usuario')
+      console.error('Error deleting user:', error)
+      toast.error('Error al eliminar usuario')
     }
   }
 
@@ -50,20 +50,18 @@ export function UsersDeleteDialog({ open, onOpenChange, currentRow }: Props) {
             className='stroke-destructive mr-1 inline-block'
             size={18}
           />{' '}
-          Deshabilitar Usuario
+          Eliminar Usuario
         </span>
       }
       desc={
         <div className='space-y-4'>
           <p className='mb-2'>
-            ¿Estás seguro de que quieres deshabilitar a{' '}
+            ¿Estás seguro de que quieres eliminar a{' '}
             <span className='font-bold'>{currentRow.nombres} {currentRow.apellidos}</span>?
             <br />
-            Esta acción deshabilitará la cuenta del usuario con el rol de{' '}
-            <span className='font-bold'>
-              {currentRow.rol.toUpperCase()}
-            </span>{' '}
-            del sistema. El usuario no podrá acceder hasta que sea habilitado nuevamente.
+            Si no tiene historial ni saldo se eliminará permanentemente. Si
+            tiene actividad, se deshabilitará en su lugar y podrá habilitarse
+            nuevamente.
           </p>
 
           <Label className='my-2'>
@@ -71,19 +69,20 @@ export function UsersDeleteDialog({ open, onOpenChange, currentRow }: Props) {
             <Input
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder='Ingresa el nombre completo para confirmar deshabilitación.'
+              placeholder='Ingresa el nombre completo para confirmar.'
             />
           </Label>
 
           <Alert variant='destructive'>
             <AlertTitle>¡Advertencia!</AlertTitle>
             <AlertDescription>
-              El usuario será deshabilitado y no podrá acceder a la plataforma.
+              Sin actividad se elimina de forma permanente. Con actividad solo
+              se deshabilita el acceso.
             </AlertDescription>
           </Alert>
         </div>
       }
-      confirmText='Deshabilitar'
+      confirmText='Confirmar'
       destructive
     />
   )

@@ -7,7 +7,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { 
@@ -36,7 +35,6 @@ function ComisionesRetiroTableActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
         <DropdownMenuItem onClick={() => onVer(comision)}>
           <IconEye className="mr-2 h-4 w-4" />
           Ver detalles
@@ -168,7 +166,6 @@ export const getComisionesRetiroColumns = (
   },
   {
     id: 'actions',
-    header: 'Acciones',
     cell: ({ row }) => (
       <ComisionesRetiroTableActions 
         comision={row.original} 

@@ -1,6 +1,8 @@
+import { CustomEmpty } from '@/components/custom-empty'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Inbox, Loader2 } from 'lucide-react'
 import type { Recarga } from '../data/types'
 
 interface RecargasTableProps {
@@ -10,28 +12,6 @@ interface RecargasTableProps {
 }
 
 export function RecargasTable({ recargas, loading, onUpdateRecarga }: RecargasTableProps) {
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Recargas y Validaciones</CardTitle>
-          <CardDescription>Validar recargas y pagos de usuarios</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center space-x-4">
-                <div className="h-4 bg-gray-200 rounded w-32 animate-pulse" />
-                <div className="h-4 bg-gray-200 rounded w-24 animate-pulse" />
-                <div className="h-4 bg-gray-200 rounded w-20 animate-pulse" />
-                <div className="h-4 bg-gray-200 rounded w-16 animate-pulse" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
 
   const getEstadoBadge = (estado: string) => {
     switch (estado) {
@@ -61,7 +41,32 @@ export function RecargasTable({ recargas, loading, onUpdateRecarga }: RecargasTa
               </tr>
             </thead>
             <tbody>
-              {recargas.map((recarga) => {
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className='p-0'>
+                    <div className='flex flex-col items-center gap-6 py-10'>
+                      <CustomEmpty
+                        title='Cargando recargas...'
+                        description='Estamos obteniendo el listado de recargas.'
+                        icon={<Loader2 className='size-10 animate-spin' />}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ) : recargas.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className='p-0'>
+                    <div className='flex flex-col items-center gap-6 py-10'>
+                      <CustomEmpty
+                        title='No hay recargas disponibles'
+                        description='No se encontraron recargas con los filtros actuales.'
+                        icon={<Inbox className='size-10' />}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+              recargas.map((recarga) => {
                 const estado = getEstadoBadge(recarga.estado)
                 return (
                   <tr key={recarga.id} className="border-b hover:bg-gray-50">
@@ -114,7 +119,7 @@ export function RecargasTable({ recargas, loading, onUpdateRecarga }: RecargasTa
                     </td>
                   </tr>
                 )
-              })}
+              }))}
             </tbody>
           </table>
         </div>

@@ -1,5 +1,5 @@
 import { DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu'
-import { MixerHorizontalIcon } from '@radix-ui/react-icons'
+import { Columns3 } from 'lucide-react'
 import { Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,7 +21,7 @@ export function DataTableViewOptions<TData>({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant='outline' size='icon'>
-          <MixerHorizontalIcon className='h-4 w-4' />
+          <Columns3 className='h-4 w-4' />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='w-[150px]'>

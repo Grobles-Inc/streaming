@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { CustomEmpty } from '@/components/custom-empty'
+import { HandCoins } from 'lucide-react'
 import { 
   flexRender,
   getCoreRowModel,
@@ -67,7 +69,7 @@ export function ComisionesRetiroTable({
     onRowSelectionChange: setRowSelection,
     initialState: {
       pagination: {
-        pageSize: 200,
+        pageSize: 50,
       },
     },
     state: {
@@ -161,12 +163,18 @@ export function ComisionesRetiroTable({
                   </TableRow>
                 ))
               ) : (
-                <TableRow>
+                <TableRow className="hover:bg-transparent">
                   <TableCell
                     colSpan={columns.length}
-                    className="h-24 text-center"
+                    className="p-0"
                   >
-                    No hay comisiones de retiro.
+                    <div className="flex flex-col items-center gap-6 py-10">
+                      <CustomEmpty
+                        title="No hay comisiones de retiro"
+                        description="No se encontraron registros con los filtros actuales."
+                        icon={<HandCoins className="size-10" />}
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               )}

@@ -1,5 +1,4 @@
 import { ColumnDef } from '@tanstack/react-table'
-import { cn } from '@/lib/utils'
 import { Checkbox } from '@/components/ui/checkbox'
 import LongText from '@/components/long-text'
 import { userTypes } from '../data/data'
@@ -21,12 +20,6 @@ export const columns: ColumnDef<MappedUser>[] = [
         className='translate-y-[2px]'
       />
     ),
-    meta: {
-      className: cn(
-        'sticky md:table-cell left-0 z-10 rounded-tl',
-        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted'
-      ),
-    },
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
@@ -52,13 +45,6 @@ export const columns: ColumnDef<MappedUser>[] = [
       const { nombres, apellidos } = row.original
       const nombreCompleto = `${nombres} ${apellidos}`.toLowerCase()
       return nombreCompleto.includes(value.toLowerCase())
-    },
-    meta: {
-      className: cn(
-        'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
-        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
-        'sticky left-6 md:table-cell'
-      ),
     },
     enableHiding: false,
   },

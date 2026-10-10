@@ -42,12 +42,6 @@ export const columns: ColumnDef<Producto>[] = [
         className='translate-y-[2px]'
       />
     ),
-    meta: {
-      className: cn(
-        'md:sticky md:table-cell left-0 z-10 rounded-tl',
-        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted'
-      ),
-    },
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
@@ -70,13 +64,6 @@ export const columns: ColumnDef<Producto>[] = [
       return (
         <div className='w-12 font-mono text-sm text-left'>{id}</div>
       )
-    },
-    meta: {
-      className: cn(
-        'drop-shadow-[0_1px_2px_rgb(0_0_0_/_0.1)] dark:drop-shadow-[0_1px_2px_rgb(255_255_255_/_0.1)] lg:drop-shadow-none',
-        'bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted',
-        'md:sticky md:left-6 md:table-cell'
-      ),
     },
     enableSorting: false,
     enableHiding: false,
@@ -495,10 +482,5 @@ export const columns: ColumnDef<Producto>[] = [
     id: 'actions',
     enableHiding: false,
     cell: ({ row }) => <DataTableRowActions row={row} />,
-    meta: {
-      className: cn(
-        'sticky right-0 bg-background transition-colors duration-200 group-hover/row:bg-muted group-data-[state=selected]/row:bg-muted'
-      ),
-    },
   },
 ] 

@@ -4,7 +4,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { IconCheck, IconDots, IconEye, IconPhone, IconTrash, IconX } from '@tabler/icons-react'
@@ -65,7 +64,6 @@ function RecargasTableActions({ recarga, onAprobar, onRechazar, onEliminar, onVe
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
         <DropdownMenuItem onClick={() => onVer(recarga)}>
           <IconEye className="mr-2 h-4 w-4" />
           Ver detalles

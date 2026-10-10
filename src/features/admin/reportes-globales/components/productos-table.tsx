@@ -1,6 +1,8 @@
+import { CustomEmpty } from '@/components/custom-empty'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Loader2, Package } from 'lucide-react'
 import type { Producto } from '../data/types'
 
 interface ProductosTableProps {
@@ -10,28 +12,6 @@ interface ProductosTableProps {
 }
 
 export function ProductosTable({ productos, loading }: ProductosTableProps) {
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Productos</CardTitle>
-          <CardDescription>Listado de productos</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center space-x-4">
-                <div className="h-4 bg-gray-200 rounded w-32 animate-pulse" />
-                <div className="h-4 bg-gray-200 rounded w-24 animate-pulse" />
-                <div className="h-4 bg-gray-200 rounded w-20 animate-pulse" />
-                <div className="h-4 bg-gray-200 rounded w-16 animate-pulse" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
 
   const getDisponibilidadBadge = (disponibilidad: string) => {
     switch (disponibilidad) {
@@ -65,7 +45,32 @@ export function ProductosTable({ productos, loading }: ProductosTableProps) {
               </tr>
             </thead>
             <tbody>
-              {productos.map((producto) => {
+              {loading ? (
+                <tr>
+                  <td colSpan={9} className='p-0'>
+                    <div className='flex flex-col items-center gap-6 py-10'>
+                      <CustomEmpty
+                        title='Cargando productos...'
+                        description='Estamos obteniendo el listado de productos.'
+                        icon={<Loader2 className='size-10 animate-spin' />}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ) : productos.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className='p-0'>
+                    <div className='flex flex-col items-center gap-6 py-10'>
+                      <CustomEmpty
+                        title='No hay productos disponibles'
+                        description='No se encontraron productos con los filtros actuales.'
+                        icon={<Package className='size-10' />}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+              productos.map((producto) => {
                 const disponibilidad = getDisponibilidadBadge(producto.disponibilidad)
                 return (
                   <tr key={producto.id} className="border-b hover:bg-gray-50">
@@ -115,7 +120,7 @@ export function ProductosTable({ productos, loading }: ProductosTableProps) {
                     </td>
                   </tr>
                 )
-              })}
+              }))}
             </tbody>
           </table>
         </div>

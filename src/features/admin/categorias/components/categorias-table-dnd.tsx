@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import { CustomEmpty } from '@/components/custom-empty'
 import { IconEye, IconEdit, IconTrash, IconMenu2, IconGripVertical, IconArrowUp, IconArrowDown } from '@tabler/icons-react'
+import { FolderOpen, Loader2, TriangleAlert } from 'lucide-react'
 import {
   DndContext,
   closestCenter,
@@ -125,6 +127,9 @@ function SortableRow({ categoria, onEdit, onDelete, onMoveToFirst, onMoveToLast,
 
 interface CategoriasTableDndProps {
   categorias: Categoria[]
+  isLoading?: boolean
+  error?: string | null
+  onRetry?: () => void
   onEdit: (categoria: Categoria) => void
   onDelete: (id: string) => void
   onReorder: (reorderedCategorias: Categoria[]) => void
@@ -134,6 +139,9 @@ interface CategoriasTableDndProps {
 
 export function CategoriasTableDnd({
   categorias,
+  isLoading = false,
+  error = null,
+  onRetry,
   onEdit,
   onDelete,
   onReorder,
@@ -214,6 +222,36 @@ export function CategoriasTableDnd({
             </tr>
           </thead>
           <tbody>
+            {isLoading ? (
+              <tr className='hover:bg-transparent'>
+                <td colSpan={7} className='p-0'>
+                  <div className='flex flex-col items-center gap-6 py-10'>
+                    <CustomEmpty title='Cargando categorías...' description='Estamos obteniendo el listado de categorías.' icon={<Loader2 className='size-10 animate-spin' />} />
+                  </div>
+                </td>
+              </tr>
+            ) : error ? (
+              <tr className='hover:bg-transparent'>
+                <td colSpan={7} className='p-0'>
+                  <div className='flex flex-col items-center gap-6 py-10'>
+                    <CustomEmpty title='Error al cargar categorías' description={error} icon={<TriangleAlert className='size-10' />} />
+                    {onRetry && (
+                      <Button variant='outline' size='sm' onClick={onRetry}>
+                        Intentar nuevamente
+                      </Button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ) : sortedCategorias.length === 0 ? (
+              <tr className='hover:bg-transparent'>
+                <td colSpan={7} className='p-0'>
+                  <div className='flex flex-col items-center gap-6 py-10'>
+                    <CustomEmpty title='No hay categorías disponibles' description='Crea una nueva categoría para comenzar.' icon={<FolderOpen className='size-10' />} />
+                  </div>
+                </td>
+              </tr>
+            ) : (
             <SortableContext 
               items={sortedCategorias.map(cat => cat.id)} 
               strategy={verticalListSortingStrategy}
@@ -230,6 +268,7 @@ export function CategoriasTableDnd({
                 />
               ))}
             </SortableContext>
+            )}
           </tbody>
         </table>
       </DndContext>

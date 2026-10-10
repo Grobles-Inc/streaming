@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { CustomEmpty } from '@/components/custom-empty'
+import { Receipt } from 'lucide-react'
 import { 
   flexRender,
   getCoreRowModel,
@@ -75,7 +77,7 @@ export function ComisionesGeneralesTable({
     onRowSelectionChange: setRowSelection,
     initialState: {
       pagination: {
-        pageSize: 200,
+        pageSize: 50,
       },
     },
     state: {
@@ -188,12 +190,18 @@ export function ComisionesGeneralesTable({
                   </TableRow>
                 ))
               ) : (
-                <TableRow>
+                <TableRow className="hover:bg-transparent">
                   <TableCell
                     colSpan={columns.length}
-                    className="h-24 text-center"
+                    className="p-0"
                   >
-                    No hay comisiones registradas.
+                    <div className="flex flex-col items-center gap-6 py-10">
+                      <CustomEmpty
+                        title="No hay comisiones registradas"
+                        description="No se encontraron registros con los filtros actuales."
+                        icon={<Receipt className="size-10" />}
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               )}

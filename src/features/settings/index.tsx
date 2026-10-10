@@ -1,7 +1,4 @@
-import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -59,16 +56,6 @@ export default function SettingsProfile() {
 
 
   return (
-    <>
-      {/* ===== Top Heading ===== */}
-      <Header>
-
-        <div className='ml-auto flex items-center space-x-4'>
-          <ThemeSwitch />
-          <ProfileDropdown />
-        </div>
-      </Header>
-
       <Main >
         <div className='space-y-0.5'>
           <h1 className='text-2xl font-bold tracking-tight md:text-3xl'>
@@ -180,6 +167,5 @@ export default function SettingsProfile() {
           </div>
         </div>
       </Main>
-    </>
   )
 }

@@ -1,9 +1,5 @@
-import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { ProfileDropdown } from '@/components/profile-dropdown'
-import { ThemeSwitch } from '@/components/theme-switch'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { IconPlus } from '@tabler/icons-react'
 import { useState } from 'react'
 import { CategoriaModal, CategoriasTableDnd } from './components'
@@ -26,7 +22,8 @@ export default function CategoriasPage() {
     updateCategoriasOrden,
     moveToFirst,
     moveToLast,
-    deleteCategoria
+    deleteCategoria,
+    refetch
   } = useCategorias()
 
   // Función para manejar la creación o actualización de categorías
@@ -87,34 +84,7 @@ export default function CategoriasPage() {
   // Categorías a mostrar (filtradas o todas)
   const categoriasAMostrar = categoriasFiltradas.length > 0 || categorias.length === 0 ? categoriasFiltradas : categorias
 
-  if (loadingCategorias) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center">Cargando categorías...</div>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (errorCategorias) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-red-600">Error: {errorCategorias}</div>
-        </CardContent>
-      </Card>
-    )
-  }
-
   return (
-    <>
-      <Header fixed>
-        <div className='ml-auto flex items-center space-x-4'>
-          <ThemeSwitch />
-          <ProfileDropdown />
-        </div>
-      </Header>
       <Main>
         <div className='mb-2 flex flex-wrap items-center justify-between space-y-2'>
           <div>
@@ -136,6 +106,9 @@ export default function CategoriasPage() {
         />
         <CategoriasTableDnd
           categorias={categoriasAMostrar}
+          isLoading={loadingCategorias}
+          error={errorCategorias}
+          onRetry={() => refetch()}
           onEdit={handleEditCategoria}
           onDelete={handleDeleteCategoria}
           onReorder={handleReorderCategorias}
@@ -151,6 +124,5 @@ export default function CategoriasPage() {
           isEditing={isEditing}
         />
       </Main>
-    </>
   )
 }

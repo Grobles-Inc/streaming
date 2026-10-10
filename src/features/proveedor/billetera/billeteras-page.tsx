@@ -6,15 +6,11 @@ import { DataTable } from './components/billetera-table'
 import { columns } from './components/billetera-columns'
 import { AgregarFondosModal } from './components/agregar-fondos-modal'
 import { RetirarFondosModal } from './components/retirar-fondos-modal'
-import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { useAuth } from '@/stores/authStore'
 import { useBilleteraByUsuario, useHistorialTransacciones } from './queries'
 import { useConfiguracionSistema } from '@/features/proveedor/productos/queries'
 import { useQueryClient } from '@tanstack/react-query'
-import { IconRefresh } from '@tabler/icons-react'
-import { ThemeSwitch } from '@/components/theme-switch'
-import { ProfileDropdown } from '@/components/profile-dropdown'
 
 export default function BilleterasPage() {
   const [agregarModalOpen, setAgregarModalOpen] = useState(false)
@@ -76,16 +72,6 @@ export default function BilleterasPage() {
   }
 
   return (
-    <>
-      <Header>
-        <div className='ml-auto flex items-center space-x-4'>
-          <Button className=' rounded-full mx-2' size="icon" variant='ghost' title='Recargar ventana' onClick={() => window.location.reload()} >
-            <IconRefresh />
-          </Button>
-          <ThemeSwitch />
-          <ProfileDropdown />
-        </div>
-      </Header>
       <Main>
         <div className="space-y-6">
           {/* Header de Billetera */}
@@ -179,6 +165,5 @@ export default function BilleterasPage() {
           />
         </div>
       </Main>
-    </>
   )
 }

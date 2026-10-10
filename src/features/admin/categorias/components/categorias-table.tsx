@@ -1,7 +1,9 @@
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { CustomEmpty } from '@/components/custom-empty'
 import { IconEye, IconEdit, IconTrash, IconMenu2 } from '@tabler/icons-react'
+import { FolderOpen } from 'lucide-react'
 import type { Categoria } from '../data/types'
 
 interface CategoriasTableProps {
@@ -16,7 +18,7 @@ interface CategoriasTableProps {
 export function CategoriasTable({
   categorias,
   currentPage,
-  itemsPerPage = 10,
+  itemsPerPage = 50,
   onEdit,
   onDelete,
   onPageChange
@@ -40,7 +42,16 @@ export function CategoriasTable({
           </tr>
         </thead>
         <tbody>
-          {paginatedCategorias.map(categoria => (
+          {paginatedCategorias.length === 0 ? (
+            <tr>
+              <td colSpan={6} className='p-0'>
+                <div className='flex flex-col items-center gap-6 py-10'>
+                  <CustomEmpty title='No hay categorías disponibles' description='Crea una nueva categoría para comenzar.' icon={<FolderOpen className='size-10' />} />
+                </div>
+              </td>
+            </tr>
+          ) : (
+          paginatedCategorias.map(categoria => (
             <tr
               key={categoria.id}
               className="border-b hover:bg-secondary/10"
@@ -88,7 +99,7 @@ export function CategoriasTable({
                 </DropdownMenu>
               </td>
             </tr>
-          ))}
+          )))}
         </tbody>
       </table>
 

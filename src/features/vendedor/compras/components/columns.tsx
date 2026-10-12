@@ -7,12 +7,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { PhoneInput } from '@/components/phone-input'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { CompraMessage } from '@/lib/whatsapp'
 import { useBilleteraByUsuario } from '@/queries'
 import { useAuth } from '@/stores/authStore'
-import { IconAlertTriangle, IconEdit, IconHeadset, IconLoader2, IconPackage, IconRefresh } from '@tabler/icons-react'
+import { IconAlertTriangle, IconDots, IconEdit, IconHeadset, IconKey, IconLoader2, IconPackage, IconRefresh, IconServerCog } from '@tabler/icons-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -282,6 +283,41 @@ const ProductoCell = ({ row }: { row: Compra }) => {
   </div>
 }
 
+const AccionesCell = ({ row }: { row: Compra }) => {
+  const { setOpen, setCurrentRow } = useCompras()
+  return (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <Button variant='ghost' className='flex h-8 w-8 p-0 data-[state=open]:bg-muted'>
+          <IconDots className='h-4 w-4' />
+          <span className='sr-only'>Abrir menú</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align='end' className='w-[180px]'>
+        <DropdownMenuItem
+          onClick={() => {
+            setCurrentRow(compraSchema.parse(row))
+            setOpen('obtener_codigo')
+          }}
+        >
+          <IconKey className='mr-2 h-4 w-4' />
+          Obtener código
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => {
+            setCurrentRow(compraSchema.parse(row))
+            setOpen('config_imap')
+          }}
+        >
+          <IconServerCog className='mr-2 h-4 w-4' />
+          Configurar IMAP
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 
 
 export const columns: ColumnDef<Compra>[] = [
@@ -522,5 +558,14 @@ export const columns: ColumnDef<Compra>[] = [
     cell: ({ row }) => {
       return <RenovacionCell row={row.original} />
     },
-  }
+  },
+  {
+    id: 'actions',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Acciones' />
+    ),
+    cell: ({ row }) => {
+      return <AccionesCell row={row.original} />
+    },
+  },
 ]

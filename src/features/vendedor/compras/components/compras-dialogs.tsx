@@ -1,6 +1,8 @@
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { useCompras } from '../context/compras-context'
 import { useReciclarCompra } from '../queries'
+import { ComprasCodigoDialog } from './compras-codigo-dialog'
+import { ComprasImapDialog } from './compras-imap-dialog'
 import ComprasProductoDialog from './compras-producto-dialog'
 import { ComprasSoporteModal } from './compras-soporte-modal'
 
@@ -34,6 +36,30 @@ export function ComprasDialogs() {
               }, 500)
             }}
             id={currentRow.producto_id}
+          />
+
+          <ComprasCodigoDialog
+            key={`compras-codigo-${currentRow.id}`}
+            currentRow={currentRow}
+            open={open === 'obtener_codigo'}
+            onOpenChange={() => {
+              setOpen('obtener_codigo')
+              setTimeout(() => {
+                setCurrentRow(null)
+              }, 500)
+            }}
+          />
+
+          <ComprasImapDialog
+            key={`compras-imap-${currentRow.id}`}
+            currentRow={currentRow}
+            open={open === 'config_imap'}
+            onOpenChange={() => {
+              setOpen('config_imap')
+              setTimeout(() => {
+                setCurrentRow(null)
+              }, 500)
+            }}
           />
 
           <ConfirmDialog

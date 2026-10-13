@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -12,8 +12,13 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from '@/components/ui/input-otp'
-import { Loader2 } from 'lucide-react'
+import { useAuth } from '@/stores/authStore'
+import { Copy, Loader2, MailWarning } from 'lucide-react'
+import { toast } from 'sonner'
+import { useCompras } from '../context/compras-context'
 import { Compra } from '../data/schema'
+import { useRequestCode } from '../queries'
+import { ImapNeedsConfigError } from '../services/imap'
 
 interface ComprasCodigoDialogProps {
   open: boolean
@@ -21,39 +26,53 @@ interface ComprasCodigoDialogProps {
   currentRow: Compra
 }
 
-const MOCK_CODE = '482913'
-
 export function ComprasCodigoDialog({
   open,
   onOpenChange,
   currentRow,
 }: ComprasCodigoDialogProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [code, setCode] = useState('')
+  const { user } = useAuth()
+  const { setOpen } = useCompras()
+  const req = useRequestCode()
+  const firedRef = useRef<number | null>(null)
+
+  const compraId = currentRow.id
 
   useEffect(() => {
-    if (!open) return
-    setIsLoading(true)
-    setCode('')
-    const timer = setTimeout(() => {
-      setCode(MOCK_CODE)
-      setIsLoading(false)
-    }, 2000)
-    return () => clearTimeout(timer)
-  }, [open, currentRow.id])
+    if (!open) {
+      firedRef.current = null
+      req.reset()
+      return
+    }
+    if (!compraId || !user?.id) return
+    if (firedRef.current === compraId) return
+    firedRef.current = compraId
+    req.mutate({ compraId, userId: user.id })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, compraId])
 
   const handleRetry = () => {
-    setIsLoading(true)
-    setCode('')
-    setTimeout(() => {
-      setCode(MOCK_CODE)
-      setIsLoading(false)
-    }, 2000)
+    if (!compraId || !user?.id) return
+    req.mutate({ compraId, userId: user.id })
+  }
+
+  const handleCopy = async () => {
+    if (!req.data?.codigo) return
+    try {
+      await navigator.clipboard.writeText(req.data.codigo)
+      toast.success('Código copiado')
+    } catch {
+      toast.error('No se pudo copiar')
+    }
   }
 
   const handleClose = () => {
     onOpenChange(false)
   }
+
+  const needsConfig = req.error instanceof ImapNeedsConfigError
+  const code = req.data?.codigo ?? ''
+  const slotCount = code.length >= 4 && code.length <= 8 ? code.length : 6
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -67,41 +86,63 @@ export function ComprasCodigoDialog({
           </DialogDescription>
         </DialogHeader>
         <div className='flex flex-col items-center gap-6 py-4'>
-          {isLoading ? (
+          {req.isPending ? (
             <div className='flex flex-col items-center gap-2'>
               <Loader2 className='size-8 animate-spin' />
               <p className='text-muted-foreground text-sm'>
                 Conectando con el correo...
               </p>
             </div>
+          ) : needsConfig ? (
+            <div className='flex flex-col items-center gap-3'>
+              <MailWarning className='size-8' />
+              <p className='text-center text-sm'>
+                Esta cuenta no tiene IMAP configurado.
+              </p>
+              <Button onClick={() => setOpen('config_imap')}>
+                Configurar IMAP
+              </Button>
+            </div>
+          ) : req.error ? (
+            <div className='flex flex-col items-center gap-3'>
+              <p className='text-center text-sm'>{req.error.message}</p>
+              <Button onClick={handleRetry}>Reintentar</Button>
+            </div>
           ) : (
             <>
-              <InputOTP maxLength={6} value={code} onChange={setCode}>
+              <InputOTP
+                maxLength={slotCount}
+                value={code}
+                onChange={() => {}}
+              >
                 <InputOTPGroup>
-                  <InputOTPSlot index={0} />
-                  <InputOTPSlot index={1} />
-                  <InputOTPSlot index={2} />
-                  <InputOTPSlot index={3} />
-                  <InputOTPSlot index={4} />
-                  <InputOTPSlot index={5} />
+                  {Array.from({ length: slotCount }).map((_, i) => (
+                    <InputOTPSlot key={i} index={i} />
+                  ))}
                 </InputOTPGroup>
               </InputOTP>
-              <p className='text-muted-foreground text-center text-sm'>
-                Código de demostración. Sin conexión al backend.
-              </p>
+              {req.data?.remitente && (
+                <p className='text-muted-foreground text-center text-sm'>
+                  De: {req.data.remitente}
+                </p>
+              )}
+              <Button
+                variant='outline'
+                onClick={handleCopy}
+                disabled={!code}
+              >
+                <Copy className='size-4' />
+                Copiar
+              </Button>
             </>
           )}
           <div className='flex justify-end gap-2 self-stretch'>
             <Button variant='outline' onClick={handleClose}>
               Cerrar
             </Button>
-            <Button onClick={handleRetry} disabled={isLoading}>
-              {isLoading ? (
-                <Loader2 className='size-4 animate-spin' />
-              ) : (
-                'Reintentar'
-              )}
-            </Button>
+            {!needsConfig && !req.isPending && req.error && (
+              <Button onClick={handleRetry}>Reintentar</Button>
+            )}
           </div>
         </div>
       </DialogContent>

@@ -16,10 +16,13 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import { useAuth } from '@/stores/authStore'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Loader2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { useSaveImapConfig } from '../queries'
 import { Compra } from '../data/schema'
 
 const formSchema = z.object({
@@ -45,6 +48,8 @@ export function ComprasImapDialog({
   onOpenChange,
   currentRow,
 }: ComprasImapDialogProps) {
+  const { user } = useAuth()
+  const saveConfig = useSaveImapConfig()
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -58,9 +63,22 @@ export function ComprasImapDialog({
     },
   })
 
-  function onSubmit(_data: FormData) {
-    toast.info('Configuración IMAP guardada (solo UI, sin backend)')
-    onOpenChange(false)
+  function onSubmit(data: FormData) {
+    if (!currentRow.stock_producto_id) {
+      toast.error('La compra no tiene cuenta asociada')
+      return
+    }
+    if (!user?.id) {
+      toast.error('Sesión requerida')
+      return
+    }
+    saveConfig.mutate(
+      {
+        input: { ...data, stock_producto_id: currentRow.stock_producto_id },
+        userId: user.id,
+      },
+      { onSuccess: () => onOpenChange(false) }
+    )
   }
 
   const handleClose = () => {
@@ -74,7 +92,7 @@ export function ComprasImapDialog({
           <DialogTitle>Configurar IMAP</DialogTitle>
           <DialogDescription>
             Configura la conexión IMAP para obtener códigos automáticamente.
-            Solo UI, sin conexión al backend.
+            Se verifica la conexión antes de guardar.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -189,7 +207,12 @@ export function ComprasImapDialog({
               <Button type='button' variant='outline' onClick={handleClose}>
                 Cancelar
               </Button>
-              <Button type='submit'>Guardar</Button>
+              <Button type='submit' disabled={saveConfig.isPending}>
+                {saveConfig.isPending && (
+                  <Loader2 className='size-4 animate-spin' />
+                )}
+                {saveConfig.isPending ? 'Verificando…' : 'Guardar'}
+              </Button>
             </div>
           </form>
         </Form>

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as comprasService from '../services'
 import * as proveedorService from '../services/proveedor'
+import { saveImapConfig, ImapConfigInput, requestCode, ImapNeedsConfigError } from '../services/imap'
 import { toast } from 'sonner'
 
 export const useCompras = () => {
@@ -146,6 +147,33 @@ export const useUpdateBilleteraProveedorSaldo = () => {
     mutationFn: ({ idBilletera, precioRenovacion }: { idBilletera: string, precioRenovacion: number }) => proveedorService.updateBilleteraProveedorSaldo(idBilletera, precioRenovacion),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['billeteras'] })
+    },
+  })
+}
+
+export const useSaveImapConfig = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ input, userId }: { input: ImapConfigInput, userId: string }) =>
+      saveImapConfig(input, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['imap-configs'] })
+      toast.success('Configuración IMAP guardada y verificada')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Error al guardar la configuración IMAP')
+    },
+  })
+}
+
+export const useRequestCode = () => {
+  return useMutation({
+    mutationFn: ({ compraId, userId }: { compraId: number, userId: string }) =>
+      requestCode(compraId, userId),
+    onError: (error: Error) => {
+      // needs_config lo muestra el diálogo con CTA a Configurar IMAP
+      if (error instanceof ImapNeedsConfigError) return
+      toast.error(error.message || 'Error al obtener el código')
     },
   })
 }

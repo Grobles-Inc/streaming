@@ -85,7 +85,7 @@ export type RecargasPaginadas = {
 // Recarga mapeada para el componente
 export type MappedRecarga = {
   id: number  // Cambiado de string a number
-  usuarioId: string
+  usuarioId: string | null
   usuario: string          // Nuevo campo: username del usuario
   usuarioNombre: string
   usuarioNombres: string

@@ -1,7 +1,11 @@
 import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/supabase'
 
-export type Producto = Database['public']['Tables']['productos']['Row']
+import type { Producto } from './index'
+
+// Mismo tipo que el resto de la landing (incluye el join `usuarios`).
+export type { Producto }
+
 export type ProductoInsert = Database['public']['Tables']['productos']['Insert']
 export type ProductoUpdate = Database['public']['Tables']['productos']['Update']
 

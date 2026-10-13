@@ -71,7 +71,7 @@ export default function ConfiguracionSistemaPage() {
   }
 
   // Manejar restauración de configuración
-  const handleRestore = async (id: string) => {
+  const handleRestore = async (id: number) => {
     const success = await restaurarConfiguracion(id)
     
     if (success) {

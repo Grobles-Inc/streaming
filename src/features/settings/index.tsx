@@ -72,7 +72,7 @@ export default function SettingsProfile() {
             <div className='space-y-1 mb-4'>
               <Label>Código Referido</Label>
               <div className='flex items-center gap-2'>
-                <Input disabled value={user?.codigo_referido} />
+                <Input disabled value={user?.codigo_referido ?? ''} />
                 <Button title='Copiar Codigo' variant='outline' size='icon' onClick={() => {
                   navigator.clipboard.writeText(user?.codigo_referido || '')
                   setCopied(true)

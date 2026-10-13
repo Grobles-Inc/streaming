@@ -179,6 +179,8 @@ export function ProductoFormDialog({
         imagen_url: imageUrl,
         proveedor_id: user!.id,
         estado: 'borrador' as const, // Crear como borrador
+        // La columna es NOT NULL sin default, aunque el formulario la deje vacía.
+        precio_renovacion: data.precio_renovacion ?? 0,
         stock_de_productos: [],
       }
 

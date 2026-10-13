@@ -47,7 +47,7 @@ export type EstadisticasRetiros = {
 // Retiro mapeado para el componente
 export type MappedRetiro = {
   id: number
-  usuarioId: string
+  usuarioId: string | null
   usuario: string          // Nuevo campo: username del usuario
   usuarioNombre: string
   usuarioNombres: string

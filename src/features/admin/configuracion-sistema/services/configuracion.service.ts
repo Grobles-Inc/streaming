@@ -35,10 +35,10 @@ export class ConfiguracionService {
       return []
     }
 
-    return data.map(row => ({
-      ...this.mapConfiguracionRow(row),
-      fechaCambio: new Date(row.updated_at)
-    }))
+    return data.map((row) => {
+      const mapped = this.mapConfiguracionRow(row)
+      return { ...mapped, fechaCambio: mapped.updatedAt }
+    })
   }
 
   /**
@@ -68,7 +68,7 @@ export class ConfiguracionService {
   /**
    * Obtiene una configuración específica por ID (para restaurar del historial)
    */
-  static async getConfiguracionById(id: string): Promise<MappedConfiguracion | null> {
+  static async getConfiguracionById(id: number): Promise<MappedConfiguracion | null> {
     const { data, error } = await supabase
       .from('configuracion')
       .select('*')
@@ -86,7 +86,7 @@ export class ConfiguracionService {
   /**
    * Restaura una configuración del historial (crea una nueva fila con los valores anteriores)
    */
-  static async restaurarConfiguracion(id: string): Promise<MappedConfiguracion | null> {
+  static async restaurarConfiguracion(id: number): Promise<MappedConfiguracion | null> {
     const configAnterior = await this.getConfiguracionById(id)
     
     if (!configAnterior) {
@@ -106,15 +106,17 @@ export class ConfiguracionService {
    * Mapea una fila de la base de datos a la estructura de configuración
    */
   private static mapConfiguracionRow(row: ConfiguracionRow): MappedConfiguracion {
+    // `updated_at` es la única fecha de la tabla y es nullable en la BD.
+    const updatedAt = row.updated_at ? new Date(row.updated_at) : new Date()
     return {
       id: row.id,
-      mantenimiento: row.mantenimiento,
+      mantenimiento: row.mantenimiento ?? false,
       email_soporte: row.email_soporte,
-      comision: row.comision,
-      conversion: row.conversion,
+      comision: row.comision ?? 0,
+      conversion: row.conversion ?? 1,
       comision_publicacion_producto: row.comision_publicacion_producto,
-      createdAt: new Date(row.updated_at), // Usamos updated_at como fecha de creación
-      updatedAt: new Date(row.updated_at)
+      createdAt: updatedAt, // Usamos updated_at como fecha de creación
+      updatedAt
     }
   }
 
@@ -123,7 +125,7 @@ export class ConfiguracionService {
    */
   static getDefaultConfiguracion(): MappedConfiguracion {
     return {
-      id: '',
+      id: 0,
       mantenimiento: false,
       email_soporte: 'soporte@streaming.com',
       comision: 10,

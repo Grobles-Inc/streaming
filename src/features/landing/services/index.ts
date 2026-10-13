@@ -4,7 +4,20 @@ import { Database } from '@/types/supabase'
 export type Categoria = Database['public']['Tables']['categorias']['Row']
 export type CategoriaInsert = Database['public']['Tables']['categorias']['Insert']
 export type CategoriaUpdate = Database['public']['Tables']['categorias']['Update']
-export type Producto = Database['public']['Tables']['productos']['Row']
+/**
+ * Producto de la landing. Las consultas agregan el `usuarios` (proveedor) con
+ * joins, una relación que el generador de tipos no puede expresar, así que se
+ * declara acá. `usuario` viene siempre; el resto de campos depende del `select`
+ * de cada consulta.
+ */
+export type Producto = Database['public']['Tables']['productos']['Row'] & {
+  usuarios?: {
+    usuario: string
+    nombres?: string | null
+    apellidos?: string | null
+    billetera_id?: string | null
+  } | null
+}
 export type ConfiguracionRow = Database['public']['Tables']['configuracion']['Row']
 
 // Create a new categoria

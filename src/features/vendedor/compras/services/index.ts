@@ -3,7 +3,12 @@ import { Database } from '@/types/supabase'
 
 export type Compra = Database['public']['Tables']['compras']['Row']
 export type Usuario = Database['public']['Tables']['usuarios']['Row']
-export type Producto = Database['public']['Tables']['productos']['Row']
+/**
+ * Producto con el join `usuarios` (proveedor) que agregan las consultas.
+ */
+export type Producto = Database['public']['Tables']['productos']['Row'] & {
+  usuarios?: { nombres: string } | null
+}
 export type CompraInsert = Database['public']['Tables']['compras']['Insert']
 export type CompraUpdate = Database['public']['Tables']['compras']['Update']
 export type StockProducto = Database['public']['Tables']['stock_productos']['Update']

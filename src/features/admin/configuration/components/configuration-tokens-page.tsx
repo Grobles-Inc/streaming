@@ -153,7 +153,10 @@ export function ConfigurationTokensPage() {
                   <div className="flex items-center gap-2">
                     <IconClock className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      Generado: {formatDate(configuration.updated_at)}
+                      Generado:{' '}
+                      {configuration.updated_at
+                        ? formatDate(configuration.updated_at)
+                        : 'Sin registro'}
                     </span>
                   </div>
                   {tokenAge && (

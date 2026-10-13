@@ -1,5 +1,5 @@
 import { ConfigurationService } from '@/services/configuration.service'
-import { SIGNUP_MODES, type SignupMode } from '@/types/supabase'
+import { SIGNUP_MODES, type SignupMode } from '@/types/signup'
 import { supabase } from '@/lib/supabase'
 
 /**

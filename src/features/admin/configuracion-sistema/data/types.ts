@@ -11,7 +11,7 @@ export type UpdateConfiguracionData = Database['public']['Tables']['configuracio
 
 // Configuración mapeada para el componente (mantiene nombres consistentes con Supabase)
 export type MappedConfiguracion = {
-  id: string
+  id: number
   mantenimiento: boolean
   comision: number
   email_soporte: string | null

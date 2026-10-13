@@ -15,7 +15,7 @@ import type { HistorialConfiguracion } from '../data/types'
 
 interface HistorialConfiguracionProps {
   historial: HistorialConfiguracion[]
-  onRestore: (id: string) => void
+  onRestore: (id: number) => void
   loading?: boolean
 }
 

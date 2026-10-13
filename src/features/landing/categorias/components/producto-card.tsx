@@ -18,7 +18,11 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
   const { getProxiedImageUrl } = useImageProxy()
   const [infoModalOpen, setInfoModalOpen] = useState(false)
   const [infoModalType, setInfoModalType] = useState<'informacion' | 'descripcion' | 'condiciones'>('informacion')
-  const isAgotado = producto?.stock_de_productos?.length === 0
+  // `stock_de_productos` es una columna json: puede venir null o con otra forma.
+  const stockDisponible = Array.isArray(producto.stock_de_productos)
+    ? producto.stock_de_productos.length
+    : 0
+  const isAgotado = stockDisponible === 0
   const { data: configuracion } = useConfiguracionSistema()
   const precio_producto = user ? producto.precio_vendedor : producto.precio_publico
   return (
@@ -106,7 +110,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
 
             </div>
           </CardHeader>
-          {producto.stock_de_productos.length > 0 && (
+          {stockDisponible > 0 && (
             <div className="absolute top-0 left-0 z-50">
               <div
                 className="bg-blue-600  text-white px-5 py-1 text-xs font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"
@@ -156,7 +160,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
             </div>
           )}
           <CardContent className='flex flex-col px-4 flex-grow'>
-            <span className="text-xs text-gray-500 font-semibold  mb-1">{producto.usuarios.usuario.toUpperCase()}</span>
+            <span className="text-xs text-gray-500 font-semibold  mb-1">{producto.usuarios?.usuario.toUpperCase()}</span>
             <span className="font-bold  mb-1 hidden md:block  leading-tight">{producto.nombre}</span>
             <span className="font-bold md:text-lg text-sm mb-1 md:hidden truncate  leading-tight">{producto.nombre}</span>
             <div className="md:flex flex-row hidden justify-between items-center w-full mb-2">
@@ -170,7 +174,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
 
             {/* Stock y precios */}
             <div className="flex flex-col md:flex-row justify-between md:items-center w-full ">
-              <Badge>Stock: {producto.stock_de_productos.length} </Badge>
+              <Badge>Stock: {stockDisponible} </Badge>
 
               <div className='flex md:flex-col flex-row-reverse justify-between md:justify-start items-center'>
                 <span className="font-bold md:text-xl text-foreground">${precio_producto.toFixed(2)}</span><span className="text-xs text-muted-foreground">S/.{(precio_producto * (configuracion?.conversion ?? 1)).toFixed(2)}</span>

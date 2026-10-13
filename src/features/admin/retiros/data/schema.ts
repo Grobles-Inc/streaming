@@ -9,20 +9,10 @@ const estadoRetiroSchema = z.union([
 ])
 export type EstadoRetiro = z.infer<typeof estadoRetiroSchema>
 
-// Esquema para retiro base
-const retiroBaseSchema = z.object({
-  id: z.string(),
-  usuario_id: z.string(),
-  monto: z.number().min(0),
-  estado: estadoRetiroSchema,
-  created_at: z.string(),
-  updated_at: z.string(),
-})
-
 // Esquema para retiro mapeado
 const mappedRetiroSchema = z.object({
   id: z.number(),
-  usuarioId: z.string(),
+  usuarioId: z.string().nullable(),
   usuario: z.string(),
   usuarioNombre: z.string(),
   usuarioNombres: z.string(),
@@ -49,7 +39,6 @@ const filtroRetiroSchema = z.object({
 })
 
 // Tipos exportados
-export type RetiroBase = z.infer<typeof retiroBaseSchema>
 export type MappedRetiro = z.infer<typeof mappedRetiroSchema>
 export type FiltroRetiro = z.infer<typeof filtroRetiroSchema>
 
@@ -95,7 +84,7 @@ export function mapSupabaseRetiroToComponent(retiro: RetiroWithUser): MappedReti
     monto: retiro.monto,
     estado: retiro.estado,
     fechaCreacion: new Date(retiro.created_at),
-    fechaActualizacion: new Date(retiro.updated_at),
+    fechaActualizacion: new Date(retiro.updated_at ?? retiro.created_at),
     montoFormateado,
     saldoFormateado,
     puedeModificar: retiro.estado === 'pendiente',

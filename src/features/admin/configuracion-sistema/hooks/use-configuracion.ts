@@ -72,7 +72,7 @@ export function useConfiguracion() {
     }
   }
 
-  const restaurarConfiguracion = async (id: string) => {
+  const restaurarConfiguracion = async (id: number) => {
     try {
       setSaving(true)
       setError(null)

@@ -234,7 +234,7 @@ export default function ComprarProductoModal({
                     onSuccess: () => {
                       updateProveedorBilletera(
                         {
-                          idBilletera: producto.usuarios.billetera_id,
+                          idBilletera: producto.usuarios?.billetera_id ?? '',
                           precioProducto: producto?.precio_vendedor,
                         },
                         {

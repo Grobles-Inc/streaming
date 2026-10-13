@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { SIGNUP_MODES, type SignupMode } from '@/types/supabase'
+import { SIGNUP_MODES, type SignupMode } from '@/types/signup'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {

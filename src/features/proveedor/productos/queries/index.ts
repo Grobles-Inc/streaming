@@ -221,7 +221,7 @@ export const useDeleteStockProducto = () => {
   const queryClient = useQueryClient()
   
   return useMutation({
-    mutationFn: ({ id }: { id: number; productoId: number }) => 
+    mutationFn: ({ id }: { id: number; productoId: number | null }) =>
       productosService.deleteStockProducto(id),
     onSuccess: (_, variables) => {
       // Invalidar queries específicas del producto

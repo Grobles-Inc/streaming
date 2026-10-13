@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
-import { IconLogout, IconMoon, IconSun, IconUser } from '@tabler/icons-react'
+import { IconMoon, IconSun, IconUser } from '@tabler/icons-react'
 import { useAuth } from '@/stores/authStore'
 import { useTheme } from '@/context/theme-context'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -9,8 +9,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -43,15 +41,6 @@ export function ProfileDropdown() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className='w-56' align='end' forceMount>
-        <DropdownMenuLabel className='font-normal'>
-          <div className='flex flex-col space-y-1'>
-            <p className='text-sm leading-none font-medium'>{user?.nombres}</p>
-            <p className='text-muted-foreground text-xs leading-none'>
-              {user?.email}
-            </p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link to='/settings'>
             Perfil
@@ -60,7 +49,6 @@ export function ProfileDropdown() {
             </DropdownMenuShortcut>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={toggleTheme}>
           {theme === 'light' ? 'Modo oscuro' : 'Modo claro'}
           <DropdownMenuShortcut>
@@ -74,14 +62,9 @@ export function ProfileDropdown() {
         <DropdownMenuItem>
           <SidebarTrigger />
           Colapsar
-          <DropdownMenuShortcut>Ctrl + B</DropdownMenuShortcut>
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem variant='destructive' onClick={() => signOut()}>
           Cerrar sesión
-          <DropdownMenuShortcut>
-            <IconLogout />
-          </DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -61,42 +61,6 @@ export const useUpdatePedidoStatus = () => {
   })
 }
 
-export const useConfirmarPedido = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (id: string) =>
-      pedidosService.updateCompraStatus(id, {
-        estado: 'confirmado',
-      } as CompraUpdate),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
-      toast.success('Pedido confirmado correctamente')
-    },
-    onError: () => {
-      toast.error('Error al confirmar el pedido')
-    },
-  })
-}
-
-export const useRechazarPedido = () => {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (id: string) =>
-      pedidosService.updateCompraStatus(id, {
-        estado: 'rechazado',
-      } as CompraUpdate),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
-      toast.success('Pedido rechazado')
-    },
-    onError: () => {
-      toast.error('Error al rechazar el pedido')
-    },
-  })
-}
-
 export const useUpdateSoporteStatus = () => {
   const queryClient = useQueryClient()
 

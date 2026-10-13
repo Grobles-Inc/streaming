@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { RecargaWithUser } from './types'
 
 // Esquema para estado de recarga
 const estadoRecargaSchema = z.union([
@@ -8,31 +9,10 @@ const estadoRecargaSchema = z.union([
 ])
 export type EstadoRecarga = z.infer<typeof estadoRecargaSchema>
 
-// Esquema para recarga base
-const recargaBaseSchema = z.object({
-  id: z.number(),  // Cambiado de string a number
-  usuario_id: z.string(),
-  monto: z.number().min(0),
-  estado: estadoRecargaSchema,
-  created_at: z.string(),
-  updated_at: z.string(),
-})
-
-// Esquema para recarga con usuario
-const recargaWithUserSchema = recargaBaseSchema.extend({
-  usuario: z.object({
-    id: z.string(),
-    usuario: z.string(),
-    nombres: z.string(),
-    apellidos: z.string(),
-    telefono: z.string().nullable(),
-  }).optional(),
-})
-
 // Esquema para recarga mapeada
 const mappedRecargaSchema = z.object({
   id: z.number(),  // Cambiado de string a number
-  usuarioId: z.string(),
+  usuarioId: z.string().nullable(),
   usuario: z.string(),
   usuarioNombre: z.string(),
   usuarioNombres: z.string(),
@@ -55,8 +35,6 @@ const filtroRecargaSchema = z.object({
 })
 
 // Tipos exportados
-export type RecargaBase = z.infer<typeof recargaBaseSchema>
-export type RecargaWithUser = z.infer<typeof recargaWithUserSchema>
 export type MappedRecarga = z.infer<typeof mappedRecargaSchema>
 export type FiltroRecarga = z.infer<typeof filtroRecargaSchema>
 
@@ -81,9 +59,9 @@ export function mapSupabaseRecargaToComponent(recarga: RecargaWithUser): MappedR
     usuarioApellidos: recarga.usuario?.apellidos || '',
     usuarioTelefono: recarga.usuario?.telefono || null,
     monto: recarga.monto,
-    estado: recarga.estado,
+    estado: recarga.estado ?? 'pendiente',
     fechaCreacion: new Date(recarga.created_at),
-    fechaActualizacion: new Date(recarga.updated_at),
+    fechaActualizacion: new Date(recarga.updated_at ?? recarga.created_at),
     montoFormateado,
     puedeModificar: recarga.estado === 'pendiente',
   }

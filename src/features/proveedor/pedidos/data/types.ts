@@ -28,6 +28,7 @@ export type GetPedidosProveedorParams = {
   pageSize: number
   search: string
   estados: string[]
+  productoId?: number
   fechaDesde?: string
   fechaHasta?: string
   sortBy: PedidoSortBy

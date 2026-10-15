@@ -1,4 +1,5 @@
 import { Database } from '@/types/supabase'
+import type { BinanceInfo, YapeInfo } from '@/lib/recarga-info'
 
 // Tipo base de configuración desde Supabase (para referencia directa)
 export type ConfiguracionRow = Database['public']['Tables']['configuracion']['Row']
@@ -19,6 +20,8 @@ export type MappedConfiguracion = {
   comision_publicacion_producto: number
   createdAt: Date
   updatedAt: Date
+  yape_info: YapeInfo | null
+  binance_info: BinanceInfo | null
 }
 
 // Entrada del historial de configuraciones

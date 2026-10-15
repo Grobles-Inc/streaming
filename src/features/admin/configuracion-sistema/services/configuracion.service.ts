@@ -1,4 +1,11 @@
 import { supabase } from '@/lib/supabase'
+import {
+  asBinanceInfo,
+  asYapeInfo,
+  binanceInfoToJson,
+  yapeInfoToJson,
+} from '@/lib/recarga-info'
+
 import type { ConfiguracionRow, MappedConfiguracion, HistorialConfiguracion } from '../data/types'
 
 export class ConfiguracionService {
@@ -52,7 +59,11 @@ export class ConfiguracionService {
         email_soporte: config.email_soporte,
         comision: config.comision,
         conversion: config.conversion,
-        comision_publicacion_producto: config.comision_publicacion_producto
+        comision_publicacion_producto: config.comision_publicacion_producto,
+        yape_info: config.yape_info ? yapeInfoToJson(config.yape_info) : null,
+        binance_info: config.binance_info
+          ? binanceInfoToJson(config.binance_info)
+          : null
       })
       .select()
       .single()
@@ -98,7 +109,9 @@ export class ConfiguracionService {
       email_soporte: configAnterior.email_soporte,
       comision: configAnterior.comision,
       conversion: configAnterior.conversion,
-      comision_publicacion_producto: configAnterior.comision_publicacion_producto
+      comision_publicacion_producto: configAnterior.comision_publicacion_producto,
+      yape_info: configAnterior.yape_info,
+      binance_info: configAnterior.binance_info
     })
   }
 
@@ -115,6 +128,8 @@ export class ConfiguracionService {
       comision: row.comision ?? 0,
       conversion: row.conversion ?? 1,
       comision_publicacion_producto: row.comision_publicacion_producto,
+      yape_info: row.yape_info ? asYapeInfo(row.yape_info) : null,
+      binance_info: row.binance_info ? asBinanceInfo(row.binance_info) : null,
       createdAt: updatedAt, // Usamos updated_at como fecha de creación
       updatedAt
     }
@@ -131,6 +146,8 @@ export class ConfiguracionService {
       comision: 10,
       conversion: 1,
       comision_publicacion_producto: 1.35,
+      yape_info: null,
+      binance_info: null,
       createdAt: new Date(),
       updatedAt: new Date()
     }

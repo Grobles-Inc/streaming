@@ -126,8 +126,10 @@ export type Database = {
           asunto: string | null
           codigo: string
           created_at: string | null
+          cuerpo: string | null
           expira_at: string | null
           id: string
+          recibido_at: string | null
           remitente: string | null
           solicitud_id: string
         }
@@ -135,8 +137,10 @@ export type Database = {
           asunto?: string | null
           codigo: string
           created_at?: string | null
+          cuerpo?: string | null
           expira_at?: string | null
           id?: string
+          recibido_at?: string | null
           remitente?: string | null
           solicitud_id: string
         }
@@ -144,8 +148,10 @@ export type Database = {
           asunto?: string | null
           codigo?: string
           created_at?: string | null
+          cuerpo?: string | null
           expira_at?: string | null
           id?: string
+          recibido_at?: string | null
           remitente?: string | null
           solicitud_id?: string
         }
@@ -162,10 +168,12 @@ export type Database = {
       compras: {
         Row: {
           created_at: string
+          cuenta_actualizada: boolean
           estado: Database["public"]["Enums"]["compra_estado"] | null
           fecha_expiracion: string | null
           fecha_inicio: string | null
           id: number
+          imap_enabled: boolean
           monto_reembolso: number | null
           nombre_cliente: string | null
           precio: number | null
@@ -183,10 +191,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          cuenta_actualizada?: boolean
           estado?: Database["public"]["Enums"]["compra_estado"] | null
           fecha_expiracion?: string | null
           fecha_inicio?: string | null
           id?: number
+          imap_enabled?: boolean
           monto_reembolso?: number | null
           nombre_cliente?: string | null
           precio?: number | null
@@ -204,10 +214,12 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          cuenta_actualizada?: boolean
           estado?: Database["public"]["Enums"]["compra_estado"] | null
           fecha_expiracion?: string | null
           fecha_inicio?: string | null
           id?: number
+          imap_enabled?: boolean
           monto_reembolso?: number | null
           nombre_cliente?: string | null
           precio?: number | null
@@ -263,6 +275,7 @@ export type Database = {
       }
       configuracion: {
         Row: {
+          binance_info: Json | null
           comision: number | null
           comision_publicacion_producto: number
           conversion: number | null
@@ -273,8 +286,10 @@ export type Database = {
           registro_requiere_aprobacion: boolean
           signup_mode: string
           updated_at: string | null
+          yape_info: Json | null
         }
         Insert: {
+          binance_info?: Json | null
           comision?: number | null
           comision_publicacion_producto?: number
           conversion?: number | null
@@ -285,8 +300,10 @@ export type Database = {
           registro_requiere_aprobacion?: boolean
           signup_mode?: string
           updated_at?: string | null
+          yape_info?: Json | null
         }
         Update: {
+          binance_info?: Json | null
           comision?: number | null
           comision_publicacion_producto?: number
           conversion?: number | null
@@ -297,18 +314,19 @@ export type Database = {
           registro_requiere_aprobacion?: boolean
           signup_mode?: string
           updated_at?: string | null
+          yape_info?: Json | null
         }
         Relationships: []
       }
       imap_configs: {
         Row: {
-          carpeta: string
           created_at: string | null
           created_by: string
           email: string
           host: string
           id: string
           password_vault_id: string
+          plataforma: string
           port: number
           ssl: boolean
           stock_producto_id: number
@@ -316,13 +334,13 @@ export type Database = {
           usuario: string
         }
         Insert: {
-          carpeta?: string
           created_at?: string | null
           created_by: string
           email: string
           host: string
           id?: string
           password_vault_id: string
+          plataforma?: string
           port?: number
           ssl?: boolean
           stock_producto_id: number
@@ -330,13 +348,13 @@ export type Database = {
           usuario: string
         }
         Update: {
-          carpeta?: string
           created_at?: string | null
           created_by?: string
           email?: string
           host?: string
           id?: string
           password_vault_id?: string
+          plataforma?: string
           port?: number
           ssl?: boolean
           stock_producto_id?: number
@@ -703,6 +721,20 @@ export type Database = {
         }
         Returns: Json
       }
+      get_imap_estado_pedidos: {
+        Args: { p_compra_ids: number[]; p_proveedor_id: string }
+        Returns: {
+          compra_id: number
+          imap_configurado: boolean
+          imap_enabled: boolean
+          imap_host: string
+          imap_port: number
+          imap_ssl: boolean
+          imap_usuario: string
+          plataforma: string
+          stock_producto_id: number
+        }[]
+      }
       get_pedidos_proveedor: {
         Args: {
           p_estados?: string[]
@@ -710,6 +742,7 @@ export type Database = {
           p_fecha_hasta?: string
           p_page?: number
           p_page_size?: number
+          p_producto_id?: number
           p_proveedor_id?: string
           p_search?: string
           p_sort_by?: string
@@ -806,6 +839,18 @@ export type Database = {
           updated_at: string
           usuario_id: string
         }[]
+      }
+      marcar_cuenta_actualizada_revisada: {
+        Args: { p_compra_id: number }
+        Returns: undefined
+      }
+      set_compras_imap_enabled: {
+        Args: {
+          p_compra_id: number
+          p_enabled: boolean
+          p_proveedor_id: string
+        }
+        Returns: boolean
       }
     }
     Enums: {

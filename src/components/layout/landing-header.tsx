@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import {
   IconLayoutDashboard,
@@ -8,6 +9,9 @@ import {
   IconWallet,
 } from '@tabler/icons-react'
 import { useBilleteraByUsuario } from '@/queries'
+import ComprasCuentaDialog from '@/features/vendedor/compras/components/compras-cuenta-dialog'
+import { ComprasNotificacionesBell } from '@/features/vendedor/compras/components/compras-notificaciones-bell'
+import type { CompraCuentaActualizada } from '@/features/vendedor/compras/services'
 import Logo from '@/assets/logo.png'
 import { useAuth } from '@/stores/authStore'
 import { useSearch } from '@/stores/searchStore'
@@ -28,6 +32,8 @@ export default function LandingHeader() {
   const { data: billetera } = useBilleteraByUsuario(user?.id || '')
   const { searchInput, setSearchInput } = useSearch()
   const isMobile = useIsMobile()
+  const [cuentaCompra, setCuentaCompra] =
+    useState<CompraCuentaActualizada | null>(null)
   const redirectRoute =
     rolRedirect[user?.rol as keyof typeof rolRedirect] || '/dashboard'
   return (
@@ -90,6 +96,12 @@ export default function LandingHeader() {
                 </Button>
               ) : user?.rol === 'registered' ? null : (
                 <div className='flex items-center gap-2'>
+                  {user.rol === 'seller' && (
+                    <ComprasNotificacionesBell
+                      vendedorId={user.id}
+                      onSelectCompra={setCuentaCompra}
+                    />
+                  )}
                   <div className='mx-4 flex flex-col items-center gap-0 text-xl font-bold'>
                     $ {billetera?.saldo.toFixed(2)}
                     <div className='flex items-center gap-1'>
@@ -153,6 +165,14 @@ export default function LandingHeader() {
           onChange={(e) => setSearchInput(e.target.value)}
         />
       </div>
+
+      <ComprasCuentaDialog
+        compra={cuentaCompra}
+        open={!!cuentaCompra}
+        onOpenChange={(open) => {
+          if (!open) setCuentaCompra(null)
+        }}
+      />
     </nav>
   )
 }

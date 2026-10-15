@@ -207,7 +207,7 @@ export function UsersInviteWithReferralDialog({ open, onOpenChange }: Props) {
                           <div className="flex items-center gap-3 py-1">
                             <div className="flex-1">
                               <div className="font-medium">
-                                {user.nombres} {user.apellidos}
+                                {user.usuario}
                               </div>
                               <div className="text-sm text-muted-foreground">
                                 {user.email}
@@ -279,7 +279,7 @@ export function UsersInviteWithReferralDialog({ open, onOpenChange }: Props) {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-medium">
-                            {selectedUser.nombres} {selectedUser.apellidos}
+                            {selectedUser.usuario}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {selectedUser.email}

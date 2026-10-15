@@ -179,7 +179,7 @@ export function MovimientosBilleteraModal({ billetera, open, onClose }: Movimien
       <DialogContent className="!w-[98vw] !max-w-[98vw] max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            Movimientos de Billetera - {billetera.usuario?.nombres} {billetera.usuario?.apellidos}
+            Movimientos de Billetera - {billetera.usuario?.usuario}
             <Badge variant="outline" className="ml-2">
               Saldo: {formatCurrency(billetera.saldo)}
             </Badge>

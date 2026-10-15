@@ -9,14 +9,6 @@ import { z } from 'zod'
  */
 export const signUpSchema = z
   .object({
-    nombres: z
-      .string()
-      .trim()
-      .min(2, { message: 'El nombre debe tener al menos 2 caracteres' }),
-    apellidos: z
-      .string()
-      .trim()
-      .min(2, { message: 'El apellido debe tener al menos 2 caracteres' }),
     usuario: z
       .string()
       .trim()
@@ -39,7 +31,6 @@ export const signUpSchema = z
       .string()
       .min(8, { message: 'La contraseña debe tener al menos 8 caracteres' }),
     confirmPassword: z.string(),
-    codigoReferido: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Las contraseñas no coinciden',

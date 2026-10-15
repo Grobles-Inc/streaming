@@ -42,7 +42,7 @@ export function UserNav() {
             <AvatarImage src='https://img.icons8.com/?size=200&id=492ILERveW8G&format=png&color=000000' />
             <AvatarFallback className='bg-gradient-to-r from-indigo-500 to-cyan-500 text-white'></AvatarFallback>
           </Avatar>
-          {user?.nombres} {user?.apellidos.slice(0, 8)}
+          {user?.usuario}
           <ChevronRight className='ml-auto hidden transition-transform duration-200 group-data-[collapsible=icon]:hidden group-data-[state=open]/collapsible:rotate-90' />
         </SidebarMenuButton>
       </DropdownMenuTrigger>

@@ -117,9 +117,7 @@ export type FiltroProducto = z.infer<typeof filtroProductoSchema>
 // Función para mapear producto de Supabase a componente (actualizada)
 export function mapSupabaseProductoToComponent(producto: ProductoWithRelations): MappedProducto {
   const categoriaNombre = producto.categorias?.nombre || 'Sin categoría'
-  const proveedorNombre = producto.usuarios 
-    ? `${producto.usuarios.nombres} ${producto.usuarios.apellidos}`.trim()
-    : 'Sin proveedor'
+  const proveedorNombre = producto.usuarios?.usuario || 'Sin proveedor'
 
   const precioPublicoFormateado = new Intl.NumberFormat('es-PE', {
     style: 'currency',

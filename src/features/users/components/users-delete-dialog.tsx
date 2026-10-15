@@ -4,8 +4,6 @@ import { useState } from 'react'
 import { IconAlertTriangle } from '@tabler/icons-react'
 import { useUsersContext } from '../context/users-context'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { MappedUser } from '../data/schema'
 import { toast } from 'sonner'
@@ -17,24 +15,24 @@ interface Props {
 }
 
 export function UsersDeleteDialog({ open, onOpenChange, currentRow }: Props) {
-  const [value, setValue] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
   const { deleteUser } = useUsersContext()
 
   const handleDelete = async () => {
-    if (value.trim() !== `${currentRow.nombres} ${currentRow.apellidos}`) return
-
+    setIsDeleting(true)
     try {
       const result = await deleteUser(currentRow.id)
       if (result) {
         toast.success(result.message)
         onOpenChange(false)
-        setValue('')
       } else {
         toast.error('Error al eliminar usuario')
       }
     } catch (error) {
       console.error('Error deleting user:', error)
       toast.error('Error al eliminar usuario')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -43,7 +41,8 @@ export function UsersDeleteDialog({ open, onOpenChange, currentRow }: Props) {
       open={open}
       onOpenChange={onOpenChange}
       handleConfirm={handleDelete}
-      disabled={value.trim() !== `${currentRow.nombres} ${currentRow.apellidos}`}
+      disabled={isDeleting}
+      isLoading={isDeleting}
       title={
         <span className='text-destructive'>
           <IconAlertTriangle
@@ -57,21 +56,12 @@ export function UsersDeleteDialog({ open, onOpenChange, currentRow }: Props) {
         <div className='space-y-4'>
           <p className='mb-2'>
             ¿Estás seguro de que quieres eliminar a{' '}
-            <span className='font-bold'>{currentRow.nombres} {currentRow.apellidos}</span>?
+            <span className='font-bold'>{currentRow.usuario}</span>?
             <br />
             Si no tiene historial ni saldo se eliminará permanentemente. Si
             tiene actividad, se deshabilitará en su lugar y podrá habilitarse
             nuevamente.
           </p>
-
-          <Label className='my-2'>
-            Nombre completo:
-            <Input
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder='Ingresa el nombre completo para confirmar.'
-            />
-          </Label>
 
           <Alert variant='destructive'>
             <AlertTitle>¡Advertencia!</AlertTitle>
@@ -82,7 +72,7 @@ export function UsersDeleteDialog({ open, onOpenChange, currentRow }: Props) {
           </Alert>
         </div>
       }
-      confirmText='Confirmar'
+      confirmText={isDeleting ? 'Eliminando...' : 'Confirmar'}
       destructive
     />
   )

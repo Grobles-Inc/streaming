@@ -13,7 +13,7 @@ import type { GetUsersAdminParams } from '../services/users.service'
 // La página inicial es de 50 filas; el selector permite 50, 100 y 200
 const DEFAULT_PAGE_SIZE = 50
 const DEFAULT_SORT_BY = 'created_at'
-const NOMBRE_COLUMN_ID = 'nombreCompleto'
+const NOMBRE_COLUMN_ID = 'usuario'
 const ROL_COLUMN_ID = 'rol'
 const SEARCH_DEBOUNCE_MS = 400
 
@@ -53,7 +53,7 @@ export function useUsersTabla() {
   ])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
-  // Retrasa la búsqueda por nombre para no disparar una request por cada tecla
+  // Retrasa la búsqueda por usuario para no disparar una request por cada tecla
   const [search] = useDebounce(
     getSearchFromColumnFilters(columnFilters),
     SEARCH_DEBOUNCE_MS

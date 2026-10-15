@@ -16,8 +16,7 @@ export function useUsuarios() {
         const validUsuarios = data.filter(usuario => 
           usuario && 
           usuario.id && 
-          usuario.nombres && 
-          usuario.apellidos &&
+          usuario.usuario &&
           usuario.created_at
         )
         setUsuarios(validUsuarios)
@@ -67,8 +66,7 @@ export function useUsuarios() {
           const validUsuarios = data.filter(usuario => 
             usuario && 
             usuario.id && 
-            usuario.nombres && 
-            usuario.apellidos &&
+            usuario.usuario &&
             usuario.created_at
           )
           setUsuarios(validUsuarios)

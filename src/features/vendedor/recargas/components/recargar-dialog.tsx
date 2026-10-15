@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/stepper'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { RecargaMessage } from '@/lib/whatsapp'
+import { asBinanceInfo, asYapeInfo, DEFAULT_BINANCE_INFO, DEFAULT_YAPE_INFO } from '@/lib/recarga-info'
 import { useAuth } from '@/stores/authStore'
 import { IconPlus } from '@tabler/icons-react'
 import { Loader2 } from 'lucide-react'
@@ -43,11 +44,18 @@ export function RecargarDialog() {
   const isMobile = useIsMobile()
   const { user } = useAuth()
   const [dialogOpen, setDialogOpen] = React.useState(false)
+  const [methodModal, setMethodModal] = React.useState<'yape' | 'binance' | null>(null)
   const { mutate: crearRecarga, isPending } = useCreateRecarga()
   const { data: configuracion } = useConfiguracionSistema()
   const form = useForm<{ amount: number }>({
     defaultValues: undefined,
   })
+
+  const yapeInfo = configuracion ? asYapeInfo(configuracion.yape_info) : DEFAULT_YAPE_INFO
+  const binanceInfo = configuracion ? asBinanceInfo(configuracion.binance_info) : DEFAULT_BINANCE_INFO
+  const commPhone = yapeInfo.comm_phone || DEFAULT_YAPE_INFO.comm_phone || '51913190401'
+  const qrSrc = yapeInfo.qr_url || YapeQRImage
+
   if (!user?.id) {
     return null
   }
@@ -69,7 +77,7 @@ export function RecargarDialog() {
           usuario: user?.usuario || '',
           monto: Number(data.amount),
           id_cliente: user?.id || '',
-        }, '51913190401', isMobile ? 'mobile' : 'web')
+        }, commPhone, isMobile ? 'mobile' : 'web')
       }, 3000)
     } catch (error) {
       console.error('Error:', error)
@@ -123,9 +131,9 @@ export function RecargarDialog() {
                         <div className='flex justify-between items-center'>
 
                           <span className='text-sm text-gray-500'>TC: {configuracion?.conversion} -  {((field.value || 0) / (configuracion?.conversion ?? 1)).toFixed(2)} USD</span>
-                          <a href="https://wa.me/51913190401" target="_blank" className='flex items-center gap-1 '>
+                          <a href={`https://wa.me/${commPhone}`} target="_blank" className='flex items-center gap-1 '>
                             <img src="https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000" className='size-5' />
-                            <span className='text-green-500 underline text-xs'>913190401</span>
+                            <span className='text-green-500 underline text-xs'>{commPhone}</span>
                           </a>
                         </div>
                       </>
@@ -157,35 +165,14 @@ export function RecargarDialog() {
                 ))}
               </Stepper>
 
-              <div className='flex items-center justify-between'>
-                <img src={YapeQRImage} alt="Yape" className='md:size-52 size-28' />
-                <div className='flex flex-col gap-4 md:p-4 p-2 justify-between rounded-sm bg-white text-black'>
-                  <div className='flex flex-col  gap-2'>
-                    <div className='flex items-center gap-2'>
-                      <img src="https://images.seeklogo.com/logo-png/38/1/yape-logo-png_seeklogo-381640.png" alt="Yape" className="md:size-14 size-10" />
-
-                    </div>
-
-                    <p className="text-xs"><strong className='text-base'>+51 913 190 401</strong> <br /> Juan Laura P.</p>
-
-                  </div>
-                  <div className='flex flex-row items-center md:gap-2'>
-                    <div className=''>
-
-                      <p className=" font-bold">Binance</p>
-                      <p className=" text-xs">ID: 1096171177</p>
-                      <p className=" text-xs">Nombre: Melvy L.</p>
-                      <p className=" text-xs">1 USDT = 3.2 soles</p>
-                    </div>
-                    <img src="https://images.seeklogo.com/logo-png/32/1/binance-coin-bnb-logo-png_seeklogo-325081.png" alt="Binance" className="md:size-14 size-10 " />
-                  </div>
-
-                </div>
-
+              <div className='flex flex-wrap items-center gap-2'>
+                <Button type="button" variant="outline" onClick={() => setMethodModal('yape')}>
+                  Yape
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setMethodModal('binance')}>
+                  Binance
+                </Button>
               </div>
-
-
-
 
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
@@ -197,6 +184,50 @@ export function RecargarDialog() {
               </DialogFooter>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={methodModal !== null} onOpenChange={(open) => !open && setMethodModal(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {methodModal === 'yape' ? 'Información de Yape' : 'Información de Binance'}
+            </DialogTitle>
+            <DialogDescription>
+              {methodModal === 'yape'
+                ? 'Escanea el QR o yapea al número indicado.'
+                : 'Envía el pago a la cuenta indicada.'}
+            </DialogDescription>
+          </DialogHeader>
+          {methodModal === 'yape' && (
+            <div className='flex flex-col items-center gap-4'>
+              <img src={qrSrc} alt="Yape" className='md:size-52 size-28 object-contain' />
+              <div className='flex flex-col gap-1 text-center'>
+                <p className="text-xs">
+                  <strong className='text-base'>{yapeInfo.yape_number}</strong>
+                  <br />
+                  {yapeInfo.yape_name}
+                </p>
+                <a href={`https://wa.me/${commPhone}`} target="_blank" className='flex items-center justify-center gap-1'>
+                  <img src="https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000" className='size-5' />
+                  <span className='text-green-500 underline text-xs'>{commPhone}</span>
+                </a>
+              </div>
+            </div>
+          )}
+          {methodModal === 'binance' && (
+            <div className='flex flex-col gap-2 text-sm'>
+              <p className="font-bold">Binance</p>
+              <p>ID: {binanceInfo.binance_id}</p>
+              <p>Nombre: {binanceInfo.binance_name}</p>
+              <p>1 USDT = {binanceInfo.usdt_rate} soles</p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setMethodModal(null)}>
+              Cerrar
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

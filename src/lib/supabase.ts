@@ -107,6 +107,59 @@ export class SupabaseStorageService {
   }
 
   /**
+   * Sube una imagen al bucket de configuración (QR de recarga)
+   */
+  static async uploadConfiguracionImage(file: File): Promise<string> {
+    const fileExtension = file.name.split('.').pop()
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`
+    const filePath = `recargas/${fileName}`
+
+    const { data, error } = await supabase.storage
+      .from('configuracion')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      })
+
+    if (error) {
+      console.error('Error subiendo imagen:', error)
+      throw new Error(`Error al subir imagen: ${error.message}`)
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('configuracion')
+      .getPublicUrl(data.path)
+
+    return publicUrl
+  }
+
+  /**
+   * Elimina una imagen del storage de configuración
+   */
+  static async deleteConfiguracionImage(imageUrl: string): Promise<void> {
+    try {
+      const url = new URL(imageUrl)
+      const pathMatch = url.pathname.match(/\/storage\/v1\/object\/public\/configuracion\/(.+)/)
+
+      if (!pathMatch) {
+        throw new Error('URL de imagen inválida')
+      }
+
+      const filePath = pathMatch[1]
+
+      const { error } = await supabase.storage
+        .from('configuracion')
+        .remove([filePath])
+
+      if (error) {
+        console.error('Error eliminando imagen:', error)
+      }
+    } catch (error) {
+      console.error('Error procesando eliminación de imagen:', error)
+    }
+  }
+
+  /**
    * Elimina una imagen de categoría del storage
    */
   static async deleteCategoryImage(imageUrl: string): Promise<void> {

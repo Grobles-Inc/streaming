@@ -35,7 +35,7 @@ export function ProfileDropdown() {
           <Avatar className='h-8 w-8'>
             <AvatarImage src='https://img.icons8.com/?size=200&id=492ILERveW8G&format=png&color=000000' />
             <AvatarFallback className='bg-gradient-to-r from-indigo-500 to-cyan-500 text-white'>
-              {user?.nombres?.charAt(0)}
+              {user?.usuario?.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </Button>

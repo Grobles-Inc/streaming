@@ -45,8 +45,7 @@ export function ProductoFilters({ productos, onFilter, className }: ProductoFilt
     if (filters.proveedor) {
       filtered = filtered.filter(producto =>
         (producto.usuarios && 
-         (producto.usuarios.nombres.toLowerCase().includes(filters.proveedor!.toLowerCase()) ||
-          producto.usuarios.apellidos.toLowerCase().includes(filters.proveedor!.toLowerCase()))) ||
+         producto.usuarios.usuario.toLowerCase().includes(filters.proveedor!.toLowerCase())) ||
         (producto.proveedor_id && producto.proveedor_id.toLowerCase().includes(filters.proveedor!.toLowerCase()))
       )
     }
@@ -142,8 +141,7 @@ export function ProductoFilters({ productos, onFilter, className }: ProductoFilt
     if (currentFilters.proveedor) {
       filtered = filtered.filter(producto =>
         (producto.usuarios && 
-         (producto.usuarios.nombres.toLowerCase().includes(currentFilters.proveedor!.toLowerCase()) ||
-          producto.usuarios.apellidos.toLowerCase().includes(currentFilters.proveedor!.toLowerCase()))) ||
+         producto.usuarios.usuario.toLowerCase().includes(currentFilters.proveedor!.toLowerCase())) ||
         (producto.proveedor_id && producto.proveedor_id.toLowerCase().includes(currentFilters.proveedor!.toLowerCase()))
       )
     }

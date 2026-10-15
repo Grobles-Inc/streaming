@@ -23,8 +23,7 @@ export function BilleteraFiltersComponent({ billeteras, onFilter, className }: B
     }
 
     const filtered = billeteras.filter(billetera =>
-      billetera.usuario?.nombres.toLowerCase().includes(value.toLowerCase()) ||
-      billetera.usuario?.apellidos.toLowerCase().includes(value.toLowerCase()) ||
+      billetera.usuario?.usuario.toLowerCase().includes(value.toLowerCase()) ||
       billetera.usuario?.email.toLowerCase().includes(value.toLowerCase())
     )
 

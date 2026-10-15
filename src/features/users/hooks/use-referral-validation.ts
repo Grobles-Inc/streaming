@@ -59,7 +59,7 @@ export function useReferralValidation(): UseReferralValidationResult {
         console.log('Usuario referido encontrado:', referidoUsuario)
         result = { 
           isValid: true, 
-          referentName: `${referidoUsuario.nombres} ${referidoUsuario.apellidos}` 
+          referentName: referidoUsuario.usuario 
         }
       }
       

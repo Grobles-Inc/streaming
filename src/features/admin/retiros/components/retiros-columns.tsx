@@ -144,7 +144,7 @@ export function createRetirosColumns(
     },
     {
       accessorKey: 'usuarioNombre',
-      header: 'Nombres y Apellidos',
+      header: 'Usuario',
       cell: ({ row }) => {
         const nombre = row.getValue('usuarioNombre') as string
         const telefono = row.original.usuarioTelefono

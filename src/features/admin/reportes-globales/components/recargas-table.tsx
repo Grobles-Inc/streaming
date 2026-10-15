@@ -72,7 +72,7 @@ export function RecargasTable({ recargas, loading, onUpdateRecarga }: RecargasTa
                   <tr key={recarga.id} className="border-b hover:bg-gray-50">
                     <td className="px-4 py-2 border-r">
                       {recarga.usuarios ? (
-                        `${recarga.usuarios.nombres} ${recarga.usuarios.apellidos}`
+                        `${recarga.usuarios.usuario}`
                       ) : (
                         <span className="text-gray-500 font-mono text-xs">ID: {recarga.usuario_id}</span>
                       )}

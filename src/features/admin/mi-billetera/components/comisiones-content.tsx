@@ -294,7 +294,7 @@ export function ComisionesContent() {
                 <div>
                   <h4 className="font-semibold text-sm text-muted-foreground">Proveedor</h4>
                   <p className="font-medium">
-                    {detalleComisionPub.proveedor.nombres} {detalleComisionPub.proveedor.apellidos}
+                    {detalleComisionPub.proveedor.usuario}
                   </p>
                   <p className="text-sm text-muted-foreground">@{detalleComisionPub.proveedor.usuario}</p>
                 </div>
@@ -337,7 +337,7 @@ export function ComisionesContent() {
                 <div>
                   <h4 className="font-semibold text-sm text-muted-foreground">Usuario</h4>
                   <p className="font-medium">
-                    {detalleComisionRet.usuario.nombres} {detalleComisionRet.usuario.apellidos}
+                    {detalleComisionRet.usuario.usuario}
                   </p>
                   <p className="text-sm text-muted-foreground">@{detalleComisionRet.usuario.usuario}</p>
                 </div>
@@ -394,7 +394,7 @@ export function ComisionesContent() {
                 <div>
                   <h4 className="font-semibold text-sm text-muted-foreground">Usuario</h4>
                   <p className="font-medium">
-                    {detalleComisionGen.usuario.nombres} {detalleComisionGen.usuario.apellidos}
+                    {detalleComisionGen.usuario.usuario}
                   </p>
                   <p className="text-sm text-muted-foreground">@{detalleComisionGen.usuario.usuario}</p>
                 </div>

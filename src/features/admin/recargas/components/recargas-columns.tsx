@@ -128,7 +128,7 @@ export function createRecargasColumns(
     },
     {
       accessorKey: 'usuarioNombre',
-      header: 'Nombres y Apellidos',
+      header: 'Usuario',
       cell: ({ row }) => {
         const nombre = row.getValue('usuarioNombre') as string
         const telefono = row.original.usuarioTelefono
@@ -150,12 +150,18 @@ export function createRecargasColumns(
       header: 'Monto',
       cell: ({ row }) => {
         const montoFormateado = row.getValue('montoFormateado') as string
+        const montoSolesFormateado = row.original.montoSolesFormateado
         return (
-
-          <Badge className='text-md' >
-            {montoFormateado}
-          </Badge>
-
+          <div className="space-y-1">
+            <Badge className='text-md' >
+              {montoFormateado}
+            </Badge>
+            {montoSolesFormateado && (
+              <div className="text-xs text-secondary">
+                {montoSolesFormateado}
+              </div>
+            )}
+          </div>
         )
       },
 

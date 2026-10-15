@@ -52,7 +52,7 @@ export class ReportesGlobalesService {
       .select(`
         *,
         categorias(id, nombre),
-        usuarios!proveedor_id(nombres, apellidos)
+        usuarios!proveedor_id(nombres, apellidos, usuario)
       `)
       .order('created_at', { ascending: false })
     
@@ -98,7 +98,7 @@ export class ReportesGlobalesService {
       .from('recargas')
       .select(`
         *,
-        usuarios!usuario_id(nombres, apellidos)
+        usuarios!usuario_id(nombres, apellidos, usuario)
       `)
       .order('created_at', { ascending: false })
     
@@ -122,7 +122,7 @@ export class ReportesGlobalesService {
           simpleData.map(async (recarga) => {
             const { data: usuario } = await supabase
               .from('usuarios')
-              .select('nombres, apellidos')
+              .select('usuario, nombres, apellidos')
               .eq('id', recarga.usuario_id)
               .single()
             
@@ -145,7 +145,7 @@ export class ReportesGlobalesService {
   static async getUsuarioForRecarga(usuarioId: string) {
     const { data, error } = await supabase
       .from('usuarios')
-      .select('id, nombres, apellidos, email, rol')
+      .select('id, usuario, nombres, apellidos, email, rol')
       .eq('id', usuarioId)
       .single()
     

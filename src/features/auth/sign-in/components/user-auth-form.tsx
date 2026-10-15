@@ -115,9 +115,9 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           action='signin'
           onTokenChange={setTurnstileToken}
           resetKey={captchaResetKey}
-          className='mt-2'
+          className='mt-2 flex justify-center'
         />
-        <Button className='mt-2' disabled={isLoading}>
+        <Button className='mt-2 w-full' disabled={isLoading}>
           Iniciar sesión
         </Button>
         <div className='text-center text-sm text-muted-foreground'>

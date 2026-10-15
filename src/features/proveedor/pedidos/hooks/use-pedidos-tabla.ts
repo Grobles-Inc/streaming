@@ -12,6 +12,7 @@ import { useDebouncedValue } from './use-debounced-value'
 // El id de la columna debe coincidir con el valor aceptado por `p_sort_by`
 // y con la columna contra la que filtra el RPC.
 const ESTADO_COLUMN_ID = 'estado_calculado'
+const PRODUCTO_COLUMN_ID = 'producto_id'
 const DEFAULT_SORT_BY: PedidoSortBy = 'created_at'
 // El RPC devuelve 50 filas por defecto
 const DEFAULT_PAGE_SIZE = 50
@@ -31,6 +32,19 @@ const getEstadosFromColumnFilters = (
   if (value === undefined || value === null || value === '') return []
 
   return Array.isArray(value) ? value.map(String) : [String(value)]
+}
+
+const getProductoIdFromColumnFilters = (
+  columnFilters: ColumnFiltersState
+): number | undefined => {
+  const entry = columnFilters.find((f) => f.id === PRODUCTO_COLUMN_ID)
+  const value = entry?.value
+
+  if (value === undefined || value === null || value === '') return undefined
+
+  const first = Array.isArray(value) ? value[0] : value
+  const num = Number(first)
+  return Number.isFinite(num) ? num : undefined
 }
 
 /**
@@ -59,6 +73,7 @@ export function usePedidosTabla(proveedorId: string | undefined) {
       pageSize: pagination.pageSize,
       search,
       estados: getEstadosFromColumnFilters(columnFilters),
+      productoId: getProductoIdFromColumnFilters(columnFilters),
       sortBy: (sorting[0]?.id as PedidoSortBy | undefined) ?? DEFAULT_SORT_BY,
       sortDir: sorting[0]?.desc === false ? 'asc' : 'desc',
     }),

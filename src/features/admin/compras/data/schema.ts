@@ -33,12 +33,14 @@ const compraBaseSchema = z.object({
 const compraWithRelationsSchema = compraBaseSchema.extend({
   proveedor: z.object({
     id: z.string(),
+    usuario: z.string(),
     nombres: z.string(),
     apellidos: z.string(),
     telefono: z.string().nullable(),
   }).optional(),
   vendedor: z.object({
     id: z.string(),
+    usuario: z.string(),
     nombres: z.string(),
     apellidos: z.string(),
     telefono: z.string().nullable(),
@@ -111,14 +113,10 @@ export type FiltroCompra = z.infer<typeof filtroCompraSchema>
 
 // Función para mapear compra de Supabase a componente
 export function mapSupabaseCompraToComponent(compra: CompraWithRelations): MappedCompra {
-  const proveedorNombre = compra.proveedor 
-    ? `${compra.proveedor.nombres} ${compra.proveedor.apellidos}`.trim()
-    : 'Proveedor no encontrado'
+  const proveedorNombre = compra.proveedor?.usuario || 'Proveedor no encontrado'
   
   // Mapear correctamente el vendedor usando la relación
-  const vendedorNombre = compra.vendedor 
-    ? `${compra.vendedor.nombres} ${compra.vendedor.apellidos}`.trim()
-    : undefined
+  const vendedorNombre = compra.vendedor?.usuario || undefined
 
   const productoNombre = compra.producto?.nombre || 'Producto no encontrado'
 

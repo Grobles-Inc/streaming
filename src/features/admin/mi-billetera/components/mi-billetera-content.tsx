@@ -182,7 +182,7 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
                 <div className="flex gap-2">
                   <Dialog open={showRetiroModal} onOpenChange={setShowRetiroModal}>
                     <DialogTrigger asChild>
-                      <Button className="flex items-center gap-2" disabled={billetera?.saldo === 0 || user?.nombres !== 'Super Admin'}>
+                      <Button className="flex items-center gap-2" disabled={billetera?.saldo === 0 || user?.usuario !== 'Super Admin'}>
                         Retirar Fondos
                       </Button>
                     </DialogTrigger>
@@ -432,7 +432,7 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
                         <tr key={comision.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
                           <td className="px-4 py-3 font-medium">{comision.producto.nombre}</td>
                           <td className="px-4 py-3">
-                            {comision.proveedor.nombres} {comision.proveedor.apellidos}
+                            {comision.proveedor.usuario}
                             <div className="text-xs text-muted-foreground">@{comision.proveedor.usuario}</div>
                           </td>
                           <td className="px-4 py-3">{formatCurrency(comision.producto.precio_publico)}</td>
@@ -492,7 +492,7 @@ export function MiBilleteraContent({ className }: MiBilleteraContentProps) {
                       comisionesRetiro.map(comision => (
                         <tr key={comision.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
                           <td className="px-4 py-3">
-                            {comision.usuario.nombres} {comision.usuario.apellidos}
+                            {comision.usuario.usuario}
                             <div className="text-xs text-muted-foreground">@{comision.usuario.usuario}</div>
                           </td>
                           <td className="px-4 py-3">{formatCurrency(comision.monto_retiro)}</td>

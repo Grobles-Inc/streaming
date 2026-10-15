@@ -52,18 +52,11 @@ export const columns: ColumnDef<Referido>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: 'nombres',
+    id: 'usuario',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Nombres' />
+      <DataTableColumnHeader column={column} title='Usuario' />
     ),
-    enableSorting: false,
-
-  },
-  {
-    accessorKey: 'apellidos',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Apellidos' />
-    ),
+    cell: ({ row }) => <span>{row.original.usuario}</span>,
     enableSorting: false,
   },
 

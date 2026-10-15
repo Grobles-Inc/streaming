@@ -277,7 +277,7 @@ export function ProductoEditModal({ producto, open, onClose, onUpdate }: Product
                     <SelectItem value="">Sin proveedor</SelectItem>
                     {proveedores.map((proveedor) => (
                       <SelectItem key={proveedor.id} value={proveedor.id}>
-                        {proveedor.nombres} {proveedor.apellidos}
+                        {proveedor.usuario}
                       </SelectItem>
                     ))}
                   </SelectContent>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Row } from '@tanstack/react-table'
-import { IconEdit, IconHeadset, IconTrash } from '@tabler/icons-react'
+import { IconEdit, IconHeadset, IconServerCog, IconTrash } from '@tabler/icons-react'
 import { EllipsisVertical } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -20,6 +20,7 @@ import {
   calcularFechaExpiracion,
 } from '../utils/fecha-utils'
 import { EditAccountModal } from './edit-account-modal'
+import { ImapConfigDialog } from './imap-config-dialog'
 import { SoporteModal } from './soporte-modal'
 
 interface DataTableRowActionsProps<TData> {
@@ -32,6 +33,7 @@ export function DataTableRowActions<TData>({
   const [showSoporteModal, setShowSoporteModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showImapDialog, setShowImapDialog] = useState(false)
   const pedido = row.original as Pedido
   const eliminarPedidoExpirado = useEliminarPedidoExpirado()
 
@@ -165,6 +167,10 @@ export function DataTableRowActions<TData>({
                 <IconEdit className='size-4' />
                 Editar cuenta
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowImapDialog(true)}>
+                <IconServerCog className='size-4' />
+                Configurar IMAP
+              </DropdownMenuItem>
             </>
           )}
 
@@ -212,6 +218,24 @@ export function DataTableRowActions<TData>({
             tiempo_uso: pedido.producto_tiempo_uso,
           }}
           onClose={handleCloseEditModal}
+        />
+      )}
+
+      {/* Modal de configuración IMAP (proveedor) */}
+      {pedido.stock_producto_id && (
+        <ImapConfigDialog
+          open={showImapDialog}
+          onOpenChange={setShowImapDialog}
+          stockProductoId={pedido.stock_producto_id}
+          email={pedido.cuenta_email}
+          estado={{
+            configurado: pedido.imap_configurado,
+            plataforma: pedido.imap_plataforma,
+            host: pedido.imap_host,
+            port: pedido.imap_port,
+            usuario: pedido.imap_usuario,
+            ssl: pedido.imap_ssl,
+          }}
         />
       )}
 

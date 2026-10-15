@@ -29,6 +29,7 @@ export const compraSchema = z.object({
     perfil: z.string().nullable(),
     pin: z.string().nullable(),
     clave: z.string().nullable(),
+    url: z.string().nullable().optional(),
   }).optional(),
   productos: z.object({
     nombre: z.string().min(1, 'Nombre del producto es requerido.'),
@@ -53,6 +54,10 @@ export const compraSchema = z.object({
   fecha_expiracion: z.string().nullable(),
   monto_reembolso: z.number(),
   estado: compraEstadoSchema,
+  // Toggle del proveedor: habilita la obtención de código para esta compra.
+  imap_enabled: z.boolean().optional(),
+  // Notificación: el proveedor modificó los datos de la cuenta asociada.
+  cuenta_actualizada: z.boolean().optional(),
 })
 
 

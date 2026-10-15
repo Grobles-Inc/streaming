@@ -26,7 +26,9 @@ interface UsersContextType {
   enableUser: (id: string) => Promise<boolean>
   permanentDeleteUser: (id: string) => Promise<boolean>
   searchUsersByName: (name: string) => Promise<void>
-  filterByRole: (role: 'admin' | 'provider' | 'seller' | 'registered') => Promise<void>
+  filterByRole: (
+    role: 'admin' | 'provider' | 'seller' | 'registered' | 'moderador'
+  ) => Promise<void>
   updateUserBalance: (id: string, newBalance: number) => Promise<boolean>
   refreshUsers: () => void
   loadDisabledUsers: () => void

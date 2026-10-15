@@ -218,7 +218,7 @@ export function ProductoDetailsModal({ producto, onClose, onUpdate }: ProductoDe
                     <option value="">Sin proveedor</option>
                     {proveedores.map(proveedor => (
                       <option key={proveedor.id} value={proveedor.id}>
-                        {proveedor.nombres} {proveedor.apellidos}
+                        {proveedor.usuario}
                       </option>
                     ))}
                   </select>

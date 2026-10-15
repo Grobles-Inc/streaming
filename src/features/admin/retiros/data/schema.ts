@@ -47,9 +47,7 @@ export function mapSupabaseRetiroToComponent(retiro: RetiroWithUser): MappedReti
   // Usar la estructura usuarios del servicio
   const usuario = retiro.usuarios
   
-  const nombreCompleto = usuario 
-    ? `${usuario.nombres} ${usuario.apellidos}`.trim()
-    : 'Usuario no encontrado'
+  const nombreCompleto = usuario?.usuario || 'Usuario no encontrado'
   
   const montoFormateado = new Intl.NumberFormat('es-PE', {
     style: 'currency',

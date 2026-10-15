@@ -74,7 +74,7 @@ export function RetiroDetailsModal({
             </div>
           )}
           <div className="flex justify-between">
-            <span className="font-medium">Nombre completo:</span>
+            <span className="font-medium">Usuario:</span>
             <span>{retiro.usuarioNombre}</span>
           </div>
           {retiro.usuarioTelefono && (

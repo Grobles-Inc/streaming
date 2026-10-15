@@ -15,6 +15,13 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/stores/authStore'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -22,77 +29,104 @@ import { Loader2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { Plataforma, PLATAFORMAS } from '../data/plataformas'
 import { useSaveImapConfig } from '../queries'
-import { Compra } from '../data/schema'
 
 const formSchema = z.object({
   email: z.string().email('Email inválido'),
   host: z.string().min(1, 'El host es requerido'),
   port: z.coerce.number().min(1, 'Puerto inválido').max(65535, 'Puerto inválido'),
   usuario: z.string().min(1, 'El usuario es requerido'),
-  password: z.string().min(1, 'La contraseña es requerida'),
+  // Vacía = reusa la que ya está en Vault (nunca se recuperó al cliente).
+  password: z.string(),
   ssl: z.boolean(),
-  carpeta: z.string().min(1, 'La carpeta es requerida'),
+  plataforma: z.enum(
+    PLATAFORMAS.map((p) => p.value) as [Plataforma, ...Plataforma[]]
+  ),
 })
 
 type FormData = z.infer<typeof formSchema>
 
-interface ComprasImapDialogProps {
+interface ImapConfigDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  currentRow: Compra
+  stockProductoId: number
+  /** Email de la cuenta del pedido, usado para prefillear el formulario. */
+  email: string | null
+  /** Estado IMAP ya guardado de la cuenta (viene de la fila del pedido). */
+  estado: {
+    configurado: boolean
+    plataforma: string | null
+    host: string | null
+    port: number | null
+    usuario: string | null
+    ssl: boolean
+  }
 }
 
-export function ComprasImapDialog({
+/**
+ * Configuración IMAP de la cuenta de stock de un pedido. La connection se
+ * verifica server-side antes de guardar y el password solo existe en Vault:
+ * nunca se recupera ni se muestra, por eso el campo es opcional (vacío =
+ * se conserva la contraseña guardada).
+ */
+export function ImapConfigDialog({
   open,
   onOpenChange,
-  currentRow,
-}: ComprasImapDialogProps) {
+  stockProductoId,
+  email,
+  estado,
+}: ImapConfigDialogProps) {
   const { user } = useAuth()
   const saveConfig = useSaveImapConfig()
+
+  const plataformaInicial = PLATAFORMAS.some(
+    (p) => p.value === estado.plataforma
+  )
+    ? (estado.plataforma as Plataforma)
+    : 'otra'
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: currentRow.stock_productos?.email || '',
-      host: 'imap.gmail.com',
-      port: 993,
-      usuario: currentRow.stock_productos?.email || '',
+    values: {
+      email: email ?? '',
+      host: estado.host ?? 'imap.gmail.com',
+      port: estado.port ?? 993,
+      usuario: estado.usuario ?? email ?? '',
       password: '',
-      ssl: true,
-      carpeta: 'INBOX',
+      ssl: estado.configurado ? estado.ssl : true,
+      plataforma: plataformaInicial,
     },
   })
 
   function onSubmit(data: FormData) {
-    if (!currentRow.stock_producto_id) {
-      toast.error('La compra no tiene cuenta asociada')
-      return
-    }
     if (!user?.id) {
       toast.error('Sesión requerida')
       return
     }
+    const { password, ...resto } = data
     saveConfig.mutate(
       {
-        input: { ...data, stock_producto_id: currentRow.stock_producto_id },
+        input: {
+          ...resto,
+          // Vacía = reusar el secreto de Vault.
+          ...(password ? { password } : {}),
+          stock_producto_id: stockProductoId,
+        },
         userId: user.id,
       },
       { onSuccess: () => onOpenChange(false) }
     )
   }
 
-  const handleClose = () => {
-    onOpenChange(false)
-  }
-
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='sm:max-w-[425px]'>
         <DialogHeader>
           <DialogTitle>Configurar IMAP</DialogTitle>
           <DialogDescription>
-            Configura la conexión IMAP para obtener códigos automáticamente.
-            Se verifica la conexión antes de guardar.
+            Conecta el correo de esta cuenta para obtener códigos de verificación
+            automáticamente. La conexión se verifica antes de guardar.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -106,6 +140,33 @@ export function ComprasImapDialog({
                   <FormControl>
                     <Input placeholder='cuenta@ejemplo.com' {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='plataforma'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Plataforma</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder='Selecciona una plataforma' />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {PLATAFORMAS.map((p) => (
+                        <SelectItem key={p.value} value={p.value}>
+                          {p.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -131,11 +192,7 @@ export function ComprasImapDialog({
                   <FormItem>
                     <FormLabel>Puerto</FormLabel>
                     <FormControl>
-                      <Input
-                        type='number'
-                        placeholder='993'
-                        {...field}
-                      />
+                      <Input type='number' placeholder='993' {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -160,51 +217,52 @@ export function ComprasImapDialog({
               name='password'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contraseña / App password</FormLabel>
+                  <FormLabel>
+                    {estado.configurado
+                      ? 'Nueva contraseña (opcional)'
+                      : 'Contraseña / App password'}
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type='password'
-                      placeholder='••••••••'
+                      placeholder={
+                        estado.configurado
+                          ? 'Dejala vacía para conservar la actual'
+                          : '••••••••'
+                      }
+                      autoComplete='new-password'
                       {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                  {estado.configurado && (
+                    <p className='text-muted-foreground text-xs'>
+                      Hay una configuración guardada para esta cuenta. La
+                      contraseña no se muestra por seguridad; solo se usa la que
+                      escribas aquí.
+                    </p>
+                  )}
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='ssl'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>SSL / TLS</FormLabel>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className='grid grid-cols-2 gap-4'>
-              <FormField
-                control={form.control}
-                name='carpeta'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Carpeta</FormLabel>
-                    <FormControl>
-                      <Input placeholder='INBOX' {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='ssl'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>SSL / TLS</FormLabel>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
             <div className='flex justify-end gap-2'>
-              <Button type='button' variant='outline' onClick={handleClose}>
+              <Button type='button' variant='outline' onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>
               <Button type='submit' disabled={saveConfig.isPending}>

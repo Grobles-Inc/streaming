@@ -106,7 +106,7 @@ export class CategoriasService {
         .select(`
           *,
           categorias!inner(id, nombre, descripcion, imagen_url),
-          usuarios!proveedor_id(id, nombres, apellidos, telefono, rol)
+          usuarios!proveedor_id(id, nombres, apellidos, telefono, rol, usuario)
         `)
         .eq('categoria_id', categoriaId)
         .order('created_at', { ascending: false })
@@ -125,7 +125,7 @@ export class CategoriasService {
         .select(`
           *,
           categorias!inner(id, nombre, descripcion, imagen_url),
-          proveedor:usuarios!proveedor_id(id, nombres, apellidos, telefono, rol)
+          proveedor:usuarios!proveedor_id(id, nombres, apellidos, telefono, rol, usuario)
         `)
         .eq('categoria_id', categoriaId)
         .order('created_at', { ascending: false })
@@ -180,7 +180,7 @@ export class CategoriasService {
         .select(`
           *,
           categorias!inner(id, nombre, descripcion, imagen_url),
-          usuarios!proveedor_id(id, nombres, apellidos, telefono, rol)
+          usuarios!proveedor_id(id, nombres, apellidos, telefono, rol, usuario)
         `)
         .single()
       
@@ -276,9 +276,9 @@ export class CategoriasService {
   static async getProveedores() {
     const { data, error } = await supabase
       .from('usuarios')
-      .select('id, nombres, apellidos, telefono, rol')
+      .select('id, usuario, telefono, rol')
       .eq('rol', 'provider')
-      .order('nombres', { ascending: true })
+      .order('usuario', { ascending: true })
     
     if (error) {
       console.error('Error fetching proveedores:', error)

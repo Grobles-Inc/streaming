@@ -71,7 +71,7 @@ export const getComisionesRetiroColumns = (
     header: 'Usuario',
     cell: ({ row }) => {
       const usuario = row.original.usuario
-      const iniciales = `${usuario.nombres.charAt(0)}${usuario.apellidos.charAt(0)}`
+      const iniciales = `${usuario.usuario.slice(0, 2).toUpperCase()}`
       
       return (
         <div className="flex items-center space-x-3">
@@ -82,7 +82,7 @@ export const getComisionesRetiroColumns = (
           </Avatar>
           <div className="min-w-0 flex-1">
             <p className="font-medium text-sm text-foreground truncate">
-              {usuario.nombres} {usuario.apellidos}
+              {usuario.usuario}
             </p>
             <p className="text-xs text-muted-foreground">
               {usuario.usuario}

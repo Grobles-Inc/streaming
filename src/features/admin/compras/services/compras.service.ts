@@ -60,12 +60,14 @@ export class ComprasService {
         *,
         proveedor:usuarios!proveedor_id (
           id,
+          usuario,
           nombres,
           apellidos,
           telefono
         ),
         vendedor:usuarios!vendedor_id (
           id,
+          usuario,
           nombres,
           apellidos,
           telefono
@@ -143,12 +145,14 @@ export class ComprasService {
         *,
         proveedor:usuarios!proveedor_id (
           id,
+          usuario,
           nombres,
           apellidos,
           telefono
         ),
         vendedor:usuarios!vendedor_id (
           id,
+          usuario,
           nombres,
           apellidos,
           telefono

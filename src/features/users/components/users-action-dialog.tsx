@@ -30,8 +30,6 @@ import { MappedUser } from '../data/schema'
 
 const formSchema = z
   .object({
-    nombres: z.string().min(1, { message: 'Los nombres son requeridos.' }),
-    apellidos: z.string().min(1, { message: 'Los apellidos son requeridos.' }),
     email: z.string().email({ message: 'Email válido requerido.' }),
     usuario: z.string().min(3, { message: 'El usuario debe tener al menos 3 caracteres.' }),
     password: z.string().optional(),
@@ -66,8 +64,6 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
     resolver: zodResolver(formSchema),
     defaultValues: isEdit
       ? {
-          nombres: currentRow.nombres,
-          apellidos: currentRow.apellidos,
           email: currentRow.email,
           usuario: currentRow.usuario,
           password: '', // No mostrar password actual por seguridad
@@ -77,8 +73,6 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
           isEdit,
         }
       : {
-          nombres: '',
-          apellidos: '',
           email: '',
           usuario: '',
           password: '',
@@ -94,13 +88,11 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
       if (isEdit && currentRow) {
         // Actualizar usuario (sin password en edición por seguridad)
         const updateData: any = {
-          nombres: values.nombres,
-          apellidos: values.apellidos,
           email: values.email,
           usuario: values.usuario,
           telefono: values.telefono,
           codigo_referido: values.codigo_referido || '',
-          rol: values.rol as 'admin' | 'provider' | 'seller',
+          rol: values.rol as 'admin' | 'provider' | 'seller' | 'moderador',
         }
         
         // Solo incluir password si se proporcionó una nueva
@@ -120,14 +112,15 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
       } else {
         // Crear usuario
         const result = await createUser({
-          nombres: values.nombres,
-          apellidos: values.apellidos,
+          // El usuario es la identidad visible; las columnas legacy son NOT NULL.
+          nombres: values.usuario,
+          apellidos: '',
           email: values.email,
           usuario: values.usuario,
           password: values.password || '',
           telefono: values.telefono,
           codigo_referido: values.codigo_referido || '',
-          rol: values.rol as 'admin' | 'provider' | 'seller',
+          rol: values.rol as 'admin' | 'provider' | 'seller' | 'moderador',
         })
         
         if (result) {
@@ -167,46 +160,6 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
               onSubmit={form.handleSubmit(onSubmit)}
               className='space-y-4 p-0.5'
             >
-              <FormField
-                control={form.control}
-                name='nombres'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-right'>
-                      Nombres
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='Juan Carlos'
-                        className='col-span-4'
-                        autoComplete='off'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='apellidos'
-                render={({ field }) => (
-                  <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-right'>
-                      Apellidos
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='Pérez García'
-                        className='col-span-4'
-                        autoComplete='off'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className='col-span-4 col-start-3' />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name='email'

@@ -197,7 +197,7 @@ export const getHistorialCompras = async (proveedorId: string) => {
     .select(`
       *,
       productos:producto_id(nombre, precio_publico),
-      usuarios:vendedor_id(nombres, apellidos, email, telefono)
+      usuarios:vendedor_id(nombres, apellidos, email, telefono, usuario)
     `)
     .eq('proveedor_id', proveedorId)
     .order('created_at', { ascending: false })
@@ -382,7 +382,7 @@ export const getHistorialRenovacionesPedidos = async (proveedorId: string) => {
         updated_at,
         fecha_expiracion,
         productos:producto_id(nombre, precio_publico, tiempo_uso, precio_renovacion),
-        usuarios:vendedor_id(nombres, apellidos, email, telefono)
+        usuarios:vendedor_id(nombres, apellidos, email, telefono, usuario)
       `)
       .eq('proveedor_id', proveedorId)
       .eq('estado', 'renovado')
@@ -423,6 +423,7 @@ export const getHistorialRenovacionesPedidos = async (proveedorId: string) => {
             precio_publico: producto.precio_publico
           } : undefined,
           usuarios: usuario ? {
+            usuario: usuario.usuario,
             nombres: usuario.nombres,
             apellidos: usuario.apellidos,
             email: usuario.email,
@@ -451,7 +452,7 @@ export const getHistorialReembolsos = async (proveedorId: string) => {
         updated_at,
         created_at,
         productos:producto_id(nombre, precio_publico),
-        usuarios:vendedor_id(nombres, apellidos, email, telefono)
+        usuarios:vendedor_id(nombres, apellidos, email, telefono, usuario)
       `)
       .eq('proveedor_id', proveedorId)
       .eq('estado', 'reembolsado')
@@ -486,6 +487,7 @@ export const getHistorialReembolsos = async (proveedorId: string) => {
           precio_publico: producto.precio_publico
         } : undefined,
         usuarios: usuario ? {
+          usuario: usuario.usuario,
           nombres: usuario.nombres,
           apellidos: usuario.apellidos,
           email: usuario.email,

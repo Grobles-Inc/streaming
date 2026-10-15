@@ -7,12 +7,28 @@ export type Usuario = Database['public']['Tables']['usuarios']['Row']
  * Producto con el join `usuarios` (proveedor) que agregan las consultas.
  */
 export type Producto = Database['public']['Tables']['productos']['Row'] & {
-  usuarios?: { nombres: string } | null
+  usuarios?: { usuario: string; nombres: string } | null
 }
 export type CompraInsert = Database['public']['Tables']['compras']['Insert']
 export type CompraUpdate = Database['public']['Tables']['compras']['Update']
 export type StockProducto = Database['public']['Tables']['stock_productos']['Update']
 export type Billetera = Database['public']['Tables']['billeteras']['Row']
+
+// Fila ligera de una compra con datos de cuenta pendientes de revisar
+// (notificación de cambio de info de cuenta). Alimenta la campana.
+export type CompraCuentaActualizada = {
+  id: number
+  created_at: string
+  updated_at: string | null
+  productos: { nombre: string | null } | null
+  stock_productos: {
+    email: string | null
+    perfil: string | null
+    pin: string | null
+    clave: string | null
+    url: string | null
+  } | null
+}
 
 // Create a new compra
 export const createCompra = async (compra: CompraInsert): Promise<Compra | null> => {
@@ -191,7 +207,7 @@ export const getComprasByVendedorId = async (vendedorId: string, page: number = 
       *,
       productos:producto_id (nombre, precio_publico, tiempo_uso, condiciones, descripcion, informacion, precio_renovacion, renovable),
       usuarios:proveedor_id (nombres, apellidos, telefono, billetera_id, usuario),
-      stock_productos:stock_producto_id (email, perfil, pin, clave)
+      stock_productos:stock_producto_id (email, perfil, pin, clave, url)
     `, { count: 'exact' })
     .eq('vendedor_id', vendedorId)
     .neq('estado', 'reembolsado')
@@ -219,8 +235,8 @@ export const getComprasPaginated = async (
     .select(`
       *,
       productos:producto_id (nombre, precio_publico),
-      usuarios:proveedor_id (nombres, apellidos, billetera_id),
-      stock_productos:stock_producto_id (email, perfil, pin, clave)
+      usuarios:proveedor_id (nombres, apellidos, billetera_id, usuario),
+      stock_productos:stock_producto_id (email, perfil, pin, clave, url)
     `, { count: 'exact' })
     .range(from, to)
     .order('created_at', { ascending: false })
@@ -240,7 +256,7 @@ export const getProductoById = async (id: number): Promise<Producto | null> => {
     .from('productos')
     .select(`
       *,
-      usuarios:proveedor_id (nombres)
+      usuarios:proveedor_id (nombres, usuario)
     `)
     .eq('id', id)
     .single()
@@ -250,4 +266,46 @@ export const getProductoById = async (id: number): Promise<Producto | null> => {
     return null
   }
   return data
+}
+
+// Compras del vendedor con cambios de cuenta pendientes de revisar.
+export const getComprasCuentaActualizada = async (
+  vendedorId: string
+): Promise<CompraCuentaActualizada[]> => {
+  const { data, error } = await supabase
+    .from('compras')
+    .select(`
+      id,
+      created_at,
+      updated_at,
+      productos:producto_id (nombre),
+      stock_productos:stock_producto_id (email, perfil, pin, clave, url)
+    `)
+    .eq('vendedor_id', vendedorId)
+    .eq('cuenta_actualizada', true)
+    .order('updated_at', { ascending: false, nullsFirst: false })
+
+  if (error) {
+    console.error('Error fetching compras con cuenta actualizada:', error)
+    return []
+  }
+
+  return (data as unknown as CompraCuentaActualizada[]) || []
+}
+
+// Marca como revisada la notificación de cambio de cuenta. RPC con RLS:
+// valida automáticamente vendedor_id = auth.uid().
+export const marcarCuentaActualizadaRevisada = async (
+  compraId: number
+): Promise<boolean> => {
+  const { error } = await supabase.rpc('marcar_cuenta_actualizada_revisada', {
+    p_compra_id: compraId,
+  })
+
+  if (error) {
+    console.error('Error marcando cuenta como revisada:', error)
+    return false
+  }
+
+  return true
 }

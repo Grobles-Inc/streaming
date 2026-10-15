@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { CustomEmpty } from '@/components/custom-empty'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { IconPlus, IconEdit, IconTrash, IconPackage, IconEye, IconEyeOff, IconDots, IconLoader2 } from '@tabler/icons-react'
@@ -15,11 +16,13 @@ import {
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { AgregarStockModal } from './agregar-stock-modal'
 import { EditarStockModal } from './editar-stock-modal'
+import { GestionarExistenciasBulkActions } from './gestionar-existencias-bulk-actions'
 import { 
   useStockProductosByProductoId, 
   useDeleteStockProducto,
   useUpdateStockProducto 
 } from '../queries'
+import { useBulkExistencias, type BulkAccion } from '../hooks/use-bulk-existencias'
 import type { Producto } from '../data/schema'
 import type { Database } from '@/types/supabase'
 import {
@@ -52,6 +55,7 @@ export function GestionarExistenciasModal({
   const [showEditarStockDialog, setShowEditarStockDialog] = useState(false)
   const [showAdvertenciaDialog, setShowAdvertenciaDialog] = useState(false)
   const [selectedStock, setSelectedStock] = useState<StockProducto | null>(null)
+  const [bulkAction, setBulkAction] = useState<BulkAccion | null>(null)
   const [modalPrincipalCerrado, setModalPrincipalCerrado] = useState(false)
 
   const { data: stockItems, isLoading, error } = useStockProductosByProductoId(producto.id)
@@ -60,6 +64,11 @@ export function GestionarExistenciasModal({
 
   // Verificar si el producto está publicado
   const productoEstaPublicado = producto.estado === 'publicado'
+
+  const bulk = useBulkExistencias({
+    productoEstaPublicado,
+    stockItems: stockItems ?? [],
+  })
 
   const handleDelete = (stock: StockProducto) => {
     setSelectedStock(stock)
@@ -152,8 +161,66 @@ export function GestionarExistenciasModal({
     })
   }
 
+  // === Acciones en lote ===
+  const handleBulkPublicar = () => {
+    // Sin producto publicado no se puede publicar stock (misma regla individual)
+    if (!productoEstaPublicado) {
+      setShowAdvertenciaDialog(true)
+      return
+    }
+    setBulkAction('publicar')
+  }
+
+  const handleBulkDespublicar = () => {
+    setBulkAction('despublicar')
+  }
+
+  const handleBulkEliminar = () => {
+    setBulkAction('eliminar')
+  }
+
+  const confirmBulkAction = () => {
+    if (bulkAction === 'publicar') void bulk.publicar()
+    if (bulkAction === 'despublicar') void bulk.despublicar()
+    if (bulkAction === 'eliminar') void bulk.eliminar()
+    setBulkAction(null)
+  }
+
   // Verificar si el stock seleccionado está vendido
   const stockEstaVendido = selectedStock?.estado === 'vendido'
+
+  // Configuración del diálogo de confirmación según la acción en lote
+  const bulkConfigs = {
+    publicar: {
+      title: '¿Publicar existencias?',
+      desc: `Se publicarán ${bulk.publicablesCount} existencia(s). Las que ya estaban publicadas se omitirán.`,
+      confirmText: 'Publicar',
+      destructive: false,
+    },
+    despublicar: {
+      title: '¿Despublicar existencias?',
+      desc: `Se despublicarán ${bulk.despublicablesCount} existencia(s). Las que ya estaban sin publicar se omitirán.`,
+      confirmText: 'Despublicar',
+      destructive: false,
+    },
+    eliminar: {
+      title: '¿Eliminar existencias?',
+      desc: `Se eliminarán ${bulk.eliminablesCount} existencia(s).${
+        bulk.vendidosCount > 0
+          ? ` ${bulk.vendidosCount} vendida(s) no se eliminarán.`
+          : ''
+      }`,
+      confirmText: 'Eliminar',
+      destructive: true,
+    },
+  } satisfies Record<BulkAccion, {
+    title: string
+    desc: string
+    confirmText: string
+    destructive: boolean
+  }>
+
+  const bulkConfig = bulkConfigs[bulkAction ?? 'publicar']
 
   const getEstadoBadge = (estado: string) => {
     const colors = {
@@ -198,7 +265,13 @@ export function GestionarExistenciasModal({
 
   return (
     <>
-      <Dialog open={open && !modalPrincipalCerrado} onOpenChange={onOpenChange}>
+      <Dialog
+        open={open && !modalPrincipalCerrado}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) bulk.clearSelection()
+          onOpenChange(nextOpen)
+        }}
+      >
         <DialogContent className="!max-w-[90vw] !max-h-[150vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -207,6 +280,19 @@ export function GestionarExistenciasModal({
           </DialogHeader>
 
           <div className="flex-1 overflow-hidden flex flex-col">
+            {/* Barra de acciones en lote */}
+            {bulk.hasSelection && (
+              <div className="mb-4">
+                <GestionarExistenciasBulkActions
+                  selectedCount={bulk.selectedCount}
+                  isPending={bulk.isPending}
+                  onPublicar={handleBulkPublicar}
+                  onDespublicar={handleBulkDespublicar}
+                  onEliminar={handleBulkEliminar}
+                />
+              </div>
+            )}
+
             {/* Botón para agregar nuevo stock */}
             <div className="mb-4">
               <Button onClick={handleAgregarStock}>
@@ -235,6 +321,17 @@ export function GestionarExistenciasModal({
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10">
+                        <Checkbox
+                          checked={
+                            bulk.allSelected ||
+                            (bulk.someSelected && 'indeterminate')
+                          }
+                          onCheckedChange={(value) => bulk.toggleAll(!!value)}
+                          aria-label='Seleccionar todo'
+                          className='translate-y-[2px]'
+                        />
+                      </TableHead>
                       <TableHead>ID</TableHead>
                       <TableHead>Tipo</TableHead>
                       <TableHead>Email</TableHead>
@@ -251,7 +348,20 @@ export function GestionarExistenciasModal({
                   </TableHeader>
                   <TableBody>
                     {stockItems.map((stock) => (
-                      <TableRow key={stock.id}>
+                      <TableRow
+                        key={stock.id}
+                        data-state={bulk.isSelected(stock.id) && 'selected'}
+                      >
+                        <TableCell className="w-10">
+                          <Checkbox
+                            checked={bulk.isSelected(stock.id)}
+                            onCheckedChange={(value) =>
+                              bulk.toggleOne(stock.id, !!value)
+                            }
+                            aria-label='Seleccionar fila'
+                            className='translate-y-[2px]'
+                          />
+                        </TableCell>
                         <TableCell className="font-mono text-sm">
                           #{stock.id}
                         </TableCell>
@@ -377,6 +487,20 @@ export function GestionarExistenciasModal({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de confirmación de acciones en lote */}
+      <ConfirmDialog
+        open={bulkAction !== null}
+        onOpenChange={(open) => {
+          if (!open) setBulkAction(null)
+        }}
+        title={bulkConfig.title}
+        desc={bulkConfig.desc}
+        confirmText={bulkConfig.confirmText}
+        destructive={bulkConfig.destructive}
+        handleConfirm={confirmBulkAction}
+        isLoading={bulk.isPending}
+      />
 
       {/* Modal de confirmación de eliminación */}
       <ConfirmDialog

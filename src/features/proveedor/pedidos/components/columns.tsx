@@ -3,14 +3,17 @@ import { ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Switch } from '@/components/ui/switch'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useAuth } from '@/stores/authStore'
 import { estadosMap } from '../data/data'
+import { getPlataformaLabel } from '../data/plataformas'
 import { Pedido, PedidoEstado } from '../data/schema'
-import { useUpdatePedidoStatusVencido } from '../queries'
+import { useToggleImapEnabled, useUpdatePedidoStatusVencido } from '../queries'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 
@@ -73,8 +76,53 @@ const DiasRestantesCell = ({
   )
 }
 
-export const columns: ColumnDef<Pedido>[] = [
-  {
+/**
+ * Toggle del proveedor: habilita la obtención de código para esta compra.
+ * Solo se puede activar si la cuenta tiene IMAP configurado (el RPC lo
+ * valida también, el Switch queda deshabilitado como feedback).
+ */
+const ImapToggleCell = ({ row }: { row: Pedido }) => {
+  const { user } = useAuth()
+  const toggleImapEnabled = useToggleImapEnabled()
+  const habilitado = row.imap_enabled
+  const configurado = row.imap_configurado
+
+  const handleChange = (checked: boolean) => {
+    if (!user?.id || !row.id) return
+    toggleImapEnabled.mutate({
+      proveedorId: user.id,
+      compraId: row.id,
+      enabled: checked,
+    })
+  }
+
+  return (
+    <div className='flex flex-col items-center gap-1'>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className='flex justify-center'>
+            <Switch
+              checked={habilitado}
+              disabled={!configurado || toggleImapEnabled.isPending || !row.id}
+              onCheckedChange={handleChange}
+              aria-label='Habilitar obtención de código'
+            />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          {configurado
+            ? `Obtener códigos de ${getPlataformaLabel(row.imap_plataforma)} desde ${row.cuenta_email ?? 'este correo'}`
+            : 'Configura el IMAP de esta cuenta para habilitarla'}
+        </TooltipContent>
+      </Tooltip>
+      <span className='text-muted-foreground text-xs'>
+        {configurado ? getPlataformaLabel(row.imap_plataforma) : 'Sin config'}
+      </span>
+    </div>
+  )
+}
+
+export const columns: ColumnDef<Pedido>[] = [  {
     id: 'select',
     header: ({ table }) => (
       <Checkbox
@@ -103,6 +151,13 @@ export const columns: ColumnDef<Pedido>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='ID' />
     ),
+  },
+  {
+    accessorKey: 'producto_id',
+    header: 'Producto ID',
+    enableSorting: false,
+    enableHiding: false,
+    cell: () => null,
   },
   {
     accessorKey: 'producto_nombre',
@@ -341,6 +396,14 @@ export const columns: ColumnDef<Pedido>[] = [
         id={row.original.id}
       />
     ),
+  },
+  {
+    id: 'imap_habilitado',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='IMAP' />
+    ),
+    enableSorting: false,
+    cell: ({ row }) => <ImapToggleCell row={row.original} />,
   },
   {
     id: 'actions',

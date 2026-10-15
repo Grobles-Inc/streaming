@@ -36,4 +36,9 @@ export const userTypes = [
     value: 'registered',
     icon: IconUser,
   },
+  {
+    label: 'Moderador',
+    value: 'moderador',
+    icon: IconUserShield,
+  },
 ] as const

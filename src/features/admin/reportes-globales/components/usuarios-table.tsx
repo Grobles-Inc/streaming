@@ -41,7 +41,7 @@ export function UsuariosTable({ usuarios, loading }: UsuariosTableProps) {
           <table className="w-full text-sm border-collapse">
             <thead className="border-b">
               <tr>
-                <th className="px-4 py-2 text-left">Nombre</th>
+                <th className="px-4 py-2 text-left">Usuario</th>
                 <th className="px-4 py-2 text-left">Email</th>
                 <th className="px-4 py-2 text-left">Teléfono</th>
                 <th className="px-4 py-2 text-left">Rol</th>
@@ -79,7 +79,7 @@ export function UsuariosTable({ usuarios, loading }: UsuariosTableProps) {
               usuarios.map((usuario) => (
                 <tr key={usuario.id} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-2 border-r">
-                    {usuario.nombres} {usuario.apellidos}
+                    {usuario.usuario}
                   </td>
                   <td className="px-4 py-2 border-r">{usuario.email}</td>
                   <td className="px-4 py-2 border-r">{usuario.telefono || 'N/A'}</td>

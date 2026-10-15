@@ -71,6 +71,9 @@ export function DataTable<TData, TValue>({
       pagination: {
         pageSize: 50,
       },
+      columnVisibility: {
+        producto_id: false,
+      },
     },
     // Búsqueda, filtrado, orden y paginación se resuelven en el servidor vía
     // RPC; la tabla solo refleja el estado y lo propaga hacia arriba.

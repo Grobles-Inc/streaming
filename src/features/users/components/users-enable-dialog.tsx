@@ -30,7 +30,7 @@ export function UsersEnableDialog({ open, onOpenChange, currentRow }: UsersEnabl
       const success = await enableUser(currentRow.id)
       if (success) {
         toast.success('Usuario habilitado', {
-          description: `${currentRow.nombres} ${currentRow.apellidos} ha sido habilitado exitosamente.`
+          description: `${currentRow.usuario} ha sido habilitado exitosamente.`
         })
         onOpenChange()
       } else {
@@ -54,7 +54,7 @@ export function UsersEnableDialog({ open, onOpenChange, currentRow }: UsersEnabl
           </AlertDialogTitle>
           <AlertDialogDescription>
             ¿Estás seguro de que quieres habilitar la cuenta de{' '}
-            <span className="font-semibold">{currentRow.nombres} {currentRow.apellidos}</span>?
+            <span className="font-semibold">{currentRow.usuario}</span>?
             <br />
             <br />
             El usuario podrá volver a acceder a la plataforma y realizar todas las acciones normalmente.

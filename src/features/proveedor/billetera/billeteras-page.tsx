@@ -92,7 +92,7 @@ export default function BilleterasPage() {
                 <Wallet className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{user.nombres} {user.apellidos}</div>
+                <div className="text-2xl font-bold">{user.usuario}</div>
                 <p className="text-xs text-muted-foreground">
                   {user.email}
                 </p>

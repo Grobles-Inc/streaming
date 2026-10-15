@@ -72,7 +72,7 @@ export function BilleterasTable({ billeteras, onViewMovimientos }: BilleterasTab
           <thead>
             <tr className="border-b">
               <th className="px-4 py-3 font-medium">Usuario</th>
-              <th className="px-4 py-3 font-medium">Nombres y Apellidos</th>
+              <th className="px-4 py-3 font-medium">Teléfono</th>
               <th className="px-4 py-3 font-medium">Email</th>
               <th className="px-4 py-3 font-medium">Rol</th>
               <th className="px-4 py-3 font-medium">Saldo</th>
@@ -98,9 +98,6 @@ export function BilleterasTable({ billeteras, onViewMovimientos }: BilleterasTab
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-col">
-                    <span className="font-medium">
-                      {billetera.usuario?.nombres} {billetera.usuario?.apellidos}
-                    </span>
                     {billetera.usuario?.telefono && (
                       <span className="text-xs text-gray-500">
                         {billetera.usuario.telefono}

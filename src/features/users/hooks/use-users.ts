@@ -179,7 +179,7 @@ export function useUsers() {
   }
 
   const filterByRole = async (
-    role: 'admin' | 'provider' | 'seller' | 'registered'
+    role: 'admin' | 'provider' | 'seller' | 'registered' | 'moderador'
   ) => {
     try {
       setLoading(true)

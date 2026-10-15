@@ -8,6 +8,7 @@ import type { Database } from '@/types/supabase'
 import { toast } from 'sonner'
 import { GetPedidosProveedorParams, UpdateSoporteStatusParams } from '../data/types'
 import * as pedidosService from '../services'
+import { ImapConfigInput, saveImapConfig, setImapEnabled } from '../services/imap'
 
 type CompraUpdate = Database['public']['Tables']['compras']['Update']
 
@@ -388,6 +389,47 @@ export const useEliminarPedidosExpiradosEnBloque = () => {
       toast.error(
         error?.error || error?.message || 'Error al eliminar los pedidos'
       )
+    },
+  })
+}
+
+export const useSaveImapConfig = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ input, userId }: { input: ImapConfigInput; userId: string }) =>
+      saveImapConfig(input, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+      toast.success('Configuración IMAP guardada y verificada')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Error al guardar la configuración IMAP')
+    },
+  })
+}
+
+export const useToggleImapEnabled = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      proveedorId,
+      compraId,
+      enabled,
+    }: {
+      proveedorId: string
+      compraId: number
+      enabled: boolean
+    }) => setImapEnabled(proveedorId, compraId, enabled),
+    onSuccess: (enabled) => {
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+      toast.success(
+        enabled
+          ? 'Obtención de código habilitada para esta compra'
+          : 'Obtención de código deshabilitada'
+      )
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Error al actualizar el estado IMAP')
     },
   })
 }

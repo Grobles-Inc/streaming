@@ -53,16 +53,19 @@ export async function signUp(
     return { ok: false, reason: SIGNUP_LIMIT_MESSAGE }
   }
 
-  const { confirmPassword: _confirm, codigoReferido, ...fields } = data
-  const referralCode = codigoReferido?.trim()
+  const { confirmPassword: _confirm, ...fields } = data
+  const usuario = fields.usuario.trim()
 
   try {
     const user = await UsersService.createUserWithReferral(
       {
         email: fields.email.trim().toLowerCase(),
-        nombres: fields.nombres.trim(),
-        apellidos: fields.apellidos.trim(),
-        usuario: fields.usuario.trim(),
+        // The public sign-up no longer collects a full name: `usuario` is the
+        // only display identity and it is unique, so it is mirrored here only
+        // because the legacy columns are NOT NULL.
+        nombres: usuario,
+        apellidos: '',
+        usuario,
         password: fields.password,
         telefono: fields.telefono || null,
         rol: SIGN_UP_ROLE,
@@ -71,7 +74,9 @@ export async function signUp(
         estado_habilitado: !settings.approvalRequired,
         ip_registro: gate.ip,
       },
-      referralCode || undefined
+      // Raw public sign-up never carries a referral code: the code belongs to
+      // invitation links, which go through /register instead.
+      undefined
     )
 
     return {

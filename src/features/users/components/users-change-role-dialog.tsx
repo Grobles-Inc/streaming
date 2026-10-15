@@ -69,7 +69,7 @@ export function UsersChangeRoleDialog({
         <DialogHeader>
           <DialogTitle>Cambiar Rol de Usuario</DialogTitle>
           <DialogDescription>
-            Cambia el rol del usuario <strong>{currentRow.nombres} {currentRow.apellidos}</strong>
+            Cambia el rol del usuario <strong>{currentRow.usuario}</strong>
           </DialogDescription>
         </DialogHeader>
         

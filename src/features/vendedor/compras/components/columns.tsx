@@ -7,13 +7,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { PhoneInput } from '@/components/phone-input'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { CompraMessage } from '@/lib/whatsapp'
 import { useBilleteraByUsuario } from '@/queries'
 import { useAuth } from '@/stores/authStore'
-import { IconAlertTriangle, IconDots, IconEdit, IconHeadset, IconKey, IconLoader2, IconPackage, IconRefresh, IconServerCog } from '@tabler/icons-react'
+import { IconAlertTriangle, IconBell, IconDots, IconEdit, IconHeadset, IconKey, IconLoader2, IconPackage, IconRefresh } from '@tabler/icons-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -285,6 +285,10 @@ const ProductoCell = ({ row }: { row: Compra }) => {
 
 const AccionesCell = ({ row }: { row: Compra }) => {
   const { setOpen, setCurrentRow } = useCompras()
+  // El proveedor habilita la obtención de código por compra (Pedidos → IMAP).
+  // Sin toggle no hay nada que hacer en esta fila.
+  if (!row.imap_enabled) return null
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
@@ -294,25 +298,18 @@ const AccionesCell = ({ row }: { row: Compra }) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='w-[180px]'>
-        <DropdownMenuItem
-          onClick={() => {
-            setCurrentRow(compraSchema.parse(row))
-            setOpen('obtener_codigo')
-          }}
-        >
-          <IconKey className='mr-2 h-4 w-4' />
-          Obtener código
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => {
-            setCurrentRow(compraSchema.parse(row))
-            setOpen('config_imap')
-          }}
-        >
-          <IconServerCog className='mr-2 h-4 w-4' />
-          Configurar IMAP
-        </DropdownMenuItem>
+        {/* El proveedor habilita la obtención de código por compra (Pedidos → IMAP) */}
+        {row.imap_enabled && (
+          <DropdownMenuItem
+            onClick={() => {
+              setCurrentRow(compraSchema.parse(row))
+              setOpen('obtener_codigo')
+            }}
+          >
+            <IconKey className='mr-2 h-4 w-4' />
+            Obtener código
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )
@@ -386,10 +383,24 @@ export const columns: ColumnDef<Compra>[] = [
       <DataTableColumnHeader column={column} title='Email' />
     ),
     cell: ({ row }) => {
-      const { stock_productos } = row.original
+      const { stock_productos, cuenta_actualizada } = row.original
       const email = stock_productos?.email || ''
       const displayEmail = email.length > 50 ? email.slice(0, 50) + '...' : email
-      return <span className='truncate max-w-32'>{displayEmail}</span>
+      return (
+        <div className='flex items-center gap-2'>
+          <span className='truncate max-w-32'>{displayEmail}</span>
+          {cuenta_actualizada && (
+            <Badge
+              variant='secondary'
+              className='gap-1'
+              title='Datos de cuenta actualizados'
+            >
+              <IconBell size={12} />
+              Actualizada
+            </Badge>
+          )}
+        </div>
+      )
     },
     enableSorting: false,
 

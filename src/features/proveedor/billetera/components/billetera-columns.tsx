@@ -26,6 +26,7 @@ type TransaccionCompleta = {
     precio_publico: number
   }
   usuarios?: {
+    usuario?: string
     nombres: string
     apellidos: string
     email: string
@@ -296,7 +297,7 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
             <div className="space-y-1">
               {transaccion.usuarios && (
                 <div className="text-sm">
-                  <span className="font-medium">Vendedor:</span> {transaccion.usuarios.nombres} {transaccion.usuarios.apellidos}
+                  <span className="font-medium">Vendedor:</span> {transaccion.usuarios.usuario}
                 </div>
               )}
               {transaccion.usuarios?.telefono && (
@@ -343,7 +344,7 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
               </div>
               {transaccion.usuarios && (
                 <div className='text-xs text-muted-foreground'>
-                  Vendedor: {transaccion.usuarios.nombres} {transaccion.usuarios.apellidos}
+                  Vendedor: {transaccion.usuarios.usuario}
                 </div>
               )}
               {transaccion.productos && (
@@ -361,7 +362,7 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
               </div>
               {transaccion.usuarios && (
                 <div className='text-xs text-muted-foreground'>
-                  Vendedor: {transaccion.usuarios.nombres} {transaccion.usuarios.apellidos}
+                  Vendedor: {transaccion.usuarios.usuario}
                 </div>
               )}
               {transaccion.productos && (

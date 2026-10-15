@@ -18,7 +18,7 @@ export default function SignIn() {
     <AuthLayout>
       <Card className='gap-4'>
         <CardHeader>
-          <CardTitle className='text-lg tracking-tight'>
+          <CardTitle className='text-center text-lg tracking-tight'>
             Inicia Sesión
           </CardTitle>
         </CardHeader>

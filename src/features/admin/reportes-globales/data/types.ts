@@ -1,6 +1,7 @@
 export type Usuario = {
   id: string
   email: string
+  usuario: string
   nombres: string
   apellidos: string
   avatar: string
@@ -43,6 +44,7 @@ export type Producto = {
     descripcion: string | null
   }
   usuarios?: {
+    usuario: string
     nombres: string
     apellidos: string
   }
@@ -57,6 +59,7 @@ export type Recarga = {
   updated_at: string
   // Relación
   usuarios?: {
+    usuario: string
     nombres: string
     apellidos: string
   }

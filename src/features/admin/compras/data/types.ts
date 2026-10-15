@@ -61,12 +61,14 @@ export type UpdateCompraData = {
 export type CompraWithRelations = SupabaseCompra & {
   proveedor?: {
     id: string
+    usuario: string
     nombres: string
     apellidos: string
     telefono: string | null
   }
   vendedor?: {
     id: string
+    usuario: string
     nombres: string
     apellidos: string
     telefono: string | null

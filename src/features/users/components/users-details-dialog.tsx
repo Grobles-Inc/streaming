@@ -59,14 +59,6 @@ export function UsersDetailsDialog({ currentRow, open, onOpenChange }: Props) {
               <h4 className='font-medium text-sm text-muted-foreground'>INFORMACIÓN PERSONAL</h4>
               <div className='space-y-3'>
                 <div>
-                  <label className='text-sm font-medium'>Nombres:</label>
-                  <p className='text-sm text-muted-foreground'>{currentRow.nombres}</p>
-                </div>
-                <div>
-                  <label className='text-sm font-medium'>Apellidos:</label>
-                  <p className='text-sm text-muted-foreground'>{currentRow.apellidos}</p>
-                </div>
-                <div>
                   <label className='text-sm font-medium'>Email:</label>
                   <p className='text-sm text-muted-foreground font-mono'>{currentRow.email}</p>
                 </div>

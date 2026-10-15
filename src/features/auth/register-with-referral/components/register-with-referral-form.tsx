@@ -35,14 +35,6 @@ import { UsersService } from '@/features/users/services/users.service'
 // Schema de validación
 const registerWithReferralSchema = z
   .object({
-    nombres: z
-      .string()
-      .min(1, { message: 'El nombre es requerido' })
-      .min(2, { message: 'El nombre debe tener al menos 2 caracteres' }),
-    apellidos: z
-      .string()
-      .min(1, { message: 'El apellido es requerido' })
-      .min(2, { message: 'El apellido debe tener al menos 2 caracteres' }),
     usuario: z
       .string()
       .min(1, { message: 'El nombre de usuario es requerido' })
@@ -147,8 +139,6 @@ export function RegisterWithReferralForm() {
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerWithReferralSchema),
     defaultValues: {
-      nombres: '',
-      apellidos: '',
       usuario: '',
       email: '',
       telefono: '',
@@ -233,8 +223,9 @@ export function RegisterWithReferralForm() {
       await UsersService.createUserWithReferral(
         {
           email: userData.email,
-          nombres: userData.nombres,
-          apellidos: userData.apellidos,
+          // La identidad visible es el usuario; las columnas legacy son NOT NULL.
+          nombres: userData.usuario,
+          apellidos: '',
           usuario: userData.usuario,
           password: userData.password,
           telefono: userData.telefono,
@@ -351,31 +342,6 @@ export function RegisterWithReferralForm() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
-          <FormField
-            control={form.control}
-            name='nombres'
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input placeholder='Nombres' {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='apellidos'
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input placeholder='Apellidos' {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           <FormField
             control={form.control}
             name='usuario'

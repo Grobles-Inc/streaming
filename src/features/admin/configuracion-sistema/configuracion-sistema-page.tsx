@@ -4,11 +4,14 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Main } from '@/components/layout/main'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ChangeEvent } from 'react'
 import { toast } from 'sonner'
 import { useConfiguracion } from './hooks/use-configuracion'
 import { HistorialConfiguracionCard } from './components/historial-configuracion'
 import { SignupSettingsCard } from './components/signup-settings-card'
+import { DEFAULT_BINANCE_INFO, DEFAULT_YAPE_INFO } from '@/lib/recarga-info'
+import { SupabaseStorageService } from '@/lib/supabase'
+import YapeQRImage from '@/assets/YapeQR.jpg'
 
 export default function ConfiguracionSistemaPage() {
   const {
@@ -29,6 +32,16 @@ export default function ConfiguracionSistemaPage() {
   const [conversion, setConversion] = useState(1)
   const [comisionPublicacion, setComisionPublicacion] = useState(1.35)
 
+  // Estado para información de recarga (Yape / Binance)
+  const [commPhone, setCommPhone] = useState(DEFAULT_YAPE_INFO.comm_phone ?? '')
+  const [qrUrl, setQrUrl] = useState<string>('')
+  const [yapeNumber, setYapeNumber] = useState(DEFAULT_YAPE_INFO.yape_number ?? '')
+  const [yapeName, setYapeName] = useState(DEFAULT_YAPE_INFO.yape_name ?? '')
+  const [binanceId, setBinanceId] = useState(DEFAULT_BINANCE_INFO.binance_id ?? '')
+  const [binanceName, setBinanceName] = useState(DEFAULT_BINANCE_INFO.binance_name ?? '')
+  const [usdtRate, setUsdtRate] = useState(String(DEFAULT_BINANCE_INFO.usdt_rate ?? 3.2))
+  const [uploadingQr, setUploadingQr] = useState(false)
+
   // Estado para mostrar/ocultar historial
   const [showHistorial, setShowHistorial] = useState(false)
 
@@ -40,6 +53,17 @@ export default function ConfiguracionSistemaPage() {
       setComision(configuracion.comision)
       setConversion(configuracion.conversion)
       setComisionPublicacion(configuracion.comision_publicacion_producto)
+
+      const yape = configuracion.yape_info
+      setCommPhone(yape?.comm_phone ?? DEFAULT_YAPE_INFO.comm_phone ?? '')
+      setQrUrl(yape?.qr_url ?? '')
+      setYapeNumber(yape?.yape_number ?? DEFAULT_YAPE_INFO.yape_number ?? '')
+      setYapeName(yape?.yape_name ?? DEFAULT_YAPE_INFO.yape_name ?? '')
+
+      const binance = configuracion.binance_info
+      setBinanceId(binance?.binance_id ?? DEFAULT_BINANCE_INFO.binance_id ?? '')
+      setBinanceName(binance?.binance_name ?? DEFAULT_BINANCE_INFO.binance_name ?? '')
+      setUsdtRate(String(binance?.usdt_rate ?? DEFAULT_BINANCE_INFO.usdt_rate ?? 3.2))
     }
   }, [configuracion])
 
@@ -53,6 +77,26 @@ export default function ConfiguracionSistemaPage() {
 
 
 
+  const handleQrUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      setUploadingQr(true)
+      // Limpieza automática del QR anterior (si existía en el bucket de configuración)
+      if (qrUrl) {
+        await SupabaseStorageService.deleteConfiguracionImage(qrUrl)
+      }
+      const url = await SupabaseStorageService.uploadConfiguracionImage(file)
+      setQrUrl(url)
+      toast.success('QR subido correctamente')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al subir el QR')
+    } finally {
+      setUploadingQr(false)
+      e.target.value = ''
+    }
+  }
+
   // Manejar guardado de configuración
   const handleSaveAll = async () => {
     const success = await saveConfiguracion({
@@ -60,7 +104,18 @@ export default function ConfiguracionSistemaPage() {
       email_soporte: emailSoporte,
       comision: comision,
       conversion: conversion,
-      comision_publicacion_producto: comisionPublicacion
+      comision_publicacion_producto: comisionPublicacion,
+      yape_info: {
+        qr_url: qrUrl || null,
+        yape_number: yapeNumber || null,
+        yape_name: yapeName || null,
+        comm_phone: commPhone || null,
+      },
+      binance_info: {
+        binance_id: binanceId || null,
+        binance_name: binanceName || null,
+        usdt_rate: Number(usdtRate) || DEFAULT_BINANCE_INFO.usdt_rate,
+      },
     })
 
     if (success) {
@@ -82,12 +137,22 @@ export default function ConfiguracionSistemaPage() {
   }
 
   // Verificar si hay cambios pendientes
+    const currentYape = configuracion?.yape_info
+  const currentBinance = configuracion?.binance_info
+
   const hasChanges = configuracion && (
     mantenimiento !== configuracion.mantenimiento ||
     emailSoporte !== (configuracion.email_soporte || '') ||
     comision !== configuracion.comision ||
     conversion !== configuracion.conversion ||
-    comisionPublicacion !== configuracion.comision_publicacion_producto
+    comisionPublicacion !== configuracion.comision_publicacion_producto ||
+    commPhone !== (currentYape?.comm_phone ?? DEFAULT_YAPE_INFO.comm_phone ?? '') ||
+    qrUrl !== (currentYape?.qr_url ?? '') ||
+    yapeNumber !== (currentYape?.yape_number ?? DEFAULT_YAPE_INFO.yape_number ?? '') ||
+    yapeName !== (currentYape?.yape_name ?? DEFAULT_YAPE_INFO.yape_name ?? '') ||
+    binanceId !== (currentBinance?.binance_id ?? DEFAULT_BINANCE_INFO.binance_id ?? '') ||
+    binanceName !== (currentBinance?.binance_name ?? DEFAULT_BINANCE_INFO.binance_name ?? '') ||
+    usdtRate !== String(currentBinance?.usdt_rate ?? DEFAULT_BINANCE_INFO.usdt_rate ?? 3.2)
   )
 
   if (loading) {
@@ -273,6 +338,103 @@ export default function ConfiguracionSistemaPage() {
               >
                 {saving ? 'Guardando...' : 'Guardar'}
               </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Información de recarga (Yape / Binance) */}
+        <div className="grid gap-6 md:grid-cols-2 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Información de Recarga - Yape</CardTitle>
+              <CardDescription>
+                QR, número de Yape y teléfono de comunicación visibles en el dialog de recarga.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Número de comunicación (WhatsApp)</label>
+                <Input
+                  value={commPhone}
+                  onChange={e => setCommPhone(e.target.value)}
+                  placeholder="51913190401"
+                  disabled={saving}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Número de Yape</label>
+                <Input
+                  value={yapeNumber}
+                  onChange={e => setYapeNumber(e.target.value)}
+                  placeholder="+51 913 190 401"
+                  disabled={saving}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Nombre del titular (Yape)</label>
+                <Input
+                  value={yapeName}
+                  onChange={e => setYapeName(e.target.value)}
+                  placeholder="Juan Laura P."
+                  disabled={saving}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">QR de Yape</label>
+                {qrUrl && (
+                  <img src={qrUrl} alt="QR Yape" className="h-40 w-40 object-contain border rounded" />
+                )}
+                {!qrUrl && (
+                  <img src={YapeQRImage} alt="QR Yape por defecto" className="h-40 w-40 object-contain border rounded opacity-70" />
+                )}
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleQrUpload}
+                  disabled={saving || uploadingQr}
+                />
+                {uploadingQr && <p className="text-xs text-muted-foreground">Subiendo QR...</p>}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Información de Recarga - Binance</CardTitle>
+              <CardDescription>
+                Datos de la cuenta Binance mostrados en el dialog de recarga.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">ID de Binance</label>
+                <Input
+                  value={binanceId}
+                  onChange={e => setBinanceId(e.target.value)}
+                  placeholder="1096171177"
+                  disabled={saving}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Nombre del titular (Binance)</label>
+                <Input
+                  value={binanceName}
+                  onChange={e => setBinanceName(e.target.value)}
+                  placeholder="Melvy L."
+                  disabled={saving}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Tasa (1 USDT en soles)</label>
+                <Input
+                  type="number"
+                  value={usdtRate}
+                  min={0}
+                  step={0.01}
+                  onChange={e => setUsdtRate(e.target.value)}
+                  disabled={saving}
+                />
+              </div>
             </CardContent>
           </Card>
         </div>

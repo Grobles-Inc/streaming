@@ -15,7 +15,8 @@ export default function SignUp() {
         <CardHeader>
           <CardTitle className='text-lg tracking-tight'>Crear cuenta</CardTitle>
           <CardDescription>
-            Registrate como vendedor y empieza a vender.
+            Regístrate como vendedor y empieza a distribuir plataformas de
+            streaming.
           </CardDescription>
         </CardHeader>
         <CardContent>

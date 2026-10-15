@@ -51,7 +51,7 @@ export const createProductoWithCommission = async (
       .select(`
         *,
         categorias:categoria_id(nombre, descripcion),
-        usuarios:proveedor_id(nombres, apellidos)
+        usuarios:proveedor_id(nombres, apellidos, usuario)
       `)
       .single()
 
@@ -564,7 +564,7 @@ export const publicarProductoWithCommission = async (
       .select(`
         *,
         categorias:categoria_id(nombre, descripcion),
-        usuarios:proveedor_id(nombres, apellidos)
+        usuarios:proveedor_id(nombres, apellidos, usuario)
       `)
       .single()
 
@@ -783,7 +783,7 @@ export const renovarProducto = async (
       .select(`
         *,
         categorias:categoria_id(nombre, descripcion),
-        usuarios:proveedor_id(nombres, apellidos)
+        usuarios:proveedor_id(nombres, apellidos, usuario)
       `)
       .single()
 

@@ -7,6 +7,7 @@ import {
   PedidosPaginados,
   UpdateSoporteStatusParams,
 } from '../data/types'
+import { getImapEstadoPedidos } from './imap'
 
 export type Compra = Database['public']['Tables']['compras']['Row']
 export type Usuario = Database['public']['Tables']['usuarios']['Row']
@@ -31,6 +32,7 @@ export const getPedidosProveedor = async (
     p_page_size: params.pageSize,
     p_search: params.search || null,
     p_estados: params.estados.length > 0 ? params.estados : null,
+    p_producto_id: params.productoId ?? null,
     p_fecha_desde: params.fechaDesde ?? null,
     p_fecha_hasta: params.fechaHasta ?? null,
     p_sort_by: params.sortBy,
@@ -42,10 +44,32 @@ export const getPedidosProveedor = async (
     throw error
   }
 
-  const rows = data ?? []
+  const rows: PedidosPaginados['rows'] = data ?? []
+
+  // Estado IMAP (toggle del proveedor + si la cuenta tiene config) por compra.
+  // Viene de un RPC aparte, no de `get_pedidos_proveedor`, para no tocar su
+  // definición y no duplicar el filtro de plataforma en el listado.
+  const imapEstado = await getImapEstadoPedidos(
+    params.proveedorId,
+    rows.map((row) => row.id)
+  )
+
+  const rowsConImap = rows.map((row) => {
+    const imap = imapEstado.get(row.id)
+    return {
+      ...row,
+      imap_enabled: imap?.imap_enabled ?? false,
+      imap_configurado: imap?.imap_configurado ?? false,
+      imap_plataforma: imap?.imap_plataforma ?? null,
+      imap_host: imap?.imap_host ?? null,
+      imap_port: imap?.imap_port ?? null,
+      imap_usuario: imap?.imap_usuario ?? null,
+      imap_ssl: imap?.imap_ssl ?? false,
+    }
+  })
 
   return {
-    rows,
+    rows: rowsConImap,
     // `total_count` viene repetido en cada fila; si la página va vacía no hay filas que leer
     total: rows[0]?.total_count ?? 0,
   }

@@ -1,6 +1,5 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { Checkbox } from '@/components/ui/checkbox'
-import LongText from '@/components/long-text'
 import { userTypes } from '../data/data'
 import { MappedUser } from '../data/schema'
 import { DataTableColumnHeader } from './data-table-column-header'
@@ -29,23 +28,6 @@ export const columns: ColumnDef<MappedUser>[] = [
       />
     ),
     enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    id: 'nombreCompleto',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Nombre Completo' />
-    ),
-    cell: ({ row }) => {
-      const { nombres, apellidos } = row.original
-      const nombreCompleto = `${nombres} ${apellidos}`
-      return <LongText className='max-w-48'>{nombreCompleto}</LongText>
-    },
-    filterFn: (row, _id, value) => {
-      const { nombres, apellidos } = row.original
-      const nombreCompleto = `${nombres} ${apellidos}`.toLowerCase()
-      return nombreCompleto.includes(value.toLowerCase())
-    },
     enableHiding: false,
   },
   {
@@ -182,17 +164,17 @@ export const columns: ColumnDef<MappedUser>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'referido_por_nombre',
+    accessorKey: 'referido_por_usuario',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Referido Por' />
     ),
     cell: ({ row }) => {
-      const referidoPorNombre = row.getValue('referido_por_nombre') as string | null
+      const referidoPorUsuario = row.getValue('referido_por_usuario') as string | null
       return (
         <div className='text-sm'>
-          {referidoPorNombre ? (
+          {referidoPorUsuario ? (
             <span className='inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-50 text-green-700 border border-green-200'>
-              {referidoPorNombre}
+              {referidoPorUsuario}
             </span>
           ) : (
             <span className='text-muted-foreground italic'>Registro directo</span>

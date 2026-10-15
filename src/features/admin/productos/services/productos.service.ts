@@ -26,6 +26,7 @@ export class ProductosService {
         ),
         usuarios!proveedor_id (
           id,
+          usuario,
           nombres,
           apellidos,
           email
@@ -90,6 +91,7 @@ export class ProductosService {
         ),
         usuarios!proveedor_id (
           id,
+          usuario,
           nombres,
           apellidos,
           email
@@ -315,9 +317,9 @@ export class ProductosService {
   static async getProveedores() {
     const { data, error } = await supabase
       .from('usuarios')
-      .select('id, nombres, apellidos')
+      .select('id, usuario')
       .eq('rol', 'provider')
-      .order('nombres')
+      .order('usuario')
 
     if (error) {
       console.error('❌ Error fetching proveedores:', error)

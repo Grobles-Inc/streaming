@@ -30,8 +30,6 @@ import { UsersService } from '../services/users.service'
 import type { SupabaseUser } from '../services/users.service'
 
 const formSchema = z.object({
-  nombres: z.string().min(1, { message: 'Los nombres son requeridos.' }),
-  apellidos: z.string().min(1, { message: 'Los apellidos son requeridos.' }),
   email: z
     .string()
     .min(1, { message: 'El email es requerido.' })
@@ -58,8 +56,6 @@ export function UsersRegisterWithReferralDialog({ open, onOpenChange, onSuccess 
   const form = useForm<RegisterForm>({
     resolver: zodResolver(formSchema),
     defaultValues: { 
-      nombres: '',
-      apellidos: '',
       email: '',
       usuario: '',
       telefono: '',
@@ -79,7 +75,7 @@ export function UsersRegisterWithReferralDialog({ open, onOpenChange, onSuccess 
         if (user) {
           setReferralUser(user)
           setCodeValidated(true)
-          toast.success(`Código válido - Usuario: ${user.nombres} ${user.apellidos}`)
+          toast.success(`Código válido - Usuario: ${user.usuario}`)
         } else {
           setCodeValidated(false)
           toast.error('Código de referido no válido')
@@ -105,13 +101,14 @@ export function UsersRegisterWithReferralDialog({ open, onOpenChange, onSuccess 
     setIsLoading(true)
     try {
       // Generar usuario automáticamente si no se proporciona
-      const usuarioFinal = values.usuario || `${values.nombres}${values.apellidos}`.toLowerCase().replace(/\s+/g, '')
+      const usuarioFinal = values.usuario || `${values.usuario}`.toLowerCase().replace(/\s+/g, '')
 
       await UsersService.createUserWithReferral(
         {
           email: values.email,
-          nombres: values.nombres,
-          apellidos: values.apellidos,
+          // El usuario es la identidad visible; las columnas legacy son NOT NULL.
+          nombres: usuarioFinal,
+          apellidos: '',
           usuario: usuarioFinal,
           telefono: values.telefono || null,
           password: 'defaultPassword123', // Deberías implementar generación de password o envío por email
@@ -154,34 +151,6 @@ export function UsersRegisterWithReferralDialog({ open, onOpenChange, onSuccess 
           >
             {/* Información personal */}
             <div className="grid grid-cols-1 gap-4">
-              <FormField
-                control={form.control}
-                name='nombres'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombres *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ingrese los nombres" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name='apellidos'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Apellidos *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ingrese los apellidos" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 control={form.control}
                 name='email'
@@ -272,7 +241,7 @@ export function UsersRegisterWithReferralDialog({ open, onOpenChange, onSuccess 
                 <CardContent className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-green-900">
-                      {referralUser.nombres} {referralUser.apellidos}
+                      {referralUser.usuario}
                     </span>
                     <Badge variant="outline" className="text-xs">
                       {referralUser.rol}

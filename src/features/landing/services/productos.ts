@@ -73,7 +73,7 @@ export const getProductos = async (): Promise<Producto[]> => {
     .select(`
       *,
       categorias:categoria_id(nombre),
-      usuarios:proveedor_id(nombres)
+      usuarios:proveedor_id(nombres, usuario)
     `)
     .order('created_at', { ascending: false })
 

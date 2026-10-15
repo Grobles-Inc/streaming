@@ -97,7 +97,7 @@ export function DisabledUsersModal() {
                   <TableRow key={user.id}>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{user.nombres} {user.apellidos}</div>
+                        <div className="font-medium">{user.usuario}</div>
                         <div className="text-sm text-gray-500">@{user.usuario}</div>
                       </div>
                     </TableCell>

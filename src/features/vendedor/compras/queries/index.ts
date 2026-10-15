@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as comprasService from '../services'
 import * as proveedorService from '../services/proveedor'
-import { saveImapConfig, ImapConfigInput, requestCode, ImapNeedsConfigError } from '../services/imap'
+import { requestCode, ImapNeedsConfigError, ImapNotEnabledError } from '../services/imap'
 import { toast } from 'sonner'
 
 export const useCompras = () => {
@@ -26,6 +26,30 @@ export const useComprasByVendedor = (vendedorId: string) => {
     queryKey: ['compras', 'vendedor', vendedorId],
     queryFn: () => comprasService.getComprasByVendedorId(vendedorId),
     enabled: !!vendedorId,
+  })
+}
+
+// Compras con notificación de cambio de cuenta pendiente de revisar.
+export const useComprasCuentaActualizada = (vendedorId: string) => {
+  return useQuery({
+    queryKey: ['compras', 'cuenta-actualizada', vendedorId],
+    queryFn: () => comprasService.getComprasCuentaActualizada(vendedorId),
+    enabled: !!vendedorId,
+  })
+}
+
+// Apaga la notificación de una compra (RPC marcar_cuenta_actualizada_revisada).
+export const useMarcarCuentaActualizadaRevisada = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (compraId: number) =>
+      comprasService.marcarCuentaActualizadaRevisada(compraId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['compras'] })
+    },
+    onError: () => {
+      toast.error('Error al marcar la cuenta como revisada')
+    },
   })
 }
 
@@ -151,28 +175,17 @@ export const useUpdateBilleteraProveedorSaldo = () => {
   })
 }
 
-export const useSaveImapConfig = () => {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: ({ input, userId }: { input: ImapConfigInput, userId: string }) =>
-      saveImapConfig(input, userId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['imap-configs'] })
-      toast.success('Configuración IMAP guardada y verificada')
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Error al guardar la configuración IMAP')
-    },
-  })
-}
-
 export const useRequestCode = () => {
   return useMutation({
     mutationFn: ({ compraId, userId }: { compraId: number, userId: string }) =>
       requestCode(compraId, userId),
     onError: (error: Error) => {
-      // needs_config lo muestra el diálogo con CTA a Configurar IMAP
-      if (error instanceof ImapNeedsConfigError) return
+      // needs_config / not_enabled los muestra el diálogo, sin toast
+      if (
+        error instanceof ImapNeedsConfigError ||
+        error instanceof ImapNotEnabledError
+      )
+        return
       toast.error(error.message || 'Error al obtener el código')
     },
   })

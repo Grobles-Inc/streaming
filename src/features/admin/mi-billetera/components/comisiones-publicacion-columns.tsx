@@ -95,7 +95,7 @@ export const getComisionesPublicacionColumns = (
     header: 'Proveedor',
     cell: ({ row }) => {
       const proveedor = row.original.proveedor
-      const iniciales = `${proveedor.nombres.charAt(0)}${proveedor.apellidos.charAt(0)}`
+      const iniciales = `${proveedor.usuario.slice(0, 2).toUpperCase()}`
       
       return (
         <div className="flex items-center space-x-3">
@@ -106,7 +106,7 @@ export const getComisionesPublicacionColumns = (
           </Avatar>
           <div className="min-w-0 flex-1">
             <p className="font-medium text-sm text-foreground truncate">
-              {proveedor.nombres} {proveedor.apellidos}
+              {proveedor.usuario}
             </p>
             <p className="text-xs text-muted-foreground">
               @{proveedor.usuario}

@@ -39,7 +39,7 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({ actions: false })
+    React.useState<VisibilityState>({ actions: true })
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   )
@@ -64,8 +64,8 @@ export function DataTable<TData, TValue>({
     const email = compra.stock_productos?.email?.toLowerCase() || ''
     if (email.includes(searchValue)) return true
 
-    // Search in provider name
-    const providerName = compra.usuarios?.nombres?.toLowerCase() || ''
+    // Search in provider username
+    const providerName = compra.usuarios?.usuario?.toLowerCase() || ''
     if (providerName.includes(searchValue)) return true
 
     return false
@@ -86,7 +86,7 @@ export function DataTable<TData, TValue>({
         pageSize: 50,
       },
       columnVisibility: {
-        actions: false,
+        actions: true,
       },
     },
     enableRowSelection: true,

@@ -1,7 +1,6 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
 import LongText from '@/components/long-text'
 import { IconCheck, IconX, IconPackage, IconClock, IconShoppingCart, IconAlertTriangle, IconCalendarClock } from '@tabler/icons-react'
 import { DataTableColumnHeader } from './data-table-column-header'
@@ -29,30 +28,6 @@ const disponibilidadLabels = {
 }
 
 export const columns: ColumnDef<Producto>[] = [
-  {
-    id: 'select',
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && 'indeterminate')
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label='Seleccionar todo'
-        className='translate-y-[2px]'
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label='Seleccionar fila'
-        className='translate-y-[2px]'
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
   {
     accessorKey: 'id',
     header: ({ column }) => (

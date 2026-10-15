@@ -92,10 +92,12 @@ export type MappedRecarga = {
   usuarioApellidos: string
   usuarioTelefono: string | null
   monto: number
+  montoSoles: number
   estado: EstadoRecarga
   fechaCreacion: Date
   fechaActualizacion: Date
   // Datos adicionales para la UI
   montoFormateado: string
+  montoSolesFormateado: string
   puedeModificar: boolean
 }

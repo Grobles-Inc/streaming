@@ -79,7 +79,7 @@ export function ProductosPorCategoria({
                   {producto.usuarios ? (
                     <div className="flex flex-col">
                       <span className="font-medium">
-                        {producto.usuarios.nombres} {producto.usuarios.apellidos}
+                        {producto.usuarios.usuario}
                       </span>
                     </div>
                   ) : producto.proveedor_id ? (

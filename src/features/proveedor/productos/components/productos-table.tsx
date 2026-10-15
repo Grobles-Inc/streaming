@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -41,9 +41,34 @@ interface ProductosTableProps {
   isLoading?: boolean
 }
 
+const COLUMN_VISIBILITY_STORAGE_KEY = 'productos-proveedor-column-visibility'
+
 export function ProductosTable({ columns, data, isLoading = false }: ProductosTableProps) {
-  const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
+    if (typeof window === 'undefined') {
+      return {}
+    }
+
+    try {
+      const storedValue = window.localStorage.getItem(
+        COLUMN_VISIBILITY_STORAGE_KEY
+      )
+      return storedValue ? (JSON.parse(storedValue) as VisibilityState) : {}
+    } catch {
+      return {}
+    }
+  })
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        COLUMN_VISIBILITY_STORAGE_KEY,
+        JSON.stringify(columnVisibility)
+      )
+    } catch {
+      // Ignore storage errors
+    }
+  }, [columnVisibility])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [sorting, setSorting] = useState<SortingState>([])
 
@@ -53,7 +78,6 @@ export function ProductosTable({ columns, data, isLoading = false }: ProductosTa
     state: {
       sorting,
       columnVisibility,
-      rowSelection,
       columnFilters,
     },
     initialState: {
@@ -61,8 +85,6 @@ export function ProductosTable({ columns, data, isLoading = false }: ProductosTa
         pageSize: 50,
       },
     },
-    enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
@@ -104,11 +126,7 @@ export function ProductosTable({ columns, data, isLoading = false }: ProductosTa
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className='group/row'
-                >
+                <TableRow key={row.id} className='group/row'>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}

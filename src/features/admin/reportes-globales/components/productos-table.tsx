@@ -77,7 +77,7 @@ export function ProductosTable({ productos, loading }: ProductosTableProps) {
                     <td className="px-4 py-2 border-r font-medium">{producto.nombre}</td>
                     <td className="px-4 py-2 border-r">
                       {producto.usuarios ? (
-                        `${producto.usuarios.nombres} ${producto.usuarios.apellidos}`
+                        `${producto.usuarios.usuario}`
                       ) : (
                         <span className="text-gray-500 font-mono text-xs">ID: {producto.proveedor_id}</span>
                       )}

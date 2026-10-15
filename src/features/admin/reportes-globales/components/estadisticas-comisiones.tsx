@@ -446,7 +446,7 @@ export function EstadisticasComisiones() {
                         <tr key={comision.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800">
                           <td className="px-4 py-3 font-medium">{comision.producto.nombre}</td>
                           <td className="px-4 py-3">
-                            {comision.proveedor.nombres} {comision.proveedor.apellidos}
+                            {comision.proveedor.usuario}
                             <div className="text-xs text-muted-foreground">@{comision.proveedor.usuario}</div>
                           </td>
                           <td className="px-4 py-3">{formatCurrency(comision.producto.precio_publico)}</td>

@@ -5,17 +5,19 @@
  *   headers: x-user-id: <usuarios.id>
  *   body: { compra_id }
  *
- *   200 { ok: true, codigo, solicitud_id, remitente, asunto }
+ *   200 { ok: true, codigo, solicitud_id, remitente, asunto, recibido_at, cuerpo, plataforma }
  *   4xx { ok: false, reason }
  *
- * Auth: same compra-scope rule as imap-save-config (admin, proveedor dueño,
- * o seller dueño de la compra). `registered` denegado. x-user-id es
- * spoofeable — no usar en producción hasta migrar a Supabase Auth.
+ * Auth: mismo scope que antes — admin, proveedor dueño, o seller dueño de la
+ * compra. `registered` denegado. x-user-id es spoofeable — no usar en
+ * producción hasta migrar a Supabase Auth.
  *
- * Flow: rate limit liviano -> crea solicitud (pendiente) -> lee secreto de
- * Vault -> conecta IMAP -> busca UNSEEN de últimos 10 min (más nuevos
- * primero) -> extrae primer \b\d{4,8}\b -> marca email Seen -> escribe
- * codigo + solicitud listo. El password y el código nunca se loguean.
+ * Flow: valida compras.imap_enabled (toggle del proveedor) -> rate limit
+ * liviano -> crea solicitud (pendiente) -> lee secreto de Vault -> conecta
+ * IMAP (INBOX) -> busca UNSEEN de últimos 10 min (más nuevos primero) ->
+ * filtra por plataforma (remitente/asunto) -> extrae código + cuerpo -> marca
+ * email Seen -> escribe codigos_verificacion y responde. El password y el
+ * código nunca se loguean.
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -27,6 +29,46 @@ const SCAN_LIMIT = 10
 const RATE_LIMIT_COUNT = 5
 const RATE_LIMIT_MIN = 5
 const CODE_TTL_MIN = 10
+const BODY_MAX_CHARS = 8000
+
+/**
+ * Keywords por plataforma para decidir si un correo es de ese servicio. Se
+ * comparan (case-insensitive) contra remitente + asunto. 'otra' = sin filtro
+ * (comportamiento V1: primer código 4-8 dígitos de cualquier correo no leído).
+ */
+const PLATAFORMA_KEYWORDS = {
+  netflix: ['netflix'],
+  disney: ['disney'],
+  chatgpt: ['openai', 'chatgpt'],
+  spotify: ['spotify'],
+  amazon_prime: ['amazon', 'primevideo'],
+  hbo_max: ['hbo', 'max.com'],
+  youtube_premium: ['youtube'],
+  playstation: ['playstation', 'sony'],
+  xbox: ['xbox', 'microsoft'],
+  crunchyroll: ['crunchyroll'],
+  vix: ['vix'],
+  adobe: ['adobe'],
+  canva: ['canva'],
+  otra: [],
+}
+
+const PLATAFORMA_LABELS = {
+  netflix: 'Netflix',
+  disney: 'Disney+',
+  chatgpt: 'ChatGPT',
+  spotify: 'Spotify',
+  amazon_prime: 'Amazon Prime',
+  hbo_max: 'HBO Max',
+  youtube_premium: 'YouTube Premium',
+  playstation: 'PlayStation',
+  xbox: 'Xbox',
+  crunchyroll: 'Crunchyroll',
+  vix: 'ViX',
+  adobe: 'Adobe',
+  canva: 'Canva',
+  otra: 'otra plataforma',
+}
 
 function json(statusCode, body) {
   return {
@@ -68,15 +110,33 @@ function tryBase64(s) {
   return ''
 }
 
-/** Generic V1 extraction: first 4-8 digit run in subject + body. */
-function extractCode(subject, rawBody) {
+/** Texto plano del correo: descodifica quoted-printable/base64 y quita HTML. */
+function toPlainText(rawBody) {
   const qp = decodeQuotedPrintable(rawBody)
   const b64 = tryBase64(rawBody)
-  const haystack = [subject, stripHtml(rawBody), stripHtml(qp), stripHtml(b64)]
+  const text = [stripHtml(qp), stripHtml(b64), stripHtml(rawBody)]
     .filter(Boolean)
     .join('\n')
-  const m = haystack.match(CODE_RE)
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+  return text.length > BODY_MAX_CHARS
+    ? `${text.slice(0, BODY_MAX_CHARS)}…`
+    : text
+}
+
+/** Extracción genérica: primer bloque de 4-8 dígitos (subject + cuerpo). */
+function extractCode(subject, plainText) {
+  const m = `${subject}\n${plainText}`.match(CODE_RE)
   return m ? m[0] : null
+}
+
+/** ¿El correo corresponde a la plataforma configurada? */
+function matchesPlataforma(plataforma, subject, fromText) {
+  const keywords = PLATAFORMA_KEYWORDS[plataforma]
+  if (!keywords || keywords.length === 0) return true
+  const haystack = `${fromText} ${subject}`.toLowerCase()
+  return keywords.some((k) => haystack.includes(k))
 }
 
 function mask(s) {
@@ -137,7 +197,9 @@ export async function handler(event) {
   // 2. Compra + scope: admin, seller dueño de ESTA compra, o proveedor dueño.
   const { data: compra, error: compraError } = await admin
     .from('compras')
-    .select('id, vendedor_id, proveedor_id, stock_producto_id')
+    .select(
+      'id, vendedor_id, proveedor_id, stock_producto_id, imap_enabled'
+    )
     .eq('id', body.compra_id)
     .single()
   if (compraError || !compra) {
@@ -152,6 +214,17 @@ export async function handler(event) {
     compra.proveedor_id === caller.id
   if (!allowed) {
     return json(403, { ok: false, reason: 'Sin acceso a esta compra' })
+  }
+
+  // 2b. Toggle del proveedor: si no habilitó la obtención para esta compra,
+  // el vendedor no debe ver el botón ni poder pedir el código.
+  if (caller.rol !== 'admin' && !compra.imap_enabled) {
+    return json(403, {
+      ok: false,
+      reason:
+        'El proveedor no habilitó la obtención de código para esta compra.',
+      not_enabled: true,
+    })
   }
 
   // 3. Rate limit liviano: 5 solicitudes / 5 min por compra.
@@ -173,16 +246,19 @@ export async function handler(event) {
   // 4. Config IMAP del stock.
   const { data: config, error: configError } = await admin
     .from('imap_configs')
-    .select('email, host, port, usuario, password_vault_id, ssl, carpeta')
+    .select('email, host, port, usuario, password_vault_id, ssl, plataforma')
     .eq('stock_producto_id', compra.stock_producto_id)
     .single()
   if (configError || !config) {
     return json(400, {
       ok: false,
-      reason: 'IMAP no configurado para esta cuenta. Configúralo primero.',
+      reason:
+        'El proveedor no configuró el acceso al correo de esta cuenta.',
       needs_config: true,
     })
   }
+  const plataforma = config.plataforma || 'otra'
+  const plataformaLabel = PLATAFORMA_LABELS[plataforma] || plataforma
 
   // 5. Crear solicitud (auditoría).
   const { data: solicitud, error: solError } = await admin
@@ -232,7 +308,7 @@ export async function handler(event) {
 
   try {
     await client.connect()
-    await client.mailboxOpen(config.carpeta)
+    await client.mailboxOpen('INBOX')
 
     const since = new Date(Date.now() - SEARCH_WINDOW_MIN * 60 * 1000)
     const uids = await client.search({ seen: false, since })
@@ -244,23 +320,32 @@ export async function handler(event) {
     }
 
     const newestFirst = [...uids].sort((a, b) => b - a).slice(0, SCAN_LIMIT)
+    let correosDePlataforma = 0
     for await (const msg of client.fetch(newestFirst, {
       envelope: true,
       bodyParts: ['TEXT'],
     })) {
       const subject = msg.envelope?.subject || ''
+      const fromAddr = msg.envelope?.from?.[0]?.address || ''
+      const fromName = msg.envelope?.from?.[0]?.name || ''
+      const fromText = `${fromAddr} ${fromName}`.trim()
+
+      if (!matchesPlataforma(plataforma, subject, fromText)) continue
+      correosDePlataforma += 1
+
       const rawPart = msg.bodyParts?.get('TEXT')
       const rawBody = rawPart ? Buffer.from(rawPart).toString('utf8') : ''
-      const code = extractCode(subject, rawBody)
+      const cuerpo = toPlainText(rawBody)
+      const code = extractCode(subject, cuerpo)
       if (!code) continue
 
-      const from =
-        msg.envelope?.from?.[0]?.address ||
-        msg.envelope?.from?.[0]?.name ||
-        null
+      const from = fromAddr || fromName || null
       const expiraAt = new Date(
         Date.now() + CODE_TTL_MIN * 60 * 1000
       ).toISOString()
+      const recibidoAt = msg.envelope?.date
+        ? new Date(msg.envelope.date).toISOString()
+        : null
 
       const { error: codeError } = await admin
         .from('codigos_verificacion')
@@ -269,6 +354,8 @@ export async function handler(event) {
           codigo: code,
           remitente: from,
           asunto: subject || null,
+          cuerpo,
+          recibido_at: recibidoAt,
           expira_at: expiraAt,
         })
       if (codeError) {
@@ -283,7 +370,7 @@ export async function handler(event) {
       }
       await setEstado(admin, solicitud.id, 'listo')
       console.log(
-        `imap-request-code: ok solicitud=${solicitud.id} code=${mask(code)}`
+        `imap-request-code: ok solicitud=${solicitud.id} plataforma=${plataforma} code=${mask(code)}`
       )
       return json(200, {
         ok: true,
@@ -291,7 +378,17 @@ export async function handler(event) {
         solicitud_id: solicitud.id,
         remitente: from,
         asunto: subject || null,
+        cuerpo,
+        recibido_at: recibidoAt,
+        plataforma,
       })
+    }
+
+    if (correosDePlataforma === 0) {
+      return fail(
+        `No llegó ningún correo de ${plataformaLabel} en los últimos 10 minutos. Pide el código e intenta de nuevo.`,
+        404
+      )
     }
 
     return fail(

@@ -33,8 +33,6 @@ export default function SettingsProfile() {
     resolver: zodResolver(usuarioSchema),
     defaultValues: {
       usuario: user?.usuario || '',
-      nombres: user?.nombres || '',
-      apellidos: user?.apellidos || '',
       telefono: user?.telefono || '',
       email: user?.email || '',
       codigo_referido: user?.codigo_referido || '',
@@ -45,8 +43,6 @@ export default function SettingsProfile() {
   const onSubmit = (data: ProfileFormValues) => {
     updateUser({
       id: user?.id ?? '',
-      nombres: data.nombres,
-      apellidos: data.apellidos,
       telefono: data.telefono,
       email: data.email,
       codigo_referido: data.codigo_referido,
@@ -113,33 +109,6 @@ export default function SettingsProfile() {
                       <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input placeholder='Ej. juan@gmail.com' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name='nombres'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nombres</FormLabel>
-                      <FormControl>
-                        <Input placeholder='Ej. Juan' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name='apellidos'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Apellidos</FormLabel>
-                      <FormControl>
-                        <Input placeholder='Ej. Perez' {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

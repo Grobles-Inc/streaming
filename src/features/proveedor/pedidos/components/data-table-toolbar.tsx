@@ -18,7 +18,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { estados } from '../data/data'
 import { useEliminarPedidosExpiradosEnBloque } from '../queries'
+import { useProductosByProveedor } from '@/features/proveedor/productos/queries'
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
+import { DataTableProductoFacetedFilter } from './data-table-producto-faceted-filter'
 import { DataTableViewOptions } from './data-table-view-options'
 
 interface DataTableToolbarProps<TData> {
@@ -33,6 +35,11 @@ export function DataTableToolbar<TData>({
     useEliminarPedidosExpiradosEnBloque()
   const queryClient = useQueryClient()
   const { user } = useAuth()
+  const { data: productos } = useProductosByProveedor(user?.id ?? '')
+  const productOptions = (productos ?? []).map((producto) => ({
+    label: producto.nombre,
+    value: String(producto.id),
+  }))
 
   // Paginación manual: no hay `getFilteredRowModel`, la selección es de la página actual.
   const selectedRows = table
@@ -78,12 +85,29 @@ export function DataTableToolbar<TData>({
           <div className='relative mb-4 max-w-sm flex-1 md:mb-0'>
             <IconSearch className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
             <Input
-              placeholder='Búsqueda global...'
+              placeholder={
+                table.getColumn('producto_id')?.getFilterValue()
+                  ? `Búsqueda en ${
+                      productOptions.find(
+                        (option) =>
+                          option.value ===
+                          table.getColumn('producto_id')?.getFilterValue()
+                      )?.label ?? 'producto'
+                    }...`
+                  : 'Búsqueda global...'
+              }
               value={table.getState().globalFilter ?? ''}
               onChange={(event) => table.setGlobalFilter(event.target.value)}
               className='h-9 pl-9'
             />
           </div>
+          {table.getColumn('producto_id') && productOptions.length > 0 && (
+            <DataTableProductoFacetedFilter
+              column={table.getColumn('producto_id')}
+              title='Producto'
+              options={productOptions}
+            />
+          )}
           {table.getColumn('estado_calculado') && (
             <DataTableFacetedFilter
               column={table.getColumn('estado_calculado')}

@@ -58,7 +58,7 @@ export function NewChat({ users, onOpenChange, open }: Props) {
             <span className='text-muted-foreground text-sm'>To:</span>
             {selectedUsers.map((user) => (
               <Badge key={user.id} variant='default'>
-                {user.fullName}
+                {user.username}
                 <button
                   className='ring-offset-background focus:ring-ring ml-1 rounded-full outline-hidden focus:ring-2 focus:ring-offset-2'
                   onKeyDown={(e) => {
@@ -90,12 +90,12 @@ export function NewChat({ users, onOpenChange, open }: Props) {
                     <div className='flex items-center gap-2'>
                       <img
                         src={user.profile || '/placeholder.svg'}
-                        alt={user.fullName}
+                        alt={user.username}
                         className='h-8 w-8 rounded-full'
                       />
                       <div className='flex flex-col'>
                         <span className='text-sm font-medium'>
-                          {user.fullName}
+                          {user.username}
                         </span>
                         <span className='text-muted-foreground text-xs'>
                           {user.username} aa

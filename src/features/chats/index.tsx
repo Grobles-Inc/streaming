@@ -35,8 +35,8 @@ export default function Chats() {
     useState(false)
 
   // Filtered data based on the search query
-  const filteredChatList = conversations.filter(({ fullName }) =>
-    fullName.toLowerCase().includes(search.trim().toLowerCase())
+  const filteredChatList = conversations.filter(({ username }) =>
+    username.toLowerCase().includes(search.trim().toLowerCase())
   )
 
   const currentMessage = selectedUser?.messages.reduce(
@@ -95,7 +95,7 @@ export default function Chats() {
 
             <ScrollArea className='-mx-3 h-full p-3'>
               {filteredChatList.map((chatUsr) => {
-                const { id, profile, username, messages, fullName } = chatUsr
+                const { id, profile, username, messages } = chatUsr
                 const lastConvo = messages[0]
                 const lastMsg =
                   lastConvo.sender === 'You'
@@ -121,7 +121,7 @@ export default function Chats() {
                         </Avatar>
                         <div>
                           <span className='col-start-2 row-span-2 font-medium'>
-                            {fullName}
+                            {username}
                           </span>
                           <span className='text-muted-foreground col-start-2 row-span-2 row-start-2 line-clamp-2 text-ellipsis'>
                             {lastMsg}
@@ -166,7 +166,7 @@ export default function Chats() {
                     </Avatar>
                     <div>
                       <span className='col-start-2 row-span-2 text-sm font-medium lg:text-base'>
-                        {selectedUser.fullName}
+                        {selectedUser.username}
                       </span>
                       <span className='text-muted-foreground col-start-2 row-span-2 row-start-2 line-clamp-1 block max-w-32 text-xs text-nowrap text-ellipsis lg:max-w-none lg:text-sm'>
                         {selectedUser.title}

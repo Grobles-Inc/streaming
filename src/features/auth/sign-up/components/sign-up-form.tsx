@@ -22,7 +22,6 @@ import {
   checkEmailAvailability,
   checkUsernameAvailability,
 } from '@/features/users/api/check-availability'
-import { ReferralCodeFeedback } from '@/features/users/components/referral-code-feedback'
 import { useAvailabilityField } from '@/features/users/hooks/use-availability-field'
 import { type SignUpFormData, signUpSchema } from '../schema'
 
@@ -35,14 +34,11 @@ export function SignUpForm() {
   const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
-      nombres: '',
-      apellidos: '',
       usuario: '',
       email: '',
       telefono: '',
       password: '',
       confirmPassword: '',
-      codigoReferido: '',
     },
   })
 
@@ -77,7 +73,7 @@ export function SignUpForm() {
 
     if (!result.ok) {
       toast.error(result.reason)
-      if (result.field) {
+      if (result.field === 'email' || result.field === 'usuario') {
         form.setError(result.field, {
           type: 'manual',
           message: result.reason,
@@ -98,35 +94,6 @@ export function SignUpForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className='grid gap-3'>
-        <div className='grid gap-3 sm:grid-cols-2'>
-          <FormField
-            control={form.control}
-            name='nombres'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nombres</FormLabel>
-                <FormControl>
-                  <Input placeholder='Nombres' {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name='apellidos'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Apellidos</FormLabel>
-                <FormControl>
-                  <Input placeholder='Apellidos' {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
         <FormField
           control={form.control}
           name='usuario'
@@ -248,35 +215,11 @@ export function SignUpForm() {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name='codigoReferido'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Código de referido (opcional)</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder='ABC1234567'
-                  className='font-mono uppercase'
-                  {...field}
-                  onChange={(e) => {
-                    field.onChange(e)
-                  }}
-                />
-              </FormControl>
-              {field.value && (
-                <ReferralCodeFeedback code={field.value} debounced />
-              )}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
         <TurnstileWidget
           action='signup'
           onTokenChange={setTurnstileToken}
           resetKey={captchaResetKey}
-          className='mt-2'
+          className='mt-2 flex justify-center'
         />
 
         <Button type='submit' disabled={isLoading} className='mt-2'>

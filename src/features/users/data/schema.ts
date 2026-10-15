@@ -7,6 +7,7 @@ const userRoleSchema = z.union([
   z.literal('registered'),
   z.literal('provider'),
   z.literal('seller'),
+  z.literal('moderador'),
 ])
 export type UserRole = z.infer<typeof userRoleSchema>
 
@@ -28,8 +29,8 @@ export type UserRole = z.infer<typeof userRoleSchema>
 const userSchema = z.object({
   id: z.string(),
   email: z.string(),
-  nombres: z.string(),
-  apellidos: z.string(),
+  nombres: z.string().optional(),
+  apellidos: z.string().optional(),
   usuario: z.string(),
   password: z.string(),
   billetera_id: z.string().nullable(),
@@ -52,8 +53,8 @@ export type UserWithWallet = User & {
 const mappedUserSchema = z.object({
   id: z.string(),
   email: z.string(),
-  nombres: z.string(),
-  apellidos: z.string(),
+  nombres: z.string().optional(),
+  apellidos: z.string().optional(),
   usuario: z.string(),
   password: z.string(),
   telefono: z.string().nullable(),
@@ -62,7 +63,7 @@ const mappedUserSchema = z.object({
   billetera_id: z.string().nullable(),
   codigo_referido: z.string(),
   referido_id: z.string().nullable(),
-  referido_por_nombre: z.string().nullable(), // Nombre del usuario que lo refirió
+  referido_por_usuario: z.string().nullable(), // Usuario que lo refirió
   estado_habilitado: z.boolean(),
   fechaCreacion: z.coerce.date(),
   fechaActualizacion: z.coerce.date(),
@@ -74,7 +75,9 @@ export const userListSchema = z.array(mappedUserSchema)
 // Función para mapear usuario de Supabase a formato del componente
 export function mapSupabaseUserToComponent(supabaseUser: SupabaseUserWithWallet): MappedUser {
   return {
-    id: supabaseUser.id,
+    // `get_users_admin` may return a numeric id; the rest of the app treats it
+    // as a string.
+    id: String(supabaseUser.id),
     email: supabaseUser.email || '',
     nombres: supabaseUser.nombres || '',
     apellidos: supabaseUser.apellidos || '',
@@ -86,7 +89,7 @@ export function mapSupabaseUserToComponent(supabaseUser: SupabaseUserWithWallet)
     billetera_id: supabaseUser.billetera_id,
     codigo_referido: supabaseUser.codigo_referido || '',
     referido_id: supabaseUser.referido_id || null,
-    referido_por_nombre: supabaseUser.referido_por_nombre || null,
+    referido_por_usuario: supabaseUser.referido_por_usuario || null,
     estado_habilitado: supabaseUser.estado_habilitado || true,
     fechaCreacion: new Date(supabaseUser.created_at),
     fechaActualizacion: new Date(supabaseUser.updated_at),
@@ -97,8 +100,6 @@ export function mapSupabaseUserToComponent(supabaseUser: SupabaseUserWithWallet)
 export function mapComponentUserToSupabase(componentUser: Partial<MappedUser>): Partial<User> {
   const mapped: Partial<User> = {}
   
-  if (componentUser.nombres) mapped.nombres = componentUser.nombres
-  if (componentUser.apellidos) mapped.apellidos = componentUser.apellidos
   if (componentUser.email) mapped.email = componentUser.email
   if (componentUser.usuario) mapped.usuario = componentUser.usuario
   if (componentUser.password) mapped.password = componentUser.password

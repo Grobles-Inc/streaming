@@ -29,6 +29,7 @@ export type Producto = {
   categoria?: Categoria
   usuarios?: {
     id: string
+    usuario: string
     nombres: string
     apellidos: string
     telefono: string | null

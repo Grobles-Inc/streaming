@@ -1,17 +1,23 @@
 import { supabase } from '@/lib/supabase'
 
+export type UserRole = 'provider' | 'admin' | 'seller' | 'registered' | 'moderador'
+
 export type SupabaseUser = {
   id: string
   email: string
-  nombres: string
-  apellidos: string
+  /**
+   * Legacy columns. `get_users_admin` no longer returns them, so they are
+   * optional: the only identity the app uses is `usuario`.
+   */
+  nombres?: string
+  apellidos?: string
   usuario: string
   password: string
   telefono: string | null
   codigo_referido: string
   referido_id: string | null
   billetera_id: string | null
-  rol: 'provider' | 'admin' | 'seller' | 'registered'
+  rol: UserRole
   estado_habilitado: boolean
   created_at: string
   updated_at: string
@@ -20,7 +26,7 @@ export type SupabaseUser = {
 export type SupabaseUserWithWallet = SupabaseUser & {
   saldo_billetera: number | null
   billetera_id: string | null
-  referido_por_nombre?: string | null
+  referido_por_usuario?: string | null
 }
 
 export type CreateUserData = {
@@ -31,7 +37,7 @@ export type CreateUserData = {
   password?: string
   telefono?: string | null
   codigo_referido?: string
-  rol?: 'provider' | 'admin' | 'seller' | 'registered'
+  rol?: UserRole
   /**
    * Only sent when the caller decides it. Left out otherwise, so the column
    * default applies and existing flows keep behaving exactly as before.
@@ -49,7 +55,7 @@ export type UpdateUserData = Partial<
 >
 
 export type GetUsersAdminParams = {
-  /** Búsqueda por nombre completo ("nombres apellidos"). Vacío = sin filtrar. */
+  /** Búsqueda por nombre de usuario. Vacío = sin filtrar. */
   search?: string
   /** Filtra por estos roles; vacío u omitido = todos los roles. */
   roles?: Array<SupabaseUser['rol']>
@@ -109,19 +115,19 @@ export class UsersService {
     // Obtener información de usuarios referentes por separado
     const usersWithReferrals = await Promise.all(
       (data || []).map(async (user) => {
-        let referido_por_nombre: string | null = null
+        let referido_por_usuario: string | null = null
 
         if (user.referido_id) {
           try {
             const { data: referente, error: referenteError } = await supabase
               .from('usuarios')
-              .select('nombres, apellidos')
+              .select('usuario')
               .eq('id', user.referido_id)
               .single()
 
             if (!referenteError && referente) {
-              referido_por_nombre =
-                `${referente.nombres} ${referente.apellidos}`.trim()
+              referido_por_usuario =
+                referente.usuario
             }
           } catch (err) {
             console.warn('Error fetching referente for user:', user.id, err)
@@ -132,7 +138,7 @@ export class UsersService {
           ...user,
           saldo_billetera: user.billeteras?.[0]?.saldo || null,
           billetera_id: user.billeteras?.[0]?.id || null,
-          referido_por_nombre,
+          referido_por_usuario,
         }
       })
     )
@@ -171,19 +177,19 @@ export class UsersService {
     // Obtener información de usuarios referentes por separado
     const usersWithReferrals = await Promise.all(
       (data || []).map(async (user) => {
-        let referido_por_nombre: string | null = null
+        let referido_por_usuario: string | null = null
 
         if (user.referido_id) {
           try {
             const { data: referente, error: referenteError } = await supabase
               .from('usuarios')
-              .select('nombres, apellidos')
+              .select('usuario')
               .eq('id', user.referido_id)
               .single()
 
             if (!referenteError && referente) {
-              referido_por_nombre =
-                `${referente.nombres} ${referente.apellidos}`.trim()
+              referido_por_usuario =
+                referente.usuario
             }
           } catch (err) {
             console.warn('Error fetching referente for user:', user.id, err)
@@ -194,7 +200,7 @@ export class UsersService {
           ...user,
           saldo_billetera: user.billeteras?.[0]?.saldo || null,
           billetera_id: user.billeteras?.[0]?.id || null,
-          referido_por_nombre,
+          referido_por_usuario,
         }
       })
     )
@@ -259,19 +265,19 @@ export class UsersService {
     }
 
     // Obtener información del referente si existe
-    let referido_por_nombre: string | null = null
+    let referido_por_usuario: string | null = null
 
     if (data.referido_id) {
       try {
         const { data: referente, error: referenteError } = await supabase
           .from('usuarios')
-          .select('nombres, apellidos')
+          .select('usuario')
           .eq('id', data.referido_id)
           .single()
 
         if (!referenteError && referente) {
-          referido_por_nombre =
-            `${referente.nombres} ${referente.apellidos}`.trim()
+          referido_por_usuario =
+            referente.usuario
         }
       } catch (err) {
         console.warn('Error fetching referente for user:', data.id, err)
@@ -282,7 +288,7 @@ export class UsersService {
       ...data,
       saldo_billetera: data.billeteras?.[0]?.saldo || null,
       billetera_id: data.billeteras?.[0]?.id || null,
-      referido_por_nombre,
+      referido_por_usuario,
     }
   }
 
@@ -449,7 +455,7 @@ export class UsersService {
         )
       `
       )
-      .or(`nombres.ilike.%${name}%,apellidos.ilike.%${name}%`)
+      .or(`usuario.ilike.%${name}%`)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -466,7 +472,7 @@ export class UsersService {
 
   // Filtrar usuarios por rol con saldo desde billeteras
   static async filterByRole(
-    role: 'admin' | 'provider' | 'seller' | 'registered'
+    role: UserRole
   ): Promise<SupabaseUserWithWallet[]> {
     const { data, error } = await supabase
       .from('usuarios')
@@ -575,11 +581,7 @@ export class UsersService {
         const usuarioReferente = await this.validateReferralCode(codigoReferido)
         if (usuarioReferente) {
           referidoPorId = usuarioReferente.id
-          console.log(
-            'Referral user found:',
-            usuarioReferente.nombres,
-            usuarioReferente.apellidos
-          )
+          console.log('Referral user found:', usuarioReferente.usuario)
         } else {
           throw new Error('Código de referido inválido o no encontrado')
         }

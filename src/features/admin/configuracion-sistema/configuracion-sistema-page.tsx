@@ -40,7 +40,9 @@ export default function ConfiguracionSistemaPage() {
   const [binanceId, setBinanceId] = useState(DEFAULT_BINANCE_INFO.binance_id ?? '')
   const [binanceName, setBinanceName] = useState(DEFAULT_BINANCE_INFO.binance_name ?? '')
   const [usdtRate, setUsdtRate] = useState(String(DEFAULT_BINANCE_INFO.usdt_rate ?? 3.2))
+  const [binanceQrUrl, setBinanceQrUrl] = useState<string>('')
   const [uploadingQr, setUploadingQr] = useState(false)
+  const [uploadingBinanceQr, setUploadingBinanceQr] = useState(false)
 
   // Estado para mostrar/ocultar historial
   const [showHistorial, setShowHistorial] = useState(false)
@@ -64,6 +66,7 @@ export default function ConfiguracionSistemaPage() {
       setBinanceId(binance?.binance_id ?? DEFAULT_BINANCE_INFO.binance_id ?? '')
       setBinanceName(binance?.binance_name ?? DEFAULT_BINANCE_INFO.binance_name ?? '')
       setUsdtRate(String(binance?.usdt_rate ?? DEFAULT_BINANCE_INFO.usdt_rate ?? 3.2))
+      setBinanceQrUrl(binance?.qr_url ?? '')
     }
   }, [configuracion])
 
@@ -97,6 +100,28 @@ export default function ConfiguracionSistemaPage() {
     }
   }
 
+  const handleBinanceQrUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      setUploadingBinanceQr(true)
+      // Limpieza automática del QR anterior (si existía en el bucket de configuración)
+      if (binanceQrUrl) {
+        await SupabaseStorageService.deleteConfiguracionImage(binanceQrUrl)
+      }
+      const url = await SupabaseStorageService.uploadConfiguracionImage(file)
+      setBinanceQrUrl(url)
+      toast.success('QR de Binance subido correctamente')
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : 'Error al subir el QR de Binance'
+      )
+    } finally {
+      setUploadingBinanceQr(false)
+      e.target.value = ''
+    }
+  }
+
   // Manejar guardado de configuración
   const handleSaveAll = async () => {
     const success = await saveConfiguracion({
@@ -112,6 +137,7 @@ export default function ConfiguracionSistemaPage() {
         comm_phone: commPhone || null,
       },
       binance_info: {
+        qr_url: binanceQrUrl || null,
         binance_id: binanceId || null,
         binance_name: binanceName || null,
         usdt_rate: Number(usdtRate) || DEFAULT_BINANCE_INFO.usdt_rate,
@@ -152,7 +178,8 @@ export default function ConfiguracionSistemaPage() {
     yapeName !== (currentYape?.yape_name ?? DEFAULT_YAPE_INFO.yape_name ?? '') ||
     binanceId !== (currentBinance?.binance_id ?? DEFAULT_BINANCE_INFO.binance_id ?? '') ||
     binanceName !== (currentBinance?.binance_name ?? DEFAULT_BINANCE_INFO.binance_name ?? '') ||
-    usdtRate !== String(currentBinance?.usdt_rate ?? DEFAULT_BINANCE_INFO.usdt_rate ?? 3.2)
+    usdtRate !== String(currentBinance?.usdt_rate ?? DEFAULT_BINANCE_INFO.usdt_rate ?? 3.2) ||
+    binanceQrUrl !== (currentBinance?.qr_url ?? '')
   )
 
   if (loading) {
@@ -402,7 +429,7 @@ export default function ConfiguracionSistemaPage() {
             <CardHeader>
               <CardTitle>Información de Recarga - Binance</CardTitle>
               <CardDescription>
-                Datos de la cuenta Binance mostrados en el dialog de recarga.
+                Datos de la cuenta Binance y QR mostrados en el dialog de recarga.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -434,6 +461,22 @@ export default function ConfiguracionSistemaPage() {
                   onChange={e => setUsdtRate(e.target.value)}
                   disabled={saving}
                 />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">QR de Binance</label>
+                {binanceQrUrl && (
+                  <img src={binanceQrUrl} alt="QR Binance" className="h-40 w-40 object-contain border rounded" />
+                )}
+                {!binanceQrUrl && (
+                  <p className="text-xs text-muted-foreground">Sin QR configurado</p>
+                )}
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleBinanceQrUpload}
+                  disabled={saving || uploadingBinanceQr}
+                />
+                {uploadingBinanceQr && <p className="text-xs text-muted-foreground">Subiendo QR...</p>}
               </div>
             </CardContent>
           </Card>

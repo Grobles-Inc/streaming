@@ -8,6 +8,7 @@ export interface YapeInfo {
 }
 
 export interface BinanceInfo {
+  qr_url: string | null
   binance_id: string | null
   binance_name: string | null
   usdt_rate: number | null
@@ -21,6 +22,7 @@ export const DEFAULT_YAPE_INFO: YapeInfo = {
 }
 
 export const DEFAULT_BINANCE_INFO: BinanceInfo = {
+  qr_url: null,
   binance_id: '1096171177',
   binance_name: 'Melvy L.',
   usdt_rate: 3.2,
@@ -54,6 +56,10 @@ export function asBinanceInfo(raw: unknown): BinanceInfo {
       ? (raw as Record<string, unknown>)
       : {}
   return {
+    qr_url:
+      typeof obj.qr_url === 'string'
+        ? obj.qr_url
+        : DEFAULT_BINANCE_INFO.qr_url,
     binance_id:
       typeof obj.binance_id === 'string'
         ? obj.binance_id

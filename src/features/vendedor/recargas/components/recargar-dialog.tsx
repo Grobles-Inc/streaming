@@ -196,7 +196,7 @@ export function RecargarDialog() {
             <DialogDescription>
               {methodModal === 'yape'
                 ? 'Escanea el QR o yapea al número indicado.'
-                : 'Envía el pago a la cuenta indicada.'}
+                : 'Escanea el QR o envía el pago a la cuenta indicada.'}
             </DialogDescription>
           </DialogHeader>
           {methodModal === 'yape' && (
@@ -216,11 +216,16 @@ export function RecargarDialog() {
             </div>
           )}
           {methodModal === 'binance' && (
-            <div className='flex flex-col gap-2 text-sm'>
-              <p className="font-bold">Binance</p>
-              <p>ID: {binanceInfo.binance_id}</p>
-              <p>Nombre: {binanceInfo.binance_name}</p>
-              <p>1 USDT = {binanceInfo.usdt_rate} soles</p>
+            <div className='flex flex-col items-center gap-4'>
+              {binanceInfo.qr_url && (
+                <img src={binanceInfo.qr_url} alt="Binance" className='md:size-52 size-28 object-contain' />
+              )}
+              <div className='flex flex-col gap-2 text-sm text-center'>
+                <p className="font-bold">Binance</p>
+                <p>ID: {binanceInfo.binance_id}</p>
+                <p>Nombre: {binanceInfo.binance_name}</p>
+                <p>1 USDT = {binanceInfo.usdt_rate} soles</p>
+              </div>
             </div>
           )}
           <DialogFooter>

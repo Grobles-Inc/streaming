@@ -4,12 +4,15 @@
 > verificación leyendo el correo de la cuenta (vía IMAP), empezando por la
 > configuración IMAP (diálogo "Configurar IMAP"). Backend: Supabase.
 
-> **Estado V2 (2026-10-15): V1 tested + cambios de PM/PO aplicados.** Fases 1–3
-> hechas y probadas en producción; Fase 5 (cambios de producto) implementada,
-> pendiente de deploy/prueba. Decisiones: cuentas variadas (IMAP genérico), worker
-> en **Netlify Functions síncrono** (sin worker externo con poll), secretos en
-> **Supabase Vault**, auth **custom `usuarios` (testing-phase)** con scope —
-> ver §1 y §11.
+> **Estado V2 (2026-10-16): Fase 5 + fix de acceso a Vault.** Fases 1–3 (V1) y
+> Fase 5 (cambios de producto) implementadas. **El acceso a Vault desde las
+> Netlify Functions nunca funcionó:** el esquema `vault` no está expuesto en la
+> API REST del proyecto, así que desde el 2026-10-16 va por los wrappers
+> `public.imap_vault_*` — ver §12. Pendiente: **deploy de las functions + prueba
+> en la app** (Casos 1 y 5) — ver §13 (verificado vs asumido). Decisiones:
+> cuentas variadas (IMAP genérico), worker en **Netlify Functions síncrono** (sin
+> worker externo con poll), secretos en **Supabase Vault**, auth **custom
+> `usuarios` (testing-phase)** con scope — ver §1 y §11.
 
 ## 0. Dónde vive cada cosa (V2)
 
@@ -24,6 +27,9 @@
   fecha, cuerpo).
 - **Búsqueda por plataforma**: `imap_configs.plataforma` (lista fija) reemplaza a
   `carpeta`; los correos de verificación se buscan siempre en `INBOX`.
+- **Secretos IMAP → Supabase Vault**, y el cliente no puede leerlos: el esquema
+  `vault` no está expuesto en la API REST, así que las functions entran por los
+  RPC `public.imap_vault_*` (solo `service_role`) — ver §12.
 - El frontend habla con Supabase directo (`src/lib/supabase.ts`,
   `supabase.from(...)`); IMAP pasa por Netlify Functions (no Edge Functions —
   ver §1).
@@ -42,12 +48,14 @@ Arquitectura actual (V2):
 ```
 [Pedidos · proveedor ···· → Configurar IMAP] --(POST x-user-id)-->
         Netlify `imap-save-config` --> valida plataforma --> test IMAP
-        (INBOX) --> Vault + upsert `imap_configs` (stock_producto_id + plataforma)
+        (INBOX) --> RPC `imap_vault_create_secret` + upsert `imap_configs`
+        (stock_producto_id + plataforma)
 [Pedidos · columna IMAP (Switch)] --(RPC set_compras_imap_enabled)-->
         `compras.imap_enabled` (por compra)
 [Compras · vendedor ···· → Obtener código] --(POST x-user-id)-->
         Netlify `imap-request-code` --> valida `compras.imap_enabled` -->
-        rate limit --> fila `codigo_solicitudes` --> lee Vault --> conecta IMAP
+        rate limit --> fila `codigo_solicitudes` --> RPC `imap_vault_read_secret`
+        --> conecta IMAP
         (INBOX, UNSEEN 10 min) --> filtra por plataforma (remitente/asunto) -->
         extrae código --> escribe `codigos_verificacion` (cuerpo + recibido_at)
         --> responde `{ codigo, cuerpo, ... }` sync
@@ -70,7 +78,8 @@ Componentes (hechos):
 1. **Tablas Supabase** ✅ (ya existían + RLS; Vault activado).
 2. **Netlify Function `imap-save-config`** ✅ (`netlify/functions/imap-save-config.js`):
    scope admin / proveedor dueño del stock (`registered` y `seller` denegados
-   desde V2), valida `plataforma`, test IMAP contra INBOX antes de guardar.
+   desde V2), valida `plataforma`, test IMAP contra INBOX antes de escribir
+   nada y escribe el secreto con los RPC `imap_vault_*` (§12).
 3. **Netlify Function `imap-request-code`** ✅ (`netlify/functions/imap-request-code.js`):
    scope anclado a LA compra + gate de `compras.imap_enabled`, rate limit
    5 req/5 min, filtro por plataforma, regex genérico `/\b\d{4,8}\b`, guarda el
@@ -149,14 +158,18 @@ RLS (habilitar en las 3 tablas):
 Índices: `codigo_solicitudes(compra_id, created_at)`,
 `codigos_verificacion(solicitud_id)`.
 
-## 3. Paso 2 — Guardar credenciales con Supabase Vault ✅ hecho
+## 3. Paso 2 — Guardar credenciales con Supabase Vault ✅ hecho (fix 2026-10-16)
 
 1. ~~Activar extensión~~ Vault activado en el proyecto.
-2. El password/app-password se guarda con `vault.create_secret()` desde la
-   Netlify Function (nunca desde el cliente). ✅
+2. El password/app-password se guarda con `vault.create_secret()`, pero **no**
+   por REST directo: desde el 2026-10-16 las functions llaman al wrapper
+   `public.imap_vault_create_secret` (§12). El intento anterior
+   (`admin.schema('vault').rpc('create_secret', { secret })`) no podía funcionar
+   por dos motivos: esquema `vault` no expuesto en la API + parámetro renombrado
+   en supabase_vault 0.3.0.
 3. `imap_configs.password_vault_id` guarda solo el id del secreto. ✅
-4. La función lee el secreto vía `vault.decrypted_secrets` con `service_role`,
-   en memoria (nunca lo loguea ni lo devuelve al frontend). ✅
+4. La función lee el secreto con `service_role` (RPC `imap_vault_read_secret`,
+   §12), en memoria: nunca lo loguea ni lo devuelve al frontend. ✅
 5. Al listar configs al frontend, devolver `password: '••••'` (enmascarado) —
    n/a, el frontend nunca lee la tabla directo.
 
@@ -185,7 +198,7 @@ Sin servicio separado: `imapflow` corre dentro de `imap-request-code`
 
 - Loop por invocación:
   1. Solicitud `pendiente` → `procesando`.
-  2. Lee `imap_configs` + secreto de Vault.
+  2. Lee `imap_configs` + secreto de Vault (`imap_vault_read_secret`).
   3. Conecta IMAP (host, port, `secure: ssl`, auth usuario/pass).
   4. Busca en **`INBOX`** (ya no hay carpeta configurable): `UNSEEN` últimos
      10 min, más nuevos primero (máx. 10).
@@ -248,8 +261,11 @@ Sin servicio separado: `imapflow` corre dentro de `imap-request-code`
 
 ## 8. Fases de entrega — estado
 
-1. **Fase 1 — Persistencia** ✅: tablas + Vault + guardar config desde el
-   diálogo (con test de conexión real inline, no simulado).
+1. **Fase 1 — Persistencia** ⚠️ (código listo, guardado roto hasta el fix del
+   2026-10-16): tablas + Vault + guardar config desde el diálogo (con test de
+   conexión real inline, no simulado). El guardado por Vault nunca funcionó
+   (§12): el diálogo devolvía *"No se pudo guardar el secreto"* y `imap_configs`
+   quedó con 0 filas.
 2. **Fase 2 — Worker + extracción** ✅ (fusionada: inline en Netlify Function,
    1 proveedor de prueba con app-password, regex genérico).
 3. **Fase 3 — Obtener código real** ✅: Netlify Function sync + diálogo sin
@@ -258,8 +274,9 @@ Sin servicio separado: `imapflow` corre dentro de `imap-request-code`
    `created_by → auth.users`), `codigo_regex` por producto, reintentos con
    backoff, limpieza de expirados, monitoreo (alerta si `error` > X%),
    limpiar secretos huérfanos de Vault al re-guardar config.
-5. **Fase 5 — Cambios de PM/PO (2026-10-15)** ✅ implementada, pendiente de
-   deploy/prueba: ver §11.
+5. **Fase 5 — Cambios de PM/PO (2026-10-15)** ✅ implementada, **pendiente de
+   deploy y prueba en la app** (Casos 1 y 5): ver §11. Incluye el fix de acceso
+   a Vault del 2026-10-16 (§12).
 
 ## 9. Qué NO hacer
 
@@ -305,9 +322,13 @@ Sin servicio separado: `imapflow` corre dentro de `imap-request-code`
 2. **Esperado:** toast "No se pudo conectar al correo…" y **no** se crea ni
    actualiza ninguna fila en `imap_configs`.
 
-> **Cómo lo maneja el sistema:** el test de conexión va **antes** del
-> `vault.create_secret` y del upsert, así que una contraseña mala no deja
-> secretos huérfanos ni rows a medias. El error real de IMAP se loguea en la
+> **Cómo lo maneja el sistema:** el orden es: resolver la contraseña (la del
+> formulario, o la guardada en Vault si el campo viene vacío) → **test de
+> conexión** → `imap_vault_create_secret` (solo si llegó password) → upsert. Así
+> una contraseña mala no deja secretos huérfanos ni rows a medias.
+> ⚠️ **Corregido 2026-10-16:** antes el secreto se creaba *antes* del test, así
+> que cada intento fallido dejaba un secreto huérfano en Vault. El error real de
+> IMAP se loguea en la
 > función (`console.warn`) pero al cliente solo se le devuelve el mensaje
 > genérico, sin detalles del servidor de correo.
 
@@ -328,11 +349,13 @@ Sin servicio separado: `imapflow` corre dentro de `imap-request-code`
 > **Cómo lo maneja el sistema:** el RPC `get_imap_estado_pedidos` devuelve
 > `host/port/usuario/ssl/plataforma` (nunca el password) y el servicio los
 > mergea en cada fila del pedido, así que el diálogo abre con lo guardado. Si
-> `password` llega vacío, la función lee el secreto de Vault con `service_role`,
-> reusa el `password_vault_id` y testea la conexión con él. Si llega con valor,
-> crea el secreto nuevo y **después** del upsert borra el anterior
-> (`vault.delete_secret`) — nunca antes, para no dejar la fila apuntando a un
-> secreto inexistente.
+> `password` llega vacío, la función lee el secreto de Vault con `service_role`
+> (`imap_vault_read_secret`), reusa el `password_vault_id` y testea la conexión
+> con él. Si llega con valor, crea el secreto nuevo (`imap_vault_create_secret`)
+> y **después** del upsert borra el anterior (`imap_vault_delete_secret`) —
+> nunca antes, para no dejar la fila apuntando a un secreto inexistente.
+> `vault.delete_secret` **no existe** en supabase_vault: el wrapper borra con un
+> DELETE sobre `vault.secrets` (§12).
 
 ### Caso 3 — El toggle del proveedor
 
@@ -547,13 +570,106 @@ Password y Vault (Fase 5 v2):
 
 - El RPC de lectura devuelve también `imap_host`, `imap_port`, `imap_usuario`,
   `imap_ssl` para prefillear el diálogo. **Nunca** el password: vive en Vault y
-  solo lo lee `imap-save-config` con `service_role`.
+  lo leen las functions con `service_role` vía `imap_vault_read_secret` —
+  `imap-save-config` (para el test de conexión) e `imap-request-code` (para
+  conectar IMAP). Ver §12.
 - `password` es **opcional** en el body de `imap-save-config`: si llega vacío,
   la función lee el secreto existente de Vault, reusa ese `password_vault_id` y
   hace el test de conexión con él. Permite cambiar solo la plataforma sin volver
   a teclear la contraseña.
 - **Purga de secretos huérfanos:** al guardar con password nueva, después del
-  upsert se llama `vault.delete_secret(previousVaultId)`. Se intenta con y sin
-  `ignore_if_missing` porque la firma cambió entre versiones de
-  `supabase_vault`; si falla, solo se loguea un warning (nunca tumba el
-  guardado). Aplicado antes de que existiera data en las tablas.
+  upsert se llama `imap_vault_delete_secret(previousVaultId)`, que borra la fila
+  de `vault.secrets` (idempotente). Si falla, solo se loguea un warning (nunca
+  tumba el guardado). El borrado anterior
+  (`admin.schema('vault').rpc('delete_secret', args)`, con y sin
+  `ignore_if_missing`) **nunca podía ejecutarse**: el esquema no está expuesto y
+  además la función no existe en la extensión — ver §12.
+
+## 12. Fix de acceso a Vault (2026-10-16)
+
+**Síntoma:** al guardar la config IMAP, toast *"No se pudo guardar el secreto"*
+con `500` en `POST /.netlify/functions/imap-save-config`.
+
+**Causa raíz (verificada, no inferida):** el esquema `vault` **no está expuesto
+en la API REST** del proyecto. Cualquier request con `Accept-Profile` /
+`Content-Profile: vault` responde:
+
+```
+406 PGRST106 — The schema must be one of the following: public, graphql_public
+```
+
+El chequeo ocurre **antes** de autenticar: se probó con la `anon key` y con la
+`service key` y ambas reciben el mismo `406` (el `service_role` no salta la
+restricción). **Todas las revisiones del historial** de ambas functions usan
+`.schema('vault')`, así que el acceso a Vault por REST nunca funcionó aquí:
+guardar devolvía 500, leer devolvía `null` (de ahí *"No se encontró la
+contraseña guardada"*) y la purga del secreto viejo no borraba nada.
+
+**Segundo problema (latente):** `vault.create_secret` renombró sus parámetros en
+supabase_vault 0.3.0 (`secret`/`name`/`description` →
+`new_secret`/`new_name`/`new_description`). Aun exponiendo el esquema, la llamada
+`{ secret: password }` habría fallado con `PGRST202`. Y `vault.delete_secret`
+**no existe** en la extensión: borrar es un DELETE sobre `vault.secrets`.
+
+**Fix:** migración `supabase/migrations/20261016_imap_vault_rpcs.sql` — tres
+wrappers en `public` (`security definer`, dueño postgres, `search_path = ''`) que
+tocan Vault con argumentos **posicionales** (sirven en supabase_vault 0.2.x y
+0.3.x):
+
+| RPC | Qué hace | EXECUTE |
+|-----|----------|---------|
+| `imap_vault_create_secret(p_secret text) → uuid` | `vault.create_secret(p_secret, null, 'IMAP app password')` | solo `service_role` |
+| `imap_vault_read_secret(p_id uuid) → text` | `select decrypted_secret from vault.decrypted_secrets where id = p_id` | solo `service_role` |
+| `imap_vault_delete_secret(p_id uuid) → void` | `delete from vault.secrets where id = p_id` | solo `service_role` |
+
+`anon` y `authenticated` tienen `REVOKE ALL` sobre los tres: el cliente sigue sin
+poder leer ni crear secretos. **Decisión:** no se expone el esquema `vault` en el
+dashboard — el acceso queda versionado en una migración en lugar de depender de
+un setting fuera del repo.
+
+**Cambios de código:**
+
+- `netlify/functions/imap-save-config.js`: create/read/delete por los wrappers, y
+  se **reordenó** el flujo (antes el secreto se creaba *antes* del test de
+  conexión; una contraseña mala dejaba un secreto huérfano).
+- `netlify/functions/imap-request-code.js`: la lectura del secreto también iba
+  por `.schema('vault')`, así que "Obtener código" habría fallado con *"No se
+  pudo leer la credencial IMAP."* incluso con la config ya guardada.
+
+**Deploy:** la migración y las dos functions van juntas; las versiones viejas
+siguen llamando a `.schema('vault')`.
+
+## 13. Verificado vs asumido (2026-10-16)
+
+Todo lo marcado como "Verificado" se ejecutó contra el proyecto
+`hlscpuwrukraibyejkiy`.
+
+**Verificado (ejecutado):**
+
+| Qué | Resultado |
+|-----|-----------|
+| Esquema `vault` por REST, con `anon` **y** con `service_role` | `406 PGRST106` (límite de configuración, previo a auth) |
+| `imap_vault_create_secret` con `service_role` | `200` + uuid |
+| `imap_vault_read_secret` con ese uuid | `200` + el mismo valor (round-trip) |
+| `imap_vault_read_secret` con uuid inexistente | `200` + `null`, sin error |
+| `imap_vault_delete_secret` | `204`; repetido → `204`; lectura posterior → `null` |
+| Los tres wrappers con `anon` / `authenticated` | `401` `42501 permission denied` |
+| `node --check` en ambas functions | ok |
+| Filas en `imap_configs` | **0** → ninguna config se guardó nunca desde la app |
+| `vault.delete_secret` existe en supabase_vault 0.3.0 | **no** (leído del código fuente de la extensión) |
+
+**Asumido — NO verificado todavía (no presentarlo como hecho):**
+
+- **Guardado desde el diálogo (Caso 1):** requiere deployar las functions y una
+  casilla real. Es la prueba de aceptación del fix.
+- **`Obtener código` de punta a punta (Caso 5):** usa el mismo wrapper de lectura
+  (ya verificado), pero el flujo completo no se corrió.
+- **Purga del secreto anterior con datos reales:** no hay ninguna config guardada
+  (`imap_configs` = 0 filas); se apoya en el round-trip de
+  `imap_vault_delete_secret`.
+- **Conexión IMAP real (`imapflow`)** con credenciales del proveedor: no se tocó
+  en este cambio.
+- **"Fase 1/Fase 3 probadas en producción"**: con el código de este repo la
+  persistencia/lectura de Vault era imposible (§12). Si esa prueba salió bien,
+  hay que reconstruir cómo se cargó esa config. Tratar como no verificado hasta
+  rehacer los Casos 1 y 5 con el código actual.

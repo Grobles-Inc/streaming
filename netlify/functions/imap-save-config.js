@@ -20,6 +20,10 @@
  * contraseña, que nunca se devuelve al cliente). Al guardar con password
  * nueva, el secreto anterior se borra de Vault para no dejar huérfanos.
  *
+ * Vault se toca sólo por los wrappers security-definer de `public`
+ * (`imap_vault_*`, migración 20261016_imap_vault_rpcs.sql): el esquema `vault`
+ * no está expuesto en la API REST y `.schema('vault')` fallaba con PGRST106.
+ *
  *   200 { ok: true, id }
  *   4xx { ok: false, reason }
  *
@@ -88,34 +92,33 @@ function validateBody(b) {
   return null
 }
 
-/** Lee el secreto de Vault por id. Solo service_role, nunca sale de la función. */
+/**
+ * Lee el secreto de Vault por id. Solo service_role, nunca sale de la función.
+ * El esquema `vault` no está expuesto en la API REST del proyecto (PostgREST
+ * responde PGRST106), por eso Vault se toca siempre por los wrappers
+ * security-definer de `public` (migración 20261016_imap_vault_rpcs.sql).
+ */
 async function readSecret(admin, vaultId) {
-  const { data, error } = await admin
-    .schema('vault')
-    .from('decrypted_secrets')
-    .select('decrypted_secret')
-    .eq('id', vaultId)
-    .single()
-  if (error || !data?.decrypted_secret) return null
-  return data.decrypted_secret
+  const { data, error } = await admin.rpc('imap_vault_read_secret', {
+    p_id: vaultId,
+  })
+  if (error || typeof data !== 'string' || data.length === 0) return null
+  return data
 }
 
 /**
- * Borra el secreto anterior de la fila. La firma de `delete_secret` cambió
- * entre versiones de supabase_vault (con o sin `ignore_if_missing`), así que
- * se intenta con y sin el flag. Nunca debe tumbar el guardado.
+ * Borra el secreto anterior de la fila. `vault.delete_secret` no existe en la
+ * extensión, así que la baja es un DELETE sobre vault.secrets dentro del
+ * wrapper. Nunca debe tumbar el guardado.
  */
 async function deleteSecret(admin, vaultId) {
   if (!vaultId) return
-  const attempts = [
-    { uuid: vaultId },
-    { uuid: vaultId, ignore_if_missing: true },
-  ]
-  for (const args of attempts) {
-    const { error } = await admin.schema('vault').rpc('delete_secret', args)
-    if (!error) return
+  const { error } = await admin.rpc('imap_vault_delete_secret', {
+    p_id: vaultId,
+  })
+  if (error) {
+    console.warn('imap-save-config: no se pudo borrar el secreto anterior')
   }
-  console.warn('imap-save-config: no se pudo borrar el secreto anterior')
 }
 
 async function testImap({ host, port, usuario, password, ssl }) {
@@ -233,18 +236,10 @@ export async function handler(event) {
     .maybeSingle()
   const previousVaultId = currentConfig?.password_vault_id ?? null
 
-  // 4. Resolver el secreto: nuevo si viene password, si no el de Vault.
-  let vaultId = previousVaultId
+  // 4. Resolver la contraseña con la que se testea: la nueva del formulario o
+  // la guardada en Vault (nunca se devuelve al cliente).
   let imapPassword = ''
   if (password) {
-    const { data: createdId, error: vaultError } = await admin
-      .schema('vault')
-      .rpc('create_secret', { secret: password })
-    if (vaultError || !createdId) {
-      console.error('imap-save-config: vault.create_secret falló', vaultError)
-      return json(500, { ok: false, reason: 'No se pudo guardar el secreto' })
-    }
-    vaultId = createdId
     imapPassword = password
   } else if (previousVaultId) {
     imapPassword = (await readSecret(admin, previousVaultId)) ?? ''
@@ -259,7 +254,8 @@ export async function handler(event) {
     return json(400, { ok: false, reason: 'Contraseña requerida' })
   }
 
-  // 5. Test de conexión IMAP antes de guardar (con el secreto resuelto).
+  // 5. Test de conexión IMAP antes de escribir nada: una contraseña mala no
+  // deja secretos huérfanos en Vault ni filas a medias.
   try {
     await testImap({ host, port, usuario, password: imapPassword, ssl })
   } catch (err) {
@@ -271,7 +267,22 @@ export async function handler(event) {
     })
   }
 
-  // 6. Upsert config (sin password en claro).
+  // 6. Secreto: uno nuevo en Vault si llegó password, si no se reusa el de la
+  // config anterior (ya validado por el test de arriba).
+  let vaultId = previousVaultId
+  if (password) {
+    const { data: createdId, error: vaultError } = await admin.rpc(
+      'imap_vault_create_secret',
+      { p_secret: password }
+    )
+    if (vaultError || !createdId) {
+      console.error('imap-save-config: vault.create_secret falló', vaultError)
+      return json(500, { ok: false, reason: 'No se pudo guardar el secreto' })
+    }
+    vaultId = createdId
+  }
+
+  // 7. Upsert config (sin password en claro).
   const { data: saved, error: saveError } = await admin
     .from('imap_configs')
     .upsert(
@@ -296,7 +307,7 @@ export async function handler(event) {
     return json(500, { ok: false, reason: 'No se pudo guardar la configuración' })
   }
 
-  // 7. Purgar el secreto huérfano del guardado anterior (después del upsert,
+  // 8. Purgar el secreto huérfano del guardado anterior (después del upsert,
   // para no dejar la fila apuntando a un secreto borrado).
   if (previousVaultId && previousVaultId !== vaultId) {
     await deleteSecret(admin, previousVaultId)

@@ -282,14 +282,13 @@ export async function handler(event) {
     return json(http, { ok: false, reason, solicitud_id: solicitud.id })
   }
 
-  // 6. Leer secreto de Vault (service_role, en memoria).
-  const { data: secretRow, error: secretError } = await admin
-    .schema('vault')
-    .from('decrypted_secrets')
-    .select('decrypted_secret')
-    .eq('id', config.password_vault_id)
-    .single()
-  const imapPassword = secretRow?.decrypted_secret
+  // 6. Leer secreto de Vault (service_role, en memoria). El esquema `vault` no
+  // está expuesto en la API REST (PostgREST responde PGRST106), así que se usa
+  // el wrapper security-definer de `public` (20261016_imap_vault_rpcs.sql).
+  const { data: imapPassword, error: secretError } = await admin.rpc(
+    'imap_vault_read_secret',
+    { p_id: config.password_vault_id }
+  )
   if (secretError || !imapPassword) {
     console.error('imap-request-code: Vault read falló')
     return fail('No se pudo leer la credencial IMAP.', 500)

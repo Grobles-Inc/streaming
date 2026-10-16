@@ -4,15 +4,16 @@
 > verificación leyendo el correo de la cuenta (vía IMAP), empezando por la
 > configuración IMAP (diálogo "Configurar IMAP"). Backend: Supabase.
 
-> **Estado V2 (2026-10-16): Fase 5 + fix de acceso a Vault.** Fases 1–3 (V1) y
-> Fase 5 (cambios de producto) implementadas. **El acceso a Vault desde las
-> Netlify Functions nunca funcionó:** el esquema `vault` no está expuesto en la
-> API REST del proyecto, así que desde el 2026-10-16 va por los wrappers
-> `public.imap_vault_*` — ver §12. Pendiente: **deploy de las functions + prueba
-> en la app** (Casos 1 y 5) — ver §13 (verificado vs asumido). Decisiones:
-> cuentas variadas (IMAP genérico), worker en **Netlify Functions síncrono** (sin
-> worker externo con poll), secretos en **Supabase Vault**, auth **custom
-> `usuarios` (testing-phase)** con scope — ver §1 y §11.
+> **Estado V2.1 (2026-10-16): Fase 5 + fix de Vault + migración a Edge
+> Functions.** Fases 1–3 (V1) y Fase 5 (cambios de producto) implementadas.
+> **El acceso a Vault desde las functions nunca funcionó:** el esquema `vault` no
+> está expuesto en la API REST del proyecto, así que desde el 2026-10-16 va por
+> los wrappers `public.imap_vault_*` — ver §12. **IMAP hoy corre en Supabase Edge
+> Functions**, no en Netlify — ver §14. Pendiente: **prueba en la app** (Casos 1
+> y 5) — ver §13 (verificado vs asumido). Decisiones: cuentas variadas (IMAP
+> genérico), invocación **síncrona a la Edge Function** (sin worker externo con
+> poll), secretos en **Supabase Vault**, auth **custom `usuarios`
+> (testing-phase)** con scope — ver §1 y §11.
 
 ## 0. Dónde vive cada cosa (V2)
 
@@ -31,29 +32,32 @@
   `vault` no está expuesto en la API REST, así que las functions entran por los
   RPC `public.imap_vault_*` (solo `service_role`) — ver §12.
 - El frontend habla con Supabase directo (`src/lib/supabase.ts`,
-  `supabase.from(...)`); IMAP pasa por Netlify Functions (no Edge Functions —
-  ver §1).
+  `supabase.from(...)`); IMAP pasa por Supabase Edge Functions (§14).
 
 ## 1. Decisión de arquitectura (importante)
 
-**IMAP no puede correr en el navegador ni en una Supabase Edge Function.**
+**IMAP no puede correr en el navegador; sí en una Supabase Edge Function.**
 
 - El navegador no permite sockets TCP crudos (IMAP es TCP: puertos 143/993).
-- Las Supabase Edge Functions (runtime Deno) solo permiten salida vía `fetch`;
-  no hay `Deno.connect` TCP. **No se puede usar `imapflow`/`node-imap` ahí.**
 - Las credenciales IMAP **nunca** deben guardarse ni usarse en el cliente.
+- Las Edge Functions (runtime Deno) **sí** salen por TCP: `node:net` /
+  `node:tls` / `node:dgram` funcionan y `imapflow` es JS puro. La restricción que
+  había motivado ir a Netlify ("solo salida vía `fetch`, no hay
+  `Deno.connect`") era de Deno Deploy y ya no aplica — ver §14.
+- Lo único que la plataforma bloquea es el egress a los puertos **25 y 587**
+  (SMTP, política anti-spam). IMAP (143/993) y SMTPS (465) pasan.
 
-Arquitectura actual (V2):
+Arquitectura actual (V2.1):
 
 ```
 [Pedidos · proveedor ···· → Configurar IMAP] --(POST x-user-id)-->
-        Netlify `imap-save-config` --> valida plataforma --> test IMAP
+        Edge `imap-save-config` --> valida plataforma --> test IMAP
         (INBOX) --> RPC `imap_vault_create_secret` + upsert `imap_configs`
         (stock_producto_id + plataforma)
 [Pedidos · columna IMAP (Switch)] --(RPC set_compras_imap_enabled)-->
         `compras.imap_enabled` (por compra)
 [Compras · vendedor ···· → Obtener código] --(POST x-user-id)-->
-        Netlify `imap-request-code` --> valida `compras.imap_enabled` -->
+        Edge `imap-request-code` --> valida `compras.imap_enabled` -->
         rate limit --> fila `codigo_solicitudes` --> RPC `imap_vault_read_secret`
         --> conecta IMAP
         (INBOX, UNSEEN 10 min) --> filtra por plataforma (remitente/asunto) -->
@@ -62,9 +66,10 @@ Arquitectura actual (V2):
 [Compras · diálogo] <-- código en InputOTP (readOnly + copiar) + correo completo
 ```
 
-> **Desvíos V1 vs plan original:** sin Edge Functions ni worker externo con
-> poll — las Netlify Functions (Node) sí permiten TCP, así que el flujo es
-> **síncrono** dentro del timeout (~26s). Sin Realtime/polling en el diálogo.
+> **Desvíos V1 vs plan original:** sin worker externo con poll — la Edge Function
+> conecta IMAP y responde dentro de la misma invocación, así que el flujo es
+> **síncrono** dentro del timeout (150s en Edge vs ~26s en Netlify). Sin
+> Realtime/polling en el diálogo.
 > Sin Gmail/Outlook OAuth (cuentas variadas). Auth custom `usuarios` en vez de
 > JWT: `auth.users` está vacío (0 filas) y la app usa `usuarios` + localStorage,
 > así que las funciones identifican al caller por header `x-user-id` (spoofable
@@ -76,11 +81,11 @@ Arquitectura actual (V2):
 Componentes (hechos):
 
 1. **Tablas Supabase** ✅ (ya existían + RLS; Vault activado).
-2. **Netlify Function `imap-save-config`** ✅ (`netlify/functions/imap-save-config.js`):
+2. **Edge Function `imap-save-config`** ✅ (código en el Dashboard — ver §14):
    scope admin / proveedor dueño del stock (`registered` y `seller` denegados
    desde V2), valida `plataforma`, test IMAP contra INBOX antes de escribir
    nada y escribe el secreto con los RPC `imap_vault_*` (§12).
-3. **Netlify Function `imap-request-code`** ✅ (`netlify/functions/imap-request-code.js`):
+3. **Edge Function `imap-request-code`** ✅ (código en el Dashboard — ver §14):
    scope anclado a LA compra + gate de `compras.imap_enabled`, rate limit
    5 req/5 min, filtro por plataforma, regex genérico `/\b\d{4,8}\b`, guarda el
    correo completo, marca el email Seen, TTL 10 min.
@@ -173,9 +178,9 @@ RLS (habilitar en las 3 tablas):
 5. Al listar configs al frontend, devolver `password: '••••'` (enmascarado) —
    n/a, el frontend nunca lee la tabla directo.
 
-## 4. Paso 3 — ~~Edge Function~~ Netlify Function `imap-request-code` ✅ hecho
+## 4. Paso 3 — Edge Function `imap-request-code` ✅ hecho
 
-`netlify/functions/imap-request-code.js` (Node, sync V1):
+Edge Function `imap-request-code` (Deno, sync V1):
 
 - Auth testing-phase: header `x-user-id` verificado contra `public.usuarios`
   (sin JWT hasta migrar Auth).
@@ -193,8 +198,8 @@ RLS (habilitar en las 3 tablas):
 
 ## 5. Paso 4 — ~~Worker IMAP externo~~ inline en la función ✅ hecho (V1)
 
-Sin servicio separado: `imapflow` corre dentro de `imap-request-code`
-(dep `imapflow@2.4.0` en `package.json`):
+Sin servicio separado: `imapflow` corre dentro de `imap-request-code` (import
+`npm:imapflow` resuelto por el runtime; **ya no es dependencia del repo**):
 
 - Loop por invocación:
   1. Solicitud `pendiente` → `procesando`.
@@ -210,9 +215,9 @@ Sin servicio separado: `imapflow` corre dentro de `imap-request-code`
   7. Inserta en `codigos_verificacion` (TTL 10 min), solicitud `listo`
      (o `error` con motivo).
   8. Marca el email como Seen, cierra conexión.
-- Env vars (Netlify + `.env` local): `SERVICE_ROLE_KEY`,
-  `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`. Node 22 fijado en
-  `netlify.toml` (`imapflow` exige node >= 20).
+- Env vars: en Edge las inyecta la plataforma (`SUPABASE_URL` +
+  `SUPABASE_SERVICE_ROLE_KEY`); en el cliente solo `VITE_SUPABASE_URL` +
+  `VITE_SUPABASE_ANON_KEY`. Nada de esto vive ya en Netlify.
 - Logs sin credenciales ni códigos completos (código enmascarado `12***`).
 
 ## 6. Paso 5 — Conectar el frontend existente ✅ hecho
@@ -220,7 +225,8 @@ Sin servicio separado: `imapflow` corre dentro de `imap-request-code`
 `src/features/proveedor/pedidos/` (proveedor, V2):
 
 1. **Services** (`services/imap.ts`): `saveImapConfig(input, userId)` →
-   `/.netlify/functions/imap-save-config`; `getImapEstadoPedidos(proveedorId,
+   Edge Function `imap-save-config` (vía `supabase.functions.invoke`);
+   `getImapEstadoPedidos(proveedorId,
    compraIds)` → RPC; `setImapEnabled(proveedorId, compraId, enabled)` → RPC.
 2. **Queries** (`queries/index.ts`): `useSaveImapConfig`,
    `useToggleImapEnabled`.
@@ -234,7 +240,8 @@ Sin servicio separado: `imapflow` corre dentro de `imap-request-code`
 `src/features/vendedor/compras/` (vendedor):
 
 1. **Service** (`services/imap.ts`): `requestCode(compraId, userId)` →
-   `/.netlify/functions/imap-request-code`; lanza `ImapNeedsConfigError` /
+   Edge Function `imap-request-code` (vía `supabase.functions.invoke`); lanza
+   `ImapNeedsConfigError` /
    `ImapNotEnabledError` (sin toast, los muestra el diálogo).
 2. **Query**: `useRequestCode` (sync, sin Realtime/polling).
 3. **UI**: "Obtener código" en el menú `···` solo si `compra.imap_enabled`;
@@ -246,7 +253,7 @@ Sin servicio separado: `imapflow` corre dentro de `imap-request-code`
 ## 7. Paso 6 — Seguridad (checklist V1)
 
 - [x] RLS activado en las 3 tablas; cliente nunca usa `service_role`
-      (solo las Netlify Functions).
+      (solo las Edge Functions IMAP).
 - [x] Passwords solo en Vault; frontend jamás recibe secretos en claro.
 - [x] La función valida scope (request-code: admin / dueño / seller con esa
       compra; save-config: admin / proveedor dueño) y `registered` denegado.
@@ -266,9 +273,9 @@ Sin servicio separado: `imapflow` corre dentro de `imap-request-code`
    conexión real inline, no simulado). El guardado por Vault nunca funcionó
    (§12): el diálogo devolvía *"No se pudo guardar el secreto"* y `imap_configs`
    quedó con 0 filas.
-2. **Fase 2 — Worker + extracción** ✅ (fusionada: inline en Netlify Function,
+2. **Fase 2 — Worker + extracción** ✅ (fusionada: inline en la Edge Function,
    1 proveedor de prueba con app-password, regex genérico).
-3. **Fase 3 — Obtener código real** ✅: Netlify Function sync + diálogo sin
+3. **Fase 3 — Obtener código real** ✅: Edge Function sync + diálogo sin
    mock (sin Realtime/polling en V1). **Probado en producción.**
 4. **Fase 4 — Endurecer** ⏳ pendiente: migrar a Supabase Auth (JWT +
    `created_by → auth.users`), `codigo_regex` por producto, reintentos con
@@ -289,11 +296,14 @@ Sin servicio separado: `imapflow` corre dentro de `imap-request-code`
 
 ## 10. Caso de prueba V2 (V1.1) — cómo probar la automatización IMAP
 
-> Pre-requisitos: en local hace falta `netlify dev` (en `vite dev` las funciones
-> no existen y el diálogo muestra el error correspondiente); en producción,
-> deploy con `SERVICE_ROLE_KEY` en el contexto Production. Solo cuentas de
-> correo de prueba. Migraciones aplicadas: `20261013_imap_testing_custom_auth.sql`
-> y `20261015_imap_plataforma_habilitado.sql`.
+> Pre-requisitos: las Edge Functions van desplegadas en Supabase (su código vive
+> en el Dashboard, no en el repo — ver §14), así que `vite dev` alcanza: el
+> cliente siempre pega contra la función del proyecto. Para *modificar* el
+> código de una función hay que redeployarla desde el Dashboard; `supabase
+> functions serve` (Docker) solo sirve para iterar en local. Solo cuentas de
+> correo de prueba. Migraciones aplicadas:
+> `20261013_imap_testing_custom_auth.sql` y
+> `20261015_imap_plataforma_habilitado.sql`.
 
 ### Caso 1 — Configurar IMAP (lado proveedor) con credenciales correctas
 
@@ -385,7 +395,7 @@ Sin servicio separado: `imapflow` corre dentro de `imap-request-code`
    `400 { needs_config: true }`.
 
 > **Cómo lo maneja el sistema:** la UI esconde el ítem por fila
-> (`AccionesCell` retorna `null` si `!row.imap_enabled`) y la Netlify Function
+> (`AccionesCell` retorna `null` si `!row.imap_enabled`) y la Edge Function
 > valida lo mismo antes de leer el Vault — la restricción no depende del
 > frontend. `admin` está exento del gate para poder debuggear.
 
@@ -408,7 +418,7 @@ Sin servicio separado: `imapflow` corre dentro de `imap-request-code`
 > conecta IMAP → busca `UNSEEN` de los últimos 10 min, más nuevos primero
 > (máx 10) → filtra por plataforma → extrae el código, guarda el cuerpo como
 > texto plano y marca el email como Seen → responde. Todo síncrono dentro del
-> timeout de Netlify (~26 s); el log solo muestra el código enmascarado (`12***`).
+> timeout de Edge (150 s); el log solo muestra el código enmascarado (`12***`).
 
 ### Caso 6 — El filtro por plataforma
 
@@ -526,7 +536,7 @@ Sin servicio separado: `imapflow` corre dentro de `imap-request-code`
   → insumo para `codigo_regex` (Fase 4).
 - `cuerpo` ilegible (HTML que no se limpia bien, base64 doble): anotar el
   proveedor → insumo para mejorar `toPlainText`.
-- Tiempos > 20s sostenidos: Netlify corta en ~26s; anotar proveedor para
+- Tiempos > 60s sostenidos: Edge corta en ~150s; anotar proveedor para
   evaluar acortar la ventana de búsqueda.
 
 ## 11. Fase 5 — Cambios de PM/PO (2026-10-15)
@@ -588,7 +598,8 @@ Password y Vault (Fase 5 v2):
 ## 12. Fix de acceso a Vault (2026-10-16)
 
 **Síntoma:** al guardar la config IMAP, toast *"No se pudo guardar el secreto"*
-con `500` en `POST /.netlify/functions/imap-save-config`.
+con `500` en el POST a `imap-save-config` (la URL de la época era
+`/.netlify/functions/imap-save-config`; hoy es una Edge Function — §14).
 
 **Causa raíz (verificada, no inferida):** el esquema `vault` **no está expuesto
 en la API REST** del proyecto. Cualquier request con `Accept-Profile` /
@@ -629,15 +640,15 @@ un setting fuera del repo.
 
 **Cambios de código:**
 
-- `netlify/functions/imap-save-config.js`: create/read/delete por los wrappers, y
-  se **reordenó** el flujo (antes el secreto se creaba *antes* del test de
-  conexión; una contraseña mala dejaba un secreto huérfano).
-- `netlify/functions/imap-request-code.js`: la lectura del secreto también iba
-  por `.schema('vault')`, así que "Obtener código" habría fallado con *"No se
-  pudo leer la credencial IMAP."* incluso con la config ya guardada.
+- `imap-save-config`: create/read/delete por los wrappers, y se **reordenó** el
+  flujo (antes el secreto se creaba *antes* del test de conexión; una contraseña
+  mala dejaba un secreto huérfano).
+- `imap-request-code`: la lectura del secreto también iba por `.schema('vault')`,
+  así que "Obtener código" habría fallado con *"No se pudo leer la credencial
+  IMAP."* incluso con la config ya guardada.
 
 **Deploy:** la migración y las dos functions van juntas; las versiones viejas
-siguen llamando a `.schema('vault')`.
+siguen llamando a `.schema('vault')`. Ambas son hoy Edge Functions — §14.
 
 ## 13. Verificado vs asumido (2026-10-16)
 
@@ -673,3 +684,54 @@ Todo lo marcado como "Verificado" se ejecutó contra el proyecto
   persistencia/lectura de Vault era imposible (§12). Si esa prueba salió bien,
   hay que reconstruir cómo se cargó esa config. Tratar como no verificado hasta
   rehacer los Casos 1 y 5 con el código actual.
+
+## 14. Migración a Supabase Edge Functions (2026-10-16)
+
+**Qué cambió:** IMAP dejó de correr en Netlify Functions y pasó a Supabase Edge
+Functions. El repo ya no tiene `netlify/functions/imap-*.js` ni la dep
+`imapflow`; Netlify conserva `image-proxy` y `security-gate`, sin cambios.
+
+**Por qué:** la premisa que motivaba Netlify (§1) era que el runtime de las Edge
+Functions no dejaba salir por TCP. Ya no aplica — el bloqueo documentado son los
+puertos 25/587 (SMTP). Ganancias: timeout de ~26s a 150s, y la
+`SERVICE_ROLE_KEY` salió de las env vars de Netlify (ya nada del repo la usa).
+
+**Contrato intacto:** mismo body, mismo header `x-user-id`, mismo
+`{ ok, codigo, solicitud_id, remitente, asunto, cuerpo, recibido_at, plataforma }`
+y mismos errores (`reason`, `not_enabled`, `needs_config`).
+
+| Capa | Dónde |
+|------|-------|
+| Functions | Dashboard de Supabase: `imap-request-code`, `imap-save-config` (`verify_jwt = false`) |
+| Invoke | `src/lib/supabase-functions.ts` → `invokeSupabaseFunction()` |
+| Servicios | `proveedor/pedidos/services/imap.ts` (`saveImapConfig`), `vendedor/compras/services/imap.ts` (`requestCode`) |
+| Netlify | `image-proxy`, `security-gate` |
+
+**Por qué el helper `invokeSupabaseFunction`:** `supabase.functions.invoke`
+devuelve `data = null` en cualquier 4xx/5xx y esconde el body dentro de
+`error.context` (la `Response`). Sin parsearlo se pierden `reason`,
+`not_enabled` y `needs_config`, y el diálogo dejaría de distinguir "no
+configurado" de "no habilitado" (ambos caerían al mensaje genérico). El helper
+normaliza a `{ ok, status, data }`, parsea ese body una sola vez y devuelve
+`data: null` solo cuando no hubo respuesta utilizable (offline o relay caído) —
+que es lo que dispara el mensaje "No se pudo contactar el servidor", una rama
+que antes no existía.
+
+**`verify_jwt = false`** es obligatorio: la app usa auth custom
+(`public.usuarios` + localStorage) y no hay JWT de Supabase que validar. El
+gateway valida la firma del `Authorization` (que es la anon key), no la identidad
+del usuario — la única puerta real es el chequeo de `x-user-id` contra
+`public.usuarios` dentro de la función, spoofeable con curl (testing-phase, §7).
+
+**Deuda / pendientes de esta migración:**
+
+- ⚠️ **El código de las functions no está en el repo:** vive en el Dashboard de
+  Supabase. El repo tiene el contrato esperado (este doc) y el cliente, pero un
+  `supabase functions deploy` desde el repo no tiene qué desplegar, y quien toque
+  la lógica tiene que sacarla de la UI. Decidir si se baja a
+  `supabase/functions/<nombre>/index.ts` (implica `supabase/config.toml` con
+  `[functions.<nombre>] verify_jwt = false`).
+- `solicitud_id` e `id` llegan como número en algunos despliegues y son uuid en
+  la DB: los services los normalizan con `String()`.
+- Los mensajes de red ya no mencionan `netlify dev`: en local `vite dev` pega
+  contra la function desplegada.

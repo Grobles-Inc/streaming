@@ -1,7 +1,9 @@
 [build]
   functions = "netlify/functions"
 
-# imapflow@2 exige node >=20; el default de Netlify en sitios viejos es 18.
+# IMAP ya no pasa por Netlify ( vive en Supabase Edge Functions). Las functions
+# que quedan —image-proxy y security-gate— solo usan fetch; el pin se mantiene
+# para no depender del default de runtime del sitio.
 NODE_VERSION = "22"
 
 # Configuración de cache para imágenes

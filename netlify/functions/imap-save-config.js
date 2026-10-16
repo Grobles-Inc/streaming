@@ -282,26 +282,29 @@ export async function handler(event) {
     vaultId = createdId
   }
 
-  // 7. Upsert config (sin password en claro).
+  // 7. Upsert config (preservando el created_by original si ya existía).
+  const upsertPayload = {
+    stock_producto_id,
+    email,
+    host,
+    port,
+    usuario,
+    password_vault_id: vaultId,
+    ssl,
+    plataforma,
+    updated_at: new Date().toISOString(),
+  }
+
+  if (!currentConfig) {
+    upsertPayload.created_by = caller.id
+  }
+
   const { data: saved, error: saveError } = await admin
     .from('imap_configs')
-    .upsert(
-      {
-        stock_producto_id,
-        email,
-        host,
-        port,
-        usuario,
-        password_vault_id: vaultId,
-        ssl,
-        plataforma,
-        created_by: caller.id,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'stock_producto_id' }
-    )
+    .upsert(upsertPayload, { onConflict: 'stock_producto_id' })
     .select('id')
     .single()
+
   if (saveError || !saved) {
     console.error('imap-save-config: upsert falló', saveError)
     return json(500, { ok: false, reason: 'No se pudo guardar la configuración' })

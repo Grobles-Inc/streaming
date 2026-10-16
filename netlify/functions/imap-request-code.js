@@ -321,21 +321,20 @@ export async function handler(event) {
     const newestFirst = [...uids].sort((a, b) => b - a).slice(0, SCAN_LIMIT)
     let correosDePlataforma = 0
     for await (const msg of client.fetch(newestFirst, {
-      envelope: true,
-      bodyParts: ['TEXT'],
-    })) {
-      const subject = msg.envelope?.subject || ''
-      const fromAddr = msg.envelope?.from?.[0]?.address || ''
-      const fromName = msg.envelope?.from?.[0]?.name || ''
-      const fromText = `${fromAddr} ${fromName}`.trim()
+          envelope: true,
+          source: true,
+        })) {
+          const subject = msg.envelope?.subject || ''
+          const fromAddr = msg.envelope?.from?.[0]?.address || ''
+          const fromName = msg.envelope?.from?.[0]?.name || ''
+          const fromText = `${fromAddr} ${fromName}`.trim()
 
-      if (!matchesPlataforma(plataforma, subject, fromText)) continue
-      correosDePlataforma += 1
+          if (!matchesPlataforma(plataforma, subject, fromText)) continue
+          correosDePlataforma += 1
 
-      const rawPart = msg.bodyParts?.get('TEXT')
-      const rawBody = rawPart ? Buffer.from(rawPart).toString('utf8') : ''
-      const cuerpo = toPlainText(rawBody)
-      const code = extractCode(subject, cuerpo)
+          const rawBody = msg.source ? msg.source.toString('utf8') : ''
+          const cuerpo = toPlainText(rawBody)
+          const code = extractCode(subject, cuerpo)
       if (!code) continue
 
       const from = fromAddr || fromName || null

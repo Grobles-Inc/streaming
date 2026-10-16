@@ -1,8 +1,8 @@
 /**
  * Plataformas soportadas por la búsqueda IMAP (Fase 5).
  * Los slugs son los mismos del CHECK constraint `imap_configs_plataforma_check`
- * en Supabase y de la whitelist en las Netlify Functions — si agregás una acá,
- * agregala en los tres lados.
+ * en Supabase y de la whitelist de las Edge Functions IMAP — si agregás una
+ * acá, agregala en los tres lados.
  */
 export const PLATAFORMAS = [
   { value: 'netflix', label: 'Netflix' },

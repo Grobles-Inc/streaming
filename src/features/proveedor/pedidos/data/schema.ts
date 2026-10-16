@@ -57,7 +57,7 @@ export const pedidoSchema = z.object({
   dias_restantes: z.number().nullable(),
   total_count: z.number(),
   // estado IMAP de la cuenta de stock (merge en services/getPedidosProveedor).
-  // El password no viaja: vive en Vault y solo lo lee la Netlify Function.
+  // El password no viaja: vive en Vault y solo lo lee la Edge Function.
   imap_enabled: z.boolean(),
   imap_configurado: z.boolean(),
   imap_plataforma: z.string().nullable(),

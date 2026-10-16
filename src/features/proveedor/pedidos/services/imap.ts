@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/supabase'
+import { invokeSupabaseFunction } from '@/lib/supabase-functions'
 import { Plataforma } from '../data/plataformas'
 
-const SAVE_CONFIG_URL = '/.netlify/functions/imap-save-config'
+const SAVE_CONFIG_FN = 'imap-save-config'
 
 export interface ImapConfigInput {
   stock_producto_id: number
@@ -20,7 +21,7 @@ export interface ImapConfigInput {
 
 interface SaveImapConfigResponse {
   ok: boolean
-  id?: string
+  id?: string | number
   reason?: string
 }
 
@@ -37,12 +38,13 @@ export interface ImapEstadoCompra {
 }
 
 /**
- * Guarda la config IMAP de una cuenta de stock vía Netlify Function (test de
- * conexión + Vault server-side). El password nunca toca Supabase directo desde
- * el cliente.
+ * Guarda la config IMAP de una cuenta de stock vía Supabase Edge Function (test
+ * de conexión + Vault server-side). El password nunca toca Supabase directo
+ * desde el cliente.
  *
  * Testing-phase: la función identifica al caller por x-user-id (custom auth,
- * spoofable). No usar con credenciales de producción hasta migrar a Auth.
+ * spoofable) y corre con `verify_jwt = false`. No usar con credenciales de
+ * producción hasta migrar a Auth.
  */
 export const saveImapConfig = async (
   input: ImapConfigInput,
@@ -52,36 +54,24 @@ export const saveImapConfig = async (
     throw new Error('Sesión requerida')
   }
 
-  let response: Response
-  try {
-    response = await fetch(SAVE_CONFIG_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-user-id': userId,
-      },
-      body: JSON.stringify(input),
-    })
-  } catch {
+  const { data } = await invokeSupabaseFunction<SaveImapConfigResponse>(
+    SAVE_CONFIG_FN,
+    { ...input },
+    userId
+  )
+
+  if (!data) {
     throw new Error(
-      'No se pudo contactar la función. Si estás en local, ejecuta con `netlify dev`.'
+      'No se pudo contactar el servidor. Revisa tu conexión e intenta de nuevo.'
     )
   }
 
-  let parsed: SaveImapConfigResponse
-  try {
-    parsed = (await response.json()) as SaveImapConfigResponse
-  } catch {
-    throw new Error(
-      'Respuesta inválida de la función. Si estás en local, ejecuta con `netlify dev`.'
-    )
+  if (!data.ok || !data.id) {
+    throw new Error(data.reason || 'No se pudo guardar la configuración')
   }
 
-  if (!response.ok || !parsed.ok || !parsed.id) {
-    throw new Error(parsed.reason || 'No se pudo guardar la configuración')
-  }
-
-  return parsed.id
+  // El id es uuid en la DB, pero la función puede devolverlo numérico.
+  return String(data.id)
 }
 
 /**

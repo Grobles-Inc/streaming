@@ -1,4 +1,6 @@
-const REQUEST_CODE_URL = '/.netlify/functions/imap-request-code'
+import { invokeSupabaseFunction } from '@/lib/supabase-functions'
+
+const REQUEST_CODE_FN = 'imap-request-code'
 
 export class ImapNeedsConfigError extends Error {
   constructor(message = 'IMAP no configurado para esta cuenta') {
@@ -27,13 +29,30 @@ export interface RequestCodeResult {
   plataforma: string | null
 }
 
+/** Body de la Edge Function: mismo contrato que tenía en Netlify. */
+interface RequestCodeResponse {
+  ok: boolean
+  codigo?: string
+  solicitud_id?: string | number
+  remitente?: string | null
+  asunto?: string | null
+  cuerpo?: string | null
+  recibido_at?: string | null
+  plataforma?: string | null
+  reason?: string
+  needs_config?: boolean
+  not_enabled?: boolean
+}
+
 /**
- * Solicita el código de verificación real vía Netlify Function (lectura IMAP
- * server-side, sincrónica). Lanza ImapNeedsConfigError / ImapNotEnabledError
- * para que el diálogo muestre el mensaje sin toast.
+ * Solicita el código de verificación real vía Supabase Edge Function (lectura
+ * IMAP server-side, sincrónica). Lanza ImapNeedsConfigError /
+ * ImapNotEnabledError para que el diálogo muestre el mensaje sin toast.
  *
  * Testing-phase: la función identifica al caller por x-user-id (custom auth,
- * spoofable). No usar con credenciales de producción hasta migrar a Auth.
+ * spoofable) y corre con `verify_jwt = false`. No usar con credenciales de
+ * producción hasta migrar a Auth. El código vive en el Dashboard de Supabase,
+ * no en el repo.
  */
 export const requestCode = async (
   compraId: number,
@@ -43,64 +62,40 @@ export const requestCode = async (
     throw new Error('Sesión requerida')
   }
 
-  let response: Response
-  try {
-    response = await fetch(REQUEST_CODE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-user-id': userId,
-      },
-      body: JSON.stringify({ compra_id: compraId }),
-    })
-  } catch {
+  const { data } = await invokeSupabaseFunction<RequestCodeResponse>(
+    REQUEST_CODE_FN,
+    { compra_id: compraId },
+    userId
+  )
+
+  if (!data) {
     throw new Error(
-      'No se pudo contactar la función. Si estás en local, ejecuta con `netlify dev`.'
+      'No se pudo contactar el servidor. Revisa tu conexión e intenta de nuevo.'
     )
   }
 
-  let parsed: {
-    ok: boolean
-    codigo?: string
-    solicitud_id?: string
-    remitente?: string | null
-    asunto?: string | null
-    cuerpo?: string | null
-    recibido_at?: string | null
-    plataforma?: string | null
-    reason?: string
-    needs_config?: boolean
-    not_enabled?: boolean
-  }
-  try {
-    parsed = await response.json()
-  } catch {
-    throw new Error(
-      'Respuesta inválida de la función. Si estás en local, ejecuta con `netlify dev`.'
-    )
+  if (!data.ok) {
+    if (data.needs_config) {
+      throw new ImapNeedsConfigError(data.reason)
+    }
+    if (data.not_enabled) {
+      throw new ImapNotEnabledError(data.reason)
+    }
+    throw new Error(data.reason || 'No se pudo obtener el código')
   }
 
-  if (!response.ok || !parsed.ok) {
-    if (parsed.needs_config) {
-      throw new ImapNeedsConfigError(parsed.reason)
-    }
-    if (parsed.not_enabled) {
-      throw new ImapNotEnabledError(parsed.reason)
-    }
-    throw new Error(parsed.reason || 'No se pudo obtener el código')
-  }
-
-  if (!parsed.codigo || !parsed.solicitud_id) {
+  if (!data.codigo || !data.solicitud_id) {
     throw new Error('Respuesta incompleta de la función')
   }
 
   return {
-    codigo: parsed.codigo,
-    solicitud_id: parsed.solicitud_id,
-    remitente: parsed.remitente ?? null,
-    asunto: parsed.asunto ?? null,
-    cuerpo: parsed.cuerpo ?? null,
-    recibido_at: parsed.recibido_at ?? null,
-    plataforma: parsed.plataforma ?? null,
+    codigo: data.codigo,
+    // El id es uuid en la DB, pero la función puede devolverlo numérico.
+    solicitud_id: String(data.solicitud_id),
+    remitente: data.remitente ?? null,
+    asunto: data.asunto ?? null,
+    cuerpo: data.cuerpo ?? null,
+    recibido_at: data.recibido_at ?? null,
+    plataforma: data.plataforma ?? null,
   }
 }

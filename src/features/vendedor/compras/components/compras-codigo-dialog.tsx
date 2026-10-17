@@ -15,11 +15,11 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/stores/authStore'
-import { Copy, Loader2, MailWarning } from 'lucide-react'
+import { Ban, Copy, Loader2, MailWarning } from 'lucide-react'
 import { toast } from 'sonner'
 import { Compra } from '../data/schema'
 import { useRequestCode } from '../queries'
-import { ImapNeedsConfigError } from '../services/imap'
+import { ImapNeedsConfigError, ImapNotEnabledError } from '../services/imap'
 
 interface ComprasCodigoDialogProps {
   open: boolean
@@ -84,6 +84,7 @@ export function ComprasCodigoDialog({
   }
 
   const needsConfig = req.error instanceof ImapNeedsConfigError
+  const notEnabled = req.error instanceof ImapNotEnabledError
   const code = req.data?.codigo ?? ''
   const slotCount = code.length >= 4 && code.length <= 8 ? code.length : 6
   const recibido = formatRecibido(req.data?.recibido_at ?? null)
@@ -110,9 +111,20 @@ export function ComprasCodigoDialog({
           ) : needsConfig ? (
             <div className='flex flex-col items-center gap-3 py-6'>
               <MailWarning className='size-8' />
-              <p className='text-center text-sm'>
-                El proveedor no configuró el acceso al correo de esta cuenta.
-                Avísale para que lo habilite desde Pedidos.
+              <p className='text-sm font-medium'>Correo sin configurar</p>
+              <p className='text-center text-sm'>{req.error?.message}</p>
+              <p className='text-muted-foreground text-center text-sm'>
+                El proveedor debe configurar el acceso al correo de esta
+                cuenta desde Pedidos.
+              </p>
+            </div>
+          ) : notEnabled ? (
+            <div className='flex flex-col items-center gap-3 py-6'>
+              <Ban className='size-8' />
+              <p className='text-sm font-medium'>Obtención no habilitada</p>
+              <p className='text-center text-sm'>{req.error?.message}</p>
+              <p className='text-muted-foreground text-center text-sm'>
+                El proveedor debe habilitar la obtención desde Pedidos.
               </p>
             </div>
           ) : req.error ? (

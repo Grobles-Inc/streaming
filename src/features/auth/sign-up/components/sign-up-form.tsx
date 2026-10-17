@@ -38,7 +38,6 @@ export function SignUpForm() {
       email: '',
       telefono: '',
       password: '',
-      confirmPassword: '',
     },
   })
 
@@ -185,24 +184,6 @@ export function SignUpForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Contraseña</FormLabel>
-              <FormControl>
-                <PasswordInput
-                  placeholder='********'
-                  autoComplete='new-password'
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name='confirmPassword'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Repite tu contraseña</FormLabel>
               <FormControl>
                 <PasswordInput
                   placeholder='********'

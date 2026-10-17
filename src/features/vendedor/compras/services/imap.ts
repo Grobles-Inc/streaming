@@ -3,7 +3,7 @@ import { invokeSupabaseFunction } from '@/lib/supabase-functions'
 const REQUEST_CODE_FN = 'imap-request-code'
 
 export class ImapNeedsConfigError extends Error {
-  constructor(message = 'IMAP no configurado para esta cuenta') {
+  constructor(message = 'La cuenta de esta compra no tiene IMAP configurado') {
     super(message)
     this.name = 'ImapNeedsConfigError'
   }

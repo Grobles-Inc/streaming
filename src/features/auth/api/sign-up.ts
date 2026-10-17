@@ -53,21 +53,20 @@ export async function signUp(
     return { ok: false, reason: SIGNUP_LIMIT_MESSAGE }
   }
 
-  const { confirmPassword: _confirm, ...fields } = data
-  const usuario = fields.usuario.trim()
+  const usuario = data.usuario.trim()
 
   try {
     const user = await UsersService.createUserWithReferral(
       {
-        email: fields.email.trim().toLowerCase(),
+        email: data.email.trim().toLowerCase(),
         // The public sign-up no longer collects a full name: `usuario` is the
         // only display identity and it is unique, so it is mirrored here only
         // because the legacy columns are NOT NULL.
         nombres: usuario,
         apellidos: '',
         usuario,
-        password: fields.password,
-        telefono: fields.telefono || null,
+        password: data.password,
+        telefono: data.telefono,
         rol: SIGN_UP_ROLE,
         // Explicit in both branches so this never depends on the column
         // default: false means the account waits for an admin to approve it.

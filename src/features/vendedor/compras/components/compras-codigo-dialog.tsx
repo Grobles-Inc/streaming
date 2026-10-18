@@ -12,7 +12,6 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from '@/components/ui/input-otp'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/stores/authStore'
 import { Ban, Copy, Loader2, MailWarning } from 'lucide-react'
@@ -178,13 +177,6 @@ export function ComprasCodigoDialog({
                   </div>
                 )}
               </dl>
-              {req.data?.cuerpo && (
-                <ScrollArea className='max-h-64 rounded-md border'>
-                  <p className='text-sm break-words whitespace-pre-wrap'>
-                    {req.data.cuerpo}
-                  </p>
-                </ScrollArea>
-              )}
             </>
           )}
           <div className='flex justify-end'>

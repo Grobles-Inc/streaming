@@ -22,8 +22,6 @@ export interface RequestCodeResult {
   solicitud_id: string
   remitente: string | null
   asunto: string | null
-  /** Cuerpo completo del correo en texto plano (máx 8000 chars). */
-  cuerpo: string | null
   /** Fecha de recepción del correo (ISO). */
   recibido_at: string | null
   plataforma: string | null
@@ -36,7 +34,6 @@ interface RequestCodeResponse {
   solicitud_id?: string | number
   remitente?: string | null
   asunto?: string | null
-  cuerpo?: string | null
   recibido_at?: string | null
   plataforma?: string | null
   reason?: string
@@ -94,7 +91,6 @@ export const requestCode = async (
     solicitud_id: String(data.solicitud_id),
     remitente: data.remitente ?? null,
     asunto: data.asunto ?? null,
-    cuerpo: data.cuerpo ?? null,
     recibido_at: data.recibido_at ?? null,
     plataforma: data.plataforma ?? null,
   }

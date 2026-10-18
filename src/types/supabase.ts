@@ -126,7 +126,6 @@ export type Database = {
           asunto: string | null
           codigo: string
           created_at: string | null
-          cuerpo: string | null
           expira_at: string | null
           id: string
           recibido_at: string | null
@@ -137,7 +136,6 @@ export type Database = {
           asunto?: string | null
           codigo: string
           created_at?: string | null
-          cuerpo?: string | null
           expira_at?: string | null
           id?: string
           recibido_at?: string | null
@@ -148,7 +146,6 @@ export type Database = {
           asunto?: string | null
           codigo?: string
           created_at?: string | null
-          cuerpo?: string | null
           expira_at?: string | null
           id?: string
           recibido_at?: string | null
@@ -830,6 +827,9 @@ export type Database = {
         }
         Returns: Json
       }
+      imap_vault_create_secret: { Args: { p_secret: string }; Returns: string }
+      imap_vault_delete_secret: { Args: { p_id: string }; Returns: undefined }
+      imap_vault_read_secret: { Args: { p_id: string }; Returns: string }
       increment_billetera_saldo: {
         Args: { amount: number; billetera_id: string }
         Returns: {
@@ -851,6 +851,10 @@ export type Database = {
           p_proveedor_id: string
         }
         Returns: boolean
+      }
+      verificar_imap_solicitud: {
+        Args: { p_caller_id: string; p_compra_id: number }
+        Returns: Json
       }
     }
     Enums: {

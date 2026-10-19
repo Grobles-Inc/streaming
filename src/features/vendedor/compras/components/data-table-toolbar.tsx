@@ -1,6 +1,9 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table } from '@tanstack/react-table'
+import { IconRefresh } from '@tabler/icons-react'
 import { useAuth } from '@/stores/authStore'
 import { estados } from '../data/data'
 import type { CompraCuentaActualizada } from '../services'
@@ -17,6 +20,7 @@ export function DataTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const { user } = useAuth()
+  const queryClient = useQueryClient()
   const [cuentaCompra, setCuentaCompra] =
     useState<CompraCuentaActualizada | null>(null)
 
@@ -45,6 +49,17 @@ export function DataTableToolbar<TData>({
               onSelectCompra={setCuentaCompra}
             />
           )}
+          <Button
+            variant='ghost'
+            size='icon'
+            title='Recargar compras'
+            onClick={() =>
+              queryClient.invalidateQueries({ queryKey: ['compras'] })
+            }
+          >
+            <IconRefresh className='h-4 w-4' />
+            <span className='sr-only'>Recargar compras</span>
+          </Button>
           <DataTableViewOptions table={table} />
         </div>
       </div>

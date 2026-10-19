@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { IconBell, IconEye } from '@tabler/icons-react'
+import { IconBell, IconInfoCircle } from '@tabler/icons-react'
 import { useComprasCuentaActualizada } from '../queries'
 import type { CompraCuentaActualizada } from '../services'
 
@@ -62,13 +62,14 @@ export function ComprasNotificacionesBell({
               onClick={() => onSelectCompra(compra)}
               className='flex items-start gap-2'
             >
-              <IconEye className='mt-0.5 h-4 w-4 shrink-0' />
+              <IconInfoCircle className='mt-0.5 h-4 w-4 shrink-0' />
               <div className='flex min-w-0 flex-col'>
                 <span className='truncate text-sm font-medium'>
-                  {compra.productos?.nombre || `Compra #${compra.id}`}
+                  COMPRA ID {compra.id}
                 </span>
                 <span className='text-muted-foreground truncate text-xs'>
-                  {compra.stock_productos?.email ||
+                  {compra.mensaje_notificacion ||
+                    compra.stock_productos?.email ||
                     'Datos de cuenta actualizados'}
                 </span>
               </div>

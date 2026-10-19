@@ -58,6 +58,7 @@ export const compraSchema = z.object({
   imap_enabled: z.boolean().optional(),
   // Notificación: el proveedor modificó los datos de la cuenta asociada.
   cuenta_actualizada: z.boolean().optional(),
+  mensaje_notificacion: z.string().nullable().optional(),
 })
 
 

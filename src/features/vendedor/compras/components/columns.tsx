@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'
 import { CompraMessage } from '@/lib/whatsapp'
 import { useBilleteraByUsuario } from '@/queries'
 import { useAuth } from '@/stores/authStore'
-import { IconAlertTriangle, IconBell, IconDots, IconEdit, IconHeadset, IconKey, IconLoader2, IconPackage, IconRefresh } from '@tabler/icons-react'
+import { IconAlertTriangle, IconDots, IconEdit, IconHeadset, IconKey, IconLoader2, IconPackage, IconRefresh } from '@tabler/icons-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -383,22 +383,11 @@ export const columns: ColumnDef<Compra>[] = [
       <DataTableColumnHeader column={column} title='Email' />
     ),
     cell: ({ row }) => {
-      const { stock_productos, cuenta_actualizada } = row.original
-      const email = stock_productos?.email || ''
+      const email = row.original.stock_productos?.email || ''
       const displayEmail = email.length > 50 ? email.slice(0, 50) + '...' : email
       return (
         <div className='flex items-center gap-2'>
           <span className='truncate max-w-32'>{displayEmail}</span>
-          {cuenta_actualizada && (
-            <Badge
-              variant='secondary'
-              className='gap-1'
-              title='Datos de cuenta actualizados'
-            >
-              <IconBell size={12} />
-              Actualizada
-            </Badge>
-          )}
         </div>
       )
     },

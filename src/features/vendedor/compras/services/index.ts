@@ -20,6 +20,7 @@ export type CompraCuentaActualizada = {
   id: number
   created_at: string
   updated_at: string | null
+  mensaje_notificacion: string | null
   productos: { nombre: string | null } | null
   stock_productos: {
     email: string | null
@@ -278,6 +279,7 @@ export const getComprasCuentaActualizada = async (
       id,
       created_at,
       updated_at,
+      mensaje_notificacion,
       productos:producto_id (nombre),
       stock_productos:stock_producto_id (email, perfil, pin, clave, url)
     `)

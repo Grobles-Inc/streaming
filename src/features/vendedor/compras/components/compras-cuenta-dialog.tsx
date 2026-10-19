@@ -18,6 +18,7 @@ import { useMarcarCuentaActualizadaRevisada } from '../queries'
  */
 export interface CompraCuentaInfo {
   id?: number
+  mensaje_notificacion?: string | null
   stock_productos?: {
     email?: string | null
     perfil?: string | null
@@ -89,9 +90,10 @@ export default function ComprasCuentaDialog({
         <DialogHeader>
           <DialogTitle>Datos de cuenta actualizados</DialogTitle>
           <DialogDescription>
-            {compra?.productos?.nombre
-              ? `El proveedor actualizó la cuenta de ${compra.productos.nombre}.`
-              : 'El proveedor actualizó los datos de esta cuenta.'}
+            {compra?.mensaje_notificacion ||
+              (compra?.productos?.nombre
+                ? `El proveedor actualizó la cuenta de ${compra.productos.nombre}.`
+                : 'El proveedor actualizó los datos de esta cuenta.')}
           </DialogDescription>
         </DialogHeader>
 

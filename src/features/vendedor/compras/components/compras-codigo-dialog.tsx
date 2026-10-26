@@ -1,5 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import {
   Dialog,
   DialogContent,
@@ -14,16 +19,28 @@ import {
 } from '@/components/ui/input-otp'
 import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/stores/authStore'
-import { Ban, Copy, Loader2, MailWarning } from 'lucide-react'
+import {
+  Ban,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Loader2,
+  MailWarning,
+} from 'lucide-react'
 import { toast } from 'sonner'
-import { Compra } from '../data/schema'
 import { useRequestCode } from '../queries'
-import { ImapNeedsConfigError, ImapNotEnabledError } from '../services/imap'
+import {
+  ImapCodeNotExtractedError,
+  ImapNeedsConfigError,
+  ImapNotEnabledError,
+} from '../services/imap'
 
 interface ComprasCodigoDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  currentRow: Compra
+  compraId: number | undefined
+  /** Email de la cuenta, solo para el texto del diálogo. */
+  email?: string | null
 }
 
 const formatRecibido = (iso: string | null): string | null => {
@@ -42,17 +59,18 @@ const formatRecibido = (iso: string | null): string | null => {
 export function ComprasCodigoDialog({
   open,
   onOpenChange,
-  currentRow,
+  compraId,
+  email,
 }: ComprasCodigoDialogProps) {
   const { user } = useAuth()
   const req = useRequestCode()
   const firedRef = useRef<number | null>(null)
-
-  const compraId = currentRow.id
+  const [rawOpen, setRawOpen] = useState(false)
 
   useEffect(() => {
     if (!open) {
       firedRef.current = null
+      setRawOpen(false)
       req.reset()
       return
     }
@@ -65,6 +83,7 @@ export function ComprasCodigoDialog({
 
   const handleRetry = () => {
     if (!compraId || !user?.id) return
+    setRawOpen(false)
     req.mutate({ compraId, userId: user.id })
   }
 
@@ -84,9 +103,12 @@ export function ComprasCodigoDialog({
 
   const needsConfig = req.error instanceof ImapNeedsConfigError
   const notEnabled = req.error instanceof ImapNotEnabledError
+  const notExtracted =
+    req.error instanceof ImapCodeNotExtractedError ? req.error : null
   const code = req.data?.codigo ?? ''
   const slotCount = code.length >= 4 && code.length <= 8 ? code.length : 6
   const recibido = formatRecibido(req.data?.recibido_at ?? null)
+  const rawRecibido = formatRecibido(notExtracted?.recibidoAt ?? null)
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -94,8 +116,8 @@ export function ComprasCodigoDialog({
         <DialogHeader>
           <DialogTitle>Obtener código</DialogTitle>
           <DialogDescription>
-            {currentRow.stock_productos?.email
-              ? `Buscando código de verificación para ${currentRow.stock_productos.email}`
+            {email
+              ? `Buscando código de verificación para ${email}`
               : 'Buscando código de verificación'}
           </DialogDescription>
         </DialogHeader>
@@ -125,6 +147,49 @@ export function ComprasCodigoDialog({
               <p className='text-muted-foreground text-center text-sm'>
                 El proveedor debe habilitar la obtención desde Pedidos.
               </p>
+            </div>
+          ) : notExtracted ? (
+            <div className='flex flex-col gap-3 py-2'>
+              <p className='text-center text-sm'>{notExtracted.message}</p>
+              {(notExtracted.remitente || rawRecibido) && (
+                <p className='text-muted-foreground text-center text-xs'>
+                  Correo de {notExtracted.remitente ?? 'remitente desconocido'}
+                  {rawRecibido ? ` recibido a las ${rawRecibido}` : ''}
+                </p>
+              )}
+              {notExtracted.asunto && (
+                <p className='text-muted-foreground text-center text-xs'>
+                  Asunto: {notExtracted.asunto}
+                </p>
+              )}
+              {/* Texto plano del correo: se interpola como texto, nunca como HTML. */}
+              <Collapsible
+                open={rawOpen}
+                onOpenChange={setRawOpen}
+                className='flex flex-col gap-2'
+              >
+                <CollapsibleTrigger asChild>
+                  <Button variant='outline' size='sm' className='mx-auto'>
+                    {rawOpen ? (
+                      <ChevronUp className='size-4' />
+                    ) : (
+                      <ChevronDown className='size-4' />
+                    )}
+                    {rawOpen ? 'Ocultar correo' : 'Ver correo completo'}
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <pre className='bg-muted max-h-64 overflow-auto rounded-md p-3 text-xs whitespace-pre-wrap break-words'>
+                    {notExtracted.rawFallback}
+                  </pre>
+                </CollapsibleContent>
+              </Collapsible>
+              <p className='text-muted-foreground text-center text-xs'>
+                Busca el código en el cuerpo del correo.
+              </p>
+              <div className='flex justify-center'>
+                <Button onClick={handleRetry}>Reintentar</Button>
+              </div>
             </div>
           ) : req.error ? (
             <div className='flex flex-col items-center gap-3 py-6'>

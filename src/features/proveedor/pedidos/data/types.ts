@@ -5,6 +5,14 @@ import { Pedido } from './schema'
 export type Compra = Database['public']['Tables']['compras']['Row']
 export type StockProducto = Database['public']['Tables']['stock_productos']['Row']
 
+// `plataformas.id`: value que consume imap-save-config y la FK de imap_configs.
+export type Plataforma = Database['public']['Tables']['plataformas']['Row']['id']
+
+export type PlataformaOption = Pick<
+  Database['public']['Tables']['plataformas']['Row'],
+  'id' | 'label'
+>
+
 // Columnas por las que el RPC `get_pedidos_proveedor` sabe ordenar
 export type PedidoSortBy =
   | 'created_at'

@@ -2,7 +2,15 @@ import { type ColumnDef } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { IconEdit, IconTrash, IconEye, IconEyeOff, IconDots } from '@tabler/icons-react'
+import {
+  IconDots,
+  IconEdit,
+  IconEye,
+  IconEyeOff,
+  IconKey,
+  IconServerCog,
+  IconTrash,
+} from '@tabler/icons-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +26,8 @@ interface StockColumnActions {
   onDelete: (stock: StockRow) => void
   onPublicar: (stock: StockRow) => void
   onDespublicar: (stock: StockRow) => void
+  onObtenerCodigo: (stock: StockRow) => void
+  onConfigurarImap: (stock: StockRow) => void
   isUpdating: boolean
 }
 
@@ -243,7 +253,7 @@ export const createStockColumns = (
               <span className="sr-only">Abrir menú</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[160px]">
+          <DropdownMenuContent align="end" className="w-[180px]">
             {stock.publicado ? (
               <DropdownMenuItem onClick={() => actions.onDespublicar(stock)} disabled={actions.isUpdating}>
                 <IconEyeOff className="mr-2 h-4 w-4" />
@@ -259,6 +269,20 @@ export const createStockColumns = (
                 Publicar {!productoEstaPublicado}
               </DropdownMenuItem>
             )}
+            {/* La obtención de código existe solo si la cuenta tiene una
+                compra asociada y el proveedor la habilitó para esa compra. */}
+            {stock.compra_id != null && stock.imap_enabled && (
+              <DropdownMenuItem
+                onClick={() => actions.onObtenerCodigo(stock)}
+              >
+                <IconKey className="mr-2 h-4 w-4" />
+                Obtener código
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={() => actions.onConfigurarImap(stock)}>
+              <IconServerCog className="mr-2 h-4 w-4" />
+              Configurar IMAP
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => actions.onEdit(stock)}>
               <IconEdit className="mr-2 h-4 w-4" />

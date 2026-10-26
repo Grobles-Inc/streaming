@@ -39,7 +39,8 @@ export function ComprasDialogs() {
 
           <ComprasCodigoDialog
             key={`compras-codigo-${currentRow.id}`}
-            currentRow={currentRow}
+            compraId={currentRow.id}
+            email={currentRow.stock_productos?.email}
             open={open === 'obtener_codigo'}
             onOpenChange={() => {
               setOpen('obtener_codigo')

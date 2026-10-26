@@ -17,6 +17,16 @@ export type StockRow = StockProductoRow & {
     nombre: string
     estado: string
   } | null
+  /** Estado IMAP de la cuenta, mergeado desde `get_imap_estado_stock`. */
+  imap_configurado: boolean
+  imap_plataforma: string | null
+  imap_host: string | null
+  imap_port: number | null
+  imap_usuario: string | null
+  imap_ssl: boolean
+  /** Compra más reciente de esta cuenta; null si todavía no se vendió. */
+  compra_id: number | null
+  imap_enabled: boolean
 }
 
 // Columnas por las que el RPC `get_stock_proveedor` sabe ordenar

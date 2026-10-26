@@ -11,9 +11,12 @@ import {
 } from '@/components/ui/tooltip'
 import { useAuth } from '@/stores/authStore'
 import { estadosMap } from '../data/data'
-import { getPlataformaLabel } from '../data/plataformas'
 import { Pedido, PedidoEstado } from '../data/schema'
-import { useToggleImapEnabled, useUpdatePedidoStatusVencido } from '../queries'
+import {
+  usePlataformas,
+  useToggleImapEnabled,
+  useUpdatePedidoStatusVencido,
+} from '../queries'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 
@@ -84,8 +87,12 @@ const DiasRestantesCell = ({
 const ImapToggleCell = ({ row }: { row: Pedido }) => {
   const { user } = useAuth()
   const toggleImapEnabled = useToggleImapEnabled()
+  const { data: plataformas } = usePlataformas()
   const habilitado = row.imap_enabled
   const configurado = row.imap_configurado
+  const plataformaLabel =
+    plataformas?.find((p) => p.id === row.imap_plataforma)?.label ??
+    'Sin configurar'
 
   const handleChange = (checked: boolean) => {
     if (!user?.id || !row.id) return
@@ -111,12 +118,12 @@ const ImapToggleCell = ({ row }: { row: Pedido }) => {
         </TooltipTrigger>
         <TooltipContent>
           {configurado
-            ? `Obtener códigos de ${getPlataformaLabel(row.imap_plataforma)} desde ${row.cuenta_email ?? 'este correo'}`
+            ? `Obtener códigos de ${plataformaLabel} desde ${row.cuenta_email ?? 'este correo'}`
             : 'Configura el IMAP de esta cuenta para habilitarla'}
         </TooltipContent>
       </Tooltip>
       <span className='text-muted-foreground text-xs'>
-        {configurado ? getPlataformaLabel(row.imap_plataforma) : 'Sin config'}
+        {configurado ? plataformaLabel : 'Sin config'}
       </span>
     </div>
   )

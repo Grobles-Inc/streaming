@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { GetPedidosProveedorParams, UpdateSoporteStatusParams } from '../data/types'
 import * as pedidosService from '../services'
 import { ImapConfigInput, saveImapConfig, setImapEnabled } from '../services/imap'
+import { getPlataformasActivas } from '../services/plataformas'
 
 type CompraUpdate = Database['public']['Tables']['compras']['Update']
 
@@ -393,6 +394,15 @@ export const useEliminarPedidosExpiradosEnBloque = () => {
   })
 }
 
+export const plataformasQueryKey = ['plataformas', 'activas'] as const
+
+export const usePlataformas = () => {
+  return useQuery({
+    queryKey: plataformasQueryKey,
+    queryFn: getPlataformasActivas,
+  })
+}
+
 export const useSaveImapConfig = () => {
   const queryClient = useQueryClient()
   return useMutation({
@@ -400,6 +410,8 @@ export const useSaveImapConfig = () => {
       saveImapConfig(input, userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+      // La tabla de stock del proveedor también muestra el estado IMAP.
+      queryClient.invalidateQueries({ queryKey: ['stock-productos'] })
       toast.success('Configuración IMAP guardada y verificada')
     },
     onError: (error: Error) => {

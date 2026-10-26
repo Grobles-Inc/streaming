@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { invokeSupabaseFunction } from '@/lib/supabase-functions'
-import { Plataforma } from '../data/plataformas'
+import { Plataforma } from '../data/types'
 
 const SAVE_CONFIG_FN = 'imap-save-config'
 

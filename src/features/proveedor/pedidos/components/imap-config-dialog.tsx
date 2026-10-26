@@ -29,8 +29,7 @@ import { Loader2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { Plataforma, PLATAFORMAS } from '../data/plataformas'
-import { useSaveImapConfig } from '../queries'
+import { usePlataformas, useSaveImapConfig } from '../queries'
 
 const formSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -40,9 +39,7 @@ const formSchema = z.object({
   // Vacía = reusa la que ya está en Vault (nunca se recuperó al cliente).
   password: z.string(),
   ssl: z.boolean(),
-  plataforma: z.enum(
-    PLATAFORMAS.map((p) => p.value) as [Plataforma, ...Plataforma[]]
-  ),
+  plataforma: z.string().min(1, 'Selecciona una plataforma'),
 })
 
 type FormData = z.infer<typeof formSchema>
@@ -79,12 +76,8 @@ export function ImapConfigDialog({
 }: ImapConfigDialogProps) {
   const { user } = useAuth()
   const saveConfig = useSaveImapConfig()
-
-  const plataformaInicial = PLATAFORMAS.some(
-    (p) => p.value === estado.plataforma
-  )
-    ? (estado.plataforma as Plataforma)
-    : 'otra'
+  const { data: plataformas = [], isLoading: plataformasLoading } =
+    usePlataformas()
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -95,7 +88,7 @@ export function ImapConfigDialog({
       usuario: estado.usuario ?? email ?? '',
       password: '',
       ssl: estado.configurado ? estado.ssl : true,
-      plataforma: plataformaInicial,
+      plataforma: estado.plataforma ?? '',
     },
   })
 
@@ -152,16 +145,23 @@ export function ImapConfigDialog({
                   <FormLabel>Plataforma</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
+                    disabled={plataformasLoading}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder='Selecciona una plataforma' />
+                        <SelectValue
+                          placeholder={
+                            plataformasLoading
+                              ? 'Cargando plataformas…'
+                              : 'Selecciona una plataforma'
+                          }
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {PLATAFORMAS.map((p) => (
-                        <SelectItem key={p.value} value={p.value}>
+                      {plataformas.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
                           {p.label}
                         </SelectItem>
                       ))}

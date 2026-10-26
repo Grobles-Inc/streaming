@@ -4,6 +4,7 @@ import type {
   StockPaginado,
   StockRow,
 } from '../data/types'
+import { getImapEstadoStock } from './imap'
 
 type GetStockProveedorResponse = {
   total: number
@@ -36,9 +37,32 @@ export const getStockProveedor = async (
   }
 
   const result = data as unknown as GetStockProveedorResponse | null
+  const rows = result?.rows ?? []
+
+  // Estado IMAP por cuenta de stock (config + compra más reciente). Va en un
+  // RPC aparte para no tocar la definición de `get_stock_proveedor`.
+  const imapEstado = await getImapEstadoStock(
+    params.proveedorId,
+    rows.map((row) => row.id)
+  )
+
+  const rowsConImap = rows.map((row) => {
+    const imap = imapEstado.get(row.id)
+    return {
+      ...row,
+      imap_configurado: imap?.imap_configurado ?? false,
+      imap_plataforma: imap?.imap_plataforma ?? null,
+      imap_host: imap?.imap_host ?? null,
+      imap_port: imap?.imap_port ?? null,
+      imap_usuario: imap?.imap_usuario ?? null,
+      imap_ssl: imap?.imap_ssl ?? false,
+      compra_id: imap?.compra_id ?? null,
+      imap_enabled: imap?.imap_enabled ?? false,
+    }
+  })
 
   return {
-    rows: result?.rows ?? [],
+    rows: rowsConImap,
     total: result?.total ?? 0,
   }
 }

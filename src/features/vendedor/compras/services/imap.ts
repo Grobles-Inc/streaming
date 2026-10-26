@@ -17,6 +17,42 @@ export class ImapNotEnabledError extends Error {
   }
 }
 
+export interface ImapRawFallback {
+  /** Texto plano del correo completo (máx. 3000 caracteres). No es HTML. */
+  rawFallback: string
+  solicitudId: string | null
+  remitente: string | null
+  asunto: string | null
+  /** Fecha de recepción del correo (ISO). */
+  recibidoAt: string | null
+}
+
+/**
+ * Error cuando sí llegó un correo de la plataforma pero el regex no pudo
+ * extraer el código (ej. códigos alfabéticos). Incluye el cuerpo en texto plano
+ * para que el usuario lo lea manualmente.
+ */
+export class ImapCodeNotExtractedError extends Error {
+  readonly rawFallback: string
+  readonly solicitudId: string | null
+  readonly remitente: string | null
+  readonly asunto: string | null
+  readonly recibidoAt: string | null
+
+  constructor(
+    message = 'Llegó el correo pero no pudimos extraer el código automáticamente',
+    data: ImapRawFallback
+  ) {
+    super(message)
+    this.name = 'ImapCodeNotExtractedError'
+    this.rawFallback = data.rawFallback
+    this.solicitudId = data.solicitudId
+    this.remitente = data.remitente
+    this.asunto = data.asunto
+    this.recibidoAt = data.recibidoAt
+  }
+}
+
 export interface RequestCodeResult {
   codigo: string
   solicitud_id: string
@@ -39,6 +75,11 @@ interface RequestCodeResponse {
   reason?: string
   needs_config?: boolean
   not_enabled?: boolean
+  /**
+   * Solo cuando llegó correo de la plataforma pero no se pudo extraer el código.
+   * Texto plano (máx. 3000 caracteres), nunca HTML.
+   */
+  raw_fallback?: string | null
 }
 
 /**
@@ -77,6 +118,22 @@ export const requestCode = async (
     }
     if (data.not_enabled) {
       throw new ImapNotEnabledError(data.reason)
+    }
+    // Llegó correo pero no se pudo extraer el código: el diálogo muestra el
+    // cuerpo en texto plano para que el usuario lo lea manualmente.
+    if (data.raw_fallback) {
+      throw new ImapCodeNotExtractedError(
+        data.reason ||
+          'Llegó el correo pero no pudimos extraer el código automáticamente',
+        {
+          rawFallback: data.raw_fallback,
+          solicitudId:
+            data.solicitud_id != null ? String(data.solicitud_id) : null,
+          remitente: data.remitente ?? null,
+          asunto: data.asunto ?? null,
+          recibidoAt: data.recibido_at ?? null,
+        }
+      )
     }
     throw new Error(data.reason || 'No se pudo obtener el código')
   }

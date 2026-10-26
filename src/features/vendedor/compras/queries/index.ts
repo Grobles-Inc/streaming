@@ -1,7 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import * as comprasService from '../services'
 import * as proveedorService from '../services/proveedor'
-import { requestCode, ImapNeedsConfigError, ImapNotEnabledError } from '../services/imap'
+import {
+  requestCode,
+  ImapCodeNotExtractedError,
+  ImapNeedsConfigError,
+  ImapNotEnabledError,
+} from '../services/imap'
 import { toast } from 'sonner'
 
 export const useCompras = () => {
@@ -180,10 +185,11 @@ export const useRequestCode = () => {
     mutationFn: ({ compraId, userId }: { compraId: number, userId: string }) =>
       requestCode(compraId, userId),
     onError: (error: Error) => {
-      // needs_config / not_enabled los muestra el diálogo, sin toast
+      // needs_config / not_enabled / raw_fallback los muestra el diálogo, sin toast
       if (
         error instanceof ImapNeedsConfigError ||
-        error instanceof ImapNotEnabledError
+        error instanceof ImapNotEnabledError ||
+        error instanceof ImapCodeNotExtractedError
       )
         return
       toast.error(error.message || 'Error al obtener el código')

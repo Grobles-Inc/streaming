@@ -6,6 +6,8 @@ import { IconPlus } from '@tabler/icons-react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { AgregarStockStockModal } from './components/agregar-stock-stock-modal'
 import { EditarStockModal } from '../productos/components/editar-stock-modal'
+import { ImapConfigDialog } from '@/features/proveedor/pedidos/components/imap-config-dialog'
+import { ComprasCodigoDialog } from '@/features/vendedor/compras/components/compras-codigo-dialog'
 import {
   useDeleteStockProducto,
   useUpdateStockProducto,
@@ -26,6 +28,8 @@ export function StockPage() {
   const [showAgregarStockDialog, setShowAgregarStockDialog] = useState(false)
   const [showEditarStockDialog, setShowEditarStockDialog] = useState(false)
   const [showAdvertenciaDialog, setShowAdvertenciaDialog] = useState(false)
+  const [showImapDialog, setShowImapDialog] = useState(false)
+  const [showCodigoDialog, setShowCodigoDialog] = useState(false)
   const [selectedStock, setSelectedStock] = useState<StockRow | null>(null)
   // Estado de la tabla + datos paginados desde el RPC
   const {
@@ -86,6 +90,16 @@ export function StockPage() {
   const handleDespublicar = (stock: StockRow) => {
     setSelectedStock(stock)
     setShowDespublicarDialog(true)
+  }
+
+  const handleConfigurarImap = (stock: StockRow) => {
+    setSelectedStock(stock)
+    setShowImapDialog(true)
+  }
+
+  const handleObtenerCodigo = (stock: StockRow) => {
+    setSelectedStock(stock)
+    setShowCodigoDialog(true)
   }
 
   const confirmPublicar = () => {
@@ -173,6 +187,8 @@ export function StockPage() {
     onDelete: handleDelete,
     onPublicar: handlePublicar,
     onDespublicar: handleDespublicar,
+    onObtenerCodigo: handleObtenerCodigo,
+    onConfigurarImap: handleConfigurarImap,
     isUpdating: updateStockMutation.isPending
   }), [updateStockMutation.isPending])
 
@@ -315,6 +331,42 @@ export function StockPage() {
         handleConfirm={() => setShowAdvertenciaDialog(false)}
         isLoading={false}
       />
+
+      {/* Diálogo de configuración IMAP de la cuenta */}
+      {selectedStock && (
+        <ImapConfigDialog
+          key={`imap-config-${selectedStock.id}`}
+          open={showImapDialog}
+          onOpenChange={(open) => {
+            setShowImapDialog(open)
+            if (!open) setSelectedStock(null)
+          }}
+          stockProductoId={selectedStock.id}
+          email={selectedStock.email}
+          estado={{
+            configurado: selectedStock.imap_configurado,
+            plataforma: selectedStock.imap_plataforma,
+            host: selectedStock.imap_host,
+            port: selectedStock.imap_port,
+            usuario: selectedStock.imap_usuario,
+            ssl: selectedStock.imap_ssl,
+          }}
+        />
+      )}
+
+      {/* Diálogo para obtener el código de verificación de la compra */}
+      {selectedStock && (
+        <ComprasCodigoDialog
+          key={`codigo-${selectedStock.id}`}
+          open={showCodigoDialog}
+          onOpenChange={(open) => {
+            setShowCodigoDialog(open)
+            if (!open) setSelectedStock(null)
+          }}
+          compraId={selectedStock.compra_id ?? undefined}
+          email={selectedStock.email}
+        />
+      )}
     </>
   )
 }

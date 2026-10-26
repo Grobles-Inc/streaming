@@ -103,7 +103,7 @@ export function ImapConfigDialog({
   email,
   estado,
 }: ImapConfigDialogProps) {
-  const { user, isAdmin } = useAuth()
+  const { user } = useAuth()
   const saveConfig = useSaveImapConfig()
   const { data: plataformas = [], isLoading: plataformasLoading } =
     usePlataformas()
@@ -213,14 +213,10 @@ export function ImapConfigDialog({
                             {p.label}
                           </SelectItem>
                         ))}
-                        {isAdmin && (
-                          <>
-                            <SelectSeparator />
-                            <SelectItem value={NUEVA_PLATAFORMA}>
-                              + Nueva plataforma
-                            </SelectItem>
-                          </>
-                        )}
+                        <SelectSeparator />
+                        <SelectItem value={NUEVA_PLATAFORMA}>
+                          + Nueva plataforma
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

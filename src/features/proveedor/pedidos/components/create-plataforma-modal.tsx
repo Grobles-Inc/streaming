@@ -56,7 +56,7 @@ interface CreatePlataformaModalProps {
 }
 
 /**
- * Alta de plataformas desde el <Select> de configuración IMAP (solo admin). El
+ * Alta de plataformas desde el <Select> de configuración IMAP. El
  * id es el slug del label y se muestra en solo lectura antes de confirmar.
  */
 export function CreatePlataformaModal({

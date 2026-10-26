@@ -6,10 +6,19 @@ import {
 } from '@tanstack/react-query'
 import type { Database } from '@/types/supabase'
 import { toast } from 'sonner'
-import { GetPedidosProveedorParams, UpdateSoporteStatusParams } from '../data/types'
+import {
+  GetPedidosProveedorParams,
+  PlataformaOption,
+  UpdateSoporteStatusParams,
+} from '../data/types'
 import * as pedidosService from '../services'
-import { ImapConfigInput, saveImapConfig, setImapEnabled } from '../services/imap'
-import { getPlataformasActivas } from '../services/plataformas'
+import {
+  ImapConfigInput,
+  getImapConfigGuardada,
+  saveImapConfig,
+  setImapEnabled,
+} from '../services/imap'
+import { createPlataforma, getPlataformasActivas } from '../services/plataformas'
 
 type CompraUpdate = Database['public']['Tables']['compras']['Update']
 
@@ -403,6 +412,36 @@ export const usePlataformas = () => {
   })
 }
 
+export const useCreatePlataforma = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createPlataforma,
+    onSuccess: (plataforma) => {
+      // Se agrega al cache ya para que el <Select> la muestre sin esperar.
+      queryClient.setQueryData<PlataformaOption[]>(plataformasQueryKey, (old) =>
+        old ? [...old, plataforma] : old
+      )
+      // Refetch real de la tabla (mismo SELECT que usa el dropdown).
+      return queryClient.invalidateQueries({ queryKey: plataformasQueryKey })
+    },
+  })
+}
+
+export const imapConfigQueryKey = (stockProductoId: number) =>
+  ['imap-configs', stockProductoId] as const
+
+/** Precarga de la config guardada al editar. Solo si ya está configurada. */
+export const useImapConfigGuardada = (
+  stockProductoId: number,
+  enabled: boolean
+) => {
+  return useQuery({
+    queryKey: imapConfigQueryKey(stockProductoId),
+    queryFn: () => getImapConfigGuardada(stockProductoId),
+    enabled,
+  })
+}
+
 export const useSaveImapConfig = () => {
   const queryClient = useQueryClient()
   return useMutation({
@@ -412,6 +451,8 @@ export const useSaveImapConfig = () => {
       queryClient.invalidateQueries({ queryKey: ['pedidos'] })
       // La tabla de stock del proveedor también muestra el estado IMAP.
       queryClient.invalidateQueries({ queryKey: ['stock-productos'] })
+      // La precarga del diálogo de edición lee de `imap_configs`.
+      queryClient.invalidateQueries({ queryKey: ['imap-configs'] })
       toast.success('Configuración IMAP guardada y verificada')
     },
     onError: (error: Error) => {

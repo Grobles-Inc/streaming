@@ -13,6 +13,18 @@ export type PlataformaOption = Pick<
   'id' | 'label'
 >
 
+export type NuevaPlataforma = Pick<
+  Database['public']['Tables']['plataformas']['Insert'],
+  'id' | 'label' | 'keywords'
+>
+
+// Columnas legibles de `imap_configs`. `password_vault_id` nunca viaja al
+// cliente: el secreto solo existe en Vault del lado del backend.
+export type ImapConfigGuardada = Pick<
+  Database['public']['Tables']['imap_configs']['Row'],
+  'email' | 'host' | 'port' | 'usuario' | 'ssl' | 'plataforma'
+>
+
 // Columnas por las que el RPC `get_pedidos_proveedor` sabe ordenar
 export type PedidoSortBy =
   | 'created_at'

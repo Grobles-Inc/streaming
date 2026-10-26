@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { invokeSupabaseFunction } from '@/lib/supabase-functions'
-import { Plataforma } from '../data/types'
+import { ImapConfigGuardada, Plataforma } from '../data/types'
 
 const SAVE_CONFIG_FN = 'imap-save-config'
 
@@ -35,6 +35,28 @@ export interface ImapEstadoCompra {
   imap_port: number | null
   imap_usuario: string | null
   imap_ssl: boolean
+}
+
+/**
+ * Config IMAP guardada de una cuenta de stock, para precargar el formulario de
+ * edición. Pide solo las columnas de conexión: el password vive en Vault y no
+ * se puede leer desde el cliente.
+ */
+export const getImapConfigGuardada = async (
+  stockProductoId: number
+): Promise<ImapConfigGuardada | null> => {
+  const { data, error } = await supabase
+    .from('imap_configs')
+    .select('email, host, port, usuario, ssl, plataforma')
+    .eq('stock_producto_id', stockProductoId)
+    .maybeSingle()
+
+  if (error) {
+    console.error('Error fetching imap config:', error)
+    throw error
+  }
+
+  return data
 }
 
 /**

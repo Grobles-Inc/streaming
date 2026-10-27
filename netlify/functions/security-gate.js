@@ -1,5 +1,11 @@
 /**
- * Security gate: verifies a Cloudflare Turnstile token and applies an IP policy.
+ * Security gate: verifies a Cloudflare Turnstile token and, for signup only,
+ * applies an IP policy.
+ *
+ * The IP policy exists to protect the per-IP account creation limit: a VPN or
+ * datacenter exit would let one person mint unlimited accounts. Sign-in does
+ * not create anything, so it only gets the captcha -- blocking a returning user
+ * because their egress looks like Private Relay / WARP / CGNAT is pure loss.
  *
  *   POST /.netlify/functions/security-gate
  *   body: { token: string, action: 'signin' | 'signup' }
@@ -225,6 +231,13 @@ export async function handler(event) {
   const captcha = await verifyTurnstile(token, action, ip)
   if (!captcha.ok) {
     return deny(captcha.reason)
+  }
+
+  // IP reputation only gates account creation. Sign-in authenticates an
+  // existing identity, so the captcha above is the whole check: the caller's
+  // network says nothing about whether these credentials are valid.
+  if (action !== 'signup') {
+    return json(200, { ok: true, ip: null, country: null })
   }
 
   if (!ip) {

@@ -36,14 +36,14 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
 
   return (
     <div className='card-container h-auto'>
-      <Card className='relative flex h-full flex-col overflow-hidden rounded-xl border-0 bg-[#090a0f] p-0 text-white shadow-2xl'>
+      <Card className='relative flex h-full flex-col overflow-hidden rounded-xl pt-0   '>
         {/* Top Header Section with Image Proxy */}
-        <div className='relative flex flex-col items-center border-b border-zinc-800/80 bg-linear-to-b from-black via-[#120814] to-[#090a0f] p-3 text-center'>
+        <div className='relative flex flex-col items-center'>
           {/* Action buttons overlay (Info/Desc/Condiciones) */}
           <div className='absolute top-2 right-2 z-20 flex flex-col gap-1'>
             <div className='flex flex-col -space-y-px rounded-md shadow-xs'>
               <Button
-                className='size-6 rounded-none bg-zinc-800/80 text-zinc-200 shadow-none first:rounded-t-md last:rounded-b-md hover:bg-zinc-700 focus-visible:z-10'
+                className='size-6 rounded-none bg-zinc-800/80  shadow-none first:rounded-t-md last:rounded-b-md hover:bg-zinc-700 focus-visible:z-10'
                 variant='secondary'
                 size='icon'
                 aria-label='Información del Producto'
@@ -55,7 +55,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
                 <IconHeartHandshake size={12} />
               </Button>
               <Button
-                className='size-6 rounded-none bg-zinc-800/80 text-zinc-200 shadow-none first:rounded-t-md last:rounded-b-md hover:bg-zinc-700 focus-visible:z-10'
+                className='size-6 rounded-none bg-zinc-800/80 shadow-none first:rounded-t-md last:rounded-b-md hover:bg-zinc-700 focus-visible:z-10'
                 variant='secondary'
                 size='icon'
                 aria-label='Descripción del Producto'
@@ -67,7 +67,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
                 <IconFileInfo size={12} />
               </Button>
               <Button
-                className='size-6 rounded-none bg-zinc-800/80 text-zinc-200 shadow-none first:rounded-t-md last:rounded-b-md hover:bg-zinc-700 focus-visible:z-10'
+                className='size-6 rounded-none bg-zinc-800/80 shadow-none first:rounded-t-md last:rounded-b-md hover:bg-zinc-700 focus-visible:z-10'
                 variant='secondary'
                 size='icon'
                 aria-label='Condiciones del Producto'
@@ -116,10 +116,10 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
 
         <CardContent className='space-y-2'>
           <div className='flex flex-col items-center text-center'>
-            <span className='mb-0.5 text-[10px] font-semibold tracking-wider text-zinc-400 uppercase'>
+            <span className='mb-0.5 text-[10px] font-semibold tracking-wider  uppercase'>
               {producto.usuarios?.usuario.toUpperCase() || 'ML_STREAMING'}
             </span>
-            <span className='line-clamp-2 text-xs leading-tight font-bold text-zinc-100 md:text-sm'>
+            <span className='line-clamp-2 text-xs leading-tight font-bold md:text-sm'>
               {producto.nombre}
             </span>
           </div>

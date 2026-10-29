@@ -1,201 +1,195 @@
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { useImageProxy } from '@/hooks/use-image-proxy'
-import { useAuth } from '@/stores/authStore'
-import { IconFileInfo, IconHandClick, IconHeartHandshake } from '@tabler/icons-react'
 import { useState } from 'react'
+import {
+  IconFileInfo,
+  IconHandClick,
+  IconHeartHandshake,
+} from '@tabler/icons-react'
+import { useAuth } from '@/stores/authStore'
+import { useImageProxy } from '@/hooks/use-image-proxy'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { useConfiguracionSistema } from '../../queries'
 import { Producto } from '../../services'
 import '../../styles/card.css'
 import ComprarProductoModal from './comprar-producto-modal'
 import ProductoInfoModal from './producto-info-modal'
 
-
 export default function ProductoCard({ producto }: { producto: Producto }) {
   const [open, setOpen] = useState(false)
   const { user } = useAuth()
   const { getProxiedImageUrl } = useImageProxy()
   const [infoModalOpen, setInfoModalOpen] = useState(false)
-  const [infoModalType, setInfoModalType] = useState<'informacion' | 'descripcion' | 'condiciones'>('informacion')
-  // `stock_de_productos` es una columna json: puede venir null o con otra forma.
+  const [infoModalType, setInfoModalType] = useState<
+    'informacion' | 'descripcion' | 'condiciones'
+  >('informacion')
+
   const stockDisponible = Array.isArray(producto.stock_de_productos)
     ? producto.stock_de_productos.length
     : 0
   const isAgotado = stockDisponible === 0
   const { data: configuracion } = useConfiguracionSistema()
-  const precio_producto = user ? producto.precio_vendedor : producto.precio_publico
+  const precio_producto = user
+    ? producto.precio_vendedor
+    : producto.precio_publico
+  const conversionRate = configuracion?.conversion ?? 1
+  const precioSoles = precio_producto * conversionRate
+
   return (
-    <div className='card-container'>
-      <svg style={{ position: 'absolute', width: '0', height: '0' }}>
-        <filter id="unopaq" y="-100%" height="300%" x="-100%" width="300%">
-          <feColorMatrix
-            values="1 0 0 0 0 
-            0 1 0 0 0 
-            0 0 1 0 0 
-            0 0 0 5 0"
-          ></feColorMatrix>
-        </filter>
-        <filter id="unopaq2" y="-100%" height="300%" x="-100%" width="300%">
-          <feColorMatrix
-            values="1 0 0 0 0 
-            0 1 0 0 0 
-            0 0 1 0 0 
-            0 0 0 10 0"
-          ></feColorMatrix>
-        </filter>
-        <filter id="unopaq3" y="-100%" height="300%" x="-100%" width="300%">
-          <feColorMatrix
-            values="1 0 0 1 0 
-            0 1 0 1 0 
-            0 0 1 1 0 
-            0 0 0 2 0"
-          ></feColorMatrix>
-        </filter>
-      </svg>
-      <div className="card-container md:h-[410px] h-[340px] w-44 md:w-56">
-        <div className="spin spin-blur"></div>
-        <div className="spin spin-intense"></div>
-        <div className="card-border">
-          <div className="spin spin-inside"></div>
-        </div>
-        <Card className='relative  overflow-hidden rounded-md max-w-sm pt-0 gap-4 flex flex-col h-full'>
-          <CardHeader className="relative z-0 p-0 -mt-0 ">
-            <img src={getProxiedImageUrl(producto.imagen_url)} alt={producto.nombre} className='w-full -mt-9 md:-mt-4 h-44 object-contain ' />
-            <div className='flex items-center gap-1 mt-0 px-4'>
-
-              {producto.nuevo && (
-                <Badge className='bg-green-500' >Nuevo</Badge>
-              )}
-            </div>
-            <div className="absolute  flex-col right-2 top-2 flex gap-1">
-              <div className="flex flex-col -space-y-px rounded-md shadow-xs">
-                <Button
-                  className="rounded-none shadow-none size-6 first:rounded-t-md last:rounded-b-md focus-visible:z-10"
-                  variant="secondary"
-                  size="icon"
-                  aria-label="Información del Producto"
-                  onClick={() => {
-                    setInfoModalType('informacion')
-                    setInfoModalOpen(true)
-                  }}
-                >
-                  <IconHeartHandshake size={12} />
-                </Button>
-                <Button
-                  className="rounded-none shadow-none size-6 first:rounded-t-md last:rounded-b-md focus-visible:z-10"
-                  variant="secondary"
-                  size="icon"
-                  aria-label="Descripción del Producto"
-                  onClick={() => {
-                    setInfoModalType('descripcion')
-                    setInfoModalOpen(true)
-                  }}
-                >
-                  <IconFileInfo size={12} />
-                </Button>
-                <Button
-                  className="rounded-none shadow-none size-6 first:rounded-t-md last:rounded-b-md focus-visible:z-10"
-                  variant="secondary"
-                  size="icon"
-                  aria-label="Condiciones del Producto"
-                  onClick={() => {
-                    setInfoModalType('condiciones')
-                    setInfoModalOpen(true)
-                  }}
-                >
-                  <IconHandClick size={12} />
-                </Button>
-              </div>
-
-            </div>
-          </CardHeader>
-          {stockDisponible > 0 && (
-            <div className="absolute top-0 left-0 z-50">
-              <div
-                className="bg-blue-600  text-white px-5 py-1 text-xs font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"
-                style={{
-                  transform: 'rotate(-45deg)',
-                  transformOrigin: 'center',
-                  position: 'relative',
-                  left: '-23px',
-                  top: '10px'
+    <div className='card-container h-auto'>
+      <Card className='relative flex h-full flex-col overflow-hidden rounded-xl border-0 bg-[#090a0f] p-0 text-white shadow-2xl'>
+        {/* Top Header Section with Image Proxy */}
+        <div className='relative flex flex-col items-center border-b border-zinc-800/80 bg-linear-to-b from-black via-[#120814] to-[#090a0f] p-3 text-center'>
+          {/* Action buttons overlay (Info/Desc/Condiciones) */}
+          <div className='absolute top-2 right-2 z-20 flex flex-col gap-1'>
+            <div className='flex flex-col -space-y-px rounded-md shadow-xs'>
+              <Button
+                className='size-6 rounded-none bg-zinc-800/80 text-zinc-200 shadow-none first:rounded-t-md last:rounded-b-md hover:bg-zinc-700 focus-visible:z-10'
+                variant='secondary'
+                size='icon'
+                aria-label='Información del Producto'
+                onClick={() => {
+                  setInfoModalType('informacion')
+                  setInfoModalOpen(true)
                 }}
               >
-                En stock
-              </div>
+                <IconHeartHandshake size={12} />
+              </Button>
+              <Button
+                className='size-6 rounded-none bg-zinc-800/80 text-zinc-200 shadow-none first:rounded-t-md last:rounded-b-md hover:bg-zinc-700 focus-visible:z-10'
+                variant='secondary'
+                size='icon'
+                aria-label='Descripción del Producto'
+                onClick={() => {
+                  setInfoModalType('descripcion')
+                  setInfoModalOpen(true)
+                }}
+              >
+                <IconFileInfo size={12} />
+              </Button>
+              <Button
+                className='size-6 rounded-none bg-zinc-800/80 text-zinc-200 shadow-none first:rounded-t-md last:rounded-b-md hover:bg-zinc-700 focus-visible:z-10'
+                variant='secondary'
+                size='icon'
+                aria-label='Condiciones del Producto'
+                onClick={() => {
+                  setInfoModalType('condiciones')
+                  setInfoModalOpen(true)
+                }}
+              >
+                <IconHandClick size={12} />
+              </Button>
+            </div>
+          </div>
+
+          {/* Product Image using getProxiedImageUrl */}
+          <img
+            src={getProxiedImageUrl(producto.imagen_url)}
+            alt={producto.nombre}
+            className='h-32 w-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] md:h-36'
+          />
+        </div>
+
+        <div className='space-y-1'>
+          {/* Stock status badge banner  */}
+          {stockDisponible > 0 && (
+            <div className='w-full bg-teal-600/90 text-center'>
+              <span className='text-[11px] font-black tracking-widest text-white uppercase'>
+                EN STOCK
+              </span>
             </div>
           )}
-
           {producto.disponibilidad === 'a_pedido' && (
-            <div className="absolute top-0 left-0 z-50">
-              <div
-                className="bg-green-600  text-white px-5 py-1 text-xs font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"
-                style={{
-                  transform: 'rotate(-45deg)',
-                  transformOrigin: 'center',
-                  position: 'relative',
-                  left: '-23px',
-                  top: '10px'
-                }}
-              >
-                A pedido
-              </div>
+            <div className='w-full bg-green-500/90 text-center'>
+              <span className='text-[11px] font-black tracking-widest text-white uppercase'>
+                A PEDIDO
+              </span>
             </div>
           )}
           {producto.disponibilidad === 'activacion' && (
-            <div className="absolute top-0 left-0 z-50">
-              <div
-                className="bg-purple-600  text-white px-5 py-1 text-xs font-bold shadow-xl dark:shadow-white/30 shadow-black/30 whitespace-nowrap"
-                style={{
-                  transform: 'rotate(-45deg)',
-                  transformOrigin: 'center',
-                  position: 'relative',
-                  left: '-25px',
-                  top: '14px'
-                }}
-              >
-                Activación
-              </div>
+            <div className='w-full bg-purple-600/90 text-center'>
+              <span className='text-[11px] font-black tracking-widest text-white uppercase'>
+                ACTIVACIÓN
+              </span>
             </div>
           )}
-          <CardContent className='flex flex-col px-4 flex-grow'>
-            <span className="text-xs text-gray-500 font-semibold  mb-1">{producto.usuarios?.usuario.toUpperCase()}</span>
-            <span className="font-bold  mb-1 hidden md:block  leading-tight">{producto.nombre}</span>
-            <span className="font-bold md:text-lg text-sm mb-1 md:hidden truncate  leading-tight">{producto.nombre}</span>
-            <div className="md:flex flex-row hidden justify-between items-center w-full mb-2">
-              {producto.renovable ? (
-                <span className="text-xs text-green-600 ">Renovable: <strong>$ {producto.precio_renovacion?.toFixed(2)}</strong></span>
-              ) : (
-                <span className="text-xs text-red-600 ">No renovable</span>
-              )}
+        </div>
+
+        <CardContent className='space-y-2'>
+          <div className='flex flex-col items-center text-center'>
+            <span className='mb-0.5 text-[10px] font-semibold tracking-wider text-zinc-400 uppercase'>
+              {producto.usuarios?.usuario.toUpperCase() || 'ML_STREAMING'}
+            </span>
+            <span className='line-clamp-2 text-xs leading-tight font-bold text-zinc-100 md:text-sm'>
+              {producto.nombre}
+            </span>
+          </div>
+
+          {/* Dual Currency Price Pills Container */}
+          <div className='grid w-full grid-cols-1 gap-1.5 md:grid-cols-2'>
+            <div className='flex items-center justify-between rounded-md border border-purple-900/50 bg-[#13111c] px-2 py-1'>
+              <span className='text-[10px] font-bold text-purple-400'>PEN</span>
+              <span className='text-xs font-black text-purple-200'>
+                S/. {precioSoles.toFixed(2)}
+              </span>
             </div>
-
-
-            {/* Stock y precios */}
-            <div className="flex flex-col md:flex-row justify-between md:items-center w-full ">
-              <Badge>Stock: {stockDisponible} </Badge>
-
-              <div className='flex md:flex-col flex-row-reverse justify-between md:justify-start items-center'>
-                <span className="font-bold md:text-xl text-foreground">${precio_producto.toFixed(2)}</span><span className="text-xs text-muted-foreground">S/.{(precio_producto * (configuracion?.conversion ?? 1)).toFixed(2)}</span>
-              </div>
+            <div className='flex items-center justify-between rounded-md border border-cyan-900/50 bg-[#0b131a] px-2 py-1'>
+              <span className='text-[10px] font-semibold text-cyan-400'>
+                USD
+              </span>
+              <span className='text-xs font-semibold text-cyan-200'>
+                ${precio_producto.toFixed(2)}
+              </span>
             </div>
+          </div>
 
-          </CardContent>
-          <CardFooter className='px-4'>
-            <Button className={`w-full ${isAgotado ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-700 hover:bg-blue-800'}`} onClick={() => setOpen(true)} disabled={isAgotado}>
-              {isAgotado ? "Agotado" : "COMPRAR"}
-            </Button>
-          </CardFooter>
-        </Card>
-        <ComprarProductoModal open={open} onOpenChange={setOpen} producto={producto} />
-        <ProductoInfoModal
-          open={infoModalOpen}
-          onOpenChange={setInfoModalOpen}
-          producto={producto}
-          type={infoModalType}
-        />
-      </div>
+          {/* Renovable info box */}
+          <div className='w-full rounded border border-zinc-800 bg-zinc-900/80 py-1 text-center'>
+            {producto.renovable ? (
+              <span className='text-[9px] font-medium text-yellow-400 md:text-[11px]'>
+                RENOVABLE:{' '}
+                <strong className='text-yellow-300'>
+                  S/.{' '}
+                  {(
+                    (producto.precio_renovacion ?? precio_producto) *
+                    conversionRate
+                  ).toFixed(2)}{' '}
+                  - $
+                  {(producto.precio_renovacion ?? precio_producto).toFixed(2)}
+                </strong>
+              </span>
+            ) : (
+              <span className='text-[11px] font-medium text-rose-500'>
+                No renovable
+              </span>
+            )}
+          </div>
+        </CardContent>
+
+        <CardFooter className='flex flex-col gap-1 pb-2'>
+          <Button
+            onClick={() => setOpen(true)}
+            disabled={isAgotado}
+            className='from-primary w-full bg-linear-to-b to-blue-600'
+          >
+            COMPRAR
+          </Button>
+          <span className='text-muted-foreground text-xs'>
+            Stock: {stockDisponible}
+          </span>
+        </CardFooter>
+      </Card>
+
+      <ComprarProductoModal
+        open={open}
+        onOpenChange={setOpen}
+        producto={producto}
+      />
+      <ProductoInfoModal
+        open={infoModalOpen}
+        onOpenChange={setInfoModalOpen}
+        producto={producto}
+        type={infoModalType}
+      />
     </div>
   )
 }

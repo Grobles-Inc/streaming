@@ -186,9 +186,9 @@ export default function Home() {
           </div>
 
           {/* Lista de productos */}
-          <div className='px-4 pt-12 pb-12 md:px-8'>
+          <div className='pt-12 pb-12'>
             <h2 className='mb-4 text-2xl font-bold'>Todos los productos</h2>
-            <div className='grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-6'>
+            <div className='grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'>
               {loadingProductos && currentProductPage === 1 ? (
                 // Skeleton loading para productos
                 Array.from({ length: 12 }).map((_, i) => (
@@ -235,14 +235,12 @@ export default function Home() {
           los derechos reservados.
           <span className='mx-2'>|</span>
           <a
-            href='https://groblesolutions.netlify.app'
+            href='https://groblestudio.com'
             target='_blank'
             rel='noopener noreferrer'
           >
-            Sitio Desarrollado por{' '}
-            <span className='font-bold text-yellow-500 transition-colors'>
-              Grobles
-            </span>
+            Desarrollado y mantenido por{' '}
+            <span className='font-semibold text-teal-500'>Grobles</span>
           </a>
         </p>
       </footer>

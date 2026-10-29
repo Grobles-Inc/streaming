@@ -12,6 +12,7 @@ import { useState, useMemo, useEffect } from "react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Button } from "@/components/ui/button"
 import { useAllProductos } from "../queries/productos"
+import { useConfiguracionSistema } from "../queries"
 
 import type { Categoria } from "../services/index"
 
@@ -20,7 +21,9 @@ export default function Categoria({ nombre, categoriaId }: { nombre: string, cat
   const { data: categorias, isLoading: loadingCategorias } = useCategorias()
   const { getProxiedImageUrl } = useImageProxy()
   const { data: allProductos } = useAllProductos()
+  const { data: configuracion } = useConfiguracionSistema()
   const [focusedCategory, setFocusedCategory] = useState<string | null>(null)
+  const [bannerIndex, setBannerIndex] = useState(0)
 
 
   const isMobile = useIsMobile()
@@ -42,12 +45,32 @@ export default function Categoria({ nombre, categoriaId }: { nombre: string, cat
   }, [allProductos])
 
 
+  const bannerImages = (configuracion?.banner_images_urls as string[] | null) ?? []
+
+  useEffect(() => {
+    if (bannerImages.length <= 1) return
+    const id = setInterval(() => {
+      setBannerIndex((i) => (i + 1) % bannerImages.length)
+    }, 5000)
+    return () => clearInterval(id)
+  }, [bannerImages.length])
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" })
   }, [])
 
   return (
     <div className="p-4">
+      {bannerImages.length > 0 && (
+        <div className="mb-4 w-full overflow-hidden rounded-md border bg-white">
+          <img
+            src={getProxiedImageUrl(bannerImages[bannerIndex % bannerImages.length])}
+            alt="Banner"
+            className="h-48 w-full object-contain md:h-64"
+          />
+        </div>
+      )}
+
       {/* Scroll horizontal de categorías - Solo mostrar si hay datos */}
       {!loadingCategorias && categoriasData.length > 0 && (
         <ScrollArea className=" rounded-md bg-white border whitespace-nowrap hidden md:block">

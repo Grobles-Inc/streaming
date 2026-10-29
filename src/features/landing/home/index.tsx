@@ -188,7 +188,7 @@ export default function Home() {
           {/* Lista de productos */}
           <div className='pt-12 pb-12'>
             <h2 className='mb-4 text-2xl font-bold'>Todos los productos</h2>
-            <div className='grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'>
+            <div className='grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'>
               {loadingProductos && currentProductPage === 1 ? (
                 // Skeleton loading para productos
                 Array.from({ length: 12 }).map((_, i) => (

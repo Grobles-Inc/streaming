@@ -1,9 +1,4 @@
 import { useState } from 'react'
-import {
-  IconFileInfo,
-  IconHandClick,
-  IconHeartHandshake,
-} from '@tabler/icons-react'
 import { useAuth } from '@/stores/authStore'
 import { useImageProxy } from '@/hooks/use-image-proxy'
 import { Button } from '@/components/ui/button'
@@ -12,16 +7,11 @@ import { useConfiguracionSistema } from '../../queries'
 import { Producto } from '../../services'
 import '../../styles/card.css'
 import ComprarProductoModal from './comprar-producto-modal'
-import ProductoInfoModal from './producto-info-modal'
 
 export default function ProductoCard({ producto }: { producto: Producto }) {
   const [open, setOpen] = useState(false)
   const { user } = useAuth()
   const { getProxiedImageUrl } = useImageProxy()
-  const [infoModalOpen, setInfoModalOpen] = useState(false)
-  const [infoModalType, setInfoModalType] = useState<
-    'informacion' | 'descripcion' | 'condiciones'
-  >('informacion')
 
   const stockDisponible = Array.isArray(producto.stock_de_productos)
     ? producto.stock_de_productos.length
@@ -39,75 +29,33 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
       <Card className='relative flex h-full flex-col overflow-hidden rounded-xl pt-0 gap-2   '>
         {/* Top Header Section with Image Proxy */}
         <div className='relative flex flex-col items-center'>
-          {/* Action buttons overlay (Info/Desc/Condiciones) */}
-          <div className='absolute top-2 right-2 z-20 flex flex-col gap-1'>
-            <div className='flex flex-col -space-y-px rounded-md shadow-xs'>
-              <Button
-                className='size-6 rounded-none shadow-none first:rounded-t-md last:rounded-b-md  focus-visible:z-10'
-                variant='secondary'
-                size='icon'
-                aria-label='Información del Producto'
-                onClick={() => {
-                  setInfoModalType('informacion')
-                  setInfoModalOpen(true)
-                }}
-              >
-                <IconHeartHandshake size={12} />
-              </Button>
-              <Button
-                className='size-6 rounded-none  shadow-none first:rounded-t-md last:rounded-b-md  focus-visible:z-10'
-                variant='secondary'
-                size='icon'
-                aria-label='Descripción del Producto'
-                onClick={() => {
-                  setInfoModalType('descripcion')
-                  setInfoModalOpen(true)
-                }}
-              >
-                <IconFileInfo size={12} />
-              </Button>
-              <Button
-                className='size-6 rounded-none shadow-none first:rounded-t-md last:rounded-b-md  focus-visible:z-10'
-                variant='secondary'
-                size='icon'
-                aria-label='Condiciones del Producto'
-                onClick={() => {
-                  setInfoModalType('condiciones')
-                  setInfoModalOpen(true)
-                }}
-              >
-                <IconHandClick size={12} />
-              </Button>
-            </div>
-          </div>
-
           {/* Product Image using getProxiedImageUrl */}
           <img
             src={getProxiedImageUrl(producto.imagen_url)}
-            alt={producto.nombre}
-            className='h-32 w-full md:h-42'
+                        alt={producto.nombre}
+            className='h-32 w-full md:h-42 object-contain'
           />
         </div>
 
-        <div className='space-y-1'>
+        <div className='flex flex-col items-center gap-2'>
           {/* Stock status badge banner  */}
           {stockDisponible > 0 && (
-            <div className='w-full bg-teal-600/90 text-center'>
-              <span className='text-[11px] font-black tracking-widest text-white uppercase'>
+            <div className='w-1/2 bg-teal-600/20 rounded text-center'>
+              <span className='text-[11px] font-black tracking-widest  uppercase'>
                 EN STOCK
               </span>
             </div>
           )}
           {producto.disponibilidad === 'a_pedido' && (
-            <div className='w-full bg-green-500/90 text-center'>
-              <span className='text-[11px] font-black tracking-widest text-white uppercase'>
+            <div className='w-1/2 rounded bg-green-500/20  text-center'>
+              <span className='text-[11px] font-black tracking-widest uppercase'>
                 A PEDIDO
               </span>
             </div>
           )}
           {producto.disponibilidad === 'activacion' && (
-            <div className='w-full bg-purple-600/90 text-center'>
-              <span className='text-[11px] font-black tracking-widest text-white uppercase'>
+            <div className='w-1/2 rounded  bg-purple-600/20 text-center'>
+              <span className='text-[11px] font-black tracking-widest  uppercase'>
                 ACTIVACIÓN
               </span>
             </div>
@@ -119,7 +67,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
             <span className='mb-0.5 text-[10px] font-semibold tracking-wider  uppercase'>
               {producto.usuarios?.usuario.toUpperCase() || 'ML_STREAMING'}
             </span>
-            <span className='line-clamp-2 text-xs leading-tight font-bold md:text-sm'>
+            <span className='line-clamp-2 text-xs px-2 leading-tight https://mlstreaming.com/.netlify/functions/image-proxy/productos-images/productos/97d2227f-8494-417b-9278-766502480392/1793035516777-0zqb931wi4ui.jpegfont-bold md:text-sm'>
               {producto.nombre}
             </span>
           </div>
@@ -183,12 +131,6 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
         open={open}
         onOpenChange={setOpen}
         producto={producto}
-      />
-      <ProductoInfoModal
-        open={infoModalOpen}
-        onOpenChange={setInfoModalOpen}
-        producto={producto}
-        type={infoModalType}
       />
     </div>
   )

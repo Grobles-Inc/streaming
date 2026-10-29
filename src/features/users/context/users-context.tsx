@@ -5,7 +5,7 @@ import { useUsers as useSupabaseUsers } from '../hooks/use-users'
 import { CreateUserData, UpdateUserData } from '../services/users.service'
 import type { DeleteUserSmartResult } from '../api/delete-user-smart'
 
-type UsersDialogType = 'invite' | 'add' | 'edit' | 'delete' | 'view' | 'changeRole' | 'enable' | 'disabledUsers' | 'permanentDelete'
+type UsersDialogType = 'invite' | 'add' | 'edit' | 'delete' | 'view' | 'changeRole' | 'enable' | 'disabledUsers'
 
 interface UsersContextType {
   open: UsersDialogType | null
@@ -24,7 +24,6 @@ interface UsersContextType {
   updateUser: (id: string, userData: UpdateUserData) => Promise<MappedUser | null>
   deleteUser: (id: string) => Promise<DeleteUserSmartResult | null>
   enableUser: (id: string) => Promise<boolean>
-  permanentDeleteUser: (id: string) => Promise<boolean>
   searchUsersByName: (name: string) => Promise<void>
   filterByRole: (
     role: 'admin' | 'provider' | 'seller' | 'registered' | 'moderador'
@@ -57,7 +56,6 @@ export default function UsersProvider({ children }: Props) {
     updateUser,
     deleteUser,
     enableUser,
-    permanentDeleteUser,
     searchUsersByName,
     filterByRole,
     updateUserBalance,
@@ -83,7 +81,6 @@ export default function UsersProvider({ children }: Props) {
       updateUser,
       deleteUser,
       enableUser,
-      permanentDeleteUser,
       searchUsersByName,
       filterByRole,
       updateUserBalance,

@@ -275,6 +275,7 @@ export type Database = {
       }
       configuracion: {
         Row: {
+          banner_images_urls: Json | null
           binance_info: Json | null
           comision: number | null
           comision_publicacion_producto: number
@@ -289,6 +290,7 @@ export type Database = {
           yape_info: Json | null
         }
         Insert: {
+          banner_images_urls?: Json | null
           binance_info?: Json | null
           comision?: number | null
           comision_publicacion_producto?: number
@@ -303,6 +305,7 @@ export type Database = {
           yape_info?: Json | null
         }
         Update: {
+          banner_images_urls?: Json | null
           binance_info?: Json | null
           comision?: number | null
           comision_publicacion_producto?: number

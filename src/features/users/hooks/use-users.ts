@@ -221,23 +221,6 @@ export function useUsers() {
     loadUsers()
   }
 
-  const permanentDeleteUser = async (id: string): Promise<boolean> => {
-    try {
-      await UsersService.permanentDeleteUser(id)
-      // Remover de la lista de usuarios deshabilitados
-      setDisabledUsers((prev) => prev.filter((u) => u.id !== id))
-      return true
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Error al eliminar usuario permanentemente'
-      )
-      console.error('Error permanently deleting user:', err)
-      return false
-    }
-  }
-
   return {
     users,
     disabledUsers,
@@ -254,6 +237,5 @@ export function useUsers() {
     refreshUsers,
     loadDisabledUsers,
     clearError: () => setError(null),
-    permanentDeleteUser,
   }
 }

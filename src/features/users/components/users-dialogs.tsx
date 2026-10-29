@@ -6,7 +6,6 @@ import { UsersDetailsDialog } from './users-details-dialog'
 import { UsersInviteDialog } from './users-invite-dialog'
 import { UsersChangeRoleDialog } from './users-change-role-dialog'
 import { DisabledUsersModal } from './disabled-users-modal'
-import { UsersPermanentDeleteDialog } from './users-permanent-delete-dialog'
 
 export function UsersDialogs() {
   const { open, setOpen, currentRow, setCurrentRow } = useUsersContext()
@@ -90,7 +89,6 @@ export function UsersDialogs() {
 
       {/* Modales que no requieren currentRow */}
       <DisabledUsersModal />
-      <UsersPermanentDeleteDialog />
     </>
   )
 }

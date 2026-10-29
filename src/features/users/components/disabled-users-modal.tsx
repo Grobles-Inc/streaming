@@ -1,5 +1,5 @@
 import React from 'react'
-import { IconTrash, IconUserCheck, IconEye } from '@tabler/icons-react'
+import { IconUserCheck, IconEye } from '@tabler/icons-react'
 import {
   Dialog,
   DialogContent,
@@ -39,11 +39,6 @@ export function DisabledUsersModal() {
   const handleEnableUser = (user: MappedUser) => {
     setCurrentRow(user)
     setOpen('enable')
-  }
-
-  const handlePermanentDelete = (user: MappedUser) => {
-    setCurrentRow(user)
-    setOpen('permanentDelete')
   }
 
   const handleViewUser = (user: MappedUser) => {
@@ -136,15 +131,6 @@ export function DisabledUsersModal() {
                           title="Habilitar usuario"
                         >
                           <IconUserCheck size={16} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => handlePermanentDelete(user)}
-                          title="Eliminar permanentemente"
-                        >
-                          <IconTrash size={16} />
                         </Button>
                       </div>
                     </TableCell>

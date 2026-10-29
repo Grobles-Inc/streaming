@@ -60,6 +60,7 @@ export class ConfiguracionService {
         comision: config.comision,
         conversion: config.conversion,
         comision_publicacion_producto: config.comision_publicacion_producto,
+        banner_images_urls: config.banner_images_urls ?? null,
         yape_info: config.yape_info ? yapeInfoToJson(config.yape_info) : null,
         binance_info: config.binance_info
           ? binanceInfoToJson(config.binance_info)
@@ -111,7 +112,8 @@ export class ConfiguracionService {
       conversion: configAnterior.conversion,
       comision_publicacion_producto: configAnterior.comision_publicacion_producto,
       yape_info: configAnterior.yape_info,
-      binance_info: configAnterior.binance_info
+      binance_info: configAnterior.binance_info,
+      banner_images_urls: configAnterior.banner_images_urls
     })
   }
 
@@ -128,6 +130,9 @@ export class ConfiguracionService {
       comision: row.comision ?? 0,
       conversion: row.conversion ?? 1,
       comision_publicacion_producto: row.comision_publicacion_producto,
+      banner_images_urls: Array.isArray(row.banner_images_urls)
+        ? (row.banner_images_urls as string[])
+        : null,
       yape_info: row.yape_info ? asYapeInfo(row.yape_info) : null,
       binance_info: row.binance_info ? asBinanceInfo(row.binance_info) : null,
       createdAt: updatedAt, // Usamos updated_at como fecha de creación
@@ -146,6 +151,7 @@ export class ConfiguracionService {
       comision: 10,
       conversion: 1,
       comision_publicacion_producto: 1.35,
+      banner_images_urls: null,
       yape_info: null,
       binance_info: null,
       createdAt: new Date(),

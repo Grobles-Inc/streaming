@@ -13,6 +13,19 @@ import { handleServerError } from '@/utils/handle-server-error'
 import { FontProvider } from './context/font-context'
 import { ThemeProvider } from './context/theme-context'
 import './index.css'
+
+// Disable context menu and dragging on images
+document.addEventListener('contextmenu', (e) => {
+  if (e.target instanceof HTMLImageElement) {
+    e.preventDefault()
+  }
+})
+
+document.addEventListener('dragstart', (e) => {
+  if (e.target instanceof HTMLImageElement) {
+    e.preventDefault()
+  }
+})
 // Generated Routes
 import { routeTree } from './routeTree.gen'
 

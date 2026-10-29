@@ -1,13 +1,12 @@
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Trash2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Main } from '@/components/layout/main'
 import { useState, useEffect, type ChangeEvent } from 'react'
 import { toast } from 'sonner'
 import { useConfiguracion } from './hooks/use-configuracion'
-import { HistorialConfiguracionCard } from './components/historial-configuracion'
 import { SignupSettingsCard } from './components/signup-settings-card'
 import { DEFAULT_BINANCE_INFO, DEFAULT_YAPE_INFO } from '@/lib/recarga-info'
 import { SupabaseStorageService } from '@/lib/supabase'
@@ -16,13 +15,10 @@ import YapeQRImage from '@/assets/YapeQR.jpg'
 export default function ConfiguracionSistemaPage() {
   const {
     configuracion,
-    historial,
     loading,
     saving,
     error,
-    loadHistorial,
-    saveConfiguracion,
-    restaurarConfiguracion
+    saveConfiguracion
   } = useConfiguracion()
 
   // Estados locales para el formulario
@@ -43,9 +39,8 @@ export default function ConfiguracionSistemaPage() {
   const [binanceQrUrl, setBinanceQrUrl] = useState<string>('')
   const [uploadingQr, setUploadingQr] = useState(false)
   const [uploadingBinanceQr, setUploadingBinanceQr] = useState(false)
-
-  // Estado para mostrar/ocultar historial
-  const [showHistorial, setShowHistorial] = useState(false)
+  const [bannerImages, setBannerImages] = useState<string[]>([])
+  const [uploadingBanner, setUploadingBanner] = useState(false)
 
   // Sincronizar estado local con la configuración cargada
   useEffect(() => {
@@ -67,15 +62,10 @@ export default function ConfiguracionSistemaPage() {
       setBinanceName(binance?.binance_name ?? DEFAULT_BINANCE_INFO.binance_name ?? '')
       setUsdtRate(String(binance?.usdt_rate ?? DEFAULT_BINANCE_INFO.usdt_rate ?? 3.2))
       setBinanceQrUrl(binance?.qr_url ?? '')
+
+      setBannerImages(configuracion.banner_images_urls ?? [])
     }
   }, [configuracion])
-
-  // Cargar historial cuando se muestre
-  useEffect(() => {
-    if (showHistorial && historial.length === 0) {
-      loadHistorial()
-    }
-  }, [showHistorial, historial.length, loadHistorial])
 
 
 
@@ -122,6 +112,36 @@ export default function ConfiguracionSistemaPage() {
     }
   }
 
+  const handleBannerUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+    try {
+      setUploadingBanner(true)
+      const urls: string[] = []
+      for (const file of files) {
+        const url = await SupabaseStorageService.uploadBannerImage(file)
+        urls.push(url)
+      }
+      setBannerImages((prev) => [...prev, ...urls])
+      toast.success('Banner(s) subido(s) correctamente')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al subir banner')
+    } finally {
+      setUploadingBanner(false)
+      e.target.value = ''
+    }
+  }
+
+  const handleBannerDelete = async (url: string) => {
+    try {
+      await SupabaseStorageService.deleteBannerImage(url)
+      setBannerImages((prev) => prev.filter((u) => u !== url))
+      toast.success('Banner eliminado')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al eliminar banner')
+    }
+  }
+
   // Manejar guardado de configuración
   const handleSaveAll = async () => {
     const success = await saveConfiguracion({
@@ -142,23 +162,13 @@ export default function ConfiguracionSistemaPage() {
         binance_name: binanceName || null,
         usdt_rate: Number(usdtRate) || DEFAULT_BINANCE_INFO.usdt_rate,
       },
+      banner_images_urls: bannerImages.length ? bannerImages : null,
     })
 
     if (success) {
       toast.success('Configuración guardada correctamente')
     } else {
       toast.error('Error al guardar la configuración')
-    }
-  }
-
-  // Manejar restauración de configuración
-  const handleRestore = async (id: number) => {
-    const success = await restaurarConfiguracion(id)
-    
-    if (success) {
-      toast.success('Configuración restaurada correctamente')
-    } else {
-      toast.error('Error al restaurar la configuración')
     }
   }
 
@@ -179,7 +189,8 @@ export default function ConfiguracionSistemaPage() {
     binanceId !== (currentBinance?.binance_id ?? DEFAULT_BINANCE_INFO.binance_id ?? '') ||
     binanceName !== (currentBinance?.binance_name ?? DEFAULT_BINANCE_INFO.binance_name ?? '') ||
     usdtRate !== String(currentBinance?.usdt_rate ?? DEFAULT_BINANCE_INFO.usdt_rate ?? 3.2) ||
-    binanceQrUrl !== (currentBinance?.qr_url ?? '')
+    binanceQrUrl !== (currentBinance?.qr_url ?? '') ||
+    JSON.stringify(bannerImages) !== JSON.stringify(configuracion.banner_images_urls ?? [])
   )
 
   if (loading) {
@@ -223,16 +234,12 @@ export default function ConfiguracionSistemaPage() {
           </div>
           <div className='flex items-center gap-2'>
             <Button
-              variant="outline"
-              onClick={() => setShowHistorial(!showHistorial)}
+              onClick={handleSaveAll}
+              disabled={saving || !hasChanges}
+              size="sm"
             >
-              {showHistorial ? 'Ocultar' : 'Ver'} Historial
+              {saving ? 'Guardando...' : 'Guardar Cambios'}
             </Button>
-            {hasChanges && (
-              <Badge variant="secondary">
-                Cambios pendientes
-              </Badge>
-            )}
           </div>
         </div>
 
@@ -482,41 +489,48 @@ export default function ConfiguracionSistemaPage() {
           </Card>
         </div>
 
-        {/* Botón para guardar todos los cambios */}
-        {hasChanges && (
-          <div className="grid gap-6 md:grid-cols-1 mt-6">
-            <Card className="border-orange-200 bg-orange-50/50">
-              <CardHeader>
-                <CardTitle className="text-orange-800">Cambios Pendientes</CardTitle>
-                <CardDescription>
-                  Tienes cambios sin guardar en la configuración.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  onClick={handleSaveAll}
-                  disabled={saving}
-                  className="w-full"
-                >
-                  {saving ? 'Guardando...' : 'Guardar Todos los Cambios'}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+        {/* Banners */}
+        <div className="grid gap-6 md:grid-cols-1 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Banners</CardTitle>
+              <CardDescription>
+                Imágenes del carrusel mostrado en la landing.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {bannerImages.map((url) => (
+                  <div key={url} className="relative border rounded overflow-hidden">
+                    <img src={url} alt="Banner" className="h-32 w-full object-contain" />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-1 right-1"
+                      onClick={() => handleBannerDelete(url)}
+                      disabled={saving || uploadingBanner}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleBannerUpload}
+                  disabled={saving || uploadingBanner}
+                />
+                {uploadingBanner && <p className="text-xs text-muted-foreground">Subiendo banner(s)...</p>}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
 
-
-        {/* Historial de configuraciones */}
-        {showHistorial && (
-          <div className="mt-6">
-            <HistorialConfiguracionCard
-              historial={historial}
-              onRestore={handleRestore}
-              loading={saving}
-            />
-          </div>
-        )}
 
         {/* Modal de confirmación para modo mantenimiento */}
         {/* <MantenimientoConfirmDialog

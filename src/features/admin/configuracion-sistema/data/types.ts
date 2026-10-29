@@ -18,6 +18,7 @@ export type MappedConfiguracion = {
   email_soporte: string | null
   conversion: number
   comision_publicacion_producto: number
+  banner_images_urls: string[] | null
   createdAt: Date
   updatedAt: Date
   yape_info: YapeInfo | null

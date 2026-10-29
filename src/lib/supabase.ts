@@ -187,4 +187,58 @@ export class SupabaseStorageService {
       // No lanzamos error para no bloquear operaciones si la eliminación falla
     }
   }
+
+  /**
+   * Sube una imagen al bucket de banners y retorna la URL pública
+   */
+  static async uploadBannerImage(file: File): Promise<string> {
+    const fileExtension = file.name.split('.').pop()
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`
+    const filePath = `banners/${fileName}`
+
+    const { data, error } = await supabase.storage
+      .from('banners')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      })
+
+    if (error) {
+      console.error('Error subiendo banner:', error)
+      throw new Error(`Error al subir banner: ${error.message}`)
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('banners')
+      .getPublicUrl(data.path)
+
+    return publicUrl
+  }
+
+  /**
+   * Elimina una imagen del bucket de banners
+   */
+  static async deleteBannerImage(imageUrl: string): Promise<void> {
+    try {
+      const url = new URL(imageUrl)
+      const pathMatch = url.pathname.match(/\/storage\/v1\/object\/public\/banners\/(.+)/)
+
+      if (!pathMatch) {
+        throw new Error('URL de imagen inválida')
+      }
+
+      const filePath = pathMatch[1]
+
+      const { error } = await supabase.storage
+        .from('banners')
+        .remove([filePath])
+
+      if (error) {
+        console.error('Error eliminando banner:', error)
+      }
+    } catch (error) {
+      console.error('Error procesando eliminación de banner:', error)
+    }
+  }
+
 }

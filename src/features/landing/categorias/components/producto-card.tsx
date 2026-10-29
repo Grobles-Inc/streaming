@@ -36,14 +36,14 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
 
   return (
     <div className='card-container h-auto'>
-      <Card className='relative flex h-full flex-col overflow-hidden rounded-xl pt-0   '>
+      <Card className='relative flex h-full flex-col overflow-hidden rounded-xl pt-0 gap-2   '>
         {/* Top Header Section with Image Proxy */}
         <div className='relative flex flex-col items-center'>
           {/* Action buttons overlay (Info/Desc/Condiciones) */}
           <div className='absolute top-2 right-2 z-20 flex flex-col gap-1'>
             <div className='flex flex-col -space-y-px rounded-md shadow-xs'>
               <Button
-                className='size-6 rounded-none bg-zinc-800/80  shadow-none first:rounded-t-md last:rounded-b-md hover:bg-zinc-700 focus-visible:z-10'
+                className='size-6 rounded-none shadow-none first:rounded-t-md last:rounded-b-md  focus-visible:z-10'
                 variant='secondary'
                 size='icon'
                 aria-label='Información del Producto'
@@ -55,7 +55,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
                 <IconHeartHandshake size={12} />
               </Button>
               <Button
-                className='size-6 rounded-none bg-zinc-800/80 shadow-none first:rounded-t-md last:rounded-b-md hover:bg-zinc-700 focus-visible:z-10'
+                className='size-6 rounded-none  shadow-none first:rounded-t-md last:rounded-b-md  focus-visible:z-10'
                 variant='secondary'
                 size='icon'
                 aria-label='Descripción del Producto'
@@ -67,7 +67,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
                 <IconFileInfo size={12} />
               </Button>
               <Button
-                className='size-6 rounded-none bg-zinc-800/80 shadow-none first:rounded-t-md last:rounded-b-md hover:bg-zinc-700 focus-visible:z-10'
+                className='size-6 rounded-none shadow-none first:rounded-t-md last:rounded-b-md  focus-visible:z-10'
                 variant='secondary'
                 size='icon'
                 aria-label='Condiciones del Producto'
@@ -85,7 +85,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
           <img
             src={getProxiedImageUrl(producto.imagen_url)}
             alt={producto.nombre}
-            className='h-32 w-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] md:h-36'
+            className='h-32 w-full md:h-42'
           />
         </div>
 

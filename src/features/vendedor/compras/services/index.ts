@@ -14,6 +14,46 @@ export type CompraUpdate = Database['public']['Tables']['compras']['Update']
 export type StockProducto = Database['public']['Tables']['stock_productos']['Update']
 export type Billetera = Database['public']['Tables']['billeteras']['Row']
 
+/**
+ * Fila del RPC `get_compras_vendedor`. El jsonb serializa los `timestamptz`
+ * a ISO string y anida los joins como objetos (no arrays).
+ */
+export type CompraVendedorRow = Omit<
+  Database['public']['Tables']['compras']['Row'],
+  'renovado' | 'revisado_id' | 'updated_at'
+> & {
+  productos: {
+    nombre: string | null
+    tiempo_uso: number | null
+    precio_publico: number | null
+    precio_renovacion: number | null
+    descripcion: string | null
+    informacion: string | null
+    condiciones: string | null
+    renovable: boolean | null
+  } | null
+  usuarios: {
+    usuario: string | null
+    nombres: string | null
+    apellidos: string | null
+    telefono: string | null
+    billetera_id: string | null
+  } | null
+  stock_productos: {
+    email: string | null
+    perfil: string | null
+    pin: string | null
+    clave: string | null
+    url: string | null
+  } | null
+}
+
+/** Respuesta jsonb completa del RPC `get_compras_vendedor`. */
+export type GetComprasVendedorResponse = {
+  data: CompraVendedorRow[]
+  count: number
+}
+
 // Fila ligera de una compra con datos de cuenta pendientes de revisar
 // (notificación de cambio de info de cuenta). Alimenta la campana.
 export type CompraCuentaActualizada = {
@@ -197,30 +237,28 @@ export const reciclarCompra = async (id: number): Promise<boolean> => {
   return true
 }
 
-// Get compras by vendedor ID
-export const getComprasByVendedorId = async (vendedorId: string, page: number = 1, pageSize: number = 200): Promise<{ data: Compra[]; count: number }> => {
-  const from = (page - 1) * pageSize
-  const to = from + pageSize - 1
-
-  const { data, error, count } = await supabase
-    .from('compras')
-    .select(`
-      *,
-      productos:producto_id (nombre, precio_publico, tiempo_uso, condiciones, descripcion, informacion, precio_renovacion, renovable),
-      usuarios:proveedor_id (nombres, apellidos, telefono, billetera_id, usuario),
-      stock_productos:stock_producto_id (email, perfil, pin, clave, url)
-    `, { count: 'exact' })
-    .eq('vendedor_id', vendedorId)
-    .neq('estado', 'reembolsado')
-    .range(from, to)
-    .order('created_at', { ascending: false })
+// Get compras by vendedor ID (RPC `get_compras_vendedor`)
+export const getComprasByVendedorId = async (
+  vendedorId: string,
+  page: number = 1,
+  pageSize: number = 200
+): Promise<{ data: CompraVendedorRow[]; count: number }> => {
+  const { data, error } = await supabase.rpc('get_compras_vendedor', {
+    p_vendedor_id: vendedorId,
+    p_page: page,
+    p_page_size: pageSize,
+    p_estado: null,
+    p_search: null,
+  })
 
   if (error) {
     console.error('Error fetching compras by vendedor:', error)
     return { data: [], count: 0 }
   }
 
-  return { data: data || [], count: count || 0 }
+  const result = data as unknown as GetComprasVendedorResponse | null
+
+  return { data: result?.data ?? [], count: result?.count ?? 0 }
 }
 
 // Get compras with pagination

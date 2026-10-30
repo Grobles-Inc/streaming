@@ -14,6 +14,7 @@ import {
 import * as pedidosService from '../services'
 import {
   ImapConfigInput,
+  deleteImapConfig,
   getImapConfigGuardada,
   saveImapConfig,
   setImapEnabled,
@@ -483,6 +484,23 @@ export const useToggleImapEnabled = () => {
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Error al actualizar el estado IMAP')
+    },
+  })
+}
+
+export const useDeleteImapConfig = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (compraId: number) => deleteImapConfig(compraId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+      // La tabla de stock del proveedor también muestra el estado IMAP.
+      queryClient.invalidateQueries({ queryKey: ['stock-productos'] })
+      queryClient.invalidateQueries({ queryKey: ['imap-configs'] })
+      toast.success('Configuración IMAP eliminada')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Error al eliminar la configuración IMAP')
     },
   })
 }

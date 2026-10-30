@@ -152,3 +152,14 @@ export const setImapEnabled = async (
 
   return data === true
 }
+
+/** Elimina la config IMAP asociada a la compra (`delete_imap_config`). */
+export const deleteImapConfig = async (compraId: number): Promise<void> => {
+  const { error } = await supabase.rpc('delete_imap_config', {
+    p_compra_id: compraId,
+  })
+
+  if (error) {
+    throw new Error(error.message || 'No se pudo eliminar la configuración IMAP')
+  }
+}

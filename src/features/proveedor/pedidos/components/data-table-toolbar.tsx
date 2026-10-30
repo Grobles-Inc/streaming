@@ -85,17 +85,7 @@ export function DataTableToolbar<TData>({
           <div className='relative mb-4 max-w-sm flex-1 md:mb-0'>
             <IconSearch className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
             <Input
-              placeholder={
-                table.getColumn('producto_id')?.getFilterValue()
-                  ? `Búsqueda en ${
-                      productOptions.find(
-                        (option) =>
-                          option.value ===
-                          table.getColumn('producto_id')?.getFilterValue()
-                      )?.label ?? 'producto'
-                    }...`
-                  : 'Búsqueda global...'
-              }
+              placeholder='Búsqueda global...'
               value={table.getState().globalFilter ?? ''}
               onChange={(event) => table.setGlobalFilter(event.target.value)}
               className='h-9 pl-9'

@@ -1,28 +1,35 @@
 import { useEffect, useState } from 'react'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { IconEdit, IconEye, IconEyeOff } from '@tabler/icons-react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { IconEdit, IconEye, IconEyeOff } from '@tabler/icons-react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useUpdateStockProducto } from '../queries'
 import type { Database } from '@/types/supabase'
+import { useUpdateStockProducto } from '../queries'
 
 type StockProducto = Database['public']['Tables']['stock_productos']['Row']
 
 // Schema para edición
 const editStockFormSchema = z.object({
   email: z.string().optional(),
-  clave: z.string().optional(), 
+  clave: z.string().optional(),
   url: z.string().optional(),
   perfil: z.string().optional(),
   pin: z.string().optional(),
@@ -38,10 +45,10 @@ interface EditarStockModalProps {
   stock: StockProducto | null
 }
 
-export function EditarStockModal({ 
-  open, 
-  onOpenChange, 
-  stock 
+export function EditarStockModal({
+  open,
+  onOpenChange,
+  stock,
 }: EditarStockModalProps) {
   const updateStockMutation = useUpdateStockProducto()
 
@@ -54,7 +61,7 @@ export function EditarStockModal({
     setValue,
     watch,
     reset,
-    formState: { errors }
+    formState: { errors },
   } = useForm<EditStockFormData>({
     resolver: zodResolver(editStockFormSchema),
     defaultValues: {
@@ -64,8 +71,8 @@ export function EditarStockModal({
       perfil: '',
       pin: '',
       estado: 'disponible',
-      soporte_stock_producto: 'activo'
-    }
+      soporte_stock_producto: 'activo',
+    },
   })
 
   // Pre-cargar datos cuando se abre el modal
@@ -78,7 +85,7 @@ export function EditarStockModal({
         perfil: stock.perfil || '',
         pin: stock.pin || '',
         estado: stock.estado,
-        soporte_stock_producto: stock.soporte_stock_producto
+        soporte_stock_producto: stock.soporte_stock_producto,
       })
       // Resetear estado de visibilidad al abrir modal
       setMostrarClave(false)
@@ -98,8 +105,8 @@ export function EditarStockModal({
           perfil: data.perfil || null,
           pin: data.pin || null,
           estado: data.estado,
-          soporte_stock_producto: data.soporte_stock_producto
-        }
+          soporte_stock_producto: data.soporte_stock_producto,
+        },
       })
 
       onOpenChange(false)
@@ -113,9 +120,9 @@ export function EditarStockModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!max-w-[70vw] !max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+      <DialogContent className='flex max-h-[90vh] flex-col gap-0 sm:max-w-2xl'>
+        <DialogHeader className='border-b pb-4'>
+          <DialogTitle className='flex items-center gap-2'>
             <IconEdit size={20} />
             Editar Stock #{stock.id}
           </DialogTitle>
@@ -124,137 +131,150 @@ export function EditarStockModal({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Información del producto (solo lectura) */}
-          <div className="space-y-2">
-            <Label>Tipo de Stock</Label>
-            <Input
-              value={stock.tipo === 'cuenta' ? 'CUENTA' : stock.tipo === 'perfiles' ? 'PERFILES' : 'COMBO'}
-              readOnly
-              className="bg-gray-50 text-gray-700 cursor-not-allowed"
-            />
-          </div>
-
-          {/* Campos editables */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className='flex min-h-0 flex-1 flex-col'
+        >
+          <div className='min-h-0 flex-1 space-y-6 overflow-y-auto py-4 pr-1'>
+            {/* Información del producto (solo lectura) */}
+            <div className='space-y-2'>
+              <Label>Tipo de Stock</Label>
               <Input
-                {...register('email')}
-                placeholder="correo@ejemplo.com"
+                value={
+                  stock.tipo === 'cuenta'
+                    ? 'CUENTA'
+                    : stock.tipo === 'perfiles'
+                      ? 'PERFILES'
+                      : 'COMBO'
+                }
+                readOnly
+                className='bg-muted text-muted-foreground'
               />
-              {errors.email && (
-                <p className="text-sm text-red-500">{errors.email.message}</p>
-              )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="clave">Clave</Label>
-              <div className="relative">
+
+            {/* Campos editables */}
+            <div className='grid gap-4 sm:grid-cols-2'>
+              <div className='space-y-2'>
+                <Label htmlFor='email'>Email</Label>
                 <Input
-                  {...register('clave')}
-                  type={mostrarClave ? "text" : "password"}
-                  placeholder="Contraseña"
-                  className="pr-10"
+                  {...register('email')}
+                  placeholder='correo@ejemplo.com'
                 />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setMostrarClave(!mostrarClave)}
-                >
-                  {mostrarClave ? (
-                    <IconEyeOff className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <IconEye className="h-4 w-4 text-gray-400" />
-                  )}
-                </Button>
+                {errors.email && (
+                  <p className='text-sm text-destructive'>
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
-              {errors.clave && (
-                <p className="text-sm text-red-500">{errors.clave.message}</p>
-              )}
+              <div className='space-y-2'>
+                <Label htmlFor='clave'>Clave</Label>
+                <div className='relative'>
+                  <Input
+                    {...register('clave')}
+                    type={mostrarClave ? 'text' : 'password'}
+                    placeholder='Contraseña'
+                    className='pr-10'
+                  />
+                  <Button
+                    type='button'
+                    variant='ghost'
+                    size='icon'
+                    className='absolute top-1/2 right-1 size-7 -translate-y-1/2'
+                    onClick={() => setMostrarClave(!mostrarClave)}
+                  >
+                    {mostrarClave ? (
+                      <IconEyeOff className='text-muted-foreground' />
+                    ) : (
+                      <IconEye className='text-muted-foreground' />
+                    )}
+                  </Button>
+                </div>
+                {errors.clave && (
+                  <p className='text-sm text-destructive'>
+                    {errors.clave.message}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="url">URL</Label>
-              <Input
-                {...register('url')}
-                placeholder="https://..."
-              />
+            <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+              <div className='space-y-2'>
+                <Label htmlFor='url'>URL</Label>
+                <Input {...register('url')} placeholder='https://...' />
+              </div>
+              <div className='space-y-2'>
+                <Label htmlFor='perfil'>Perfil</Label>
+                <Input
+                  {...register('perfil')}
+                  placeholder='Nombre del perfil'
+                />
+              </div>
+              <div className='space-y-2'>
+                <Label htmlFor='pin'>PIN</Label>
+                <Input {...register('pin')} placeholder='PIN' />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="perfil">Perfil</Label>
-              <Input
-                {...register('perfil')}
-                placeholder="Nombre del perfil"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="pin">PIN</Label>
-              <Input
-                {...register('pin')}
-                placeholder="PIN"
-              />
-            </div>
-          </div>
 
-          {/* Estados */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="estado">Estado</Label>
-              <Select 
-                value={watch('estado')} 
-                onValueChange={(value: 'disponible' | 'vendido') => setValue('estado', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="disponible">Disponible</SelectItem>
-                  <SelectItem value="vendido">Vendido</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="soporte_stock_producto">Estado de Soporte</Label>
-              <Select 
-                value={watch('soporte_stock_producto')} 
-                onValueChange={(value: 'activo' | 'vencido' | 'soporte') => setValue('soporte_stock_producto', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="activo">Activo</SelectItem>
-                  <SelectItem value="vencido">Vencido</SelectItem>
-                  <SelectItem value="soporte">Soporte</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Estados */}
+            <div className='grid gap-4 sm:grid-cols-2'>
+              <div className='space-y-2'>
+                <Label htmlFor='estado'>Estado</Label>
+                <Select
+                  value={watch('estado')}
+                  onValueChange={(value: 'disponible' | 'vendido') =>
+                    setValue('estado', value)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='disponible'>Disponible</SelectItem>
+                    <SelectItem value='vendido'>Vendido</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className='space-y-2'>
+                <Label htmlFor='soporte_stock_producto'>
+                  Estado de Soporte
+                </Label>
+                <Select
+                  value={watch('soporte_stock_producto')}
+                  onValueChange={(value: 'activo' | 'vencido' | 'soporte') =>
+                    setValue('soporte_stock_producto', value)
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='activo'>Activo</SelectItem>
+                    <SelectItem value='vencido'>Vencido</SelectItem>
+                    <SelectItem value='soporte'>Soporte</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
           {/* Botones de acción */}
-          <div className="flex justify-end gap-2 pt-4">
+          <DialogFooter className='border-t pt-4'>
             <Button
-              type="button"
-              variant="outline"
+              type='button'
+              variant='outline'
               onClick={() => onOpenChange(false)}
             >
               Cancelar
             </Button>
-            
-            <Button
-              type="submit"
-              disabled={updateStockMutation.isPending}
-              className="bg-black text-white hover:bg-gray-800"
-            >
-              {updateStockMutation.isPending ? 'Guardando...' : 'Guardar Cambios'}
+
+            <Button type='submit' disabled={updateStockMutation.isPending}>
+              {updateStockMutation.isPending
+                ? 'Guardando...'
+                : 'Guardar Cambios'}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   )
-} 
+}

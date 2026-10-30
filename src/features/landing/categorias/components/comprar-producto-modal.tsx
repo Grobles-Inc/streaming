@@ -106,9 +106,6 @@ export default function ComprarProductoModal({
 
   const tasaDeConversion = configuracion?.conversion || 1
   const monto = billetera?.saldo
-  const fecha_expiracion = new Date(
-    Date.now() + producto.tiempo_uso * 24 * 60 * 60 * 1000
-  ).toISOString()
   const precio_producto = user
     ? producto.precio_vendedor
     : producto.precio_publico
@@ -142,44 +139,12 @@ export default function ComprarProductoModal({
 
     // Chain mutations sequentially: createCompra -> actualizarSaldo -> updateStockProductoStatusVendido -> updateProveedorBilletera -> removeStockIdFromProducto
 
-    // DEBUG: Log fecha_inicio calculation BEFORE mutation
-    const __debugFechaInicioBuggy = new Date(
-      new Date().toLocaleString('en-US', { timeZone: 'America/Lima' })
+    // Un solo instante para ambas fechas: evita drift entre render y submit.
+    const now = new Date()
+    const fecha_inicio = now.toISOString()
+    const fecha_expiracion = new Date(
+      now.getTime() + producto.tiempo_uso * 24 * 60 * 60 * 1000
     ).toISOString()
-    const __debugFechaInicioCorrect = new Date().toISOString()
-
-    console.log(
-      '[DEBUG comprar-producto-modal] Creating compra with fecha_inicio:',
-      {
-        // Current broken method
-        buggyFechaInicio: __debugFechaInicioBuggy,
-        buggyLimaTime: new Date(__debugFechaInicioBuggy).toLocaleString(
-          'es-PE',
-          { timeZone: 'America/Lima' }
-        ),
-        buggyUTCDate: new Date(__debugFechaInicioBuggy).toUTCString(),
-        buggyLocalDate: new Date(__debugFechaInicioBuggy).toLocaleDateString(),
-        buggyLocalTime: new Date(__debugFechaInicioBuggy).toLocaleTimeString(),
-
-        // Correct method
-        correctFechaInicio: __debugFechaInicioCorrect,
-        correctLimaTime: new Date(__debugFechaInicioCorrect).toLocaleString(
-          'es-PE',
-          { timeZone: 'America/Lima' }
-        ),
-        correctUTCDate: new Date(__debugFechaInicioCorrect).toUTCString(),
-
-        // Context
-        currentBrowserDate: new Date().toString(),
-        browserTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        limaTime: new Date().toLocaleString('es-PE', {
-          timeZone: 'America/Lima',
-        }),
-        utcNow: new Date().toISOString(),
-        directNewDateISO: new Date().toISOString(),
-        directNewDateString: new Date().toString(),
-      }
-    )
 
     createCompra(
       {
@@ -195,32 +160,12 @@ export default function ComprarProductoModal({
         precio: producto.precio_vendedor,
         monto_reembolso: producto.precio_vendedor,
         telefono_cliente: data.telefono_cliente.replace(/\s/g, ''),
-        fecha_inicio: new Date(
-          new Date().toLocaleString('en-US', { timeZone: 'America/Lima' })
-        ).toISOString(),
+        fecha_inicio,
         stock_producto_id: stockProductosIds?.[0],
-        fecha_expiracion: fecha_expiracion,
+        fecha_expiracion,
       },
       {
-        onSuccess: (compraData: any) => {
-          // DEBUG: Log what was actually stored in DB
-          console.log(
-            '[DEBUG comprar-producto-modal] Compra created successfully:',
-            {
-              id: compraData?.id,
-              fecha_inicio_stored: compraData?.fecha_inicio,
-              fecha_inicio_limaDisplay: compraData?.fecha_inicio
-                ? new Date(compraData.fecha_inicio).toLocaleString('es-PE', {
-                    timeZone: 'America/Lima',
-                  })
-                : null,
-              fecha_inicio_utcDisplay: compraData?.fecha_inicio
-                ? new Date(compraData.fecha_inicio).toUTCString()
-                : null,
-              created_at: compraData?.created_at,
-            }
-          )
-
+        onSuccess: () => {
           actualizarSaldo(
             {
               id: billetera?.id,

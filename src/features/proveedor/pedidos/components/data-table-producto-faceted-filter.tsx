@@ -1,7 +1,6 @@
-import { CheckIcon } from 'lucide-react'
+import { CheckIcon, Eraser } from 'lucide-react'
 import { Column } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Command,
@@ -10,7 +9,6 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from '@/components/ui/command'
 import {
   Popover,
@@ -32,67 +30,63 @@ export function DataTableProductoFacetedFilter<TData, TValue>({
   const selectedValue = (column?.getFilterValue() as string) ?? ''
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant='outline' size='sm' className='w-fit'>
-          {title}
-          {selectedValue && (
-            <>
-              <span className='mx-2 h-4 w-px bg-border' />
-              <Badge variant='secondary' className='rounded-sm px-1 font-normal'>
-                {options.find((o) => o.value === selectedValue)?.label ?? selectedValue}
-              </Badge>
-            </>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className='w-[260px] p-0' align='start'>
-        <Command>
-          <CommandInput placeholder={`Buscar ${title.toLowerCase()}...`} />
-          <CommandList>
-            <CommandEmpty>No se encontraron resultados.</CommandEmpty>
-            <CommandGroup>
-              {options.map((option) => {
-                const isSelected = selectedValue === option.value
-                return (
-                  <CommandItem
-                    key={option.value}
-                    value={option.value}
-                    onSelect={() => {
-                      column?.setFilterValue(isSelected ? undefined : option.value)
-                    }}
-                  >
-                    <div
-                      className={cn(
-                        'border-primary mr-2 flex h-4 w-4 items-center justify-center rounded-sm border',
-                        isSelected
-                          ? 'bg-primary text-primary-foreground'
-                          : 'opacity-50 [&_svg]:invisible'
-                      )}
+    <div className='flex items-center gap-1'>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant='outline' size='sm' className='w-fit'>
+            {title}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className='w-[260px] p-0' align='start'>
+          <Command>
+            <CommandInput placeholder={`Buscar ${title.toLowerCase()}...`} />
+            <CommandList>
+              <CommandEmpty>No se encontraron resultados.</CommandEmpty>
+              <CommandGroup>
+                {options.map((option) => {
+                  const isSelected = selectedValue === option.value
+                  return (
+                    <CommandItem
+                      key={option.value}
+                      value={option.value}
+                      keywords={[option.label]}
+                      onSelect={() => {
+                        column?.setFilterValue(
+                          isSelected ? undefined : option.value
+                        )
+                      }}
                     >
-                      <CheckIcon className='h-4 w-4' />
-                    </div>
-                    <span>{option.label}</span>
-                  </CommandItem>
-                )
-              })}
-            </CommandGroup>
-            {selectedValue && (
-              <>
-                <CommandSeparator />
-                <CommandGroup>
-                  <CommandItem
-                    onSelect={() => column?.setFilterValue(undefined)}
-                    className='justify-center text-center'
-                  >
-                    Limpiar filtro
-                  </CommandItem>
-                </CommandGroup>
-              </>
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+                      <div
+                        className={cn(
+                          'border-primary mr-2 flex h-4 w-4 items-center justify-center rounded-sm border',
+                          isSelected
+                            ? 'bg-primary text-primary-foreground'
+                            : 'opacity-50 [&_svg]:invisible'
+                        )}
+                      >
+                        <CheckIcon className='h-4 w-4' />
+                      </div>
+                      <span>{option.label}</span>
+                    </CommandItem>
+                  )
+                })}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {selectedValue && (
+        <Button
+          variant='ghost'
+          size='icon'
+          onClick={() => column?.setFilterValue(undefined)}
+          title='Limpiar selección de producto'
+          aria-label='Limpiar selección de producto'
+          className='text-red-600'
+        >
+          <Eraser className='size-4' />
+        </Button>
+      )}
+    </div>
   )
 }

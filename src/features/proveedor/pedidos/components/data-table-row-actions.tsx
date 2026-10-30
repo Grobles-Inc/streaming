@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import { Row } from '@tanstack/react-table'
-import { IconEdit, IconHeadset, IconServerCog, IconTrash } from '@tabler/icons-react'
+import {
+  IconEdit,
+  IconHeadset,
+  IconServerCog,
+  IconServerOff,
+  IconTrash,
+} from '@tabler/icons-react'
 import { EllipsisVertical } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -14,7 +20,7 @@ import {
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Pedido } from '../data/schema'
 import { SoporteCompra } from '../data/types'
-import { useEliminarPedidoExpirado } from '../queries'
+import { useDeleteImapConfig, useEliminarPedidoExpirado } from '../queries'
 import {
   calcularDiasRestantes,
   calcularFechaExpiracion,
@@ -34,8 +40,10 @@ export function DataTableRowActions<TData>({
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showImapDialog, setShowImapDialog] = useState(false)
+  const [showDeleteImapDialog, setShowDeleteImapDialog] = useState(false)
   const pedido = row.original as Pedido
   const eliminarPedidoExpirado = useEliminarPedidoExpirado()
+  const eliminarImapConfig = useDeleteImapConfig()
 
   // Convertir Pedido a SoporteCompra para el modal
   const soporteCompra: SoporteCompra = {
@@ -141,6 +149,17 @@ export function DataTableRowActions<TData>({
     }
   }
 
+  const handleConfirmDeleteImap = async () => {
+    if (!pedido.id) return
+
+    try {
+      await eliminarImapConfig.mutateAsync(pedido.id)
+      setShowDeleteImapDialog(false)
+    } catch {
+      // El toast de error lo maneja la mutación.
+    }
+  }
+
   return (
     <>
       <DropdownMenu>
@@ -171,6 +190,15 @@ export function DataTableRowActions<TData>({
                 <IconServerCog className='size-4' />
                 Configurar IMAP
               </DropdownMenuItem>
+              {pedido.imap_configurado && (
+                <DropdownMenuItem
+                  onClick={() => setShowDeleteImapDialog(true)}
+                  className='text-red-600 focus:text-red-600'
+                >
+                  <IconServerOff className='size-4' />
+                  Eliminar IMAP
+                </DropdownMenuItem>
+              )}
             </>
           )}
 
@@ -248,6 +276,19 @@ export function DataTableRowActions<TData>({
         handleConfirm={handleConfirmDelete}
         confirmText='Eliminar'
         cancelBtnText='Cancelar'
+        destructive={true}
+      />
+
+      {/* Diálogo de confirmación para eliminar la config IMAP */}
+      <ConfirmDialog
+        open={showDeleteImapDialog}
+        onOpenChange={setShowDeleteImapDialog}
+        title='Eliminar configuración IMAP'
+        desc='Se eliminará la configuración IMAP asociada a esta compra y dejará de obtenerse el código automáticamente. ¿Estás seguro de que deseas continuar?'
+        handleConfirm={handleConfirmDeleteImap}
+        confirmText='Eliminar'
+        cancelBtnText='Cancelar'
+        isLoading={eliminarImapConfig.isPending}
         destructive={true}
       />
     </>

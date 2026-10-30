@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useSearch } from '@/stores/searchStore'
+import { useNavigate, useSearch as useRouterSearch } from '@tanstack/react-router'
 import { useImageProxy } from '@/hooks/use-image-proxy'
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
@@ -11,7 +12,7 @@ import {
 import LandingHeader from '@/components/layout/landing-header'
 import ProductoCard from '../categorias/components/producto-card'
 import { useCategorias, useResumenCategorias } from '../queries'
-import { useProductos } from '../queries/productos'
+import { useProductos, useProductosPublicadosByCategoria } from '../queries/productos'
 import { useConfiguracionSistema } from '../queries'
 import { Categoria } from '../services'
 import { Button } from '@/components/ui/button'
@@ -39,11 +40,33 @@ export default function Home() {
   const [bannerIndex, setBannerIndex] = useState(0)
   const bannerImages = (configuracion?.banner_images_urls as string[] | null) ?? []
 
-  // Selector de categoría activo
-  const [focusedCategory, setFocusedCategory] = useState<string | null>(null)
+  // Selector de categoría activo (sincronizado con search param `categoria`)
+  const routerSearch = useRouterSearch({ strict: false }) as { categoria?: string }
+  const navigate = useNavigate()
+  const focusedCategory = routerSearch?.categoria ?? null
+  const setFocusedCategory = useCallback(
+    (id: string | null) => {
+      navigate({ to: '/', search: { categoria: id ?? undefined }, replace: true })
+    },
+    [navigate]
+  )
   const isMobile = useIsMobile()
 
   const categoriasResumenData = categoriasResumen || []
+
+  const { data: productosCategoria, isLoading: loadingProductosCategoria } =
+    useProductosPublicadosByCategoria(focusedCategory)
+
+  const loadingProductosActual = focusedCategory
+    ? loadingProductosCategoria
+    : loadingProductos
+
+  const totalTodos = useMemo(() => {
+    return (categoriasResumen || []).reduce(
+      (sum: number, c: any) => sum + (c.total_productos || 0),
+      0
+    )
+  }, [categoriasResumen])
 
   // Acumular productos de todas las páginas cargadas
   useMemo(() => {
@@ -58,19 +81,20 @@ export default function Home() {
 
   // Productos filtrados por categoría y búsqueda
   const productosFiltrados = useMemo(() => {
-    let resultado = allProductos
-    if (focusedCategory) {
-      resultado = resultado.filter((p: any) => p.categoria_id === focusedCategory)
-    }
+    let resultado: any[] = focusedCategory
+      ? (productosCategoria ?? [])
+      : allProductos
     if (searchInput) {
       const q = searchInput.toLowerCase()
-      resultado = resultado.filter((p: any) => p.nombre.toLowerCase().includes(q))
+      resultado = resultado.filter((p: any) =>
+        p.nombre?.toLowerCase().includes(q)
+      )
     }
     return resultado
-  }, [allProductos, focusedCategory, searchInput])
+  }, [allProductos, focusedCategory, productosCategoria, searchInput])
 
   const hasMoreProducts =
-    productos && allProductos.length < (productos as any).count
+    !focusedCategory && productos && allProductos.length < (productos as any).count
 
   const loadMoreProducts = useCallback(() => {
     if (hasMoreProducts && !loadingProductos) {
@@ -167,6 +191,17 @@ export default function Home() {
         {!loadingCategoriasResumen && categoriasResumenData.length > 0 && !isMobile && (
           <div className='w-96 border rounded-md overflow-hidden'>
             <ul className='divide-y'>
+              <li key='todos'>
+                <Button
+                  size='lg'
+                  variant={focusedCategory === null ? 'secondary' : 'ghost'}
+                  className='flex justify-start items-center gap-2 w-full rounded-none'
+                  onClick={() => setFocusedCategory(null)}
+                >
+                  <span>Todos</span>
+                  <span className='text-sm text-zinc-500'>({totalTodos})</span>
+                </Button>
+              </li>
               {categoriasResumenData.map((categoria) => {
                 const totalProductos = categoria.total_productos
                 return (
@@ -190,7 +225,7 @@ export default function Home() {
         <div className='flex flex-col w-full gap-4'>
           <h2 className='text-2xl text-center md:text-left font-bold uppercase'>CATALOGO DE PRODUCTOS</h2>
           <div className='grid grid-cols-2 gap-4  lg:grid-cols-3 xl:grid-cols-4'>
-            {loadingProductos && currentProductPage === 1 ? (
+            {loadingProductosActual && (focusedCategory ? true : currentProductPage === 1) ? (
               // Skeleton loading para productos
               Array.from({ length: 12 }).map((_, i) => (
                 <div
@@ -216,7 +251,7 @@ export default function Home() {
           </div>
 
           {/* Loading indicator durante scroll */}
-          {loadingProductos && currentProductPage > 1 && (
+          {!focusedCategory && loadingProductos && currentProductPage > 1 && (
             <div className='mt-8 flex items-center justify-center py-4'>
               <div className='text-muted-foreground flex items-center gap-2'>
                 <div className='border-primary h-5 w-5 animate-spin rounded-full border-b-2'></div>
@@ -226,7 +261,7 @@ export default function Home() {
           )}
 
           {/* Indicador cuando no hay más productos */}
-          {!hasMoreProducts && allProductos.length > 0 && currentProductPage === 1 && (
+          {!focusedCategory && !hasMoreProducts && allProductos.length > 0 && currentProductPage === 1 && (
             <div className='mt-8 flex justify-center py-4'>
               <span className='text-muted-foreground text-sm'>
                 Has visto todos los productos disponibles

@@ -11,6 +11,12 @@ export type ProductoUpdate = Database['public']['Tables']['productos']['Update']
 
 
 
+export const getProductosPublicadosByCategoria = async (
+  categoriaId: string
+): Promise<Producto[]> => {
+  return getProductosByCategoria(categoriaId)
+}
+
 export const getProductosByCategoria = async (categoriaId: string): Promise<Producto[]> => {
   try {
     // 1. Primero verificar y actualizar productos vencidos

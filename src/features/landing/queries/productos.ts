@@ -33,6 +33,15 @@ export const useProductosByCategoria = (categoriaId: string) => {
   })
 }
 
+export const useProductosPublicadosByCategoria = (categoriaId: string | null) => {
+  return useQuery({
+    queryKey: ['productos-publicados', categoriaId],
+    queryFn: () =>
+      productosService.getProductosPublicadosByCategoria(categoriaId as string),
+    enabled: !!categoriaId,
+  })
+}
+
 export const useStockProductosIds = (productoId: number) => {
   return useQuery({
     queryKey: ['stock-productos-ids', productoId],

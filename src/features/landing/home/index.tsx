@@ -10,10 +10,10 @@ import {
 } from '@/components/ui/tooltip'
 import LandingHeader from '@/components/layout/landing-header'
 import ProductoCard from '../categorias/components/producto-card'
-import { useResumenCategorias } from '../queries'
+import { useCategorias, useResumenCategorias } from '../queries'
 import { useProductos } from '../queries/productos'
 import { useConfiguracionSistema } from '../queries'
-import { ResumenCategoria } from '../services'
+import { Categoria } from '../services'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -29,7 +29,10 @@ export default function Home() {
   const [allProductos, setAllProductos] = useState<any[]>([])
 
   // Categorías (sin paginación)
-  const { data: categorias, isLoading: loadingCategorias } = useResumenCategorias()
+  const { data: categoriasHorizontales, isLoading: loadingCategoriasHorizontales } =
+    useCategorias()
+  const { data: categoriasResumen, isLoading: loadingCategoriasResumen } =
+    useResumenCategorias()
 
   // Carrusel de banners
   const { data: configuracion } = useConfiguracionSistema()
@@ -40,7 +43,7 @@ export default function Home() {
   const [focusedCategory, setFocusedCategory] = useState<string | null>(null)
   const isMobile = useIsMobile()
 
-  const categoriasData = categorias || []
+  const categoriasResumenData = categoriasResumen || []
 
   // Acumular productos de todas las páginas cargadas
   useMemo(() => {
@@ -119,25 +122,25 @@ export default function Home() {
       )}
 
       {/* Scroll horizontal de categorías */}
-      {!loadingCategorias && categoriasData.length > 0 && (
+      {!loadingCategoriasHorizontales && (categoriasHorizontales?.length ?? 0) > 0 && (
         <ScrollArea className='my-4    whitespace-nowrap '>
           <div className='flex h-24 items-center gap-8 rounded-lg px-7'>
-            {categoriasData.map((categoria: ResumenCategoria) => (
+            {(categoriasHorizontales ?? []).map((categoria: Categoria) => (
               <div
                 className='w-20 cursor-pointer'
-                key={categoria.categoria_id}
-                onClick={() => setFocusedCategory(categoria.categoria_id)}
+                key={categoria.id}
+                onClick={() => setFocusedCategory(categoria.id)}
               >
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <img
-                      src={getProxiedImageUrl(categoria.categoria_imagen_url)}
-                      alt={categoria.categoria_nombre}
+                      src={getProxiedImageUrl(categoria.imagen_url)}
+                      alt={categoria.nombre}
                       className='size-16'
                     />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{categoria.categoria_nombre}</p>
+                    <p>{categoria.nombre}</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -161,10 +164,10 @@ export default function Home() {
 
       {/* Selector vertical de categorías + catálogo de productos */}
       <div className='flex justify-center gap-8 mt-4 mx-auto max-w-7xl'>
-        {!loadingCategorias && categoriasData.length > 0 && !isMobile && (
+        {!loadingCategoriasResumen && categoriasResumenData.length > 0 && !isMobile && (
           <div className='w-96 border rounded-md overflow-hidden'>
             <ul className='divide-y'>
-              {categoriasData.map((categoria) => {
+              {categoriasResumenData.map((categoria) => {
                 const totalProductos = categoria.total_productos
                 return (
                   <li key={categoria.categoria_id}>

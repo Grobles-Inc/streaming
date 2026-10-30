@@ -64,11 +64,11 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
 
         <CardContent className='space-y-2'>
           <div className='flex flex-col items-center text-center'>
+            <span className='line-clamp-2 text-xs px-2 leading-tight font-bold md:text-sm'>
+              {producto.nombre}
+            </span>
             <span className='mb-0.5 text-[10px] font-semibold tracking-wider  uppercase'>
               {producto.usuarios?.usuario.toUpperCase() || 'ML_STREAMING'}
-            </span>
-            <span className='line-clamp-2 text-xs px-2 leading-tight https://mlstreaming.com/.netlify/functions/image-proxy/productos-images/productos/97d2227f-8494-417b-9278-766502480392/1793035516777-0zqb931wi4ui.jpegfont-bold md:text-sm'>
-              {producto.nombre}
             </span>
           </div>
 
@@ -114,16 +114,21 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
         </CardContent>
 
         <CardFooter className='flex flex-col gap-1 pb-2'>
-          <Button
-            onClick={() => setOpen(true)}
-            disabled={isAgotado}
-            className='from-primary w-full bg-linear-to-b to-blue-600'
-          >
-            COMPRAR
-          </Button>
-          <span className='text-muted-foreground text-xs'>
-            Stock: {stockDisponible}
-          </span>
+          {isAgotado ? (
+            <Button variant='destructive' disabled className='w-full'>
+              AGOTADO
+            </Button>
+          ) : (
+            <Button
+              onClick={() => setOpen(true)}
+              className='from-primary w-full bg-linear-to-b to-blue-600'
+            >
+              COMPRAR
+            </Button>
+          )}
+          {!isAgotado && (
+            <span className='text-muted-foreground text-xs'>Stock: {stockDisponible}</span>
+          )}
         </CardFooter>
       </Card>
 

@@ -24,7 +24,6 @@ import { Route as AuthenticatedReferidosIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedRecargasIndexRouteImport } from './routes/_authenticated/recargas/index'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedComprasIndexRouteImport } from './routes/_authenticated/compras/index'
-import { Route as publicCategoriaNameRouteImport } from './routes/(public)/categoria/$name'
 import { Route as AuthenticatedProveedorStockIndexRouteImport } from './routes/_authenticated/proveedor/stock/index'
 import { Route as AuthenticatedProveedorProductosIndexRouteImport } from './routes/_authenticated/proveedor/productos/index'
 import { Route as AuthenticatedProveedorPedidosIndexRouteImport } from './routes/_authenticated/proveedor/pedidos/index'
@@ -122,11 +121,6 @@ const AuthenticatedComprasIndexRoute =
     path: '/compras/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const publicCategoriaNameRoute = publicCategoriaNameRouteImport.update({
-  id: '/(public)/categoria/$name',
-  path: '/categoria/$name',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedProveedorStockIndexRoute =
   AuthenticatedProveedorStockIndexRouteImport.update({
     id: '/proveedor/stock/',
@@ -240,7 +234,6 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof publicIndexRoute
-  '/categoria/$name': typeof publicCategoriaNameRoute
   '/compras': typeof AuthenticatedComprasIndexRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/recargas': typeof AuthenticatedRecargasIndexRoute
@@ -274,7 +267,6 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof publicIndexRoute
-  '/categoria/$name': typeof publicCategoriaNameRoute
   '/compras': typeof AuthenticatedComprasIndexRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/recargas': typeof AuthenticatedRecargasIndexRoute
@@ -310,7 +302,6 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/(public)/': typeof publicIndexRoute
-  '/(public)/categoria/$name': typeof publicCategoriaNameRoute
   '/_authenticated/compras/': typeof AuthenticatedComprasIndexRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/recargas/': typeof AuthenticatedRecargasIndexRoute
@@ -346,7 +337,6 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
-    | '/categoria/$name'
     | '/compras'
     | '/dashboard'
     | '/recargas'
@@ -380,7 +370,6 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
-    | '/categoria/$name'
     | '/compras'
     | '/dashboard'
     | '/recargas'
@@ -415,7 +404,6 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/(public)/'
-    | '/(public)/categoria/$name'
     | '/_authenticated/compras/'
     | '/_authenticated/dashboard/'
     | '/_authenticated/recargas/'
@@ -451,7 +439,6 @@ export interface RootRouteChildren {
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
   publicIndexRoute: typeof publicIndexRoute
-  publicCategoriaNameRoute: typeof publicCategoriaNameRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -560,13 +547,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/compras'
       preLoaderRoute: typeof AuthenticatedComprasIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/(public)/categoria/$name': {
-      id: '/(public)/categoria/$name'
-      path: '/categoria/$name'
-      fullPath: '/categoria/$name'
-      preLoaderRoute: typeof publicCategoriaNameRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/proveedor/stock/': {
       id: '/_authenticated/proveedor/stock/'
@@ -761,7 +741,6 @@ const rootRouteChildren: RootRouteChildren = {
   errors500Route: errors500Route,
   errors503Route: errors503Route,
   publicIndexRoute: publicIndexRoute,
-  publicCategoriaNameRoute: publicCategoriaNameRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

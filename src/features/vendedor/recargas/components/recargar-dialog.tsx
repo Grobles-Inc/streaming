@@ -2,14 +2,6 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import {
-  Stepper,
-  StepperIndicator,
-  StepperItem,
-  StepperSeparator,
-  StepperTitle,
-  StepperTrigger
-} from '@/components/ui/stepper'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { RecargaMessage } from '@/lib/whatsapp'
 import { asBinanceInfo, asYapeInfo, DEFAULT_BINANCE_INFO, DEFAULT_YAPE_INFO } from '@/lib/recarga-info'
@@ -20,25 +12,6 @@ import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { useConfiguracionSistema, useCreateRecarga } from '../queries'
 import YapeQRImage from '@/assets/YapeQR.jpg'
-
-const steps = [
-  {
-    step: 1,
-    title: "Solicita tu recarga ingresando el monto.",
-    checked: true,
-  },
-  {
-    step: 2,
-    title: "Realiza el abono por nuestros canales de pago.",
-    checked: true,
-  },
-  {
-    step: 3,
-    title: "Tu billetera se actualizará una vez validada la transacción.",
-    checked: true,
-  },
-]
-
 
 export function RecargarDialog() {
   const isMobile = useIsMobile()
@@ -100,7 +73,7 @@ export function RecargarDialog() {
               Recargar Saldo
             </DialogTitle>
             <DialogDescription className='hidden md:block'>
-              Ingresa el monto a recargar y sigue los pasos.
+              Recarga tu saldo con los diferentes medios de pago
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -144,28 +117,7 @@ export function RecargarDialog() {
               />
 
 
-              <Stepper orientation="vertical" >
-                {steps.map(({ step, title, checked }) => (
-                  <StepperItem
-                    key={step}
-                    step={step}
-                    completed={checked}
-                    className="relative items-start not-last:flex-1"
-                  >
-                    <StepperTrigger className="items-start rounded pb-3 last:pb-0">
-                      <StepperIndicator />
-                      <div className="mt-0.5 space-y-0.5 px-2 text-left">
-                        <StepperTitle className='text-xs md:text-base'>{title}</StepperTitle>
-                      </div>
-                    </StepperTrigger>
-                    {step < steps.length && (
-                      <StepperSeparator className="absolute inset-y-0 top-[calc(1.5rem+0.125rem)] left-3 -order-1 m-0 -translate-x-1/2 group-data-[orientation=horizontal]/stepper:w-[calc(100%-1.5rem-0.25rem)] group-data-[orientation=horizontal]/stepper:flex-none group-data-[orientation=vertical]/stepper:h-[calc(100%-1.5rem-0.25rem)]" />
-                    )}
-                  </StepperItem>
-                ))}
-              </Stepper>
-
-              <div className='flex flex-wrap items-center gap-2'>
+<div className='flex flex-wrap items-center gap-2'>
                 <Button type="button" variant="outline" onClick={() => setMethodModal('yape')}>
                   Yape
                 </Button>

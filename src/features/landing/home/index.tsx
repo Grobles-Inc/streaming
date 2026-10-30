@@ -10,10 +10,10 @@ import {
 } from '@/components/ui/tooltip'
 import LandingHeader from '@/components/layout/landing-header'
 import ProductoCard from '../categorias/components/producto-card'
-import { useCategorias } from '../queries'
+import { useResumenCategorias } from '../queries'
 import { useProductos } from '../queries/productos'
 import { useConfiguracionSistema } from '../queries'
-import { Categoria } from '../services'
+import { ResumenCategoria } from '../services'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -29,7 +29,7 @@ export default function Home() {
   const [allProductos, setAllProductos] = useState<any[]>([])
 
   // Categorías (sin paginación)
-  const { data: categorias, isLoading: loadingCategorias } = useCategorias()
+  const { data: categorias, isLoading: loadingCategorias } = useResumenCategorias()
 
   // Carrusel de banners
   const { data: configuracion } = useConfiguracionSistema()
@@ -52,18 +52,6 @@ export default function Home() {
       }
     }
   }, [(productos as any)?.data, currentProductPage])
-
-  const productosCountByCategory = useMemo(() => {
-    if (!allProductos || !Array.isArray(allProductos)) return {}
-
-    return allProductos.reduce((acc: Record<string, number>, producto: any) => {
-      const catId = producto.categoria_id
-      if (catId) {
-        acc[catId] = (acc[catId] || 0) + 1
-      }
-      return acc
-    }, {} as Record<string, number>)
-  }, [allProductos])
 
   // Productos filtrados por categoría y búsqueda
   const productosFiltrados = useMemo(() => {
@@ -109,7 +97,7 @@ export default function Home() {
 
       {/* Carrusel de banners con puntos de control */}
       {bannerImages.length > 0 && (
-        <div className='mb-4 w-full overflow-hidden rounded-md border bg-white relative'>
+        <div className='mb-4 w-full overflow-hidden relative'>
           <img
             src={getProxiedImageUrl(bannerImages[bannerIndex % bannerImages.length])}
             alt='Banner'
@@ -132,24 +120,24 @@ export default function Home() {
 
       {/* Scroll horizontal de categorías */}
       {!loadingCategorias && categoriasData.length > 0 && (
-        <ScrollArea className='my-4   bg-white whitespace-nowrap '>
+        <ScrollArea className='my-4    whitespace-nowrap '>
           <div className='flex h-24 items-center gap-8 rounded-lg px-7'>
-            {categoriasData.map((categoria: Categoria) => (
+            {categoriasData.map((categoria: ResumenCategoria) => (
               <div
                 className='w-20 cursor-pointer'
-                key={categoria.id}
-                onClick={() => setFocusedCategory(categoria.id)}
+                key={categoria.categoria_id}
+                onClick={() => setFocusedCategory(categoria.categoria_id)}
               >
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <img
-                      src={getProxiedImageUrl(categoria.imagen_url)}
-                      alt={categoria.nombre}
+                      src={getProxiedImageUrl(categoria.categoria_imagen_url)}
+                      alt={categoria.categoria_nombre}
                       className='size-16'
                     />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{categoria.nombre}</p>
+                    <p>{categoria.categoria_nombre}</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -177,16 +165,16 @@ export default function Home() {
           <div className='w-96 border rounded-md overflow-hidden'>
             <ul className='divide-y'>
               {categoriasData.map((categoria) => {
-                const totalProductos = productosCountByCategory[categoria.id] || 0
+                const totalProductos = categoria.total_productos
                 return (
-                  <li key={categoria.id}>
+                  <li key={categoria.categoria_id}>
                     <Button
                       size='lg'
-                      variant={focusedCategory === categoria.id ? 'secondary' : 'ghost'}
+                      variant={focusedCategory === categoria.categoria_id ? 'secondary' : 'ghost'}
                       className='flex justify-start items-center gap-2 w-full rounded-none'
-                      onClick={() => setFocusedCategory(categoria.id)}
+                      onClick={() => setFocusedCategory(categoria.categoria_id)}
                     >
-                      <span>{categoria.nombre}</span>
+                      <span>{categoria.categoria_nombre}</span>
                       <span className='text-sm text-zinc-500'>({totalProductos})</span>
                     </Button>
                   </li>

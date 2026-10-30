@@ -20,6 +20,21 @@ export type Producto = Database['public']['Tables']['productos']['Row'] & {
 }
 export type ConfiguracionRow = Database['public']['Tables']['configuracion']['Row']
 
+export type ResumenCategoria =
+  Database['public']['Functions']['obtener_resumen_categorias']['Returns'][number]
+
+// Get resumen de categorias (RPC)
+export const getResumenCategorias = async (): Promise<ResumenCategoria[]> => {
+  const { data, error } = await supabase.rpc('obtener_resumen_categorias')
+
+  if (error) {
+    console.error('Error fetching resumen categorias:', error)
+    return []
+  }
+
+  return (data ?? []) as ResumenCategoria[]
+}
+
 // Create a new categoria
 export const createCategoria = async (categoria: CategoriaInsert): Promise<Categoria | null> => {
   const { data, error } = await supabase

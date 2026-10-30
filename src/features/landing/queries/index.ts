@@ -12,6 +12,14 @@ export const useCategorias = () => {
   })
 }
 
+export const useResumenCategorias = () => {
+  return useQuery({
+    queryKey: ['resumen-categorias'],
+    queryFn: () => categoriasService.getResumenCategorias(),
+    staleTime: 1000 * 60 * 60 * 24,
+  })
+}
+
 
 
 export const useCategoriaById = (id: string) => {

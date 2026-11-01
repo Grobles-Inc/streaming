@@ -2,7 +2,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import { DataTableColumnHeader } from './data-table-column-header'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useConfiguracionSistema } from '@/features/proveedor/productos/queries'
+import { useConversionRate } from '@/hooks/use-conversion'
 
 // Declaración de extensión removida para evitar conflictos de tipos
 
@@ -40,8 +40,7 @@ type TransaccionCompleta = {
 
 // Componente para mostrar el monto con conversión
 const MontoCell = ({ transaccion }: { transaccion: TransaccionCompleta }) => {
-  const { data: configuracion } = useConfiguracionSistema()
-  const tasaConversion = configuracion?.conversion || 3.7
+  const { conversion: tasaConversion } = useConversionRate()
   
   const montoDolares = transaccion.monto // El monto ya está en dólares
   const valorEnSoles = (montoDolares * tasaConversion).toFixed(2)

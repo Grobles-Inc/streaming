@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useConfiguracionSistema } from '../../queries'
+import { DEFAULT_CONVERSION } from '@/lib/conversion'
 import {
   useCreateCompra,
   useUpdateBilleteraProveedorSaldo,
@@ -104,7 +105,7 @@ export default function ComprarProductoModal({
 
   if (!configuracion || !producto) return null
 
-  const tasaDeConversion = configuracion?.conversion || 1
+  const tasaDeConversion = configuracion?.conversion ?? DEFAULT_CONVERSION
   const monto = billetera?.saldo
   const precio_producto = user
     ? producto.precio_vendedor

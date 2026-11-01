@@ -33,7 +33,7 @@ export default function LandingHeader() {
   return (
     <nav className='bg-base-100 flex flex-col gap-4 px-4 py-4 shadow md:flex-row md:items-center md:justify-between md:px-6'>
       <div className='flex w-full flex-col items-center gap-2 md:flex-row md:items-center md:justify-between md:gap-0'>
-        <div className='flex items-center gap-2 md:w-auto'>
+        <div className='flex w-full items-center justify-between gap-2 md:w-auto md:justify-start'>
           <Link to='/'>
             <img
               src={Logo}
@@ -42,15 +42,40 @@ export default function LandingHeader() {
             />
           </Link>
 
-          {!user && (
-            <Button
-              variant='outline'
-              size='icon'
-              onClick={() => navigate({ to: '/sign-in' })}
-            >
-              <IconUser />
-            </Button>
-          )}
+          <div className='flex items-center gap-2'>
+            {!user && (
+              <Button
+                size='icon'
+                className='md:hidden'
+                onClick={() => navigate({ to: '/sign-in' })}
+                aria-label='Iniciar Sesión'
+              >
+                <IconUser />
+              </Button>
+            )}
+
+            {user?.rol === 'admin' && (
+              <Button
+                size='icon'
+                className='md:hidden'
+                onClick={() => navigate({ to: '/admin/recargas' })}
+                aria-label='Admin'
+              >
+                <IconLayoutDashboard />
+              </Button>
+            )}
+
+            {user?.rol === 'provider' && (
+              <Button
+                size='icon'
+                className='md:hidden'
+                onClick={() => navigate({ to: '/proveedor/productos' })}
+                aria-label='Admin'
+              >
+                <IconPackage />
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className='hidden items-center gap-4 md:flex'>

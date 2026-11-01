@@ -21,7 +21,7 @@ import {
 } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/authStore'
-import { supabase } from '@/lib/supabase'
+import { DEFAULT_CONVERSION, getLatestConversion } from '@/lib/conversion'
 import { ComisionesService } from '../services'
 import { ComisionesStats } from './comisiones-stats'
 import { ComisionesFiltros } from './comisiones-filtros'
@@ -41,7 +41,7 @@ export function ComisionesContent() {
   const [comisionesPublicacion, setComisionesPublicacion] = useState<ComisionPublicacion[]>([])
   const [comisionesRetiro, setComisionesRetiro] = useState<ComisionRetiro[]>([])
   const [comisionesGenerales, setComisionesGenerales] = useState<ComisionGeneral[]>([])
-  const [conversion, setConversion] = useState<number>(3.75) // Valor por defecto
+  const [conversion, setConversion] = useState<number>(DEFAULT_CONVERSION) // Valor por defecto
   const [estadisticas, setEstadisticas] = useState<EstadisticasComisiones>({
     totalComisionesPublicacion: 0,
     totalComisionesRetiro: 0,
@@ -67,16 +67,7 @@ export function ComisionesContent() {
       setLoading(true)
       
       // Obtener tasa de conversión de la configuración
-      const { data: configData } = await supabase
-        .from('configuracion')
-        .select('conversion')
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .single()
-
-      if (configData?.conversion) {
-        setConversion(configData.conversion)
-      }
+      setConversion(await getLatestConversion())
       
       const [publicacion, retiro, general, stats] = await Promise.all([
         ComisionesService.getComisionesPublicacion(user.id, filtros),

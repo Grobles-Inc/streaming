@@ -8,6 +8,7 @@ import { useState, useEffect, type ChangeEvent } from 'react'
 import { toast } from 'sonner'
 import { useConfiguracion } from './hooks/use-configuracion'
 import { SignupSettingsCard } from './components/signup-settings-card'
+import { DEFAULT_CONVERSION } from '@/lib/conversion'
 import { DEFAULT_BINANCE_INFO, DEFAULT_YAPE_INFO } from '@/lib/recarga-info'
 import { SupabaseStorageService } from '@/lib/supabase'
 import YapeQRImage from '@/assets/YapeQR.jpg'
@@ -25,7 +26,7 @@ export default function ConfiguracionSistemaPage() {
   const [mantenimiento, setMantenimiento] = useState(false)
   const [emailSoporte, setEmailSoporte] = useState('')
   const [comision, setComision] = useState(10)
-  const [conversion, setConversion] = useState(1)
+  const [conversion, setConversion] = useState(DEFAULT_CONVERSION)
   const [comisionPublicacion, setComisionPublicacion] = useState(1.35)
 
   // Estado para información de recarga (Yape / Binance)

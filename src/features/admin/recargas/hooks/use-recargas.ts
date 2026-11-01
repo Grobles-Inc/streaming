@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/stores/authStore'
 import { RecargasService } from '../services/recargas.service'
 import { mapSupabaseRecargaToComponent } from '../data/schema'
+import { getLatestConversion } from '@/lib/conversion'
 import type { 
   MappedRecarga, 
   EstadoRecarga, 
@@ -38,7 +39,10 @@ export function useRecargas(filtrosIniciales?: FiltroRecarga) {
       setLoading(true)
       const filtrosAUsar = nuevosFiltros || filtros
       const supabaseRecargas = await RecargasService.getRecargas(filtrosAUsar)
-      const mappedRecargas = supabaseRecargas.map(mapSupabaseRecargaToComponent)
+      const tasaConversion = await getLatestConversion()
+      const mappedRecargas = supabaseRecargas.map((recarga) =>
+        mapSupabaseRecargaToComponent(recarga, tasaConversion)
+      )
       setRecargas(mappedRecargas)
       setError(null)
     } catch (err) {
@@ -251,7 +255,8 @@ export function useRecargas(filtrosIniciales?: FiltroRecarga) {
     try {
       const recarga = await RecargasService.getRecargaById(id)
       if (recarga) {
-        return mapSupabaseRecargaToComponent(recarga)
+        const tasaConversion = await getLatestConversion()
+        return mapSupabaseRecargaToComponent(recarga, tasaConversion)
       }
       return null
     } catch (err) {

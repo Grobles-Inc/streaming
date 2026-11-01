@@ -23,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { retirarFondosSchema, type RetirarFondos } from '../data/schema'
 import { useAuth } from '@/stores/authStore'
 import { useConfiguracionSistema } from '@/features/proveedor/productos/queries'
+import { useConversionRate } from '@/hooks/use-conversion'
 import { useCreateRetiro } from '../queries'
 import { Loader2, AlertTriangle } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -48,7 +49,7 @@ export function RetirarFondosModal({
   const isRealMobile = useIsRealMobile()
 
   // Obtener tasa de conversión y comisión de la configuración del sistema
-  const tasaConversion = configuracion?.conversion || 3.7
+  const { conversion: tasaConversion } = useConversionRate()
   const comisionPorcentaje = configuracion?.comision || 10 // Comisión del administrador en %
 
   const form = useForm<RetirarFondos>({

@@ -53,8 +53,13 @@ export function DataTable<TData, TValue>({
   onGlobalFilterChange,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({})
+  // `producto_id` solo existe como columna de filtro (la consume el faceted
+  // filter); nunca se pinta. Debe vivir en el estado controlado: el
+  // `initialState.columnVisibility` queda pisado por `state.columnVisibility`.
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
+    React.useState<VisibilityState>({
+      producto_id: false,
+    })
 
   const table = useReactTable({
     data,
@@ -70,9 +75,6 @@ export function DataTable<TData, TValue>({
     initialState: {
       pagination: {
         pageSize: 50,
-      },
-      columnVisibility: {
-        producto_id: false,
       },
     },
     // Búsqueda, filtrado, orden y paginación se resuelven en el servidor vía
@@ -137,7 +139,10 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow className='hover:bg-transparent'>
-                <TableCell colSpan={columns.length} className='p-0'>
+                <TableCell
+                  colSpan={table.getVisibleLeafColumns().length}
+                  className='p-0'
+                >
                   <div className='flex flex-col items-center gap-6 py-10'>
                     {loading ? (
                       <CustomEmpty

@@ -41,17 +41,18 @@ export type MappedRecarga = z.infer<typeof mappedRecargaSchema>
 export type FiltroRecarga = z.infer<typeof filtroRecargaSchema>
 
 // Función para mapear recarga de Supabase a componente
-export function mapSupabaseRecargaToComponent(recarga: RecargaWithUser): MappedRecarga {
+export function mapSupabaseRecargaToComponent(
+  recarga: RecargaWithUser,
+  tasaConversion: number
+): MappedRecarga {
   const nombreCompleto = recarga.usuario?.usuario || 'Usuario no encontrado'
-  
+
   const montoFormateado = new Intl.NumberFormat('es-PE', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 2,
   }).format(recarga.monto)
 
-  // Fallback a la tasa por defecto del sistema cuando no se busca configuración
-  const tasaConversion = 3.7
   const montoSoles = (recarga.monto || 0) * tasaConversion
   const montoSolesFormateado = new Intl.NumberFormat('es-PE', {
     style: 'currency',

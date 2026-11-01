@@ -130,7 +130,8 @@ export const getConfiguracionActual = async (): Promise<ConfiguracionRow | null>
   const { data, error } = await supabase
     .from('configuracion')
     .select('*')
-    .order('updated_at', { ascending: false })
+    .order('updated_at', { ascending: false, nullsFirst: false })
+    .order('id', { ascending: false })
     .limit(1)
     .single()
 

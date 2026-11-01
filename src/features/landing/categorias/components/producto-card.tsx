@@ -4,6 +4,7 @@ import { useImageProxy } from '@/hooks/use-image-proxy'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { useConfiguracionSistema } from '../../queries'
+import { DEFAULT_CONVERSION } from '@/lib/conversion'
 import { Producto } from '../../services'
 import '../../styles/card.css'
 import ComprarProductoModal from './comprar-producto-modal'
@@ -21,7 +22,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
   const precio_producto = user
     ? producto.precio_vendedor
     : producto.precio_publico
-  const conversionRate = configuracion?.conversion ?? 1
+  const conversionRate = configuracion?.conversion ?? DEFAULT_CONVERSION
   const precioSoles = precio_producto * conversionRate
 
   return (

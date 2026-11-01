@@ -17,7 +17,6 @@ import {
   useToggleImapEnabled,
   useUpdatePedidoStatusVencido,
 } from '../queries'
-import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 
 // Función para abrir WhatsApp
@@ -155,22 +154,18 @@ export const columns: ColumnDef<Pedido>[] = [  {
   },
   {
     accessorKey: 'id',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='ID' />
-    ),
+    header: 'ID',
   },
   {
+    // Columna solo de filtro: alimenta el faceted filter de producto y el
+    // `p_producto_id` del RPC. No se pinta (ver `columnVisibility` en DataTable).
     accessorKey: 'producto_id',
-    header: 'Producto ID',
     enableSorting: false,
     enableHiding: false,
-    cell: () => null,
   },
   {
     accessorKey: 'producto_nombre',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Producto' />
-    ),
+    header: 'Producto',
     cell: ({ row }) => (
       <span className='truncate'>
         {row.original.producto_nombre || 'Sin producto'}
@@ -180,9 +175,7 @@ export const columns: ColumnDef<Pedido>[] = [  {
   },
   {
     accessorKey: 'estado_calculado',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Estado' />
-    ),
+    header: 'Estado',
     cell: ({ row }) => {
       const estadoCalculado = row.original.estado_calculado as PedidoEstado
       const badgeColor = estadosMap.get(estadoCalculado)
@@ -196,9 +189,7 @@ export const columns: ColumnDef<Pedido>[] = [  {
   },
   {
     accessorKey: 'vendedor_usuario',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Vendedor' />
-    ),
+    header: 'Vendedor',
     cell: ({ row }) => (
       <span className='truncate'>
         {row.original.vendedor_usuario || 'Sin Vendedor'}
@@ -207,9 +198,7 @@ export const columns: ColumnDef<Pedido>[] = [  {
   },
   {
     accessorKey: 'vendedor_telefono',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Teléfono' />
-    ),
+    header: 'Teléfono',
     cell: ({ row }) => {
       const telefono = row.original.vendedor_telefono
 
@@ -234,18 +223,14 @@ export const columns: ColumnDef<Pedido>[] = [  {
   },
   {
     accessorKey: 'precio',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Precio' />
-    ),
+    header: 'Precio',
     cell: ({ row }) => (
       <span>$ {row.original.precio.toFixed(2)}</span>
     ),
   },
   {
     accessorKey: 'producto_precio_renovacion',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='P. Renovación' />
-    ),
+    header: 'P. Renovación',
     cell: ({ row }) => {
       const precioRenovacion = row.original.producto_precio_renovacion
       return (
@@ -259,9 +244,7 @@ export const columns: ColumnDef<Pedido>[] = [  {
   },
   {
     accessorKey: 'cuenta_email',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Email Cuenta' />
-    ),
+    header: 'Email Cuenta',
     cell: ({ row }) => {
       const email = row.original.cuenta_email
       return (
@@ -342,9 +325,7 @@ export const columns: ColumnDef<Pedido>[] = [  {
   },
   {
     accessorKey: 'fecha_inicio',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Inicio' />
-    ),
+    header: 'Inicio',
     cell: ({ row }) => {
       const fechaInicio = row.original.fecha_inicio
 
@@ -373,9 +354,7 @@ export const columns: ColumnDef<Pedido>[] = [  {
   },
   {
     accessorKey: 'fecha_expiracion',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Fin' />
-    ),
+    header: 'Fin',
     cell: ({ row }) => {
       const fechaExpiracion = row.original.fecha_expiracion
 
@@ -394,9 +373,7 @@ export const columns: ColumnDef<Pedido>[] = [  {
   },
   {
     accessorKey: 'dias_restantes',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Días' />
-    ),
+    header: 'Días',
     cell: ({ row }) => (
       <DiasRestantesCell
         diasRestantes={row.original.dias_restantes}
@@ -406,9 +383,7 @@ export const columns: ColumnDef<Pedido>[] = [  {
   },
   {
     id: 'imap_habilitado',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='IMAP' />
-    ),
+    header: 'IMAP',
     enableSorting: false,
     cell: ({ row }) => <ImapToggleCell row={row.original} />,
   },

@@ -2,6 +2,7 @@ import { TurnstileWidget } from '@/features/security/components/turnstile-widget
 import { verifyGate } from '@/features/security/api/verify-gate'
 import { PasswordInput } from '@/components/password-input'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Form,
   FormControl,
@@ -22,6 +23,38 @@ import { z } from 'zod'
 
 type UserAuthFormProps = HTMLAttributes<HTMLFormElement>
 
+const REMEMBERED_CREDENTIALS_KEY = 'rememberedCredentials'
+
+type RememberedCredentials = {
+  usuario: string
+  password: string
+}
+
+function readRememberedCredentials(): RememberedCredentials | null {
+  try {
+    const raw = localStorage.getItem(REMEMBERED_CREDENTIALS_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<RememberedCredentials>
+    if (
+      typeof parsed.usuario !== 'string' ||
+      typeof parsed.password !== 'string'
+    ) {
+      return null
+    }
+    return { usuario: parsed.usuario, password: parsed.password }
+  } catch {
+    return null
+  }
+}
+
+function saveRememberedCredentials(credentials: RememberedCredentials) {
+  localStorage.setItem(REMEMBERED_CREDENTIALS_KEY, JSON.stringify(credentials))
+}
+
+function clearRememberedCredentials() {
+  localStorage.removeItem(REMEMBERED_CREDENTIALS_KEY)
+}
+
 const formSchema = z.object({
   usuario: z
     .string()
@@ -34,20 +67,23 @@ const formSchema = z.object({
     .min(7, {
       message: 'La contraseña debe tener al menos 7 caracteres',
     }),
+  remember: z.boolean(),
 })
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
   const [captchaResetKey, setCaptchaResetKey] = useState(0)
+  const [rememberedCredentials] = useState(readRememberedCredentials)
   const { signIn } = useAuthStore()
   const navigate = useNavigate()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      usuario: '',
-      password: '',
+      usuario: rememberedCredentials?.usuario ?? '',
+      password: rememberedCredentials?.password ?? '',
+      remember: !!rememberedCredentials,
     },
   })
 
@@ -70,6 +106,14 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     if (error) {
       toast.error(error.message)
     } else {
+      if (data.remember) {
+        saveRememberedCredentials({
+          usuario: data.usuario,
+          password: data.password,
+        })
+      } else {
+        clearRememberedCredentials()
+      }
       navigate({ to: '/' })
     }
     setTimeout(() => {
@@ -108,6 +152,21 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               </FormControl>
               <FormMessage />
 
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name='remember'
+          render={({ field }) => (
+            <FormItem className='flex flex-row items-center gap-2 space-y-0'>
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormLabel className='font-normal'>Recordar contraseña</FormLabel>
             </FormItem>
           )}
         />

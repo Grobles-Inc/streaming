@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { getLatestConversion } from '@/lib/conversion'
 import type { 
   ComisionPublicacion,
   ComisionRetiro,
@@ -253,19 +254,7 @@ export class MiBilleteraService {
 
   // Obtener tasa de conversión actual
   static async getConversion(): Promise<number> {
-    try {
-      const { data: configData } = await supabase
-        .from('configuracion')
-        .select('conversion')
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .single()
-
-      return configData?.conversion || 3.75
-    } catch (error) {
-      console.error('Error al obtener tasa de conversión:', error)
-      return 3.75 // Valor por defecto
-    }
+    return getLatestConversion()
   }
 
   // Calcular estadísticas de comisiones

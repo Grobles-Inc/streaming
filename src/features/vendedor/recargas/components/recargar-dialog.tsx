@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
+import { Form } from '@/components/ui/form'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { RecargaMessage } from '@/lib/whatsapp'
 import { asBinanceInfo, asYapeInfo, DEFAULT_BINANCE_INFO, DEFAULT_YAPE_INFO } from '@/lib/recarga-info'
@@ -11,6 +10,8 @@ import { Loader2 } from 'lucide-react'
 import * as React from 'react'
 import { useForm } from 'react-hook-form'
 import { useConfiguracionSistema, useCreateRecarga } from '../queries'
+import { convertMonto, type RecargaFormValues } from '../data/schema'
+import { MontoField } from './monto-field'
 import YapeQRImage from '@/assets/YapeQR.jpg'
 
 export function RecargarDialog() {
@@ -20,8 +21,12 @@ export function RecargarDialog() {
   const [methodModal, setMethodModal] = React.useState<'yape' | 'binance' | null>(null)
   const { mutate: crearRecarga, isPending } = useCreateRecarga()
   const { data: configuracion } = useConfiguracionSistema()
-  const form = useForm<{ amount: number }>({
-    defaultValues: undefined,
+  const conversion = configuracion?.conversion
+  const tasa = conversion && conversion > 0 ? conversion : null
+  const form = useForm<RecargaFormValues>({
+    defaultValues: {
+      divisa: 'PEN',
+    },
   })
 
   const yapeInfo = configuracion ? asYapeInfo(configuracion.yape_info) : DEFAULT_YAPE_INFO
@@ -33,22 +38,27 @@ export function RecargarDialog() {
     return null
   }
 
-  async function onSubmit(data: { amount: number }) {
+  async function onSubmit(data: RecargaFormValues) {
+    if (tasa === null) return
+
+    const amount = Number(data.amount) || 0
+    const montoUsd = convertMonto(amount, data.divisa, 'USD', tasa)
+    const montoPen = convertMonto(amount, data.divisa, 'PEN', tasa)
+
     try {
-      const amountDollars = (data.amount / (configuracion?.conversion ?? 1)).toFixed(2)
       setDialogOpen(false)
       await crearRecarga({
-        monto: Number(amountDollars),
+        monto: montoUsd,
         usuario_id: user?.id as string,
       })
-      form.reset()
+      form.reset({ divisa: 'PEN' })
       setDialogOpen(false)
       const audio = new Audio('/src/assets/sound/yape.mp3')
       audio.play()
       setTimeout(() => {
         RecargaMessage({
           usuario: user?.usuario || '',
-          monto: Number(data.amount),
+          monto: montoPen,
           id_cliente: user?.id || '',
         }, commPhone, isMobile ? 'mobile' : 'web')
       }, 3000)
@@ -78,43 +88,15 @@ export function RecargarDialog() {
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="amount"
-                rules={{
-                  required: 'El monto es requerido',
-                  min: { value: 1, message: 'Debe ser mayor a 0' },
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <>
-                        <div className="relative">
-                          <Input
-                            type="number"
-                            placeholder="0.00"
-                            className="pr-12"
-                            {...field}
-                          />
-                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-gray-500">
-                            PEN
-                          </div>
-
-                        </div>
-                        <div className='flex justify-between items-center'>
-
-                          <span className='text-sm text-gray-500'>TC: {configuracion?.conversion} -  {((field.value || 0) / (configuracion?.conversion ?? 1)).toFixed(2)} USD</span>
-                          <a href={`https://wa.me/${commPhone}`} target="_blank" className='flex items-center gap-1 '>
-                            <img src="https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000" className='size-5' />
-                            <span className='text-green-500 underline text-xs'>{commPhone}</span>
-                          </a>
-                        </div>
-                      </>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className='space-y-2'>
+                <MontoField form={form} tasa={tasa} />
+                <div className='flex justify-end'>
+                  <a href={`https://wa.me/${commPhone}`} target="_blank" className='flex items-center gap-1 '>
+                    <img src="https://img.icons8.com/?size=200&id=BkugfgmBwtEI&format=png&color=000000" className='size-5' />
+                    <span className='text-green-500 underline text-xs'>{commPhone}</span>
+                  </a>
+                </div>
+              </div>
 
 
 <div className='flex flex-wrap items-center gap-2'>
@@ -130,7 +112,7 @@ export function RecargarDialog() {
                 <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isPending}>
+                <Button type="submit" disabled={isPending || tasa === null}>
                   {isPending ? <Loader2 className='size-4 animate-spin' /> : 'Solicitar'}
                 </Button>
               </DialogFooter>

@@ -1,3 +1,4 @@
+import { DEFAULT_CONVERSION } from '@/lib/conversion'
 import { supabase } from '@/lib/supabase'
 import {
   asBinanceInfo,
@@ -16,7 +17,10 @@ export class ConfiguracionService {
     const { data, error } = await supabase
       .from('configuracion')
       .select('*')
-      .order('updated_at', { ascending: false })
+      // Mismo criterio que getLatestConversion: una fila sin updated_at no
+      // debe ganar como "la más reciente".
+      .order('updated_at', { ascending: false, nullsFirst: false })
+      .order('id', { ascending: false })
       .limit(1)
       .single()
 
@@ -128,7 +132,7 @@ export class ConfiguracionService {
       mantenimiento: row.mantenimiento ?? false,
       email_soporte: row.email_soporte,
       comision: row.comision ?? 0,
-      conversion: row.conversion ?? 1,
+      conversion: row.conversion ?? DEFAULT_CONVERSION,
       comision_publicacion_producto: row.comision_publicacion_producto,
       banner_images_urls: Array.isArray(row.banner_images_urls)
         ? (row.banner_images_urls as string[])
@@ -149,7 +153,7 @@ export class ConfiguracionService {
       mantenimiento: false,
       email_soporte: 'soporte@streaming.com',
       comision: 10,
-      conversion: 1,
+      conversion: DEFAULT_CONVERSION,
       comision_publicacion_producto: 1.35,
       banner_images_urls: null,
       yape_info: null,

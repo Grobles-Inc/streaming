@@ -16,6 +16,7 @@ import {
   IconCalendar
 } from '@tabler/icons-react'
 import type { ComisionPublicacion } from '../data/types'
+import { useConversionRate } from '@/hooks/use-conversion'
 
 interface ComisionesPublicacionTableActionsProps {
   comision: ComisionPublicacion
@@ -41,6 +42,22 @@ function ComisionesPublicacionTableActions({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  )
+}
+
+function MontoComisionCell({ monto }: { monto: number }) {
+  const { conversion } = useConversionRate()
+  const montoEnSoles = monto * conversion
+
+  return (
+    <div className="text-right">
+      <p className="font-semibold text-green-600 dark:text-green-400">
+        ${monto.toFixed(2)}
+      </p>
+      <p className="text-xs text-muted-foreground">
+        S/. {montoEnSoles.toFixed(2)}
+      </p>
+    </div>
   )
 }
 
@@ -119,23 +136,9 @@ export const getComisionesPublicacionColumns = (
   {
     accessorKey: 'monto_comision',
     header: 'Comisión (USD)',
-    cell: ({ row }) => {
-      const monto = row.original.monto_comision
-      // Usar una tasa de cambio fija por ahora (esto debería venir de configuración)
-      const tasaCambio = 3.75
-      const montoEnSoles = monto * tasaCambio
-      
-      return (
-        <div className="text-right">
-          <p className="font-semibold text-green-600 dark:text-green-400">
-            ${monto.toFixed(2)}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            S/. {montoEnSoles.toFixed(2)}
-          </p>
-        </div>
-      )
-    },
+    cell: ({ row }) => (
+      <MontoComisionCell monto={row.original.monto_comision} />
+    ),
   },
   {
     accessorKey: 'fecha_publicacion',

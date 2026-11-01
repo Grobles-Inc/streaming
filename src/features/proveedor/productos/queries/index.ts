@@ -272,7 +272,12 @@ export const useRenovarProducto = () => {
         queryClient.invalidateQueries({ queryKey: ['productos'] })
         queryClient.invalidateQueries({ queryKey: ['billeteras'] })
         queryClient.invalidateQueries({ queryKey: ['verificar-saldo'] })
-        toast.success('Producto renovado exitosamente por 30 días más')
+        const diasRenovados = result.producto?.tiempo_uso
+        toast.success(
+          diasRenovados
+            ? `Producto renovado exitosamente por ${diasRenovados} día(s)`
+            : 'Producto renovado exitosamente'
+        )
       } else {
         toast.error(result.error || 'Error al renovar producto')
       }

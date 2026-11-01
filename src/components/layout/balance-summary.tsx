@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { supabase } from '@/lib/supabase'
+import { getLatestConversion } from '@/lib/conversion'
 import { useCallback, useEffect, useState } from 'react'
 
 type BalanceData = {
@@ -72,18 +73,8 @@ export function BalanceSummary() {
     try {
       setBalanceData(prev => ({ ...prev, loading: true }))
 
-      // Obtener el último registro de configuración para la conversión (dólares a soles)
-      const { data: configList, error: configError } = await supabase
-        .from('configuracion')
-        .select('conversion')
-        .order('updated_at', { ascending: false })
-        .limit(1)
-
-      if (configError) {
-        console.error('❌ Error obteniendo configuración:', configError)
-      }
-
-      const conversionRate = configList?.[0]?.conversion || 1
+      // Tasa vigente de configuración (dólares a soles)
+      const conversionRate = await getLatestConversion()
 
       const [{ total: totalRecargasUSD, count: recargasCount }, { total: totalRetirosUSD, count: retirosCount }] =
         await Promise.all([

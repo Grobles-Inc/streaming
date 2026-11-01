@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { DEFAULT_CONVERSION } from '@/lib/conversion'
 import { MiBilleteraService } from '../services/mi-billetera.service'
 import { BilleterasService } from '@/features/admin/billeteras/services'
 import type { 
@@ -27,7 +28,7 @@ export function useMiBilletera(userId: string | undefined) {
   })
   
   // Estados generales
-  const [conversion, setConversion] = useState<number>(3.75)
+  const [conversion, setConversion] = useState<number>(DEFAULT_CONVERSION)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 

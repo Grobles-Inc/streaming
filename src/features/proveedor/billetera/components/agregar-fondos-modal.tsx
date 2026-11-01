@@ -25,7 +25,7 @@ import { useAuth } from '@/stores/authStore'
 import { useIsRealMobile } from '@/hooks/use-mobile'
 import { RecargaMessage } from '@/lib/whatsapp'
 import { useCreateRecarga } from '@/features/vendedor/recargas/queries'
-import { useConfiguracionSistema } from '@/features/proveedor/productos/queries'
+import { useConversionRate } from '@/hooks/use-conversion'
 import { Loader2 } from 'lucide-react'
 import YapeQRImage from '@/assets/YapeQR.jpg'
 
@@ -41,8 +41,7 @@ export function AgregarFondosModal({ open, onOpenChange, onSubmit }: AgregarFond
   const { mutate: crearRecarga, isPending } = useCreateRecarga()
 
   // Obtener la tasa de conversión de la configuración del sistema
-  const { data: configuracion } = useConfiguracionSistema()
-  const tasaConversion = configuracion?.conversion || 3.7 // Fallback a 3.7 si no hay configuración
+  const { conversion: tasaConversion } = useConversionRate()
 
   const form = useForm<AgregarFondos>({
     resolver: zodResolver(agregarFondosSchema),

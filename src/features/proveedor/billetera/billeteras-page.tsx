@@ -9,7 +9,7 @@ import { RetirarFondosModal } from './components/retirar-fondos-modal'
 import { Main } from '@/components/layout/main'
 import { useAuth } from '@/stores/authStore'
 import { useBilleteraByUsuario, useHistorialTransacciones } from './queries'
-import { useConfiguracionSistema } from '@/features/proveedor/productos/queries'
+import { useConversionRate } from '@/hooks/use-conversion'
 import { useQueryClient } from '@tanstack/react-query'
 
 export default function BilleterasPage() {
@@ -22,7 +22,7 @@ export default function BilleterasPage() {
   // Obtener datos reales de la base de datos
   const { data: billetera } = useBilleteraByUsuario(user?.id || '')
   const { data: transacciones = [], isLoading: isLoadingTransacciones } = useHistorialTransacciones(user?.id || '')
-  const { data: configuracion } = useConfiguracionSistema()
+  const { conversion: tasaConversion } = useConversionRate()
 
   // Si no hay usuario autenticado
   if (!user) {
@@ -34,9 +34,6 @@ export default function BilleterasPage() {
       </Main>
     )
   }
-
-  // Obtener tasa de conversión
-  const tasaConversion = configuracion?.conversion || 3.7
 
   // Formatear saldo en dólares
   const saldoEnDolares = billetera?.saldo || 0

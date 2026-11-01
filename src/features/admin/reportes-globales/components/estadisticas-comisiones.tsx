@@ -16,6 +16,7 @@ import {
 } from '@tabler/icons-react'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
+import { DEFAULT_CONVERSION, getLatestConversion } from '@/lib/conversion'
 import type { 
   EstadisticasComisiones,
   ComisionPublicacion,
@@ -35,7 +36,7 @@ export function EstadisticasComisiones() {
   })
   const [comisionesPublicacion, setComisionesPublicacion] = useState<ComisionPublicacion[]>([])
   const [comisionesRetiro, setComisionesRetiro] = useState<ComisionRetiro[]>([])
-  const [conversion, setConversion] = useState<number>(3.75) // Valor por defecto
+  const [conversion, setConversion] = useState<number>(DEFAULT_CONVERSION) // Valor por defecto
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -47,16 +48,7 @@ export function EstadisticasComisiones() {
       setLoading(true)
       
       // Obtener tasa de conversión
-      const { data: configData } = await supabase
-        .from('configuracion')
-        .select('conversion')
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .single()
-
-      if (configData?.conversion) {
-        setConversion(configData.conversion)
-      }
+      setConversion(await getLatestConversion())
 
       // Obtener comisiones de publicación (todas)
       const { data: productos, error: productosError } = await supabase

@@ -81,7 +81,8 @@ export function calcularEstadoExpiracion(
 
 /**
  * Calcula la nueva fecha de expiración para renovar un producto
- * Usa la misma lógica que el vendedor: fecha_expiracion + tiempo_uso
+ * Extiende tiempo_uso días sobre la fecha de expiración actual. Si el producto
+ * ya venció, la extensión arranca desde hoy para no perder días.
  * @param fechaExpiracion - Fecha actual de expiración
  * @param tiempoUso - Días del tiempo de uso del producto
  */
@@ -89,9 +90,13 @@ export function calcularNuevaFechaExpiracion(
   fechaExpiracion: string,
   tiempoUso: number
 ): string {
-  const endDate = new Date(fechaExpiracion)
-  const newDate = new Date(endDate.setDate(endDate.getDate() + tiempoUso))
-  
+  const ahora = new Date()
+  const fechaExp = new Date(fechaExpiracion)
+  const fechaBase = fechaExp.getTime() > ahora.getTime() ? fechaExp : ahora
+  const newDate = new Date(fechaBase.getTime())
+
+  newDate.setDate(newDate.getDate() + tiempoUso)
+
   return newDate.toISOString()
 }
 

@@ -18,7 +18,11 @@ import { GestionarExistenciasModal } from './gestionar-existencias-modal'
 import type { Producto } from '../data/schema'
 import { useDeleteProducto, usePublicarProductoWithCommission, useVerificarProductoTieneCuentas, useRenovarProducto, useConfiguracionSistema, useVerificarSaldoSuficiente } from '../queries'
 import { useAuth } from '@/stores/authStore'
-import { calcularEstadoExpiracion } from '../utils/expiracion'
+import {
+  calcularEstadoExpiracion,
+  calcularNuevaFechaExpiracion,
+  formatearFechaExpiracion,
+} from '../utils/expiracion'
 
 interface DataTableRowActionsProps {
   row: Row<Producto>
@@ -96,7 +100,9 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const esBorrador = producto.estado === 'borrador'
   const esPublicado = producto.estado === 'publicado'
   const infoExpiracion = calcularEstadoExpiracion(producto.estado, producto.fecha_expiracion || null)
-  const puedeRenovar = esPublicado && (infoExpiracion.estado === 'vencido' || infoExpiracion.estado === 'por_vencer')
+  // La renovación está disponible para cualquier producto publicado: extender el
+  // vencimiento antes de tiempo acumula los días sobre la fecha actual de expiración.
+  const puedeRenovar = esPublicado
   
   // Verificar si es un producto despublicado por vencimiento
   const esDespublicadoPorVencimiento = esBorrador && producto.fecha_expiracion && (() => {
@@ -296,11 +302,22 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         desc={
           <div>
             <p className="text-sm text-muted-foreground mb-2">
-              El producto será renovado por 30 días más y estará disponible para la venta.
+              Se extenderá el vencimiento por {producto.tiempo_uso} día(s) y el producto seguirá disponible para la venta.
             </p>
             <div className="text-sm text-muted-foreground mb-2">
               Estado actual: {infoExpiracion.mensaje}
             </div>
+            {producto.fecha_expiracion && (
+              <div className="text-sm text-muted-foreground mb-2">
+                Nueva fecha de expiración:{' '}
+                {formatearFechaExpiracion(
+                  calcularNuevaFechaExpiracion(
+                    producto.fecha_expiracion,
+                    producto.tiempo_uso
+                  )
+                )}
+              </div>
+            )}
             <InfoComisionCards
               comisionFormateada={comisionFormateada}
               saldoFormateado={saldoFormateado}

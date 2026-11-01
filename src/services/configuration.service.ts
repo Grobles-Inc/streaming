@@ -1,3 +1,4 @@
+import { DEFAULT_CONVERSION } from '@/lib/conversion'
 import type { Database } from '@/types/supabase'
 import { supabase } from '@/lib/supabase'
 
@@ -77,7 +78,7 @@ export class ConfigurationService {
           updated_at: now,
           mantenimiento: false,
           comision: 0,
-          conversion: 1,
+          conversion: DEFAULT_CONVERSION,
           comision_publicacion_producto: 0,
           comision_retiro: 0,
         })

@@ -362,9 +362,12 @@ export const columns: ColumnDef<Compra>[] = [
       const label = productoOpciones.find((label) => label.value === productoNombre)
 
       return (
-        <div className='flex space-x-2'>
+        <div className='flex items-start space-x-2'>
           {label && <Badge variant='outline'>{label.label}</Badge>}
-          <span className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[20rem]'>
+          <span
+            className='line-clamp-2 min-w-0 max-w-32 break-words whitespace-normal font-medium sm:max-w-72 md:max-w-[20rem]'
+            title={productoNombre}
+          >
             {productoNombre}
           </span>
         </div>
@@ -384,10 +387,14 @@ export const columns: ColumnDef<Compra>[] = [
     ),
     cell: ({ row }) => {
       const email = row.original.stock_productos?.email || ''
-      const displayEmail = email.length > 50 ? email.slice(0, 50) + '...' : email
       return (
         <div className='flex items-center gap-2'>
-          <span className='truncate max-w-32'>{displayEmail}</span>
+          <span
+            className='line-clamp-2 max-w-32 break-all whitespace-normal'
+            title={email}
+          >
+            {email}
+          </span>
         </div>
       )
     },
@@ -407,28 +414,6 @@ export const columns: ColumnDef<Compra>[] = [
       }
       return <span>Sin clave</span>
     },
-    enableSorting: false,
-  },
-  {
-    accessorKey: 'estado',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Estado' />
-    ),
-    cell: ({ row }) => {
-      const { estado } = row.original
-      const badgeColor = estadosMap.get(estado as CompraEstado)
-      return (
-        <div className='flex space-x-2'>
-          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
-            {row.getValue('estado')}
-          </Badge>
-        </div>
-      )
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
-    },
-    enableHiding: false,
     enableSorting: false,
   },
   {
@@ -527,6 +512,28 @@ export const columns: ColumnDef<Compra>[] = [
       const { usuarios } = row.original
       return <div className='flex justify-center'>{usuarios?.usuario}</div>
     },
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'estado',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Estado' />
+    ),
+    cell: ({ row }) => {
+      const { estado } = row.original
+      const badgeColor = estadosMap.get(estado as CompraEstado)
+      return (
+        <div className='flex space-x-2'>
+          <Badge variant='outline' className={cn('capitalize', badgeColor)}>
+            {row.getValue('estado')}
+          </Badge>
+        </div>
+      )
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id))
+    },
+    enableHiding: false,
     enableSorting: false,
   },
   {

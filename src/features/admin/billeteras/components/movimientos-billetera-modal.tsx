@@ -1,125 +1,166 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { CustomEmpty } from '@/components/custom-empty'
-import {IconX, IconTrendingUp, IconTrendingDown, IconCalendar, IconFilter } from '@tabler/icons-react'
+import {
+  IconCalendar,
+  IconFilter,
+  IconTrendingDown,
+  IconTrendingUp,
+  IconX,
+} from '@tabler/icons-react'
 import { History, Loader2 } from 'lucide-react'
-import { BilleterasService } from '../services'
-import type { Billetera, Recarga, Retiro, MovimientoBilletera } from '../data/types'
+import { useMovimientosBilleteraAdmin } from '../queries'
+import type {
+  Billetera,
+  GetMovimientosBilleteraAdminParams,
+  MovimientoBilleteraRow,
+  MovimientoTipo,
+} from '../data/types'
 
 interface MovimientosBilleteraModalProps {
   billetera: Billetera | null
   open: boolean
   onClose: () => void
-  onUpdateEstado?: (tipo: 'recarga' | 'retiro', id: number, estado: 'aprobado' | 'pendiente' | 'rechazado') => void
+  onUpdateEstado?: (
+    tipo: 'recarga' | 'retiro',
+    id: number,
+    estado: 'aprobado' | 'pendiente' | 'rechazado'
+  ) => void
 }
 
-export function MovimientosBilleteraModal({ billetera, open, onClose }: MovimientosBilleteraModalProps) {
-  const [recargas, setRecargas] = useState<Recarga[]>([])
-  const [retiros, setRetiros] = useState<Retiro[]>([])
-  const [loading, setLoading] = useState(false)
-  const [currentPage, setCurrentPage] = useState(0)
+const ITEMS_PER_PAGE = 50
+
+const TIPO_LABELS: Record<MovimientoTipo, string> = {
+  recarga: 'Recarga',
+  retiro: 'Retiro',
+  compra: 'Compra',
+  renovacion: 'Renovación',
+}
+
+const ESTADOS_POR_TIPO: Record<
+  MovimientoTipo,
+  { value: string; label: string }[]
+> = {
+  recarga: [
+    { value: 'pendiente', label: 'Pendiente' },
+    { value: 'aprobado', label: 'Aprobado' },
+    { value: 'rechazado', label: 'Rechazado' },
+  ],
+  retiro: [
+    { value: 'pendiente', label: 'Pendiente' },
+    { value: 'aprobado', label: 'Aprobado' },
+    { value: 'rechazado', label: 'Rechazado' },
+  ],
+  compra: [
+    { value: 'resuelto', label: 'Resuelto' },
+    { value: 'soporte', label: 'Soporte' },
+    { value: 'vencido', label: 'Vencido' },
+    { value: 'pedido', label: 'Pedido' },
+    { value: 'entregado', label: 'Entregado' },
+    { value: 'reembolsado', label: 'Reembolsado' },
+    { value: 'completado', label: 'Completado' },
+  ],
+  renovacion: [{ value: 'completado', label: 'Completado' }],
+}
+
+const ESTADO_LABELS: Record<string, string> = {
+  aprobado: 'Aprobado',
+  pendiente: 'Pendiente',
+  rechazado: 'Rechazado',
+  resuelto: 'Resuelto',
+  soporte: 'Soporte',
+  vencido: 'Vencido',
+  pedido: 'Pedido',
+  entregado: 'Entregado',
+  reembolsado: 'Reembolsado',
+  completado: 'Completado',
+  renovado: 'Renovado',
+}
+
+const ESTADO_VARIANTS: Record<
+  string,
+  'default' | 'secondary' | 'destructive' | 'outline'
+> = {
+  aprobado: 'default',
+  resuelto: 'default',
+  entregado: 'default',
+  completado: 'default',
+  renovado: 'default',
+  pendiente: 'secondary',
+  pedido: 'secondary',
+  soporte: 'outline',
+  rechazado: 'destructive',
+  vencido: 'destructive',
+  reembolsado: 'destructive',
+}
+
+const CONTRAPARTE_LABELS: Record<'seller' | 'provider', string> = {
+  seller: 'Vendedor',
+  provider: 'Proveedor',
+}
+
+export function MovimientosBilleteraModal({
+  billetera,
+  open,
+  onClose,
+}: MovimientosBilleteraModalProps) {
+  const [currentPage, setCurrentPage] = useState(1)
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
-  const [tipoFiltro, setTipoFiltro] = useState<'todos' | 'recargas' | 'retiros'>('todos')
-  const [estadoFiltro, setEstadoFiltro] = useState<'todos' | 'pendiente' | 'aprobado' | 'rechazado'>('todos')
-  const itemsPerPage = 50
+  const [tipoFiltro, setTipoFiltro] = useState<'todos' | MovimientoTipo>('todos')
+  const [estadoFiltro, setEstadoFiltro] = useState('todos')
 
   useEffect(() => {
-    if (billetera && open) {
-      fetchMovimientos()
-    }
-  }, [billetera, open])
+    setFechaDesde('')
+    setFechaHasta('')
+    setTipoFiltro('todos')
+    setEstadoFiltro('todos')
+    setCurrentPage(1)
+  }, [billetera?.id])
 
-  const fetchMovimientos = async () => {
-    if (!billetera) return
-
-    try {
-      setLoading(true)
-      const [recargasData, retirosData] = await Promise.all([
-        BilleterasService.getRecargasByUsuario(billetera.usuario_id),
-        BilleterasService.getRetirosByUsuario(billetera.usuario_id)
-      ])
-      setRecargas(recargasData)
-      setRetiros(retirosData)
-    } catch (error) {
-      console.error('Error al cargar movimientos:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Combinar y ordenar movimientos
-  const todosMovimientos: MovimientoBilletera[] = [
-    ...recargas.map(r => ({
-      id: r.id,
-      tipo: 'recarga' as const,
-      monto: r.monto,
-      estado: r.estado,
-      fecha: r.created_at,
-      usuario: r.usuario
-    })),
-    ...retiros.map(r => ({
-      id: r.id,
-      tipo: 'retiro' as const,
-      monto: r.monto,
-      estado: r.estado,
-      fecha: r.created_at,
-      usuario: r.usuario
-    }))
-  ].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
-
-  // Aplicar filtros
-  const movimientosFiltrados = todosMovimientos.filter(movimiento => {
-    // Filtro por tipo
-    if (tipoFiltro !== 'todos' && movimiento.tipo !== tipoFiltro.slice(0, -1)) {
-      return false
-    }
-
-    // Filtro por estado
-    if (estadoFiltro !== 'todos' && movimiento.estado !== estadoFiltro) {
-      return false
-    }
-
-    // Filtro por fecha desde
-    if (fechaDesde) {
-      const fechaMovimiento = new Date(movimiento.fecha)
-      const fechaFiltro = new Date(fechaDesde)
-      if (fechaMovimiento < fechaFiltro) {
-        return false
-      }
-    }
-
-    // Filtro por fecha hasta
-    if (fechaHasta) {
-      const fechaMovimiento = new Date(movimiento.fecha)
-      const fechaFiltro = new Date(fechaHasta)
-      if (fechaMovimiento > fechaFiltro) {
-        return false
-      }
-    }
-
-    return true
-  })
-
-  const startIndex = currentPage * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const paginatedMovimientos = movimientosFiltrados.slice(startIndex, endIndex)
-  const totalPages = Math.ceil(movimientosFiltrados.length / itemsPerPage)
-
-  // Reset page when filters change
   useEffect(() => {
-    setCurrentPage(0)
-  }, [fechaDesde, fechaHasta, tipoFiltro, estadoFiltro])
+    setCurrentPage(1)
+  }, [open])
+
+  const params = useMemo<GetMovimientosBilleteraAdminParams | null>(() => {
+    if (!billetera) return null
+
+    return {
+      usuarioId: billetera.usuario_id,
+      tipo: tipoFiltro === 'todos' ? null : tipoFiltro,
+      subtipo: null,
+      estado: estadoFiltro === 'todos' ? null : estadoFiltro,
+      fechaDesde: fechaDesde || null,
+      fechaHasta: fechaHasta || null,
+      page: currentPage,
+      pageSize: ITEMS_PER_PAGE,
+    }
+  }, [billetera, tipoFiltro, estadoFiltro, fechaDesde, fechaHasta, currentPage])
+
+  const { data, loading, error } = useMovimientosBilleteraAdmin(params)
+
+  const movimientos = data?.data ?? []
+  const total = data?.total ?? 0
+  const totalPages = data?.totalPages ?? 0
+
+  const estadosDisponibles =
+    tipoFiltro === 'todos' ? [] : ESTADOS_POR_TIPO[tipoFiltro]
+
+  const hasActiveFilters =
+    Boolean(fechaDesde) ||
+    Boolean(fechaHasta) ||
+    tipoFiltro !== 'todos' ||
+    estadoFiltro !== 'todos'
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-PE', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'USD',
     }).format(amount)
   }
 
@@ -129,140 +170,171 @@ export function MovimientosBilleteraModal({ billetera, open, onClose }: Movimien
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })
   }
 
-  const getEstadoBadge = (estado: string) => {
-    const variants = {
-      aprobado: 'default',
-      pendiente: 'secondary',
-      rechazado: 'destructive'
-    } as const
-
-    const labels = {
-      aprobado: 'Aprobado',
-      pendiente: 'Pendiente',
-      rechazado: 'Rechazado'
+  const getTipoLabel = (movimiento: MovimientoBilleteraRow) => {
+    if (movimiento.tipo !== 'renovacion') {
+      return TIPO_LABELS[movimiento.tipo]
     }
 
+    return movimiento.subtipo === 'producto'
+      ? 'Renovación producto'
+      : 'Renovación pedido'
+  }
+
+  const getEstadoBadge = (estado: string) => {
     return (
-      <Badge variant={variants[estado as keyof typeof variants] || 'outline'}>
-        {labels[estado as keyof typeof labels] || estado}
+      <Badge variant={ESTADO_VARIANTS[estado] ?? 'outline'}>
+        {ESTADO_LABELS[estado] ?? estado}
       </Badge>
     )
   }
 
-  const getTipoIcon = (tipo: string) => {
-    return tipo === 'recarga' ? (
-      <IconTrendingUp className="h-4 w-4 text-green-600" />
+  const getTipoIcon = (movimiento: MovimientoBilleteraRow) => {
+    return movimiento.direccion === 'entrada' ? (
+      <IconTrendingUp className='h-4 w-4 text-green-600' />
     ) : (
-      <IconTrendingDown className="h-4 w-4 text-red-600" />
+      <IconTrendingDown className='h-4 w-4 text-red-600' />
     )
   }
 
+  const handleTipoChange = (value: 'todos' | MovimientoTipo) => {
+    setTipoFiltro(value)
+    setEstadoFiltro('todos')
+    setCurrentPage(1)
+  }
+
+  const handleEstadoChange = (value: string) => {
+    setEstadoFiltro(value)
+    setCurrentPage(1)
+  }
+
+  const handleFechaDesdeChange = (value: string) => {
+    setFechaDesde(value)
+    setCurrentPage(1)
+  }
+
+  const handleFechaHastaChange = (value: string) => {
+    setFechaHasta(value)
+    setCurrentPage(1)
+  }
 
   const clearFilters = () => {
     setFechaDesde('')
     setFechaHasta('')
     setTipoFiltro('todos')
     setEstadoFiltro('todos')
-    setCurrentPage(0)
+    setCurrentPage(1)
   }
-
-  const hasActiveFilters = fechaDesde || fechaHasta || tipoFiltro !== 'todos' || estadoFiltro !== 'todos'
 
   if (!billetera) return null
 
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, total)
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="!w-[98vw] !max-w-[98vw] max-h-[95vh] overflow-y-auto">
+      <DialogContent className='!w-[98vw] !max-w-[98vw] max-h-[95vh] overflow-y-auto'>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className='flex items-center gap-2'>
             Movimientos de Billetera - {billetera.usuario?.usuario}
-            <Badge variant="outline" className="ml-2">
+            <Badge variant='outline' className='ml-2'>
               Saldo: {formatCurrency(billetera.saldo)}
             </Badge>
           </DialogTitle>
         </DialogHeader>
 
-        {/* Filtros */}
-        <Card className="mb-6">
+        <Card className='mb-6'>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <IconFilter className="h-5 w-5" />
+            <CardTitle className='flex items-center gap-2'>
+              <IconFilter className='h-5 w-5' />
               Filtros de Movimientos
               {hasActiveFilters && (
-                <Badge variant="secondary" className="ml-2">
+                <Badge variant='secondary' className='ml-2'>
                   Activos
                 </Badge>
               )}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="fecha-desde">Desde fecha</Label>
-                <div className="relative">
-                  <IconCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+              <div className='space-y-2'>
+                <Label htmlFor='fecha-desde'>Desde fecha</Label>
+                <div className='relative'>
+                  <IconCalendar className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4' />
                   <Input
-                    id="fecha-desde"
-                    type="date"
+                    id='fecha-desde'
+                    type='date'
                     value={fechaDesde}
-                    onChange={(e) => setFechaDesde(e.target.value)}
-                    className="pl-10"
+                    onChange={(e) => handleFechaDesdeChange(e.target.value)}
+                    className='pl-10'
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="fecha-hasta">Hasta fecha</Label>
-                <div className="relative">
-                  <IconCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <div className='space-y-2'>
+                <Label htmlFor='fecha-hasta'>Hasta fecha</Label>
+                <div className='relative'>
+                  <IconCalendar className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4' />
                   <Input
-                    id="fecha-hasta"
-                    type="date"
+                    id='fecha-hasta'
+                    type='date'
                     value={fechaHasta}
-                    onChange={(e) => setFechaHasta(e.target.value)}
-                    className="pl-10"
+                    onChange={(e) => handleFechaHastaChange(e.target.value)}
+                    className='pl-10'
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="tipo-filtro">Tipo</Label>
+              <div className='space-y-2'>
+                <Label htmlFor='tipo-filtro'>Tipo</Label>
                 <select
-                  id="tipo-filtro"
+                  id='tipo-filtro'
                   value={tipoFiltro}
-                  onChange={(e) => setTipoFiltro(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(e) =>
+                    handleTipoChange(
+                      e.target.value as 'todos' | MovimientoTipo
+                    )
+                  }
+                  className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500'
                 >
-                  <option value="todos">Todos</option>
-                  <option value="recargas">Solo Recargas</option>
-                  <option value="retiros">Solo Retiros</option>
+                  <option value='todos'>Todos</option>
+                  <option value='recarga'>Recargas</option>
+                  <option value='retiro'>Retiros</option>
+                  <option value='compra'>Compras</option>
+                  <option value='renovacion'>Renovaciones</option>
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="estado-filtro">Estado</Label>
+              <div className='space-y-2'>
+                <Label htmlFor='estado-filtro'>Estado</Label>
                 <select
-                  id="estado-filtro"
+                  id='estado-filtro'
                   value={estadoFiltro}
-                  onChange={(e) => setEstadoFiltro(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(e) => handleEstadoChange(e.target.value)}
+                  disabled={tipoFiltro === 'todos'}
+                  className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50'
                 >
-                  <option value="todos">Todos</option>
-                  <option value="pendiente">Pendiente</option>
-                  <option value="aprobado">Aprobado</option>
-                  <option value="rechazado">Rechazado</option>
+                  <option value='todos'>Todos</option>
+                  {estadosDisponibles.map((estado) => (
+                    <option key={estado.value} value={estado.value}>
+                      {estado.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
 
             {hasActiveFilters && (
-              <div className="mt-4">
-                <Button variant="outline" onClick={clearFilters} className="flex items-center gap-2">
-                  <IconX className="h-4 w-4" />
+              <div className='mt-4'>
+                <Button
+                  variant='outline'
+                  onClick={clearFilters}
+                  className='flex items-center gap-2'
+                >
+                  <IconX className='h-4 w-4' />
                   Limpiar Filtros
                 </Button>
               </div>
@@ -272,22 +344,22 @@ export function MovimientosBilleteraModal({ billetera, open, onClose }: Movimien
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">
+            <CardTitle className='text-lg'>
               Historial de Movimientos
-              <Badge variant="outline" className="ml-2">
-                {movimientosFiltrados.length} de {todosMovimientos.length} movimientos
+              <Badge variant='outline' className='ml-2'>
+                {total} movimientos
               </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
+            <div className='overflow-x-auto'>
+              <table className='w-full text-sm text-left'>
                 <thead>
-                  <tr className="border-b bg-gray-50 dark:bg-gray-800">
-                    <th className="px-4 py-3 font-medium">Tipo</th>
-                    <th className="px-4 py-3 font-medium">Monto</th>
-                    <th className="px-4 py-3 font-medium">Estado</th>
-                    <th className="px-4 py-3 font-medium">Fecha</th>
+                  <tr className='border-b bg-gray-50 dark:bg-gray-800'>
+                    <th className='px-4 py-3 font-medium'>Tipo</th>
+                    <th className='px-4 py-3 font-medium'>Monto</th>
+                    <th className='px-4 py-3 font-medium'>Estado</th>
+                    <th className='px-4 py-3 font-medium'>Fecha</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -295,43 +367,95 @@ export function MovimientosBilleteraModal({ billetera, open, onClose }: Movimien
                     <tr>
                       <td colSpan={4} className='p-0'>
                         <div className='flex flex-col items-center gap-6 py-10'>
-                          <CustomEmpty title='Cargando movimientos...' description='Estamos obteniendo el historial de movimientos.' icon={<Loader2 className='size-10 animate-spin' />} />
+                          <CustomEmpty
+                            title='Cargando movimientos...'
+                            description='Estamos obteniendo el historial de movimientos.'
+                            icon={<Loader2 className='size-10 animate-spin' />}
+                          />
                         </div>
                       </td>
                     </tr>
-                  ) : paginatedMovimientos.length === 0 ? (
+                  ) : error ? (
                     <tr>
                       <td colSpan={4} className='p-0'>
                         <div className='flex flex-col items-center gap-6 py-10'>
                           <CustomEmpty
-                            title={hasActiveFilters ? 'Sin resultados' : 'No hay movimientos registrados'}
-                            description={hasActiveFilters ? 'No hay movimientos que coincidan con los filtros.' : 'Aún no se han registrado movimientos para esta billetera.'}
+                            title='Error al cargar movimientos'
+                            description={error}
+                            icon={<History className='size-10' />}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ) : movimientos.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className='p-0'>
+                        <div className='flex flex-col items-center gap-6 py-10'>
+                          <CustomEmpty
+                            title={
+                              hasActiveFilters
+                                ? 'Sin resultados'
+                                : 'No hay movimientos registrados'
+                            }
+                            description={
+                              hasActiveFilters
+                                ? 'No hay movimientos que coincidan con los filtros.'
+                                : 'Aún no se han registrado movimientos para esta billetera.'
+                            }
                             icon={<History className='size-10' />}
                           />
                         </div>
                       </td>
                     </tr>
                   ) : (
-                    paginatedMovimientos.map(movimiento => (
-                      <tr key={`${movimiento.tipo}-${movimiento.id}`} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                        <td className="px-4 py-4">
-                          <div className="flex items-center gap-2">
-                            {getTipoIcon(movimiento.tipo)}
-                            <span className="capitalize font-medium">
-                              {movimiento.tipo}
-                            </span>
+                    movimientos.map((movimiento) => (
+                      <tr
+                        key={movimiento.id}
+                        className='border-b hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors'
+                      >
+                        <td className='px-4 py-4'>
+                          <div className='flex items-start gap-2'>
+                            {getTipoIcon(movimiento)}
+                            <div className='flex flex-col'>
+                              <span className='font-medium'>
+                                {getTipoLabel(movimiento)}
+                              </span>
+                              {movimiento.descripcion && (
+                                <span className='text-xs text-muted-foreground'>
+                                  {movimiento.descripcion}
+                                </span>
+                              )}
+                              {movimiento.contraparteUsuario &&
+                                movimiento.contraparteRol && (
+                                  <span className='text-xs text-muted-foreground'>
+                                    {
+                                      CONTRAPARTE_LABELS[
+                                        movimiento.contraparteRol
+                                      ]
+                                    }
+                                    : {movimiento.contraparteUsuario}
+                                  </span>
+                                )}
+                            </div>
                           </div>
                         </td>
-                        <td className="px-4 py-4">
-                          <span className={`font-semibold text-lg ${movimiento.tipo === 'recarga' ? 'text-green-600' : 'text-red-600'}`}>
-                            {movimiento.tipo === 'recarga' ? '+' : '-'}{formatCurrency(movimiento.monto)}
+                        <td className='px-4 py-4'>
+                          <span
+                            className={`font-semibold text-lg ${
+                              movimiento.direccion === 'entrada'
+                                ? 'text-green-600'
+                                : 'text-red-600'
+                            }`}
+                          >
+                            {movimiento.direccion === 'entrada' ? '+' : '-'}
+                            {formatCurrency(movimiento.monto)}
                           </span>
                         </td>
-                        <td className="px-4 py-4">
+                        <td className='px-4 py-4'>
                           {getEstadoBadge(movimiento.estado)}
                         </td>
-                        <td className="px-4 py-4 text-gray-500">
-                          <div className="text-sm">
+                        <td className='px-4 py-4 text-gray-500'>
+                          <div className='text-sm'>
                             {formatDate(movimiento.fecha)}
                           </div>
                         </td>
@@ -342,27 +466,26 @@ export function MovimientosBilleteraModal({ billetera, open, onClose }: Movimien
               </table>
             </div>
 
-            {/* Paginación */}
             {!loading && totalPages > 1 && (
-              <div className="flex justify-between items-center mt-6 pt-4 border-t">
+              <div className='flex justify-between items-center mt-6 pt-4 border-t'>
                 <Button
-                  variant="outline"
-                  disabled={currentPage === 0}
+                  variant='outline'
+                  disabled={currentPage <= 1}
                   onClick={() => setCurrentPage(currentPage - 1)}
                 >
                   Anterior
                 </Button>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">
-                    Página {currentPage + 1} de {totalPages}
+                <div className='flex items-center gap-2'>
+                  <span className='text-sm text-gray-600'>
+                    Página {currentPage} de {totalPages}
                   </span>
-                  <Badge variant="outline">
-                    {startIndex + 1}-{Math.min(endIndex, movimientosFiltrados.length)} de {movimientosFiltrados.length}
+                  <Badge variant='outline'>
+                    {startIndex + 1}-{endIndex} de {total}
                   </Badge>
                 </div>
                 <Button
-                  variant="outline"
-                  disabled={currentPage >= totalPages - 1}
+                  variant='outline'
+                  disabled={currentPage >= totalPages}
                   onClick={() => setCurrentPage(currentPage + 1)}
                 >
                   Siguiente

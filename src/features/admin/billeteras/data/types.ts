@@ -51,17 +51,45 @@ export type Retiro = {
   }
 }
 
-export type MovimientoBilletera = {
+export type MovimientoTipo = 'recarga' | 'retiro' | 'compra' | 'renovacion'
+
+export type MovimientoSubtipo = 'pedido' | 'producto'
+
+export type MovimientoDireccion = 'entrada' | 'salida'
+
+export type MovimientoBilleteraRow = {
   id: number
-  tipo: 'recarga' | 'retiro'
+  usuarioId: string
+  tipo: MovimientoTipo
+  subtipo: MovimientoSubtipo | null
+  direccion: MovimientoDireccion
   monto: number
-  estado: 'aprobado' | 'pendiente' | 'rechazado'
+  estado: string
   fecha: string
-  usuario?: {
-    nombres: string
-    apellidos: string
-    email: string
-  }
+  referenciaId: number | null
+  descripcion: string | null
+  contraparteUsuario: string | null
+  contraparteRol: 'seller' | 'provider' | null
+}
+
+export type GetMovimientosBilleteraAdminParams = {
+  usuarioId: string
+  tipo: MovimientoTipo | null
+  subtipo: MovimientoSubtipo | null
+  estado: string | null
+  fechaDesde: string | null
+  fechaHasta: string | null
+  page: number
+  pageSize: number
+}
+
+export type GetMovimientosBilleteraAdminResponse = {
+  data: MovimientoBilleteraRow[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+  totalPorTipo: Record<MovimientoTipo, number>
 }
 
 export type RecargaFormData = {

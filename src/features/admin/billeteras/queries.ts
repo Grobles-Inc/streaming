@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react'
 import { BilleterasService } from './services'
-import type { Billetera, Recarga, Retiro } from './data/types'
+import type {
+  Billetera,
+  GetMovimientosBilleteraAdminParams,
+  GetMovimientosBilleteraAdminResponse,
+  Recarga,
+  Retiro,
+} from './data/types'
 
 export function useBilleteras() {
   const [billeteras, setBilleteras] = useState<Billetera[]>([])
@@ -138,6 +144,52 @@ export function useRetiros() {
     updateRetiroEstado,
     refetch: fetchRetiros
   }
+}
+
+export function useMovimientosBilleteraAdmin(
+  params: GetMovimientosBilleteraAdminParams | null
+) {
+  const [data, setData] =
+    useState<GetMovimientosBilleteraAdminResponse | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!params) {
+      setData(null)
+      setError(null)
+      setLoading(false)
+      return
+    }
+
+    let cancelado = false
+
+    const fetchMovimientos = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const result =
+          await BilleterasService.getMovimientosPaginados(params)
+        if (!cancelado) setData(result)
+      } catch (err) {
+        if (!cancelado) {
+          setError(
+            err instanceof Error ? err.message : 'Error al cargar movimientos'
+          )
+        }
+      } finally {
+        if (!cancelado) setLoading(false)
+      }
+    }
+
+    fetchMovimientos()
+
+    return () => {
+      cancelado = true
+    }
+  }, [params])
+
+  return { data, loading, error }
 }
 
 export function useUsuarios() {

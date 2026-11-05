@@ -391,6 +391,59 @@ export type Database = {
           },
         ]
       }
+      movimientos_billetera: {
+        Row: {
+          created_at: string
+          descripcion: string | null
+          direccion: string
+          estado: string | null
+          id: number
+          metadata: Json
+          monto: number
+          origen_key: string | null
+          referencia_id: number | null
+          subtipo: string | null
+          tipo: string
+          usuario_id: string
+        }
+        Insert: {
+          created_at?: string
+          descripcion?: string | null
+          direccion: string
+          estado?: string | null
+          id?: never
+          metadata?: Json
+          monto: number
+          origen_key?: string | null
+          referencia_id?: number | null
+          subtipo?: string | null
+          tipo: string
+          usuario_id: string
+        }
+        Update: {
+          created_at?: string
+          descripcion?: string | null
+          direccion?: string
+          estado?: string | null
+          id?: never
+          metadata?: Json
+          monto?: number
+          origen_key?: string | null
+          referencia_id?: number | null
+          subtipo?: string | null
+          tipo?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimientos_billetera_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plataformas: {
         Row: {
           activo: boolean
@@ -782,6 +835,19 @@ export type Database = {
           plataforma: string
           stock_producto_id: number
         }[]
+      }
+      get_movimientos_billetera_admin: {
+        Args: {
+          p_estado?: string
+          p_fecha_desde?: string
+          p_fecha_hasta?: string
+          p_page?: number
+          p_page_size?: number
+          p_subtipo?: string
+          p_tipo?: string
+          p_usuario_id: string
+        }
+        Returns: Json
       }
       get_pedidos_proveedor: {
         Args: {

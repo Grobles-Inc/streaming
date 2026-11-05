@@ -365,7 +365,7 @@ export const columns: ColumnDef<Compra>[] = [
         <div className='flex items-start space-x-2'>
           {label && <Badge variant='outline'>{label.label}</Badge>}
           <span
-            className='line-clamp-2 min-w-0 max-w-32 break-words whitespace-normal font-medium sm:max-w-72 md:max-w-[20rem]'
+            className='min-w-0 max-w-32 break-words whitespace-normal font-medium sm:max-w-72 md:max-w-[20rem]'
             title={productoNombre}
           >
             {productoNombre}
@@ -390,7 +390,7 @@ export const columns: ColumnDef<Compra>[] = [
       return (
         <div className='flex items-center gap-2'>
           <span
-            className='line-clamp-2 max-w-32 break-all whitespace-normal'
+            className='max-w-32 break-all whitespace-normal'
             title={email}
           >
             {email}

@@ -1,5 +1,13 @@
 import { supabase } from '@/lib/supabase'
-import type { Billetera, Recarga, Retiro, RecargaFormData, RetiroFormData } from '../data/types'
+import type {
+  Billetera,
+  GetMovimientosBilleteraAdminParams,
+  GetMovimientosBilleteraAdminResponse,
+  Recarga,
+  Retiro,
+  RecargaFormData,
+  RetiroFormData,
+} from '../data/types'
 
 export class BilleterasService {
   // Obtener todas las billeteras con información de usuarios
@@ -277,6 +285,43 @@ export class BilleterasService {
     }
 
     return data
+  }
+
+  // Obtener movimientos de una billetera (RPC con paginación en servidor)
+  static async getMovimientosPaginados(
+    params: GetMovimientosBilleteraAdminParams
+  ): Promise<GetMovimientosBilleteraAdminResponse> {
+    const { data, error } = await supabase.rpc('get_movimientos_billetera_admin', {
+      p_usuario_id: params.usuarioId,
+      p_tipo: params.tipo,
+      p_subtipo: params.subtipo,
+      p_estado: params.estado,
+      p_fecha_desde: params.fechaDesde,
+      p_fecha_hasta: params.fechaHasta,
+      p_page: params.page,
+      p_page_size: params.pageSize,
+    })
+
+    if (error) {
+      console.error('Error al obtener movimientos de billetera:', error)
+      throw error
+    }
+
+    const result = data as unknown as GetMovimientosBilleteraAdminResponse | null
+
+    return {
+      data: result?.data ?? [],
+      total: result?.total ?? 0,
+      page: result?.page ?? params.page,
+      pageSize: result?.pageSize ?? params.pageSize,
+      totalPages: result?.totalPages ?? 0,
+      totalPorTipo: result?.totalPorTipo ?? {
+        recarga: 0,
+        retiro: 0,
+        compra: 0,
+        renovacion: 0,
+      },
+    }
   }
 
   // Obtener usuarios para selección

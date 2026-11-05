@@ -32,23 +32,24 @@ const updatedVencidoIds = new Set<number>()
 // marcar automáticamente como "vencido" cuando ya no quedan días.
 const DiasRestantesCell = ({
   diasRestantes,
+  estadoCalculado,
   id,
 }: {
   diasRestantes: number | null
+  estadoCalculado: PedidoEstado
   id: number
 }) => {
   const { mutate: updatePedidoStatusVencido } = useUpdatePedidoStatusVencido()
 
+  // `dias_restantes` es una diferencia de días calendario (Lima): llega a 0 el
+  // mismo día de vencimiento, no cuando expira la cuenta. El estado real lo
+  // calcula el servidor comparando instantes (`estado_calculado`).
   useEffect(() => {
-    if (
-      diasRestantes !== null &&
-      diasRestantes <= 0 &&
-      !updatedVencidoIds.has(id)
-    ) {
+    if (estadoCalculado === 'vencido' && !updatedVencidoIds.has(id)) {
       updatedVencidoIds.add(id)
       updatePedidoStatusVencido(id)
     }
-  }, [diasRestantes, id, updatePedidoStatusVencido])
+  }, [estadoCalculado, id, updatePedidoStatusVencido])
 
   let badgeColor = 'bg-gray-500 text-white dark:text-white border-gray-500'
   if (diasRestantes !== null && diasRestantes > 0) {
@@ -333,19 +334,21 @@ export const columns: ColumnDef<Pedido>[] = [  {
         return <span className='text-muted-foreground text-xs'>N/A</span>
       }
 
+      // Las fechas se guardan como instantes UTC; la UI usa la hora de Lima.
       return (
         <div className='space-y-1'>
           {new Date(fechaInicio).toLocaleDateString('es-PE', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
-            timeZone: 'UTC',
+            timeZone: 'America/Lima',
           })}
           <br />
           <span className='text-muted-foreground text-xs'>
             {new Date(fechaInicio).toLocaleTimeString('es-PE', {
               hour: '2-digit',
               minute: '2-digit',
+              timeZone: 'America/Lima',
             })}
           </span>
         </div>
@@ -366,7 +369,7 @@ export const columns: ColumnDef<Pedido>[] = [  {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
-        timeZone: 'UTC',
+        timeZone: 'America/Lima',
       }).format(new Date(fechaExpiracion))
       return <span>{formattedFechaExpiracion}</span>
     },
@@ -377,6 +380,7 @@ export const columns: ColumnDef<Pedido>[] = [  {
     cell: ({ row }) => (
       <DiasRestantesCell
         diasRestantes={row.original.dias_restantes}
+        estadoCalculado={row.original.estado_calculado as PedidoEstado}
         id={row.original.id}
       />
     ),

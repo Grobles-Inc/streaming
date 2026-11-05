@@ -170,6 +170,7 @@ export type Database = {
           fecha_expiracion: string | null
           fecha_inicio: string | null
           id: number
+          idempotency_key: string | null
           imap_enabled: boolean
           mensaje_notificacion: string | null
           monto_reembolso: number | null
@@ -194,6 +195,7 @@ export type Database = {
           fecha_expiracion?: string | null
           fecha_inicio?: string | null
           id?: number
+          idempotency_key?: string | null
           imap_enabled?: boolean
           mensaje_notificacion?: string | null
           monto_reembolso?: number | null
@@ -218,6 +220,7 @@ export type Database = {
           fecha_expiracion?: string | null
           fecha_inicio?: string | null
           id?: number
+          idempotency_key?: string | null
           imap_enabled?: boolean
           mensaje_notificacion?: string | null
           monto_reembolso?: number | null
@@ -831,6 +834,37 @@ export type Database = {
           vendedor_usuario: string
         }[]
       }
+      get_productos_publicados_por_categoria: {
+        Args: { p_categoria_id?: string }
+        Returns: {
+          categoria_id: string
+          condiciones: string
+          created_at: string
+          descripcion: string
+          descripcion_completa: string
+          deshabilitar_boton_comprar: boolean
+          disponibilidad: Database["public"]["Enums"]["disponibilidad"]
+          estado: Database["public"]["Enums"]["estado_publicacion_producto"]
+          fecha_expiracion: string
+          id: number
+          imagen_url: string
+          informacion: string
+          muestra_disponibilidad_stock: boolean
+          nombre: string
+          nuevo: boolean
+          precio_publico: number
+          precio_renovacion: number
+          precio_vendedor: number
+          proveedor_id: string
+          renovable: boolean
+          revisado_id: string
+          solicitud: string
+          stock_de_productos: Json
+          stock_disponible_count: number
+          tiempo_uso: number
+          updated_at: string
+        }[]
+      }
       get_recargas_admin: {
         Args: {
           p_estado?: string
@@ -901,6 +935,47 @@ export type Database = {
           total_categorias: number
           total_productos: number
         }[]
+      }
+      registrar_compra: {
+        Args: {
+          p_idempotency_key: string
+          p_nombre_cliente: string
+          p_producto_id: number
+          p_stock_producto_id?: number
+          p_telefono_cliente: string
+          p_vendedor_id: string
+        }
+        Returns: {
+          created_at: string
+          cuenta_actualizada: boolean
+          estado: Database["public"]["Enums"]["compra_estado"] | null
+          fecha_expiracion: string | null
+          fecha_inicio: string | null
+          id: number
+          idempotency_key: string | null
+          imap_enabled: boolean
+          mensaje_notificacion: string | null
+          monto_reembolso: number | null
+          nombre_cliente: string | null
+          precio: number | null
+          producto_id: number | null
+          proveedor_id: string | null
+          renovado: boolean
+          revisado_id: string | null
+          soporte_asunto: string | null
+          soporte_mensaje: string | null
+          soporte_respuesta: string | null
+          stock_producto_id: number
+          telefono_cliente: string | null
+          updated_at: string | null
+          vendedor_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "compras"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       set_compras_imap_enabled: {
         Args: {

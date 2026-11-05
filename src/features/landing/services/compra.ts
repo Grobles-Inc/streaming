@@ -2,19 +2,22 @@ import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/supabase'
 
 export type Compra = Database['public']['Tables']['compras']['Row']
-export type CompraInsert = Database['public']['Tables']['compras']['Insert']
+export type RegistrarCompraParams =
+  Database['public']['Functions']['registrar_compra']['Args']
 
-// Create a new compra
-export const createCompra = async (compra: CompraInsert): Promise<Compra | null> => {
-  const { data, error } = await supabase
-    .from('compras')
-    .insert(compra)
-    .select()
-    .single()
+/**
+ * Compra transaccional: inserta la compra, mueve ambas billeteras, marca el
+ * stock como vendido y lo quita del array del producto en una sola transacción.
+ * Idempotente por `p_idempotency_key`: un reintento devuelve la misma compra.
+ */
+export const registrarCompra = async (
+  params: RegistrarCompraParams
+): Promise<Compra> => {
+  const { data, error } = await supabase.rpc('registrar_compra', params)
 
   if (error) {
-    console.error('Error creating compra:', error)
-    return null
+    console.error('Error registrando compra:', error)
+    throw error
   }
 
   return data

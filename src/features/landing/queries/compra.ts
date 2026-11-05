@@ -1,26 +1,50 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import * as compraService from '../services/compra'
-import { CompraInsert } from '../services/compra'
-import * as proveedorService from '../services/proveedor'
+import type { RegistrarCompraParams } from '../services/compra'
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error
+    ? error.message
+    : ((error as { message?: string } | null)?.message ?? '')
 
-export const useCreateCompra = () => {
+/**
+ * Única mutación del flujo de compra. El RPC `registrar_compra` hace todo en
+ * una transacción, así que acá solo invalidamos las queries afectadas.
+ */
+export const useRegistrarCompra = () => {
+  const queryClient = useQueryClient()
+
   return useMutation({
-    mutationFn: (compra: CompraInsert) => compraService.createCompra(compra),
-    onSuccess: () => {
-      toast.success("Compra exitosa", { duration: 2000 })
+    mutationFn: (params: RegistrarCompraParams) =>
+      compraService.registrarCompra(params),
+    onSuccess: (_compra, params) => {
+      queryClient.invalidateQueries({ queryKey: ['productos'] })
+      queryClient.invalidateQueries({ queryKey: ['productos-all'] })
+      queryClient.invalidateQueries({ queryKey: ['productos-publicados'] })
+      queryClient.invalidateQueries({
+        queryKey: ['stock-productos-ids', params.p_producto_id],
+      })
+      queryClient.invalidateQueries({ queryKey: ['billeteras'] })
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] })
+      queryClient.invalidateQueries({ queryKey: ['compras'] })
+      toast.success('Compra exitosa', { duration: 2000 })
     },
-    onError: () => {
-      toast.error("Error al crear la compra")
+    onError: (error) => {
+      const message = getErrorMessage(error)
+
+      if (message.includes('SALDO_INSUFICIENTE')) {
+        toast.error('No tienes saldo suficiente')
+      } else if (
+        message.includes('SIN_STOCK') ||
+        message.includes('STOCK_NO_DISPONIBLE')
+      ) {
+        toast.error('No hay stock disponible para este producto')
+      } else if (message.includes('PRODUCTO_NO_DISPONIBLE')) {
+        toast.error('El producto ya no está disponible')
+      } else {
+        toast.error('Error al registrar la compra')
+      }
     },
   })
 }
-
-export const useUpdateBilleteraProveedorSaldo = () => {
-  return useMutation({
-    mutationFn: ({ idBilletera, precioProducto }: { idBilletera: string, precioProducto: number }) => proveedorService.updateBilleteraProveedorSaldo(idBilletera, precioProducto),
-  })
-}
-
-

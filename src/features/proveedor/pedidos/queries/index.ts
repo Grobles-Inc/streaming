@@ -209,14 +209,6 @@ export const useUpdateProductoPrecioRenovacion = () => {
   })
 }
 
-// Helper to calculate UTC day difference (same logic as columns.tsx and services)
-const getUtcDayDiff = (targetDate: Date, baseDate = new Date()) => {
-  const MS_PER_DAY = 1000 * 60 * 60 * 24
-  const getUtcMidnightMs = (date: Date) =>
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
-  return (getUtcMidnightMs(targetDate) - getUtcMidnightMs(baseDate)) / MS_PER_DAY
-}
-
 export const useUpdatePedidoFechas = () => {
   const queryClient = useQueryClient()
 
@@ -238,9 +230,9 @@ export const useUpdatePedidoFechas = () => {
       // Snapshot previous values for rollback
       const previousQueries = queryClient.getQueriesData({ queryKey: ['pedidos'] })
 
-      // Calculate new estado based on fecha_expiracion
+      // Comparamos instantes, no días calendario UTC.
       const nuevoEstado = fechaExpiracion
-        ? getUtcDayDiff(new Date(fechaExpiracion)) <= 0
+        ? new Date(fechaExpiracion) <= new Date()
           ? 'vencido'
           : 'resuelto'
         : undefined

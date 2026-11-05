@@ -271,16 +271,6 @@ export const updateProductoPrecioRenovacion = async (
   return data
 }
 
-// Helper to calculate UTC day difference (same logic as columns.tsx)
-const getUtcDayDiff = (targetDate: Date, baseDate = new Date()) => {
-  const MS_PER_DAY = 1000 * 60 * 60 * 24
-  const getUtcMidnightMs = (date: Date) =>
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
-  return (
-    (getUtcMidnightMs(targetDate) - getUtcMidnightMs(baseDate)) / MS_PER_DAY
-  )
-}
-
 // Update pedido fechas
 export const updatePedidoFechas = async (
   pedidoId: number,
@@ -302,16 +292,16 @@ export const updatePedidoFechas = async (
   if (fechaInicio) updateData.fecha_inicio = fechaInicio
   if (fechaExpiracion) {
     updateData.fecha_expiracion = fechaExpiracion
-    // Update estado based on fecha_expiracion: resuelto if days > 0, vencido if <= 0
-    const diasRestantes = getUtcDayDiff(new Date(fechaExpiracion))
-    updateData.estado = diasRestantes <= 0 ? 'vencido' : 'resuelto'
+    // Comparamos instantes, no días calendario UTC: el estado cambia justo
+    // cuando la cuenta expira, sin adelantarse por el cambio de fecha.
+    updateData.estado =
+      new Date(fechaExpiracion) <= new Date() ? 'vencido' : 'resuelto'
 
     // DEBUG: Log calculation for estado
     console.log('[DEBUG updatePedidoFechas] Estado calculation:', {
       fechaExpiracion,
       dateObj: new Date(fechaExpiracion),
-      diasRestantes,
-      calculatedEstado: diasRestantes <= 0 ? 'vencido' : 'resuelto',
+      calculatedEstado: updateData.estado,
     })
   }
 

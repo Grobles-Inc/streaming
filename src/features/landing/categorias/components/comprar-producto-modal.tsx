@@ -1,8 +1,9 @@
+import { useEffect, useRef } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
-import { useBilleteraByUsuario, useUpdateBilleteraSaldo } from '@/queries'
+import { useBilleteraByUsuario } from '@/queries'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/authStore'
 import { useImageProxy } from '@/hooks/use-image-proxy'
@@ -32,15 +33,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { useConfiguracionSistema } from '../../queries'
 import { DEFAULT_CONVERSION } from '@/lib/conversion'
-import {
-  useCreateCompra,
-  useUpdateBilleteraProveedorSaldo,
-} from '../../queries/compra'
-import {
-  useRemoveStockIdFromProducto,
-  useStockProductosIds,
-  useUpdateStockProductoStatusVendido,
-} from '../../queries/productos'
+import { useRegistrarCompra } from '../../queries/compra'
+import { useStockProductosIds } from '../../queries/productos'
 import { Producto } from '../../services'
 import { PhoneInput } from '@/components/phone-input'
 
@@ -70,30 +64,21 @@ export default function ComprarProductoModal({
   const { getProxiedImageUrl } = useImageProxy()
   const productoId = producto?.id || 0
   const navigate = useNavigate()
-  const { mutate: createCompra, isPending: isCreatingCompra } =
-    useCreateCompra()
+  const { mutate: registrarCompra, isPending: isRegisteringCompra } =
+    useRegistrarCompra()
   const { data: billetera } = useBilleteraByUsuario(user?.id || '0')
-  const { mutate: actualizarSaldo, isPending: isUpdatingSaldo } =
-    useUpdateBilleteraSaldo()
   const { data: configuracion } = useConfiguracionSistema()
   const { data: stockProductosIds } = useStockProductosIds(productoId)
-  const {
-    mutate: updateProveedorBilletera,
-    isPending: isUpdatingProveedorBilletera,
-  } = useUpdateBilleteraProveedorSaldo()
-  const {
-    mutate: updateStockProductoStatusVendido,
-    isPending: isUpdatingStockStatus,
-  } = useUpdateStockProductoStatusVendido()
-  const { mutate: removeStockIdFromProducto, isPending: isRemovingStock } =
-    useRemoveStockIdFromProducto()
 
-  const isProcessing =
-    isCreatingCompra ||
-    isUpdatingSaldo ||
-    isUpdatingStockStatus ||
-    isUpdatingProveedorBilletera ||
-    isRemovingStock
+  // Una key por apertura del modal. Si el submit falla, se reutiliza para que
+  // el reintento sea idempotente; si el modal se cierra/abre, se renueva.
+  const idempotencyKey = useRef<string>(crypto.randomUUID())
+
+  useEffect(() => {
+    if (open) idempotencyKey.current = crypto.randomUUID()
+  }, [open])
+
+  const isProcessing = isRegisteringCompra
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -128,106 +113,35 @@ export default function ComprarProductoModal({
       return
     }
     if (!precio_producto || !monto || !billetera?.id) return
-    if (monto && monto < precio_producto) {
+    if (monto < precio_producto) {
       toast.error('No tienes suficiente saldo', { duration: 3000 })
       return
     }
     if (!producto?.proveedor_id || !producto?.id) return
-    if (!stockProductosIds?.[0] || stockProductosIds.length === 0) {
+    if (!stockProductosIds || stockProductosIds.length === 0) {
       toast.error('No hay stock disponible', { duration: 3000 })
       return
     }
 
-    // Chain mutations sequentially: createCompra -> actualizarSaldo -> updateStockProductoStatusVendido -> updateProveedorBilletera -> removeStockIdFromProducto
-
-    // Un solo instante para ambas fechas: evita drift entre render y submit.
-    const now = new Date()
-    const fecha_inicio = now.toISOString()
-    const fecha_expiracion = new Date(
-      now.getTime() + producto.tiempo_uso * 24 * 60 * 60 * 1000
-    ).toISOString()
-
-    createCompra(
+    // El servidor elige la cuenta disponible (SKIP LOCKED) y hace todo en una
+    // sola transacción. No mandamos stock_producto_id para no usar un id de
+    // una lista cacheada que otra compra pudo tomar.
+    registrarCompra(
       {
-        proveedor_id: producto.proveedor_id,
-        producto_id: producto.id,
-        vendedor_id: user.id,
-        nombre_cliente: data.nombre_cliente,
-        estado:
-          producto.disponibilidad === 'a_pedido' ||
-          producto.disponibilidad === 'activacion'
-            ? 'pedido'
-            : 'resuelto',
-        precio: producto.precio_vendedor,
-        monto_reembolso: producto.precio_vendedor,
-        telefono_cliente: data.telefono_cliente.replace(/\s/g, ''),
-        fecha_inicio,
-        stock_producto_id: stockProductosIds?.[0],
-        fecha_expiracion,
+        p_vendedor_id: user.id,
+        p_producto_id: producto.id,
+        p_nombre_cliente: data.nombre_cliente,
+        p_telefono_cliente: data.telefono_cliente.replace(/\s/g, ''),
+        p_idempotency_key: idempotencyKey.current,
       },
       {
         onSuccess: () => {
-          actualizarSaldo(
-            {
-              id: billetera?.id,
-              nuevoSaldo: monto - producto?.precio_vendedor,
-            },
-            {
-              onSuccess: () => {
-                updateStockProductoStatusVendido(
-                  { id: stockProductosIds?.[0], productoId: productoId },
-                  {
-                    onSuccess: () => {
-                      updateProveedorBilletera(
-                        {
-                          idBilletera: producto.usuarios?.billetera_id ?? '',
-                          precioProducto: producto?.precio_vendedor,
-                        },
-                        {
-                          onSuccess: () => {
-                            removeStockIdFromProducto(
-                              {
-                                productoId: productoId,
-                                stockProductoId: stockProductosIds?.[0],
-                              },
-                              {
-                                onSuccess: () => {
-                                  // Only close modal and navigate after all operations complete successfully
-                                  onOpenChange(false)
-                                  form.reset()
-                                  navigate({ to: '/compras' })
-                                },
-                                onError: () => {
-                                  toast.error(
-                                    'Error al actualizar el stock del producto'
-                                  )
-                                },
-                              }
-                            )
-                          },
-                          onError: () => {
-                            toast.error(
-                              'Error al actualizar la billetera del proveedor'
-                            )
-                          },
-                        }
-                      )
-                    },
-                    onError: () => {
-                      toast.error('Error al actualizar el estado del stock')
-                    },
-                  }
-                )
-              },
-              onError: () => {
-                toast.error('Error al actualizar el saldo')
-              },
-            }
-          )
+          form.reset()
+          onOpenChange(false)
+          navigate({ to: '/compras' })
         },
-        onError: () => {
-          // Error handling is already done in useCreateCompra hook
-        },
+        // onError: `useRegistrarCompra` ya muestra el toast. Mantenemos la
+        // misma idempotency key para que el reintento no cobre dos veces.
       }
     )
   }

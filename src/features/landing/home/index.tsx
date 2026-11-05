@@ -2,7 +2,6 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useSearch } from '@/stores/searchStore'
 import { useNavigate, useSearch as useRouterSearch } from '@tanstack/react-router'
 import { useImageProxy } from '@/hooks/use-image-proxy'
-import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import {
   Tooltip,
@@ -14,20 +13,21 @@ import ProductoCard from '../categorias/components/producto-card'
 import { useCategorias, useResumenCategorias } from '../queries'
 import { useProductos, useProductosPublicadosByCategoria } from '../queries/productos'
 import { useConfiguracionSistema } from '../queries'
-import { Categoria } from '../services'
+import { Categoria, Producto } from '../services'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useIsMobile } from '@/hooks/use-mobile'
+
+const getStockDisponible = (producto: Producto) =>
+  Array.isArray(producto.stock_de_productos)
+    ? producto.stock_de_productos.length
+    : 0
 
 export default function Home() {
   const { getProxiedImageUrl } = useImageProxy()
   const { searchInput, setSearchInput } = useSearch()
 
-  // Estados para productos
-  const [currentProductPage, setCurrentProductPage] = useState(1)
-  const { data: productos, isLoading: loadingProductos } =
-    useProductos(currentProductPage)
-  const [allProductos, setAllProductos] = useState<any[]>([])
+  const { data: productos, isLoading: loadingProductos } = useProductos()
 
   // Categorías (sin paginación)
   const { data: categoriasHorizontales, isLoading: loadingCategoriasHorizontales } =
@@ -54,6 +54,18 @@ export default function Home() {
 
   const categoriasResumenData = categoriasResumen || []
 
+  const focusedCategoryNombre = useMemo(() => {
+    if (!focusedCategory) return null
+    const resumen = categoriasResumenData.find(
+      (c) => c.categoria_id === focusedCategory
+    )
+    if (resumen?.categoria_nombre) return resumen.categoria_nombre
+    return (
+      categoriasHorizontales?.find((c) => c.id === focusedCategory)?.nombre ??
+      null
+    )
+  }, [focusedCategory, categoriasResumenData, categoriasHorizontales])
+
   const { data: productosCategoria, isLoading: loadingProductosCategoria } =
     useProductosPublicadosByCategoria(focusedCategory)
 
@@ -68,46 +80,22 @@ export default function Home() {
     )
   }, [categoriasResumen])
 
-  // Acumular productos de todas las páginas cargadas
-  useMemo(() => {
-    if ((productos as any)?.data) {
-      if (currentProductPage === 1) {
-        setAllProductos((productos as any).data)
-      } else {
-        setAllProductos((prev) => [...prev, ...(productos as any).data])
-      }
-    }
-  }, [(productos as any)?.data, currentProductPage])
-
-  // Productos filtrados por categoría y búsqueda
+  // Productos ordenados por stock (mayor primero, agotados al final)
   const productosFiltrados = useMemo(() => {
-    let resultado: any[] = focusedCategory
+    const resultado: Producto[] = focusedCategory
       ? (productosCategoria ?? [])
-      : allProductos
-    if (searchInput) {
-      const q = searchInput.toLowerCase()
-      resultado = resultado.filter((p: any) =>
-        p.nombre?.toLowerCase().includes(q)
-      )
-    }
-    return resultado
-  }, [allProductos, focusedCategory, productosCategoria, searchInput])
+      : (productos ?? [])
 
-  const hasMoreProducts =
-    !focusedCategory && productos && allProductos.length < (productos as any).count
+    const filtrados = searchInput
+      ? resultado.filter((producto) =>
+          producto.nombre?.toLowerCase().includes(searchInput.toLowerCase())
+        )
+      : resultado
 
-  const loadMoreProducts = useCallback(() => {
-    if (hasMoreProducts && !loadingProductos) {
-      setCurrentProductPage((prev) => prev + 1)
-    }
-  }, [hasMoreProducts, loadingProductos])
-
-  // Infinite scroll hooks
-  useInfiniteScroll(loadMoreProducts, {
-    hasMore: !!hasMoreProducts,
-    isLoading: loadingProductos,
-    threshold: 300,
-  })
+    return [...filtrados].sort(
+      (a, b) => getStockDisponible(b) - getStockDisponible(a)
+    )
+  }, [productos, focusedCategory, productosCategoria, searchInput])
 
   // Auto-rotar carrusel de banners
   useEffect(() => {
@@ -223,9 +211,11 @@ export default function Home() {
         )}
 
         <div className='flex flex-col w-full gap-4'>
-          <h2 className='text-2xl text-center md:text-left font-bold uppercase'>CATALOGO DE PRODUCTOS</h2>
+          <h2 className='text-2xl text-center md:text-left font-bold uppercase'>
+            {focusedCategoryNombre ?? 'Catalogo de productos'}
+          </h2>
           <div className='grid grid-cols-2 gap-4  lg:grid-cols-3 xl:grid-cols-4'>
-            {loadingProductosActual && (focusedCategory ? true : currentProductPage === 1) ? (
+            {loadingProductosActual ? (
               // Skeleton loading para productos
               Array.from({ length: 12 }).map((_, i) => (
                 <div
@@ -249,25 +239,6 @@ export default function Home() {
               </div>
             )}
           </div>
-
-          {/* Loading indicator durante scroll */}
-          {!focusedCategory && loadingProductos && currentProductPage > 1 && (
-            <div className='mt-8 flex items-center justify-center py-4'>
-              <div className='text-muted-foreground flex items-center gap-2'>
-                <div className='border-primary h-5 w-5 animate-spin rounded-full border-b-2'></div>
-                <span>Cargando más productos...</span>
-              </div>
-            </div>
-          )}
-
-          {/* Indicador cuando no hay más productos */}
-          {!focusedCategory && !hasMoreProducts && allProductos.length > 0 && currentProductPage === 1 && (
-            <div className='mt-8 flex justify-center py-4'>
-              <span className='text-muted-foreground text-sm'>
-                Has visto todos los productos disponibles
-              </span>
-            </div>
-          )}
 
           {/* Soporte por WhatsApp */}
           <div className='mt-12 flex flex-col items-center justify-center gap-3 text-center'>

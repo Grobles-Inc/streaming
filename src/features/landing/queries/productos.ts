@@ -2,10 +2,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as productosService from '../services/productos'
 import * as stockProductosService from '../services/stock'
 
-export const useProductos = (page: number = 1) => {
+export const useProductos = () => {
   return useQuery({
-    queryKey: ['productos', page],
-    queryFn: () => productosService.getProductosPaginated(page, 20),
+    queryKey: ['productos-publicados'],
+    queryFn: () => productosService.getProductosPublicados(),
   })
 }
 

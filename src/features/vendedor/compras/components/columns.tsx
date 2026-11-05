@@ -80,7 +80,7 @@ const PasswordCell = ({ value }: { value: string }) => {
       <Tooltip>
         <TooltipTrigger asChild>
           <span
-            className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[20rem] cursor-pointer'
+            className='max-w-32  font-medium sm:max-w-72 md:max-w-[20rem] cursor-pointer'
             onClick={() => setIsVisible(!isVisible)}
           >
             {isVisible ? value : '●●●●●●'}
@@ -390,7 +390,7 @@ export const columns: ColumnDef<Compra>[] = [
       return (
         <div className='flex items-center gap-2'>
           <span
-            className='max-w-32 break-all whitespace-normal'
+            className='w-48 break-all whitespace-normal'
             title={email}
           >
             {email}

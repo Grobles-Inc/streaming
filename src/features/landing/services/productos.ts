@@ -91,6 +91,41 @@ export const getProductos = async (): Promise<Producto[]> => {
   return data || []
 }
 
+// Get productos publicados (landing, sin paginación)
+export const getProductosPublicados = async (): Promise<Producto[]> => {
+  try {
+    const resultadoVerificacion =
+      await verificarYActualizarTodosLosProductosVencidos()
+
+    if (resultadoVerificacion.error) {
+      console.warn(
+        'Error en verificación de vencimientos:',
+        resultadoVerificacion.error
+      )
+    }
+
+    const { data, error } = await supabase
+      .from('productos')
+      .select(`
+        *,
+        categorias:categoria_id(nombre),
+        usuarios:proveedor_id(nombres, apellidos, billetera_id, usuario)
+      `)
+      .eq('estado', 'publicado')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching productos publicados:', error)
+      return []
+    }
+
+    return data || []
+  } catch (error) {
+    console.error('Error en getProductosPublicados:', error)
+    return []
+  }
+}
+
 /**
  * Verifica y actualiza automáticamente productos vencidos a estado "borrador"
  * Versión específica para la landing que no está limitada por proveedor
@@ -146,66 +181,5 @@ const verificarYActualizarTodosLosProductosVencidos = async (): Promise<{ produc
       productosActualizados: 0, 
       error: error instanceof Error ? error.message : 'Error desconocido' 
     }
-  }
-}
-
-// Get productos with pagination
-export const getProductosPaginated = async (
-  page: number = 1,
-  pageSize: number = 6
-): Promise<{ data: Producto[]; count: number }> => {
-  try {
-    // 1. Primero verificar y actualizar productos vencidos
-    const resultadoVerificacion = await verificarYActualizarTodosLosProductosVencidos()
-    
-    if (resultadoVerificacion.error) {
-      console.warn('Error en verificación de vencimientos:', resultadoVerificacion.error)
-      // Continuar con la carga normal aunque haya error en verificación
-    }
-
-    // 2. Proceder con la consulta paginada normal
-    const from = (page - 1) * pageSize
-    const to = from + pageSize - 1
-
-    const { data, error, count } = await supabase
-      .from('productos')
-      .select(`
-        *,
-        categorias:categoria_id(nombre),
-        usuarios:proveedor_id(usuario)
-      `, { count: 'exact' })
-      .range(from, to)
-      .eq('estado', 'publicado')
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('Error fetching paginated productos:', error)
-      return { data: [], count: 0 }
-    }
-
-    return { data: data || [], count: count || 0 }
-  } catch (error) {
-    console.error('Error en getProductosPaginated:', error)
-    // Fallback: consulta sin verificación de vencimientos
-    const from = (page - 1) * pageSize
-    const to = from + pageSize - 1
-
-    const { data, error: queryError, count } = await supabase
-      .from('productos')
-      .select(`
-        *,
-        categorias:categoria_id(nombre),
-        usuarios:proveedor_id(usuario)
-      `, { count: 'exact' })
-      .range(from, to)
-      .eq('estado', 'publicado')
-      .order('created_at', { ascending: false })
-
-    if (queryError) {
-      console.error('Error fetching paginated productos (fallback):', queryError)
-      return { data: [], count: 0 }
-    }
-
-    return { data: data || [], count: count || 0 }
   }
 }

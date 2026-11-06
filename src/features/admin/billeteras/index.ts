@@ -1,5 +1,6 @@
 export { default as BilleterasPage } from './billeteras-page'
 export * from './components'
+export * from './context'
 export * from './data/types'
 export * from './queries'
 export { BilleterasService } from './services'

@@ -11,7 +11,7 @@ export type Billetera = {
     apellidos: string
     email: string
     telefono: string | null
-    rol: 'provider' | 'admin' | 'seller'
+    rol: 'provider' | 'admin' | 'seller' | 'registered'
   }
 }
 
@@ -29,7 +29,7 @@ export type Recarga = {
     apellidos: string
     email: string
     telefono: string | null
-    rol: 'provider' | 'admin' | 'seller'
+    rol: 'provider' | 'admin' | 'seller' | 'registered'
   }
 }
 
@@ -47,7 +47,7 @@ export type Retiro = {
     apellidos: string
     email: string
     telefono: string | null
-    rol: 'provider' | 'admin' | 'seller'
+    rol: 'provider' | 'admin' | 'seller' | 'registered'
   }
 }
 

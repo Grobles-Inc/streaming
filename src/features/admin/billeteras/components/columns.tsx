@@ -30,12 +30,11 @@ const getRolBadge = (rol: string) => {
 }
 
 const NombreCompletoCell = ({ row }: { row: Billetera }) => {
-  const { nombres, apellidos, usuario } = row.usuario || {}
+  const { nombres, apellidos } = row.usuario || {}
   return (
-    <div className='flex flex-col'>
-      <span className='font-medium'>{nombres} {apellidos}</span>
-      <span className='text-xs text-muted-foreground font-mono'>@{usuario}</span>
-    </div>
+    <span className='font-medium'>
+      {nombres} {apellidos}
+    </span>
   )
 }
 
@@ -95,30 +94,41 @@ export const columns: ColumnDef<Billetera>[] = [
       <span className='font-mono text-xs'>{row.original.id.slice(0, 8)}...</span>
     ),
     enableHiding: false,
+    enableGlobalFilter: false,
   },
   {
     id: 'nombre_completo',
+    accessorFn: row =>
+      [row.usuario?.nombres, row.usuario?.apellidos, row.usuario?.usuario]
+        .filter(Boolean)
+        .join(' '),
     header: 'Usuario',
     cell: ({ row }) => <NombreCompletoCell row={row.original} />,
     enableHiding: false,
   },
   {
-    accessorKey: 'email',
+    id: 'email',
+    accessorFn: row => row.usuario?.email ?? '',
     header: 'Email',
     cell: ({ row }) => <EmailCell row={row.original} />,
+    enableGlobalFilter: false,
   },
   {
-    accessorKey: 'telefono',
+    id: 'telefono',
+    accessorFn: row => row.usuario?.telefono ?? '',
     header: 'Teléfono',
     cell: ({ row }) => <TelefonoCell row={row.original} />,
+    enableGlobalFilter: false,
   },
   {
-    accessorKey: 'rol',
+    id: 'rol',
+    accessorFn: row => row.usuario?.rol ?? '',
     header: 'Rol',
     cell: ({ row }) => {
       const { rol } = row.original.usuario || {}
       return <div className='flex justify-center'>{rol && getRolBadge(rol)}</div>
     },
+    enableGlobalFilter: false,
     filterFn: (row, _id, value) => {
       const rol = row.original.usuario?.rol || ''
       return value.includes(rol)
@@ -128,6 +138,7 @@ export const columns: ColumnDef<Billetera>[] = [
     accessorKey: 'saldo',
     header: 'Saldo',
     cell: ({ row }) => <SaldoCell row={row.original} />,
+    enableGlobalFilter: false,
   },
   {
     id: 'actions',
@@ -135,5 +146,6 @@ export const columns: ColumnDef<Billetera>[] = [
     cell: ({ row }) => <AccionesCell row={row.original} />,
     enableSorting: false,
     enableHiding: false,
+    enableGlobalFilter: false,
   },
 ]

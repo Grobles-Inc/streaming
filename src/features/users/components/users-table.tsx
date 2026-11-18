@@ -60,7 +60,6 @@ export function UsersTable({
   columnFilters,
   onColumnFiltersChange,
 }: DataTableProps) {
-  const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
   const table = useReactTable({
@@ -69,7 +68,6 @@ export function UsersTable({
     state: {
       sorting,
       columnVisibility,
-      rowSelection,
       columnFilters,
       pagination,
     },
@@ -79,10 +77,6 @@ export function UsersTable({
     manualFiltering: true,
     manualSorting: true,
     rowCount: total,
-    // Id estable para que la selección sobreviva al cambio de página
-    getRowId: (row) => String(row.id),
-    enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
     onSortingChange,
     onColumnFiltersChange,
     onPaginationChange,
@@ -124,7 +118,6 @@ export function UsersTable({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
                   className='group/row'
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -164,7 +157,7 @@ export function UsersTable({
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} total={total} />
+      <DataTablePagination table={table} />
     </div>
   )
 }

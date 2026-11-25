@@ -68,7 +68,9 @@ export class ConfiguracionService {
         yape_info: config.yape_info ? yapeInfoToJson(config.yape_info) : null,
         binance_info: config.binance_info
           ? binanceInfoToJson(config.binance_info)
-          : null
+          : null,
+        redirect_landing_url: config.redirect_landing_url ?? null,
+        promotions_images: config.promotions_images ?? null,
       })
       .select()
       .single()
@@ -117,7 +119,9 @@ export class ConfiguracionService {
       comision_publicacion_producto: configAnterior.comision_publicacion_producto,
       yape_info: configAnterior.yape_info,
       binance_info: configAnterior.binance_info,
-      banner_images_urls: configAnterior.banner_images_urls
+      banner_images_urls: configAnterior.banner_images_urls,
+      redirect_landing_url: configAnterior.redirect_landing_url,
+      promotions_images: configAnterior.promotions_images
     })
   }
 
@@ -139,6 +143,10 @@ export class ConfiguracionService {
         : null,
       yape_info: row.yape_info ? asYapeInfo(row.yape_info) : null,
       binance_info: row.binance_info ? asBinanceInfo(row.binance_info) : null,
+      redirect_landing_url: row.redirect_landing_url ?? null,
+      promotions_images: Array.isArray(row.promotions_images)
+        ? (row.promotions_images as string[])
+        : null,
       createdAt: updatedAt, // Usamos updated_at como fecha de creación
       updatedAt
     }
@@ -158,6 +166,8 @@ export class ConfiguracionService {
       banner_images_urls: null,
       yape_info: null,
       binance_info: null,
+      redirect_landing_url: null,
+      promotions_images: null,
       createdAt: new Date(),
       updatedAt: new Date()
     }

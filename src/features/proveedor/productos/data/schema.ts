@@ -13,6 +13,7 @@ export const estadoProductoSchema = z.union([
   z.literal('borrador'),
   z.literal('publicado'),
   z.literal('pendiente'),
+  z.literal('oculto'),
 ])
 export type EstadoProducto = z.infer<typeof estadoProductoSchema>
 
@@ -26,6 +27,7 @@ export const productoSchema = z.object({
   tiempo_uso: z.coerce.number().int().min(0, "El tiempo de uso debe ser un número entero mayor o igual a 0"),
   nuevo: z.boolean(),
   disponibilidad: disponibilidadSchema,
+  estado: estadoProductoSchema,
   renovable: z.boolean(),
   descripcion: z.string().optional(),
   informacion: z.string().optional(),

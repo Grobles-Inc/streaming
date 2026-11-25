@@ -26,7 +26,7 @@ export const getProductosByCategoria = async (categoriaId: string): Promise<Prod
       console.warn('Error en verificación de vencimientos:', resultadoVerificacion.error)
     }
 
-    // 2. Consultar productos por categoría solo si están publicados
+    // 2. Consultar productos por categoría (incluye publicados y ocultos)
     const { data, error } = await supabase
       .from('productos')
       .select(`
@@ -35,7 +35,7 @@ export const getProductosByCategoria = async (categoriaId: string): Promise<Prod
         usuarios:proveedor_id(nombres, apellidos, billetera_id, usuario)
       `)
       .eq('categoria_id', categoriaId)
-      .eq('estado', 'publicado')
+      .in('estado', ['publicado', 'oculto'])
       .order('created_at', { ascending: true })
 
     if (error) {
@@ -111,7 +111,7 @@ export const getProductosPublicados = async (): Promise<Producto[]> => {
         categorias:categoria_id(nombre),
         usuarios:proveedor_id(nombres, apellidos, billetera_id, usuario)
       `)
-      .eq('estado', 'publicado')
+      .in('estado', ['publicado', 'oculto'])
       .order('created_at', { ascending: false })
 
     if (error) {

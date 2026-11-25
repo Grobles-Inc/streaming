@@ -23,6 +23,8 @@ export type MappedConfiguracion = {
   updatedAt: Date
   yape_info: YapeInfo | null
   binance_info: BinanceInfo | null
+  redirect_landing_url: string | null
+  promotions_images: string[] | null
 }
 
 // Entrada del historial de configuraciones

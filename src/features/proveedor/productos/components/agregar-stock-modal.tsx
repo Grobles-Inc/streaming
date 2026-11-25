@@ -3,9 +3,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {
   IconClipboard,
   IconCopy,
+  IconDots,
   IconEye,
   IconEyeOff,
-  IconPackage,
   IconPlus,
   IconTrash,
 } from '@tabler/icons-react'
@@ -15,11 +15,17 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -29,6 +35,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { useAuth } from '@/stores/authStore'
 import {
   useCreateStockProducto,
@@ -277,15 +291,11 @@ export function AgregarStockModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='flex max-h-[90vh] flex-col gap-0 sm:max-w-3xl'>
-        <DialogHeader className='border-b pb-4'>
+      <DialogContent className='flex !max-h-[150vh] !max-w-[90vw] flex-col overflow-hidden'>
+        <DialogHeader>
           <DialogTitle className='flex items-center gap-2'>
-            <IconPackage size={20} />
             Agregar Stock
           </DialogTitle>
-          <DialogDescription>
-            Agrega nuevas existencias a tus productos
-          </DialogDescription>
         </DialogHeader>
 
         <form
@@ -433,159 +443,141 @@ export function AgregarStockModal({
 
             {/* Campos para tipo PERFILES */}
             {tipoSeleccionado === 'perfiles' && (
-              <div className='space-y-3'>
+              <div className='space-y-4'>
                 <div className='flex items-center justify-between'>
                   <Label className='text-base font-medium'>
                     Perfiles ({fields.length})
                   </Label>
-                  <Button
-                    type='button'
-                    variant='outline'
-                    size='sm'
-                    onClick={agregarPerfil}
-                  >
-                    <IconPlus />
+                  <Button type='button' onClick={agregarPerfil}>
+                    <IconPlus size={16} className='mr-2' />
                     Agregar perfil
                   </Button>
                 </div>
 
-                <div className='space-y-3'>
-                  {fields.map((field, index) => (
-                    <div key={field.id} className='space-y-3 rounded-lg border p-4'>
-                      <div className='flex items-center justify-between'>
-                        <span className='text-sm font-medium'>
-                          Perfil #{index + 1}
-                        </span>
-                        <div className='flex items-center gap-1'>
-                          <Button
-                            type='button'
-                            variant='ghost'
-                            size='icon'
-                            className='size-8'
-                            onClick={() => copiarPerfil(index)}
-                            title={
-                              perfilTieneDatos(index)
-                                ? 'Copiar este perfil'
-                                : 'Completa algunos campos para poder copiar'
-                            }
-                            disabled={!perfilTieneDatos(index)}
-                          >
-                            <IconCopy className='text-muted-foreground' />
-                          </Button>
-
-                          <Button
-                            type='button'
-                            variant='ghost'
-                            size='icon'
-                            className='size-8'
-                            onClick={() => pegarPerfil(index)}
-                            title={
-                              perfilCopiado
-                                ? 'Pegar perfil copiado'
-                                : 'Primero copia un perfil'
-                            }
-                            disabled={!perfilCopiado}
-                          >
-                            <IconClipboard className='text-muted-foreground' />
-                          </Button>
-
-                          <Button
-                            type='button'
-                            variant='ghost'
-                            size='icon'
-                            className='size-8'
-                            onClick={() => eliminarPerfil(index)}
-                            disabled={fields.length === 1}
-                            title='Eliminar perfil'
-                          >
-                            <IconTrash className='text-destructive' />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
-                        <div className='space-y-2'>
-                          <Label htmlFor={`perfiles.${index}.email`}>
-                            Cuenta Email
-                          </Label>
-                          <Input
-                            id={`perfiles.${index}.email`}
-                            {...register(`perfiles.${index}.email`)}
-                            placeholder='correo@ejemplo.com'
-                          />
-                          {errors.perfiles?.[index]?.email && (
-                            <p className='text-sm text-destructive'>
-                              {errors.perfiles?.[index]?.email?.message}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className='space-y-2'>
-                          <Label htmlFor={`perfiles.${index}.clave`}>
-                            Cuenta Clave
-                          </Label>
-                          <div className='relative'>
+                <div className='overflow-auto'>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Cuenta Email</TableHead>
+                        <TableHead>Cuenta Clave</TableHead>
+                        <TableHead>URL</TableHead>
+                        <TableHead>Perfil</TableHead>
+                        <TableHead>PIN</TableHead>
+                        <TableHead className='w-10' />
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {fields.map((field, index) => (
+                        <TableRow key={field.id}>
+                          <TableCell>
                             <Input
-                              id={`perfiles.${index}.clave`}
-                              {...register(`perfiles.${index}.clave`)}
-                              type={
-                                mostrarClavePerfiles[index] ? 'text' : 'password'
-                              }
-                              placeholder='Contraseña'
-                              className='pr-10'
+                              id={`perfiles.${index}.email`}
+                              {...register(`perfiles.${index}.email`)}
+                              placeholder='correo@ejemplo.com'
                             />
-                            <Button
-                              type='button'
-                              variant='ghost'
-                              size='icon'
-                              className='absolute top-1/2 right-1 size-7 -translate-y-1/2'
-                              onClick={() => toggleMostrarClavePerfiles(index)}
-                            >
-                              {mostrarClavePerfiles[index] ? (
-                                <IconEyeOff className='text-muted-foreground' />
-                              ) : (
-                                <IconEye className='text-muted-foreground' />
-                              )}
-                            </Button>
-                          </div>
-                          {errors.perfiles?.[index]?.clave && (
-                            <p className='text-sm text-destructive'>
-                              {errors.perfiles?.[index]?.clave?.message}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className='space-y-2'>
-                          <Label htmlFor={`perfiles.${index}.url`}>URL</Label>
-                          <Input
-                            id={`perfiles.${index}.url`}
-                            {...register(`perfiles.${index}.url`)}
-                            placeholder='https://...'
-                          />
-                        </div>
-
-                        <div className='space-y-2'>
-                          <Label htmlFor={`perfiles.${index}.perfil`}>
-                            Perfil
-                          </Label>
-                          <Input
-                            id={`perfiles.${index}.perfil`}
-                            {...register(`perfiles.${index}.perfil`)}
-                            placeholder='Nombre perfil'
-                          />
-                        </div>
-
-                        <div className='space-y-2'>
-                          <Label htmlFor={`perfiles.${index}.pin`}>PIN</Label>
-                          <Input
-                            id={`perfiles.${index}.pin`}
-                            {...register(`perfiles.${index}.pin`)}
-                            placeholder='PIN'
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                            {errors.perfiles?.[index]?.email && (
+                              <p className='mt-1 text-sm text-destructive'>
+                                {errors.perfiles?.[index]?.email?.message}
+                              </p>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className='relative'>
+                              <Input
+                                id={`perfiles.${index}.clave`}
+                                {...register(`perfiles.${index}.clave`)}
+                                type={
+                                  mostrarClavePerfiles[index]
+                                    ? 'text'
+                                    : 'password'
+                                }
+                                placeholder='Contraseña'
+                                className='pr-10'
+                              />
+                              <Button
+                                type='button'
+                                variant='ghost'
+                                size='icon'
+                                className='absolute top-1/2 right-1 size-7 -translate-y-1/2'
+                                onClick={() => toggleMostrarClavePerfiles(index)}
+                              >
+                                {mostrarClavePerfiles[index] ? (
+                                  <IconEyeOff className='text-muted-foreground' />
+                                ) : (
+                                  <IconEye className='text-muted-foreground' />
+                                )}
+                              </Button>
+                            </div>
+                            {errors.perfiles?.[index]?.clave && (
+                              <p className='mt-1 text-sm text-destructive'>
+                                {errors.perfiles?.[index]?.clave?.message}
+                              </p>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              id={`perfiles.${index}.url`}
+                              {...register(`perfiles.${index}.url`)}
+                              placeholder='https://...'
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              id={`perfiles.${index}.perfil`}
+                              {...register(`perfiles.${index}.perfil`)}
+                              placeholder='Nombre perfil'
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              id={`perfiles.${index}.pin`}
+                              {...register(`perfiles.${index}.pin`)}
+                              placeholder='PIN'
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  type='button'
+                                  variant='ghost'
+                                  className='flex size-8 p-0 data-[state=open]:bg-muted'
+                                >
+                                  <IconDots className='size-4' />
+                                  <span className='sr-only'>Abrir menú</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align='end' className='w-40'>
+                                <DropdownMenuItem
+                                  onClick={() => copiarPerfil(index)}
+                                  disabled={!perfilTieneDatos(index)}
+                                >
+                                  <IconCopy className='size-4' />
+                                  Copiar perfil
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => pegarPerfil(index)}
+                                  disabled={!perfilCopiado}
+                                >
+                                  <IconClipboard className='size-4' />
+                                  Pegar perfil
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className='text-destructive'
+                                  onClick={() => eliminarPerfil(index)}
+                                  disabled={fields.length === 1}
+                                >
+                                  <IconTrash className='size-4' />
+                                  Eliminar
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               </div>
             )}

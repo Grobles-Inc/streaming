@@ -354,6 +354,7 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
                       <SelectContent>
                         <SelectItem value="borrador">Borrador</SelectItem>
                         <SelectItem value="publicado">Publicado</SelectItem>
+                        <SelectItem value="oculto">Oculto</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

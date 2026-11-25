@@ -321,7 +321,7 @@ export function GestionarExistenciasModal({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-10">
+                      <TableHead className="w-10 lg:h-14">
                         <Checkbox
                           checked={
                             bulk.allSelected ||
@@ -351,8 +351,9 @@ export function GestionarExistenciasModal({
                       <TableRow
                         key={stock.id}
                         data-state={bulk.isSelected(stock.id) && 'selected'}
+                        className="h-12 lg:h-16"
                       >
-                        <TableCell className="w-10">
+                        <TableCell className="w-10 lg:p-3">
                           <Checkbox
                             checked={bulk.isSelected(stock.id)}
                             onCheckedChange={(value) =>
@@ -362,37 +363,37 @@ export function GestionarExistenciasModal({
                             className='translate-y-[2px]'
                           />
                         </TableCell>
-                        <TableCell className="font-mono text-sm">
+                        <TableCell className="font-mono text-sm lg:text-base">
                           #{stock.id}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="max-w-32 lg:max-w-48">
                           {getTipoBadge(stock.tipo)}
                         </TableCell>
-                        <TableCell className="max-w-32">
+                        <TableCell className="max-w-24 lg:max-w-40">
                           <div className="truncate" title={stock.email || 'N/A'}>
                             {stock.email || 'N/A'}
                           </div>
                         </TableCell>
-                        <TableCell className="max-w-24">
+                        <TableCell className="max-w-24 lg:max-w-40">
                           <div className="truncate font-mono text-sm" title={stock.clave || 'N/A'}>
                             {stock.clave || 'N/A'}
                           </div>
                         </TableCell>
-                        <TableCell className="max-w-24">
+                        <TableCell className="max-w-24 lg:max-w-40">
                           <div className="truncate" title={stock.perfil || 'N/A'}>
                             {stock.perfil || 'N/A'}
                           </div>
                         </TableCell>
-                        <TableCell className="font-mono text-sm">
+                        <TableCell className="font-mono text-sm lg:text-base">
                           {stock.pin || 'N/A'}
                         </TableCell>
-                        <TableCell className="max-w-32">
+                        <TableCell className="max-w-32 lg:max-w-48">
                           {stock.url ? (
                             <a
                               href={stock.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline text-sm truncate block"
+                              className="text-blue-600 hover:underline text-sm lg:text-base truncate block"
                               title={stock.url}
                             >
                               {stock.url}
@@ -404,14 +405,14 @@ export function GestionarExistenciasModal({
                         <TableCell>
                           {getEstadoBadge(stock.estado)}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="lg:text-sm">
                           {getSoporteBadge(stock.soporte_stock_producto)}
                         </TableCell>
                         <TableCell>
                           <Badge 
                             variant="outline" 
                             className={cn(
-                              'text-xs',
+                              'text-xs lg:text-sm',
                               stock.publicado 
                                 ? 'bg-green-50 text-green-700 border-green-200' 
                                 : 'bg-red-50 text-red-700 border-red-200'
@@ -420,7 +421,7 @@ export function GestionarExistenciasModal({
                             {stock.publicado ? 'Publicado' : 'Sin Publicar'}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
+                        <TableCell className="text-sm lg:text-base text-muted-foreground">
                           {new Date(stock.created_at).toLocaleDateString('es-ES')}
                         </TableCell>
                         <TableCell>
@@ -428,16 +429,16 @@ export function GestionarExistenciasModal({
                             <DropdownMenuTrigger asChild>
                               <Button
                                 variant="ghost"
-                                className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                                className="flex h-8 w-8 p-0 data-[state=open]:bg-muted lg:h-10 lg:w-10"
                               >
-                                <IconDots className="h-4 w-4" />
+                                <IconDots className="h-4 w-4 lg:h-5 lg:w-5" />
                                 <span className="sr-only">Abrir menú</span>
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[160px]">
+                            <DropdownMenuContent align="end" className="w-[160px] lg:w-[200px]">
                               {stock.publicado ? (
                                 <DropdownMenuItem onClick={() => handleDespublicar(stock)} disabled={updateStockMutation.isPending}>
-                                  <IconEyeOff className="mr-2 h-4 w-4" />
+                                  <IconEyeOff className="mr-2 lg:mr-3 h-4 lg:w-4 lg:h-4" />
                                   Despublicar
                                 </DropdownMenuItem>
                               ) : (
@@ -446,13 +447,13 @@ export function GestionarExistenciasModal({
                                   disabled={updateStockMutation.isPending}
                                   className={!productoEstaPublicado ? 'text-red-500' : ''}
                                 >
-                                  <IconEye className="mr-2 h-4 w-4" />
+                                  <IconEye className="mr-2 lg:mr-3 h-4 lg:w-4 lg:h-4" />
                                   Publicar {!productoEstaPublicado}
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuSeparator />
                               <DropdownMenuItem onClick={() => handleEdit(stock)}>
-                                <IconEdit className="mr-2 h-4 w-4" />
+                                <IconEdit className="mr-2 lg:mr-3 h-4 lg:w-4 lg:h-4" />
                                 Editar
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
@@ -460,7 +461,7 @@ export function GestionarExistenciasModal({
                                 className="text-red-600"
                                 onClick={() => handleDelete(stock)}
                               >
-                                <IconTrash className="mr-2 h-4 w-4" />
+                                <IconTrash className="mr-2 lg:mr-3 h-4 lg:w-4 lg:h-4" />
                                 Eliminar
                               </DropdownMenuItem>
                             </DropdownMenuContent>

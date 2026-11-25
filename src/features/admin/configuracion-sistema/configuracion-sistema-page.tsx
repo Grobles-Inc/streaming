@@ -42,6 +42,9 @@ export default function ConfiguracionSistemaPage() {
   const [uploadingBinanceQr, setUploadingBinanceQr] = useState(false)
   const [bannerImages, setBannerImages] = useState<string[]>([])
   const [uploadingBanner, setUploadingBanner] = useState(false)
+  const [redirectLandingUrl, setRedirectLandingUrl] = useState('')
+  const [promotionsImages, setPromotionsImages] = useState<string[]>([])
+  const [uploadingPromotions, setUploadingPromotions] = useState(false)
 
   // Sincronizar estado local con la configuración cargada
   useEffect(() => {
@@ -65,6 +68,8 @@ export default function ConfiguracionSistemaPage() {
       setBinanceQrUrl(binance?.qr_url ?? '')
 
       setBannerImages(configuracion.banner_images_urls ?? [])
+      setRedirectLandingUrl(configuracion.redirect_landing_url ?? '')
+      setPromotionsImages(configuracion.promotions_images ?? [])
     }
   }, [configuracion])
 
@@ -143,6 +148,40 @@ export default function ConfiguracionSistemaPage() {
     }
   }
 
+  const handlePromotionsUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+    try {
+      setUploadingPromotions(true)
+      const urls: string[] = []
+      for (const file of files) {
+        const url = await SupabaseStorageService.uploadBannerImage(file)
+        urls.push(url)
+      }
+      setPromotionsImages((prev) => [...prev, ...urls])
+      toast.success('Promoción(es) subida(s) correctamente')
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : 'Error al subir promoción'
+      )
+    } finally {
+      setUploadingPromotions(false)
+      e.target.value = ''
+    }
+  }
+
+  const handlePromotionsDelete = async (url: string) => {
+    try {
+      await SupabaseStorageService.deleteBannerImage(url)
+      setPromotionsImages((prev) => prev.filter((u) => u !== url))
+      toast.success('Promoción eliminada')
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : 'Error al eliminar promoción'
+      )
+    }
+  }
+
   // Manejar guardado de configuración
   const handleSaveAll = async () => {
     const success = await saveConfiguracion({
@@ -164,6 +203,8 @@ export default function ConfiguracionSistemaPage() {
         usdt_rate: Number(usdtRate) || DEFAULT_BINANCE_INFO.usdt_rate,
       },
       banner_images_urls: bannerImages.length ? bannerImages : null,
+      redirect_landing_url: redirectLandingUrl.trim() || null,
+      promotions_images: promotionsImages.length ? promotionsImages : null,
     })
 
     if (success) {
@@ -191,7 +232,9 @@ export default function ConfiguracionSistemaPage() {
     binanceName !== (currentBinance?.binance_name ?? DEFAULT_BINANCE_INFO.binance_name ?? '') ||
     usdtRate !== String(currentBinance?.usdt_rate ?? DEFAULT_BINANCE_INFO.usdt_rate ?? 3.2) ||
     binanceQrUrl !== (currentBinance?.qr_url ?? '') ||
-    JSON.stringify(bannerImages) !== JSON.stringify(configuracion.banner_images_urls ?? [])
+    JSON.stringify(bannerImages) !== JSON.stringify(configuracion.banner_images_urls ?? []) ||
+    redirectLandingUrl !== (configuracion.redirect_landing_url ?? '') ||
+    JSON.stringify(promotionsImages) !== JSON.stringify(configuracion.promotions_images ?? [])
   )
 
   if (loading) {
@@ -526,6 +569,75 @@ export default function ConfiguracionSistemaPage() {
                   disabled={saving || uploadingBanner}
                 />
                 {uploadingBanner && <p className="text-xs text-muted-foreground">Subiendo banner(s)...</p>}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Redirección de landing */}
+        <div className="grid gap-6 md:grid-cols-1 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Redirección de Landing</CardTitle>
+              <CardDescription>
+                Ruta a la que se redirige a los usuarios al entrar (por ejemplo / o /sign-in).
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Input
+                value={redirectLandingUrl}
+                onChange={e => setRedirectLandingUrl(e.target.value)}
+                placeholder="/"
+                disabled={saving}
+              />
+              <Button
+                className='mt-4'
+                onClick={handleSaveAll}
+                disabled={saving || !hasChanges}
+                size="sm"
+              >
+                {saving ? 'Guardando...' : 'Guardar'}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Imágenes de promoción */}
+        <div className="grid gap-6 md:grid-cols-1 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Imágenes de Promoción</CardTitle>
+              <CardDescription>
+                Imágenes del carrusel mostrado como modal en la landing.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {promotionsImages.map((url) => (
+                  <div key={url} className="relative border rounded overflow-hidden">
+                    <img src={url} alt="Promoción" className="h-32 w-full object-contain" />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-1 right-1"
+                      onClick={() => handlePromotionsDelete(url)}
+                      disabled={saving || uploadingPromotions}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handlePromotionsUpload}
+                  disabled={saving || uploadingPromotions}
+                />
+                {uploadingPromotions && <p className="text-xs text-muted-foreground">Subiendo promoción(es)...</p>}
               </div>
             </CardContent>
           </Card>

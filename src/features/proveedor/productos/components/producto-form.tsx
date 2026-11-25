@@ -112,6 +112,7 @@ export function ProductoFormDialog({
       imagen_url: '',
       renovable: false,
       disponibilidad: 'en_stock',
+      estado: 'borrador',
       descripcion: '',
       descripcion_completa: '',
       categoria_id: '',
@@ -597,6 +598,33 @@ export function ProductoFormDialog({
                           </div>
                           <FormControl>
                             <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="estado"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-sm font-medium">Estado de publicación</FormLabel>
+                            <div className="text-xs text-muted-foreground">Selecciona el estado del producto</div>
+                          </div>
+                          <FormControl>
+                            <Select value={field.value ?? "borrador"} onValueChange={field.onChange}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecciona estado" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="borrador">Borrador</SelectItem>
+                                <SelectItem value="publicado">Publicado</SelectItem>
+                                <SelectItem value="pendiente">Pendiente</SelectItem>
+                                <SelectItem value="oculto">Oculto</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </FormControl>
                         </FormItem>
                       )}

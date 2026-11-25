@@ -37,7 +37,7 @@ export const columns: ColumnDef<Producto>[] = [
       const id = row.getValue('id') as number
       
       return (
-        <div className='w-12 font-mono text-sm text-left'>{id}</div>
+        <div className='w-12 lg:w-16 font-mono text-sm lg:text-base text-left'>{id}</div>
       )
     },
     enableSorting: false,

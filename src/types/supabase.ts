@@ -286,6 +286,8 @@ export type Database = {
           email_soporte: string | null
           id: number
           mantenimiento: boolean | null
+          promotions_images: Json | null
+          redirect_landing_url: string | null
           register_link: string | null
           registro_requiere_aprobacion: boolean
           signup_mode: string
@@ -301,6 +303,8 @@ export type Database = {
           email_soporte?: string | null
           id?: number
           mantenimiento?: boolean | null
+          promotions_images?: Json | null
+          redirect_landing_url?: string | null
           register_link?: string | null
           registro_requiere_aprobacion?: boolean
           signup_mode?: string
@@ -316,6 +320,8 @@ export type Database = {
           email_soporte?: string | null
           id?: number
           mantenimiento?: boolean | null
+          promotions_images?: Json | null
+          redirect_landing_url?: string | null
           register_link?: string | null
           registro_requiere_aprobacion?: boolean
           signup_mode?: string
@@ -334,6 +340,7 @@ export type Database = {
           password_vault_id: string
           plataforma: string
           port: number
+          proveedor_correo: string | null
           ssl: boolean
           stock_producto_id: number
           updated_at: string | null
@@ -348,6 +355,7 @@ export type Database = {
           password_vault_id: string
           plataforma?: string
           port?: number
+          proveedor_correo?: string | null
           ssl?: boolean
           stock_producto_id: number
           updated_at?: string | null
@@ -362,6 +370,7 @@ export type Database = {
           password_vault_id?: string
           plataforma?: string
           port?: number
+          proveedor_correo?: string | null
           ssl?: boolean
           stock_producto_id?: number
           updated_at?: string | null
@@ -451,6 +460,7 @@ export type Database = {
           id: string
           keywords: string[]
           label: string
+          link_hosts: string[]
         }
         Insert: {
           activo?: boolean
@@ -458,6 +468,7 @@ export type Database = {
           id: string
           keywords?: string[]
           label: string
+          link_hosts?: string[]
         }
         Update: {
           activo?: boolean
@@ -465,6 +476,7 @@ export type Database = {
           id?: string
           keywords?: string[]
           label?: string
+          link_hosts?: string[]
         }
         Relationships: []
       }
@@ -1067,7 +1079,11 @@ export type Database = {
         | "renovado"
       disponibilidad: "en_stock" | "a_pedido" | "activacion"
       estado: "disponible" | "vendido"
-      estado_publicacion_producto: "borrador" | "publicado" | "pendiente"
+      estado_publicacion_producto:
+        | "borrador"
+        | "publicado"
+        | "pendiente"
+        | "oculto"
       recarga_estado: "aprobado" | "rechazado" | "pendiente"
       rol: "admin" | "seller" | "provider" | "registrado"
       roles: "admin" | "provider" | "seller" | "registrado"
@@ -1211,7 +1227,12 @@ export const Constants = {
       ],
       disponibilidad: ["en_stock", "a_pedido", "activacion"],
       estado: ["disponible", "vendido"],
-      estado_publicacion_producto: ["borrador", "publicado", "pendiente"],
+      estado_publicacion_producto: [
+        "borrador",
+        "publicado",
+        "pendiente",
+        "oculto",
+      ],
       recarga_estado: ["aprobado", "rechazado", "pendiente"],
       rol: ["admin", "seller", "provider", "registrado"],
       roles: ["admin", "provider", "seller", "registrado"],

@@ -250,6 +250,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           tiempo_uso: producto.tiempo_uso,
           nuevo: producto.nuevo,
           disponibilidad: producto.disponibilidad,
+          estado: producto.estado,
           renovable: producto.renovable,
           descripcion: producto.descripcion ?? '',
           informacion: producto.informacion ?? '',

@@ -16,6 +16,7 @@ export type SupabaseProducto = {
   created_at: string
   updated_at: string
   tiempo_uso: number
+  duracion_cartel_dias: number
   nuevo: boolean
   descripcion_completa: string | null
   disponibilidad: DisponibilidadProducto
@@ -50,6 +51,7 @@ export type CreateProductoData = {
   proveedor_id: string
   imagen_url?: string | null
   tiempo_uso?: number
+  duracion_cartel_dias?: number
   nuevo?: boolean
   descripcion_completa?: string | null
   disponibilidad: DisponibilidadProducto

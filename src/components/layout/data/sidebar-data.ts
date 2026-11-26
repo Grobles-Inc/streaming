@@ -15,7 +15,7 @@ import {
   IconVersions,
   IconWallet
 } from '@tabler/icons-react'
-import { type SidebarData, type UserRole } from '../types'
+import { type NavLink, type SidebarData, type UserRole } from '../types'
 
 // Utility function to check if user has access to a navigation item
 export const hasRoleAccess = (userRole: UserRole, allowedRoles?: UserRole[]): boolean => {
@@ -81,6 +81,7 @@ const baseNavGroups = [
     items: [
       {
         title: 'Ir a la Tienda',
+        shortTitle: 'Tienda',
         url: '/',
         icon: IconBuildingStore,
         roles: ['admin', 'registered', 'seller', 'provider'],
@@ -390,6 +391,31 @@ export const getSidebarData = (userRole: UserRole = 'registered', user?: any): S
 // Function to get navigation groups only (without user data)
 export const getNavGroups = (userRole: UserRole = 'registered') => {
   return filterNavGroupsByRole(baseNavGroups, userRole)
+}
+
+// URLs que se muestran como tabs inferiores. El resto de la navegación del
+// rol entra en el menú "Más". Los roles sin configuración no muestran tabs.
+const bottomTabUrls: Partial<Record<UserRole, string[]>> = {
+  seller: ['/', '/compras', '/recargas'],
+}
+
+// Function to split the role navigation into bottom tabs and the "Más" menu
+export const getBottomTabs = (
+  userRole: UserRole
+): { tabs: NavLink[]; more: NavLink[] } | null => {
+  const primaryUrls = bottomTabUrls[userRole]
+  if (!primaryUrls) return null
+
+  const links = filterNavGroupsByRole(baseNavGroups, userRole)
+    .flatMap((group) => group.items)
+    .filter((item): item is NavLink => Boolean(item.url))
+
+  return {
+    tabs: primaryUrls
+      .map((url) => links.find((item) => item.url === url))
+      .filter((item): item is NavLink => Boolean(item)),
+    more: links.filter((item) => !primaryUrls.includes(item.url as string)),
+  }
 }
 
 // Default export for backward compatibility - only navigation groups

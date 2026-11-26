@@ -65,7 +65,7 @@ export default function ProductoCard({ producto }: { producto: Producto }) {
 
         <CardContent className='space-y-2'>
           <div className='flex flex-col items-center text-center'>
-            <span className='line-clamp-2 text-xs px-2 leading-tight font-bold md:text-sm'>
+            <span className='line-clamp-3 text-xs px-2 leading-tight font-bold whitespace-pre-line md:text-sm'>
               {producto.nombre}
             </span>
             <span className='mb-0.5 text-[10px] font-semibold tracking-wider  uppercase'>

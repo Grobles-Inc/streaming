@@ -1,5 +1,6 @@
 import { useBilleteraByUsuario } from '@/queries'
 import { useAuthStore } from '@/stores/authStore'
+import { useIsMobile } from '@/hooks/use-mobile'
 import {
   Sidebar,
   SidebarContent,
@@ -19,6 +20,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const monto = billetera?.saldo || 0
   const userRole: UserRole = (user?.rol as UserRole) || 'seller'
   const sidebarData = getSidebarData(userRole, user)
+  const isMobile = useIsMobile()
+
+  // El vendedor navega con bottom tabs en móvil, sin drawer lateral.
+  if (isMobile && userRole === 'seller') {
+    return null
+  }
 
   return (
     <Sidebar collapsible='icon' variant='floating' {...props}>

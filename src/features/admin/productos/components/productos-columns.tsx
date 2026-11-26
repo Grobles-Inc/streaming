@@ -59,10 +59,6 @@ function ProductosTableActions({
         {producto.estado === 'pendiente' && onCambiarEstado && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => onCambiarEstado(producto.id.toString(), 'publicado')}>
-              <IconCheck className="mr-2 h-4 w-4 text-green-600" />
-              Publicar
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onCambiarEstado(producto.id.toString(), 'borrador')}>
               <IconX className="mr-2 h-4 w-4 text-orange-600" />
               Enviar a borrador

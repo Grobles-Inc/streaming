@@ -330,6 +330,92 @@ export type Database = {
         }
         Relationships: []
       }
+      configuracion_proveedores: {
+        Row: {
+          costo_publicacion_30d: number
+          costo_renovacion_30d: number
+          created_at: string
+          duracion_predeterminada_dias: number
+          updated_at: string
+          usuario_id: string
+        }
+        Insert: {
+          costo_publicacion_30d?: number
+          costo_renovacion_30d?: number
+          created_at?: string
+          duracion_predeterminada_dias?: number
+          updated_at?: string
+          usuario_id: string
+        }
+        Update: {
+          costo_publicacion_30d?: number
+          costo_renovacion_30d?: number
+          created_at?: string
+          duracion_predeterminada_dias?: number
+          updated_at?: string
+          usuario_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "configuracion_proveedores_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: true
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contabilidad_archivo: {
+        Row: {
+          dias_antiguedad: number
+          ejecutado_at: string
+          ejecutado_por: string | null
+          filas_recargas: number
+          filas_retiros: number
+          id: number
+          periodo_desde: string | null
+          periodo_hasta: string
+          recargas_aprobadas: number
+          recargas_por_estado: Json
+          recargas_total: number
+          retiros_aprobados: number
+          retiros_por_estado: Json
+          retiros_total: number
+        }
+        Insert: {
+          dias_antiguedad: number
+          ejecutado_at?: string
+          ejecutado_por?: string | null
+          filas_recargas?: number
+          filas_retiros?: number
+          id?: never
+          periodo_desde?: string | null
+          periodo_hasta: string
+          recargas_aprobadas?: number
+          recargas_por_estado?: Json
+          recargas_total?: number
+          retiros_aprobados?: number
+          retiros_por_estado?: Json
+          retiros_total?: number
+        }
+        Update: {
+          dias_antiguedad?: number
+          ejecutado_at?: string
+          ejecutado_por?: string | null
+          filas_recargas?: number
+          filas_retiros?: number
+          id?: never
+          periodo_desde?: string | null
+          periodo_hasta?: string
+          recargas_aprobadas?: number
+          recargas_por_estado?: Json
+          recargas_total?: number
+          retiros_aprobados?: number
+          retiros_por_estado?: Json
+          retiros_total?: number
+        }
+        Relationships: []
+      }
       imap_configs: {
         Row: {
           created_at: string | null
@@ -489,6 +575,7 @@ export type Database = {
           descripcion_completa: string | null
           deshabilitar_boton_comprar: boolean | null
           disponibilidad: Database["public"]["Enums"]["disponibilidad"]
+          duracion_cartel_dias: number
           estado: Database["public"]["Enums"]["estado_publicacion_producto"]
           fecha_expiracion: string | null
           id: number
@@ -516,6 +603,7 @@ export type Database = {
           descripcion_completa?: string | null
           deshabilitar_boton_comprar?: boolean | null
           disponibilidad?: Database["public"]["Enums"]["disponibilidad"]
+          duracion_cartel_dias?: number
           estado?: Database["public"]["Enums"]["estado_publicacion_producto"]
           fecha_expiracion?: string | null
           id?: number
@@ -543,6 +631,7 @@ export type Database = {
           descripcion_completa?: string | null
           deshabilitar_boton_comprar?: boolean | null
           disponibilidad?: Database["public"]["Enums"]["disponibilidad"]
+          duracion_cartel_dias?: number
           estado?: Database["public"]["Enums"]["estado_publicacion_producto"]
           fecha_expiracion?: string | null
           id?: number
@@ -813,8 +902,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      costo_cartel_proveedor: {
+        Args: { p_dias: number; p_proveedor_id: string; p_tipo: string }
+        Returns: number
+      }
       delete_imap_config: { Args: { p_compra_id: number }; Returns: undefined }
       delete_user_smart: { Args: { p_user_id: string }; Returns: Json }
+      get_balance_contable: { Args: never; Returns: Json }
       get_compras_admin: {
         Args: {
           p_estado?: string
@@ -847,6 +941,19 @@ export type Database = {
           plataforma: string
           stock_producto_id: number
         }[]
+      }
+      get_movimientos_billetera: {
+        Args: {
+          p_estado?: string
+          p_fecha_desde?: string
+          p_fecha_hasta?: string
+          p_page?: number
+          p_page_size?: number
+          p_subtipo?: string
+          p_tipo?: string
+          p_usuario_id: string
+        }
+        Returns: Json
       }
       get_movimientos_billetera_admin: {
         Args: {
@@ -1014,6 +1121,7 @@ export type Database = {
           total_productos: number
         }[]
       }
+      purgar_recargas_retiros: { Args: { p_dias?: number }; Returns: Json }
       registrar_compra: {
         Args: {
           p_idempotency_key: string

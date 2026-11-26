@@ -1,3 +1,16 @@
+export function etiquetaDuracionCartel(dias: number): string {
+  if (dias === 180) return '6 meses'
+  return `${dias} ${dias === 1 ? 'día' : 'días'}`
+}
+
+/**
+ * Costo del cartel para una duración. La base siempre está expresada por
+ * 30 días, así que 15 días cobra la mitad y 180 días cobra 6 veces.
+ */
+export function calcularCostoCartel(base30: number, dias: number): number {
+  return Math.round(base30 * (dias / 30) * 100) / 100
+}
+
 export type EstadoExpiracion = 'vigente' | 'por_vencer' | 'vencido' | 'sin_expirar'
 
 export interface InfoExpiracion {
@@ -81,21 +94,21 @@ export function calcularEstadoExpiracion(
 
 /**
  * Calcula la nueva fecha de expiración para renovar un producto
- * Extiende tiempo_uso días sobre la fecha de expiración actual. Si el producto
- * ya venció, la extensión arranca desde hoy para no perder días.
+ * Extiende la duración del cartel sobre la fecha de expiración actual. Si el
+ * producto ya venció, la extensión arranca desde hoy para no perder días.
  * @param fechaExpiracion - Fecha actual de expiración
- * @param tiempoUso - Días del tiempo de uso del producto
+ * @param diasCartel - Días de duración del cartel
  */
 export function calcularNuevaFechaExpiracion(
   fechaExpiracion: string,
-  tiempoUso: number
+  diasCartel: number
 ): string {
   const ahora = new Date()
   const fechaExp = new Date(fechaExpiracion)
   const fechaBase = fechaExp.getTime() > ahora.getTime() ? fechaExp : ahora
   const newDate = new Date(fechaBase.getTime())
 
-  newDate.setDate(newDate.getDate() + tiempoUso)
+  newDate.setDate(newDate.getDate() + diasCartel)
 
   return newDate.toISOString()
 }

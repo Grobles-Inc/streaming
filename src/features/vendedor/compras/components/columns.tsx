@@ -109,6 +109,7 @@ const CompraMessageCell = ({ row }: { row: Compra }) => {
       clave_cuenta: row.stock_productos?.clave || '',
       perfil: row.stock_productos?.perfil || '',
       pin: row.stock_productos?.pin || '',
+      url: row.stock_productos?.url || '',
       fecha_inicio: row.fecha_inicio ? new Date(row.fecha_inicio).toLocaleDateString('es-ES') : '',
       fecha_expiracion: row.fecha_expiracion ? new Date(row.fecha_expiracion).toLocaleDateString('es-ES') : '',
       descripcion: row.productos?.descripcion || '',

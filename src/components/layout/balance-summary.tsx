@@ -20,42 +20,11 @@ const normalizeMonto = (monto: number | string | null | undefined) => {
   return Number.isNaN(parsed) ? 0 : parsed
 }
 
-const PAGE_SIZE = 1000
-
-type TotalsResult = {
-  total: number
-  count: number
-}
-
-const fetchAprobadosTotals = async (table: 'recargas' | 'retiros'): Promise<TotalsResult> => {
-  let from = 0
-  let total = 0
-  let count = 0
-
-  while (true) {
-    const { data, error } = await supabase
-      .from(table)
-      .select('monto')
-      .eq('estado', 'aprobado')
-      .order('id', { ascending: true })
-      .range(from, from + PAGE_SIZE - 1)
-
-    if (error) {
-      throw error
-    }
-
-    const chunk = data ?? []
-    total += chunk.reduce((sum, item) => sum + normalizeMonto(item.monto), 0)
-    count += chunk.length
-
-    if (chunk.length < PAGE_SIZE) {
-      break
-    }
-
-    from += PAGE_SIZE
-  }
-
-  return { total, count }
+type BalanceContable = {
+  recargas_aprobadas: number | string
+  retiros_aprobadas: number | string
+  recargas_archivadas: number | string
+  retiros_archivadas: number | string
 }
 
 export function BalanceSummary() {
@@ -76,29 +45,23 @@ export function BalanceSummary() {
       // Tasa vigente de configuración (dólares a soles)
       const conversionRate = await getLatestConversion()
 
-      const [{ total: totalRecargasUSD, count: recargasCount }, { total: totalRetirosUSD, count: retirosCount }] =
-        await Promise.all([
-          fetchAprobadosTotals('recargas'),
-          fetchAprobadosTotals('retiros')
-        ])
+      // Totales vivos + archivo contable en una sola llamada (RPC)
+      const { data, error } = await supabase.rpc('get_balance_contable')
+
+      if (error) {
+        throw error
+      }
+
+      const balance = data as BalanceContable | null
+
+      const totalRecargasUSD = normalizeMonto(balance?.recargas_aprobadas)
+      const totalRetirosUSD = normalizeMonto(balance?.retiros_aprobadas)
       const balanceTotalUSD = totalRecargasUSD - totalRetirosUSD
 
       // Convertir a soles usando la tasa de conversión (dólares * conversion = soles)
       const totalRecargasPEN = totalRecargasUSD * conversionRate
       const totalRetirosPEN = totalRetirosUSD * conversionRate
       const balanceTotalPEN = balanceTotalUSD * conversionRate
-
-      console.info('[BalanceSummary] Datos cargados', {
-        conversionRate,
-        totalRecargasUSD,
-        totalRetirosUSD,
-        balanceTotalUSD,
-        totalRecargasPEN,
-        totalRetirosPEN,
-        balanceTotalPEN,
-        recargasCount,
-        retirosCount,
-      })
 
       setBalanceData({
         totalGanado: totalRecargasPEN,
@@ -143,6 +106,13 @@ export function BalanceSummary() {
           if (newEstado === 'aprobado' || oldEstado === 'aprobado') {
             void loadBalanceData()
           }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'contabilidad_archivo' },
+        () => {
+          void loadBalanceData()
         }
       )
       .on(

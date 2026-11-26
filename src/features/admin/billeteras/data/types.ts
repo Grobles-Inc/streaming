@@ -51,7 +51,13 @@ export type Retiro = {
   }
 }
 
-export type MovimientoTipo = 'recarga' | 'retiro' | 'compra' | 'renovacion'
+export type MovimientoTipo =
+  | 'recarga'
+  | 'retiro'
+  | 'compra'
+  | 'renovacion'
+  | 'gasto_publicacion'
+  | 'reembolso'
 
 export type MovimientoSubtipo = 'pedido' | 'producto'
 

@@ -15,12 +15,14 @@ import { ConfirmDialog } from '@/components/confirm-dialog'
 import { ProductoFormDialog } from './producto-form'
 import { GestionarExistenciasModal } from './gestionar-existencias-modal'
 
-import type { Producto } from '../data/schema'
+import type { DuracionCartel, Producto } from '../data/schema'
 import { useDeleteProducto, usePublicarProductoWithCommission, useVerificarProductoTieneCuentas, useRenovarProducto, useConfiguracionSistema, useVerificarSaldoSuficiente } from '../queries'
 import { useAuth } from '@/stores/authStore'
 import {
+  calcularCostoCartel,
   calcularEstadoExpiracion,
   calcularNuevaFechaExpiracion,
+  etiquetaDuracionCartel,
   formatearFechaExpiracion,
 } from '../utils/expiracion'
 
@@ -90,12 +92,6 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const renovarProducto = useRenovarProducto()
   const { user } = useAuth()
   
-  // Obtener configuración del sistema para la comisión
-  const { data: configuracion } = useConfiguracionSistema()
-  
-  // Obtener información del saldo del proveedor
-  const { data: saldoInfo } = useVerificarSaldoSuficiente(user?.id ?? '')
-  
   const producto = row.original
   const esBorrador = producto.estado === 'borrador'
   const esPublicado = producto.estado === 'publicado'
@@ -113,12 +109,32 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   
   // Determinar texto del botón de publicación/renovación
   const textoBotonPublicar = esDespublicadoPorVencimiento ? 'Renovar producto' : 'Publicar producto'
+
+  const duracionCartel = producto.duracion_cartel_dias ?? 30
+  // El backend trata cualquier producto con expiración previa como renovación.
+  const tipoCobro =
+    producto.fecha_expiracion != null ? 'renovacion' : 'publicacion'
+  
+  // Obtener configuración del sistema para la comisión
+  const { data: configuracion } = useConfiguracionSistema()
+  
+  // Obtener información del saldo del proveedor
+  const { data: saldoInfo } = useVerificarSaldoSuficiente(
+    user?.id ?? '',
+    tipoCobro,
+    duracionCartel
+  )
   
   // Verificar si el producto tiene cuentas asociadas
   const { data: tieneCuentas, isLoading: verificandoCuentas } = useVerificarProductoTieneCuentas(producto.id)
 
   // Formatear valores monetarios
-  const comisionPublicacion = configuracion?.comision_publicacion_producto || 1.35
+  const comisionPublicacion =
+    saldoInfo?.comisionRequerida ??
+    calcularCostoCartel(
+      configuracion?.comision_publicacion_producto || 1.35,
+      duracionCartel
+    )
   const saldoActual = saldoInfo?.saldoActual || 0
   const tienesSaldoSuficiente = saldoInfo?.suficiente || false
   
@@ -248,6 +264,8 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           precio_renovacion: producto.precio_renovacion ?? 0,
           categoria_id: producto.categoria_id,
           tiempo_uso: producto.tiempo_uso,
+          duracion_cartel_dias: (producto.duracion_cartel_dias ??
+            30) as DuracionCartel,
           nuevo: producto.nuevo,
           disponibilidad: producto.disponibilidad,
           estado: producto.estado,
@@ -277,8 +295,8 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           <div>
             <p className="text-sm text-muted-foreground mb-2">
               {esDespublicadoPorVencimiento 
-                ? "El producto será renovado por 30 días más y estará disponible para la venta."
-                : "Al publicar el producto, estará disponible para la venta por 30 días."
+                ? `El producto será renovado por ${etiquetaDuracionCartel(duracionCartel)} y estará disponible para la venta.`
+                : `Al publicar el producto, estará disponible para la venta por ${etiquetaDuracionCartel(duracionCartel)}.`
               }
             </p>
             <InfoComisionCards
@@ -303,7 +321,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         desc={
           <div>
             <p className="text-sm text-muted-foreground mb-2">
-              Se extenderá el vencimiento por {producto.tiempo_uso} día(s) y el producto seguirá disponible para la venta.
+              Se extenderá el vencimiento por {etiquetaDuracionCartel(duracionCartel)} y el producto seguirá disponible para la venta.
             </p>
             <div className="text-sm text-muted-foreground mb-2">
               Estado actual: {infoExpiracion.mensaje}
@@ -314,7 +332,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
                 {formatearFechaExpiracion(
                   calcularNuevaFechaExpiracion(
                     producto.fecha_expiracion,
-                    producto.tiempo_uso
+                    duracionCartel
                   )
                 )}
               </div>

@@ -3,15 +3,28 @@ import { Button } from '@/components/ui/button'
 import { Trash2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Main } from '@/components/layout/main'
 import { useState, useEffect, type ChangeEvent } from 'react'
 import { toast } from 'sonner'
 import { useConfiguracion } from './hooks/use-configuracion'
 import { SignupSettingsCard } from './components/signup-settings-card'
+import { PurgaContableCard } from './components/purga-contable-card'
 import { DEFAULT_CONVERSION } from '@/lib/conversion'
 import { DEFAULT_BINANCE_INFO, DEFAULT_YAPE_INFO } from '@/lib/recarga-info'
 import { SupabaseStorageService } from '@/lib/supabase'
 import YapeQRImage from '@/assets/YapeQR.jpg'
+
+const REDIRECT_LANDING_OPTIONS = [
+  { value: '/', label: 'Landing' },
+  { value: '/sign-in', label: 'Inicio Sesión' },
+] as const
 
 export default function ConfiguracionSistemaPage() {
   const {
@@ -45,6 +58,13 @@ export default function ConfiguracionSistemaPage() {
   const [redirectLandingUrl, setRedirectLandingUrl] = useState('')
   const [promotionsImages, setPromotionsImages] = useState<string[]>([])
   const [uploadingPromotions, setUploadingPromotions] = useState(false)
+
+  // Rutas antiguas guardadas a mano que no están en las opciones
+  const legacyRedirectLandingUrl =
+    redirectLandingUrl &&
+    !REDIRECT_LANDING_OPTIONS.some(o => o.value === redirectLandingUrl)
+      ? redirectLandingUrl
+      : null
 
   // Sincronizar estado local con la configuración cargada
   useEffect(() => {
@@ -392,7 +412,8 @@ export default function ConfiguracionSistemaPage() {
             <CardHeader>
               <CardTitle>Comisión Publicación Producto</CardTitle>
               <CardDescription>
-                Costo que se cobra a los proveedores por publicar un producto.
+                Costo base por 30 días para proveedores sin configuración
+                propia. El cobro se escala según la duración del cartel.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -584,12 +605,27 @@ export default function ConfiguracionSistemaPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Input
+              <Select
                 value={redirectLandingUrl}
-                onChange={e => setRedirectLandingUrl(e.target.value)}
-                placeholder="/"
+                onValueChange={setRedirectLandingUrl}
                 disabled={saving}
-              />
+              >
+                <SelectTrigger className='w-full md:w-64'>
+                  <SelectValue placeholder='Selecciona una ruta' />
+                </SelectTrigger>
+                <SelectContent>
+                  {REDIRECT_LANDING_OPTIONS.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label} ({option.value})
+                    </SelectItem>
+                  ))}
+                  {legacyRedirectLandingUrl && (
+                    <SelectItem value={legacyRedirectLandingUrl}>
+                      {legacyRedirectLandingUrl}
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
               <Button
                 className='mt-4'
                 onClick={handleSaveAll}
@@ -644,6 +680,11 @@ export default function ConfiguracionSistemaPage() {
         </div>
 
 
+
+        {/* Purga contable */}
+        <div className="grid gap-6 md:grid-cols-1 mt-6">
+          <PurgaContableCard />
+        </div>
 
         {/* Modal de confirmación para modo mantenimiento */}
         {/* <MantenimientoConfirmDialog

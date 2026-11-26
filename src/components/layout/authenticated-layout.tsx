@@ -5,6 +5,9 @@ import { cn } from '@/lib/utils'
 import { SearchProvider } from '@/context/search-context'
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
+import { BottomTabs } from '@/components/layout/bottom-tabs'
+import { getBottomTabs } from '@/components/layout/data/sidebar-data'
+import { type UserRole } from '@/components/layout/types'
 import SkipToMain from '@/components/skip-to-main'
 
 interface Props {
@@ -13,7 +16,10 @@ interface Props {
 
 export function AuthenticatedLayout({ children }: Props) {
   const defaultOpen = Cookies.get('sidebar_state') !== 'false'
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
+  const bottomTabs = user?.rol
+    ? getBottomTabs(user.rol as UserRole)
+    : null
   if (!isAuthenticated) {
     return <Navigate to='/sign-in' />
   }
@@ -34,8 +40,19 @@ export function AuthenticatedLayout({ children }: Props) {
             'has-[main.fixed-main]:group-data-[scroll-locked=1]/body:h-svh'
           )}
         >
-          <SidebarTrigger className='mt-2 ml-2 scale-125 sm:scale-100 md:hidden' />
+          <SidebarTrigger
+            className={cn(
+              'mt-2 ml-2 scale-125 sm:scale-100 md:hidden',
+              bottomTabs && 'hidden'
+            )}
+          />
           {children ? children : <Outlet />}
+          {bottomTabs && (
+            <>
+              <div className='h-[calc(4rem+env(safe-area-inset-bottom))] shrink-0 md:hidden' />
+              <BottomTabs tabs={bottomTabs.tabs} more={bottomTabs.more} />
+            </>
+          )}
         </div>
       </SidebarProvider>
     </SearchProvider>

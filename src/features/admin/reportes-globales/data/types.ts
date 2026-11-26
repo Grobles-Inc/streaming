@@ -70,6 +70,9 @@ export type MetricasGlobales = {
   totalProductos: number
   totalRecargas: number
   montoTotalRecargado: number
+  // Totales de purgas anteriores (contabilidad_archivo)
+  recargasArchivadas: number
+  montoRecargasArchivadas: number
   usuariosPorRol: {
     admin: number
     provider: number

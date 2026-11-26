@@ -327,7 +327,7 @@ export const columns: ColumnDef<TransaccionCompleta>[] = [
               </div>
               {transaccion.producto_publicado && (
                 <div className='text-xs text-muted-foreground'>
-                  ID: {transaccion.producto_publicado.id} • +30 días
+                  ID: {transaccion.producto_publicado.id} • Renovación de cartel
                 </div>
               )}                
             </div>

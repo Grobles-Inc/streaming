@@ -58,11 +58,25 @@ export const useConfiguracionSistema = () => {
   })
 }
 
-// Hook para verificar saldo suficiente
-export const useVerificarSaldoSuficiente = (proveedorId: string) => {
+// Hook para obtener la configuración del proveedor
+export const useConfiguracionProveedor = (proveedorId: string) => {
   return useQuery({
-    queryKey: ['verificar-saldo', proveedorId],
-    queryFn: () => productosService.verificarSaldoSuficiente(proveedorId),
+    queryKey: ['configuracion-proveedor', proveedorId],
+    queryFn: () => productosService.getConfiguracionProveedor(proveedorId),
+    enabled: !!proveedorId,
+    staleTime: 1000 * 60 * 5,
+  })
+}
+
+// Hook para verificar saldo suficiente
+export const useVerificarSaldoSuficiente = (
+  proveedorId: string,
+  tipo: 'publicacion' | 'renovacion' = 'publicacion',
+  dias: number = 30
+) => {
+  return useQuery({
+    queryKey: ['verificar-saldo', proveedorId, tipo, dias],
+    queryFn: () => productosService.verificarSaldoSuficiente(proveedorId, tipo, dias),
     enabled: !!proveedorId,
     refetchInterval: 30000, // Refrescar cada 30 segundos
   })
@@ -95,6 +109,7 @@ export const useCreateProductoWithCommission = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['productos'] })
       queryClient.invalidateQueries({ queryKey: ['billeteras'] })
+      queryClient.invalidateQueries({ queryKey: ['billetera'] })
       queryClient.invalidateQueries({ queryKey: ['saldo-suficiente'] })
       toast.success('Producto creado y comisión cobrada exitosamente')
     },
@@ -114,6 +129,7 @@ export const usePublicarProductoWithCommission = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['productos'] })
       queryClient.invalidateQueries({ queryKey: ['billeteras'] })
+      queryClient.invalidateQueries({ queryKey: ['billetera'] })
       queryClient.invalidateQueries({ queryKey: ['saldo-suficiente'] })
       toast.success('Producto publicado y comisión cobrada exitosamente')
     },
@@ -272,7 +288,8 @@ export const useRenovarProducto = () => {
         queryClient.invalidateQueries({ queryKey: ['productos'] })
         queryClient.invalidateQueries({ queryKey: ['billeteras'] })
         queryClient.invalidateQueries({ queryKey: ['verificar-saldo'] })
-        const diasRenovados = result.producto?.tiempo_uso
+        queryClient.invalidateQueries({ queryKey: ['configuracion-proveedor'] })
+        const diasRenovados = result.producto?.duracion_cartel_dias
         toast.success(
           diasRenovados
             ? `Producto renovado exitosamente por ${diasRenovados} día(s)`

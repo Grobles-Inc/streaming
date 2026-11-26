@@ -1,6 +1,4 @@
 import { supabase } from '@/lib/supabase'
-import { getBilleteraByUsuarioId, updateBilleteraSaldo } from '@/services'
-import { ConfiguracionService } from '@/features/admin/configuracion-sistema/services/configuracion.service'
 import type { 
   SupabaseProducto, 
   CreateProductoData,
@@ -170,75 +168,11 @@ export class ProductosService {
 
   // Cambiar estado de un producto
   static async cambiarEstadoProducto(id: number, nuevoEstado: EstadoProducto): Promise<SupabaseProducto> {
-    // Obtener el producto actual para verificar el estado anterior
-    const productoActual = await this.getProductoById(id)
-    if (!productoActual) {
-      throw new Error('Producto no encontrado')
-    }
-
-    // Si el cambio es de "borrador" a "publicado", procesar comisión
-    if (productoActual.estado === 'borrador' && nuevoEstado === 'publicado') {
-      await this.procesarComisionPublicacion(productoActual)
+    if (nuevoEstado === 'publicado') {
+      throw new Error('Solo el proveedor puede publicar productos')
     }
 
     return this.updateProducto(id, { estado: nuevoEstado })
-  }
-
-  // Procesar comisión de publicación
-  private static async procesarComisionPublicacion(producto: SupabaseProducto): Promise<void> {
-    try {
-      
-      // 1. Obtener la configuración actual del sistema
-      const configuracion = await ConfiguracionService.getLatestConfiguracion()
-      if (!configuracion) {
-        throw new Error('No se pudo obtener la configuración del sistema')
-      }
-
-      const comisionPublicacion = configuracion.comision_publicacion_producto
-
-      // 2. Obtener la billetera del proveedor
-      const billeteraProveedor = await getBilleteraByUsuarioId(producto.proveedor_id)
-      if (!billeteraProveedor) {
-        throw new Error('No se encontró la billetera del proveedor')
-      }
-
-      // 3. Verificar que el proveedor tenga saldo suficiente
-      if (billeteraProveedor.saldo < comisionPublicacion) {
-        throw new Error(`Saldo insuficiente. Se requieren $${comisionPublicacion} para publicar el producto`)
-      }
-
-      // 4. Obtener el usuario administrador (primer admin en la tabla)
-      const ADMIN_ID_ESTATICO = 'bc934460-c7c6-4137-ba47-bfcb7eac619e'
-
-      // 5. Obtener la billetera del administrador
-      const billeteraAdmin = await getBilleteraByUsuarioId(ADMIN_ID_ESTATICO)
-      if (!billeteraAdmin) {
-        throw new Error('No se encontró la billetera del administrador')
-      }
-
-      // 6. Realizar las transacciones de billetera
-      const nuevoSaldoProveedor = billeteraProveedor.saldo - comisionPublicacion
-      const nuevoSaldoAdmin = billeteraAdmin.saldo + comisionPublicacion
-
-      // Actualizar saldo del proveedor
-      const proveedorActualizado = await updateBilleteraSaldo(billeteraProveedor.id, nuevoSaldoProveedor)
-      if (!proveedorActualizado) {
-        throw new Error('Error al actualizar el saldo del proveedor')
-      }
-
-      // Actualizar saldo del administrador
-      const adminActualizado = await updateBilleteraSaldo(billeteraAdmin.id, nuevoSaldoAdmin)
-      if (!adminActualizado) {
-        // Revertir el cambio del proveedor si falla la actualización del admin
-        await updateBilleteraSaldo(billeteraProveedor.id, billeteraProveedor.saldo)
-        throw new Error('Error al actualizar el saldo del administrador')
-      }
-
-
-    } catch (error) {
-      console.error('❌ Error al procesar comisión de publicación:', error)
-      throw error
-    }
   }
 
   // Duplicar un producto
@@ -258,6 +192,7 @@ export class ProductosService {
       proveedor_id: productoOriginal.proveedor_id,
       imagen_url: productoOriginal.imagen_url,
       tiempo_uso: productoOriginal.tiempo_uso,
+      duracion_cartel_dias: productoOriginal.duracion_cartel_dias,
       nuevo: false, // No es nuevo al duplicar
 
       descripcion_completa: productoOriginal.descripcion_completa,

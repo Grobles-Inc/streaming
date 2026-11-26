@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/supabase'
-import { calcularNuevaFechaExpiracion, calcularFechaExpiracionInicial } from '../utils/expiracion'
+import { calcularCostoCartel, calcularNuevaFechaExpiracion, calcularFechaExpiracionInicial } from '../utils/expiracion'
 
 export type Producto = Database['public']['Tables']['productos']['Row']
 export type Usuario = Database['public']['Tables']['usuarios']['Row']
@@ -8,6 +8,7 @@ export type Categoria = Database['public']['Tables']['categorias']['Row']
 export type ProductoInsert = Database['public']['Tables']['productos']['Insert']
 export type ProductoUpdate = Database['public']['Tables']['productos']['Update']
 export type ConfiguracionRow = Database['public']['Tables']['configuracion']['Row']
+export type ConfiguracionProveedor = Database['public']['Tables']['configuracion_proveedores']['Row']
 export type Billetera = Database['public']['Tables']['billeteras']['Row']
 
 
@@ -32,8 +33,14 @@ export const createProductoWithCommission = async (
 ): Promise<Producto> => {
   
   try {
+    const diasCartel = producto.duracion_cartel_dias ?? 30
+
     // 1. Verificar saldo suficiente
-    const saldoInfo = await verificarSaldoSuficiente(proveedorId)
+    const saldoInfo = await verificarSaldoSuficiente(
+      proveedorId,
+      'publicacion',
+      diasCartel
+    )
     if (!saldoInfo.suficiente) {
       const comisionFormateada = new Intl.NumberFormat('es-CO', {
         style: 'currency',
@@ -62,7 +69,7 @@ export const createProductoWithCommission = async (
 
 
     // 3. Procesar comisión de publicación
-    await procesarComisionPublicacion(proveedorId)
+    await procesarComisionPublicacion(proveedorId, 'publicacion', diasCartel)
 
     // 4. Retornar el producto creado
     return nuevoProducto as Producto
@@ -316,6 +323,23 @@ export const getConfiguracionActual = async (): Promise<ConfiguracionRow | null>
   return data
 }
 
+export const getConfiguracionProveedor = async (
+  proveedorId: string
+): Promise<ConfiguracionProveedor | null> => {
+  const { data, error } = await supabase
+    .from('configuracion_proveedores')
+    .select('*')
+    .eq('usuario_id', proveedorId)
+    .maybeSingle()
+
+  if (error) {
+    console.error('Error obteniendo configuración del proveedor:', error)
+    return null
+  }
+
+  return data
+}
+
 /**
  * Obtiene el primer usuario administrador del sistema
  */
@@ -425,16 +449,24 @@ export const transferirFondos = async (
  * Procesa la comisión por publicación de producto
  */
 export const procesarComisionPublicacion = async (
-  proveedorId: string
+  proveedorId: string,
+  tipo: 'publicacion' | 'renovacion' = 'publicacion',
+  dias: number = 30
 ): Promise<{ success: boolean; error?: string; comisionCobrada?: number }> => {
   try {
-    // 1. Obtener configuración actual
+    // 1. Obtener configuración global y la del proveedor
     const configuracion = await getConfiguracionActual()
-    if (!configuracion) {
-      return { success: false, error: 'No se pudo obtener la configuración del sistema' }
-    }
+    const configuracionProveedor = await getConfiguracionProveedor(proveedorId)
 
-    const comisionMonto = configuracion.comision_publicacion_producto || 1.35
+    const base30d =
+      tipo === 'renovacion'
+        ? configuracionProveedor?.costo_renovacion_30d
+        : configuracionProveedor?.costo_publicacion_30d
+
+    const comisionMonto = calcularCostoCartel(
+      base30d ?? configuracion?.comision_publicacion_producto ?? 1.35,
+      dias
+    )
 
     // 2. Obtener administrador
     const ADMIN_ID_ESTATICO = 'bc934460-c7c6-4137-ba47-bfcb7eac619e'
@@ -454,7 +486,7 @@ export const procesarComisionPublicacion = async (
       
       return { 
         success: false, 
-        error: `Saldo insuficiente. Necesitas al menos ${comisionFormateada} para publicar un producto` 
+        error: `Saldo insuficiente. Necesitas al menos ${comisionFormateada} para ${tipo === 'renovacion' ? 'renovar' : 'publicar'} el cartel` 
       }
     }
 
@@ -490,11 +522,23 @@ export const procesarComisionPublicacion = async (
  * Verifica si el proveedor tiene saldo suficiente para publicar
  */
 export const verificarSaldoSuficiente = async (
-  proveedorId: string
+  proveedorId: string,
+  tipo: 'publicacion' | 'renovacion' = 'publicacion',
+  dias: number = 30
 ): Promise<{ suficiente: boolean; saldoActual: number; comisionRequerida: number }> => {
   try {
     const configuracion = await getConfiguracionActual()
-    const comisionRequerida = configuracion?.comision_publicacion_producto || 1.35
+    const configuracionProveedor = await getConfiguracionProveedor(proveedorId)
+
+    const base30d =
+      tipo === 'renovacion'
+        ? configuracionProveedor?.costo_renovacion_30d
+        : configuracionProveedor?.costo_publicacion_30d
+
+    const comisionRequerida = calcularCostoCartel(
+      base30d ?? configuracion?.comision_publicacion_producto ?? 1.35,
+      dias
+    )
     
     const billetera = await getBilleteraByUsuarioId(proveedorId)
     const saldoActual = billetera?.saldo || 0
@@ -509,7 +553,7 @@ export const verificarSaldoSuficiente = async (
     return {
       suficiente: false,
       saldoActual: 0,
-      comisionRequerida: 1.35
+      comisionRequerida: calcularCostoCartel(1.35, dias)
     }
   }
 }
@@ -534,8 +578,13 @@ export const publicarProductoWithCommission = async (
       throw new Error('Producto no encontrado o ya está publicado')
     }
 
-    // 2. Verificar saldo suficiente
-    const saldoInfo = await verificarSaldoSuficiente(proveedorId)
+    // 2. Si ya tiene expiración, es una republicación/renovación
+    const esRenovacion = !!producto.fecha_expiracion
+    const diasCartel = producto.duracion_cartel_dias ?? 30
+    const tipoCobro = esRenovacion ? 'renovacion' : 'publicacion'
+
+    // 3. Verificar saldo suficiente
+    const saldoInfo = await verificarSaldoSuficiente(proveedorId, tipoCobro, diasCartel)
     if (!saldoInfo.suficiente) {
       const comisionFormateada = new Intl.NumberFormat('es-CO', {
         style: 'currency',
@@ -543,16 +592,23 @@ export const publicarProductoWithCommission = async (
         minimumFractionDigits: 0,
       }).format(saldoInfo.comisionRequerida)
       
-      throw new Error(`Saldo insuficiente. Necesitas ${comisionFormateada} para publicar este producto`)
+      throw new Error(`Saldo insuficiente. Necesitas ${comisionFormateada} para ${esRenovacion ? 'renovar' : 'publicar'} este producto`)
     }
 
-    // 3. Procesar comisión de publicación
-    await procesarComisionPublicacion(proveedorId)
+    // 4. Procesar comisión de publicación o renovación
+    const resultadoComision = await procesarComisionPublicacion(proveedorId, tipoCobro, diasCartel)
+    if (!resultadoComision.success) {
+      throw new Error(
+        resultadoComision.error || 'Error al procesar la comisión del cartel'
+      )
+    }
 
-    // 4. Calcular fecha de expiración inicial (30 días desde ahora)
-    const fechaExpiracion = calcularFechaExpiracionInicial(30)
+    // 5. Calcular la nueva fecha de expiración según la duración del cartel
+    const fechaExpiracion = esRenovacion
+      ? calcularNuevaFechaExpiracion(producto.fecha_expiracion as string, diasCartel)
+      : calcularFechaExpiracionInicial(diasCartel)
 
-    // 5. Actualizar estado del producto a publicado y establecer fecha de expiración
+    // 6. Actualizar estado del producto a publicado y establecer fecha de expiración
     const { data: productoPublicado, error: errorActualizacion } = await supabase
       .from('productos')
       .update({ 
@@ -575,7 +631,32 @@ export const publicarProductoWithCommission = async (
 
     console.log('✅ Producto publicado correctamente:', productoPublicado.id)
 
-    // 6. Retornar el producto publicado
+    // 7. En primera publicación el trigger no registra movimiento (la fecha
+    // pasa de null a fecha), así que lo insertamos acá. En renovación lo
+    // registra trg_fn_productos_movimientos.
+    if (!esRenovacion) {
+      const { error: errorMovimiento } = await supabase
+        .from('movimientos_billetera')
+        .insert({
+          usuario_id: proveedorId,
+          tipo: 'gasto_publicacion',
+          direccion: 'salida',
+          monto: resultadoComision.comisionCobrada ?? 0,
+          estado: 'completado',
+          referencia_id: productoId,
+          descripcion: productoPublicado.nombre,
+          origen_key: `gasto_publicacion:${productoId}:${productoPublicado.fecha_expiracion}`,
+        })
+
+      if (errorMovimiento) {
+        console.error(
+          'No se pudo registrar el movimiento de publicación:',
+          errorMovimiento
+        )
+      }
+    }
+
+    // 8. Retornar el producto publicado
     return productoPublicado as Producto
   } catch (error) {
     console.error('Error en publicarProductoWithCommission:', error)
@@ -719,8 +800,8 @@ export const deleteStockProducto = async (id: number) => {
 // === FUNCIONES PARA RENOVACIÓN DE PRODUCTOS ===
 
 /**
- * Renovar un producto - extiende la fecha de expiración por su tiempo_uso
- * y cobra la comisión de renovación (igual a la de publicación)
+ * Renovar un producto - extiende la fecha de expiración por la duración del
+ * cartel y cobra el costo de renovación configurado para el proveedor.
  */
 export const renovarProducto = async (
   { productoId, proveedorId }: { productoId: number, proveedorId: string }
@@ -745,8 +826,10 @@ export const renovarProducto = async (
       }
     }
 
+    const diasCartel = producto.duracion_cartel_dias ?? 30
+
     // 2. Verificar saldo suficiente para la renovación
-    const saldoInfo = await verificarSaldoSuficiente(proveedorId)
+    const saldoInfo = await verificarSaldoSuficiente(proveedorId, 'renovacion', diasCartel)
     if (!saldoInfo.suficiente) {
       const comisionFormateada = new Intl.NumberFormat('es-CO', {
         style: 'currency',
@@ -760,8 +843,8 @@ export const renovarProducto = async (
       }
     }
 
-    // 3. Procesar comisión de renovación (igual a la de publicación)
-    const resultadoComision = await procesarComisionPublicacion(proveedorId)
+    // 3. Procesar comisión de renovación
+    const resultadoComision = await procesarComisionPublicacion(proveedorId, 'renovacion', diasCartel)
     if (!resultadoComision.success) {
       return { 
         success: false, 
@@ -769,8 +852,8 @@ export const renovarProducto = async (
       }
     }
 
-    // 4. Calcular nueva fecha de expiración usando el tiempo_uso del producto
-    const nuevaFechaExpiracion = calcularNuevaFechaExpiracion(producto.fecha_expiracion, producto.tiempo_uso)
+    // 4. Calcular nueva fecha de expiración usando la duración del cartel
+    const nuevaFechaExpiracion = calcularNuevaFechaExpiracion(producto.fecha_expiracion as string, diasCartel)
 
     // 5. Actualizar producto con nueva fecha de expiración
     const { data: productoRenovado, error: errorActualizacion } = await supabase
@@ -814,7 +897,19 @@ export const renovarProducto = async (
  */
 export const establecerFechaExpiracionInicial = async (productoId: number): Promise<void> => {
   try {
-    const fechaExpiracion = calcularFechaExpiracionInicial(30) // 30 días desde ahora
+    const { data: producto, error: errorProducto } = await supabase
+      .from('productos')
+      .select('duracion_cartel_dias')
+      .eq('id', productoId)
+      .single()
+
+    if (errorProducto) {
+      throw new Error('Error al obtener la duración del cartel')
+    }
+
+    const fechaExpiracion = calcularFechaExpiracionInicial(
+      producto.duracion_cartel_dias ?? 30
+    )
     
     const { error } = await supabase
       .from('productos')

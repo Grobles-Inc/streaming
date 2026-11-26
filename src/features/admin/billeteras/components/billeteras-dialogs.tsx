@@ -30,6 +30,8 @@ const TIPO_LABELS: Record<MovimientoTipo, string> = {
   retiro: 'Retiro',
   compra: 'Compra',
   renovacion: 'Renovación',
+  gasto_publicacion: 'Publicación',
+  reembolso: 'Reembolso',
 }
 
 const ESTADOS_POR_TIPO: Record<
@@ -56,6 +58,8 @@ const ESTADOS_POR_TIPO: Record<
     { value: 'completado', label: 'Completado' },
   ],
   renovacion: [{ value: 'completado', label: 'Completado' }],
+  gasto_publicacion: [{ value: 'completado', label: 'Completado' }],
+  reembolso: [{ value: 'completado', label: 'Completado' }],
 }
 
 const ESTADO_LABELS: Record<string, string> = {
@@ -292,6 +296,8 @@ export function BilleterasDialogs() {
                   <option value='retiro'>Retiros</option>
                   <option value='compra'>Compras</option>
                   <option value='renovacion'>Renovaciones</option>
+                  <option value='gasto_publicacion'>Publicaciones</option>
+                  <option value='reembolso'>Reembolsos</option>
                 </select>
               </div>
 

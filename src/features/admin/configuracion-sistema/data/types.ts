@@ -31,3 +31,20 @@ export type MappedConfiguracion = {
 export type HistorialConfiguracion = MappedConfiguracion & {
   fechaCambio: Date // Alias para updatedAt en el contexto del historial
 }
+
+// Fila del archivo contable (totales de purgas anteriores)
+export type ArchivoContableRow =
+  Database['public']['Tables']['contabilidad_archivo']['Row']
+
+// Resultado del RPC de purga
+export type PurgaContableResult = {
+  archivo_id: number | null
+  corte: string
+  dias_antiguedad?: number
+  filas_recargas: number
+  filas_retiros: number
+  recargas_total?: number
+  recargas_aprobadas?: number
+  retiros_total?: number
+  retiros_aprobados?: number
+}

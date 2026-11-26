@@ -17,6 +17,14 @@ export const estadoProductoSchema = z.union([
 ])
 export type EstadoProducto = z.infer<typeof estadoProductoSchema>
 
+// Duración del cartel: 15 días, 30 días o 6 meses (180 días)
+export const duracionCartelSchema = z.union([
+  z.literal(15),
+  z.literal(30),
+  z.literal(180),
+])
+export type DuracionCartel = z.infer<typeof duracionCartelSchema>
+
 // Schema para el formulario de productos (sin campos auto-generados)
 export const productoSchema = z.object({
   nombre: z.string().min(1, "El nombre es requerido"),
@@ -25,6 +33,7 @@ export const productoSchema = z.object({
   precio_renovacion: z.coerce.number().min(0, "El precio renovación debe ser mayor o igual a 0").optional(),
   categoria_id: z.string().min(1, "La categoría es requerida"),
   tiempo_uso: z.coerce.number().int().min(0, "El tiempo de uso debe ser un número entero mayor o igual a 0"),
+  duracion_cartel_dias: duracionCartelSchema,
   nuevo: z.boolean(),
   disponibilidad: disponibilidadSchema,
   estado: estadoProductoSchema,
@@ -52,6 +61,7 @@ export const productoCompleteSchema = z.object({
   precio_renovacion: z.coerce.number().min(0, "El precio renovación debe ser mayor o igual a 0").optional().nullable(),
   categoria_id: z.string().min(1, "La categoría es requerida"),
   tiempo_uso: z.coerce.number().int().min(0, "El tiempo de uso debe ser un número entero mayor o igual a 0"),
+  duracion_cartel_dias: duracionCartelSchema,
   nuevo: z.boolean().nullable().transform(val => val ?? false),
   disponibilidad: disponibilidadSchema,
   renovable: z.boolean().nullable().transform(val => val ?? false),

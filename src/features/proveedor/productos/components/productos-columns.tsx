@@ -6,7 +6,7 @@ import { IconCheck, IconX, IconPackage, IconClock, IconShoppingCart, IconAlertTr
 import { DataTableColumnHeader } from './data-table-column-header'
 import { DataTableRowActions } from './data-table-row-actions'
 import type { Producto } from '../data/schema'
-import { calcularEstadoExpiracion, formatearFechaExpiracion } from '../utils/expiracion'
+import { calcularEstadoExpiracion, etiquetaDuracionCartel, formatearFechaExpiracion } from '../utils/expiracion'
 
 // Estados para badges
 const disponibilidadColors = {
@@ -280,7 +280,7 @@ export const columns: ColumnDef<Producto>[] = [
   {
     accessorKey: 'tiempo_uso',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Tiempo (días)' />
+      <DataTableColumnHeader column={column} title='Tiempo de uso (días)' />
     ),
     cell: ({ row }) => {
       const tiempo = row.getValue('tiempo_uso') as number
@@ -290,7 +290,24 @@ export const columns: ColumnDef<Producto>[] = [
         </div>
       )
     },
-    meta: { className: 'w-24' },
+    meta: { className: 'w-28' },
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'duracion_cartel_dias',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title='Cartel' />
+    ),
+    cell: ({ row }) => {
+      const dias = row.getValue('duracion_cartel_dias') as number
+      return (
+        <Badge variant='outline' className='text-xs'>
+          <IconCalendarClock size={12} className='mr-1' />
+          {etiquetaDuracionCartel(dias)}
+        </Badge>
+      )
+    },
+    meta: { className: 'w-28' },
     enableSorting: false,
   },
   {

@@ -178,15 +178,28 @@ export class ReportesGlobalesService {
   static async getMetricasGlobales(): Promise<MetricasGlobales> {
     try {
       // Obtener conteos simples en paralelo
-      const [usuariosResult, productosResult, recargasResult] = await Promise.all([
-        supabase.from('usuarios').select('rol', { count: 'exact' }),
-        supabase.from('productos').select('categoria_id', { count: 'exact' }),
-        supabase.from('recargas').select('monto, estado', { count: 'exact' })
-      ])
+      const [usuariosResult, productosResult, recargasResult, archivoResult] =
+        await Promise.all([
+          supabase.from('usuarios').select('rol', { count: 'exact' }),
+          supabase.from('productos').select('categoria_id', { count: 'exact' }),
+          supabase.from('recargas').select('monto, estado', { count: 'exact' }),
+          supabase
+            .from('contabilidad_archivo')
+            .select('filas_recargas, recargas_aprobadas, recargas_por_estado'),
+        ])
 
       const usuarios = usuariosResult.data || []
       const productos = productosResult.data || []
       const recargas = recargasResult.data || []
+
+      if (archivoResult.error) {
+        console.error(
+          'Error fetching contabilidad_archivo:',
+          archivoResult.error
+        )
+      }
+
+      const archivo = archivoResult.data || []
 
       // Calcular métricas básicas
       const usuariosPorRol = usuarios.reduce((acc, u) => {
@@ -205,6 +218,28 @@ export class ReportesGlobalesService {
         .filter(r => r.estado === 'aprobado')
         .reduce((sum, r) => sum + (r.monto || 0), 0)
 
+      // Totales archivados por purgas anteriores
+      const archivoFilas = archivo.reduce(
+        (sum, a) => sum + (a.filas_recargas ?? 0),
+        0
+      )
+      const archivoAprobadas = archivo.reduce(
+        (sum, a) => sum + Number(a.recargas_aprobadas ?? 0),
+        0
+      )
+      const archivoPorEstado = archivo.reduce(
+        (acc, a) => {
+          const counts = (a.recargas_por_estado ?? {}) as Record<string, number>
+          for (const [estado, total] of Object.entries(counts)) {
+            if (estado in acc) {
+              acc[estado as keyof typeof acc] += Number(total)
+            }
+          }
+          return acc
+        },
+        { aprobado: 0, pendiente: 0, rechazado: 0 }
+      )
+
       // Productos por categoría (usando IDs por simplicidad)
       const productosPorCategoria = productos.reduce((acc, p) => {
         const categoria = p.categoria_id || 'Sin categoría'
@@ -220,11 +255,17 @@ export class ReportesGlobalesService {
       return {
         totalUsuarios: usuariosResult.count || 0,
         totalProductos: productosResult.count || 0,
-        totalRecargas: recargasResult.count || 0,
-        montoTotalRecargado,
+        totalRecargas: (recargasResult.count || 0) + archivoFilas,
+        montoTotalRecargado: montoTotalRecargado + archivoAprobadas,
+        recargasArchivadas: archivoFilas,
+        montoRecargasArchivadas: archivoAprobadas,
         usuariosPorRol,
         productosPorCategoria,
-        recargasPorEstado
+        recargasPorEstado: {
+          aprobado: recargasPorEstado.aprobado + archivoPorEstado.aprobado,
+          pendiente: recargasPorEstado.pendiente + archivoPorEstado.pendiente,
+          rechazado: recargasPorEstado.rechazado + archivoPorEstado.rechazado,
+        },
       }
     } catch (error) {
       console.error('Error fetching métricas globales:', error)
@@ -235,6 +276,8 @@ export class ReportesGlobalesService {
         totalProductos: 0,
         totalRecargas: 0,
         montoTotalRecargado: 0,
+        recargasArchivadas: 0,
+        montoRecargasArchivadas: 0,
         usuariosPorRol: { admin: 0, provider: 0, seller: 0 },
         productosPorCategoria: [],
         recargasPorEstado: { aprobado: 0, pendiente: 0, rechazado: 0 }

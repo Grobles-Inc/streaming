@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -27,6 +28,8 @@ import { PasswordInput } from '@/components/password-input'
 import { SelectDropdown } from '@/components/select-dropdown'
 import { userTypes } from '../data/data'
 import { MappedUser } from '../data/schema'
+import type { ConfiguracionProveedor } from '../services/users.service'
+import { useProviderConfig, useUpsertProviderConfig } from '../queries'
 
 const formSchema = z
   .object({
@@ -83,6 +86,33 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
         },
   })
 
+  const [providerConfig, setProviderConfig] = useState<
+    Omit<ConfiguracionProveedor, 'usuario_id'>
+  >({
+    costo_publicacion_30d: 1.35,
+    costo_renovacion_30d: 1.35,
+    duracion_predeterminada_dias: 30,
+  })
+  const rolSeleccionado = form.watch('rol')
+  const {
+    data: configuracionProveedor,
+    isLoading: loadingProviderConfig,
+  } = useProviderConfig(
+    currentRow?.id ?? '',
+    isEdit && currentRow?.rol === 'provider'
+  )
+  const upsertProviderConfig = useUpsertProviderConfig()
+
+  useEffect(() => {
+    if (!configuracionProveedor) return
+    setProviderConfig({
+      costo_publicacion_30d: configuracionProveedor.costo_publicacion_30d,
+      costo_renovacion_30d: configuracionProveedor.costo_renovacion_30d,
+      duracion_predeterminada_dias:
+        configuracionProveedor.duracion_predeterminada_dias,
+    })
+  }, [configuracionProveedor])
+
   const onSubmit = async (values: UserForm) => {
     try {
       if (isEdit && currentRow) {
@@ -101,6 +131,13 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
         }
         
         const result = await updateUser(currentRow.id, updateData)
+
+        if (result && values.rol === 'provider' && !loadingProviderConfig) {
+          await upsertProviderConfig.mutateAsync({
+            usuarioId: currentRow.id,
+            config: providerConfig,
+          })
+        }
         
         if (result) {
           toast.success('Usuario actualizado exitosamente')
@@ -282,11 +319,91 @@ export function UsersActionDialog({ currentRow, open, onOpenChange }: Props) {
                   </FormItem>
                 )}
               />
+
+              {rolSeleccionado === 'provider' && (
+                <div className='col-span-6 space-y-3 rounded-lg border p-3'>
+                  <div>
+                    <p className='text-sm font-medium'>Configuración de carteles</p>
+                    <p className='text-xs text-muted-foreground'>
+                      Costos base por cada 30 días. El cobro se escala según la
+                      duración del cartel.
+                    </p>
+                  </div>
+
+                  <div className='grid grid-cols-6 items-center gap-x-4 gap-y-1'>
+                    <label className='col-span-2 text-right text-sm'>
+                      Publicación (30 días)
+                    </label>
+                    <Input
+                      type='number'
+                      min={0}
+                      step={0.01}
+                      className='col-span-4'
+                      value={providerConfig.costo_publicacion_30d}
+                      onChange={(event) =>
+                        setProviderConfig((prev) => ({
+                          ...prev,
+                          costo_publicacion_30d: Number(event.target.value),
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div className='grid grid-cols-6 items-center gap-x-4 gap-y-1'>
+                    <label className='col-span-2 text-right text-sm'>
+                      Renovación (30 días)
+                    </label>
+                    <Input
+                      type='number'
+                      min={0}
+                      step={0.01}
+                      className='col-span-4'
+                      value={providerConfig.costo_renovacion_30d}
+                      onChange={(event) =>
+                        setProviderConfig((prev) => ({
+                          ...prev,
+                          costo_renovacion_30d: Number(event.target.value),
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div className='grid grid-cols-6 items-center gap-x-4 gap-y-1'>
+                    <label className='col-span-2 text-right text-sm'>
+                      Duración por defecto
+                    </label>
+                    <SelectDropdown
+                      isControlled
+                      defaultValue={String(
+                        providerConfig.duracion_predeterminada_dias
+                      )}
+                      onValueChange={(value) =>
+                        setProviderConfig((prev) => ({
+                          ...prev,
+                          duracion_predeterminada_dias: Number(value),
+                        }))
+                      }
+                      className='col-span-4'
+                      items={[
+                        { label: '15 días', value: '15' },
+                        { label: '30 días', value: '30' },
+                        { label: '6 meses (180 días)', value: '180' },
+                      ]}
+                    />
+                  </div>
+                </div>
+              )}
             </form>
           </Form>
         </div>
         <DialogFooter>
-          <Button type='submit' form='user-form'>
+          <Button
+            type='submit'
+            form='user-form'
+            disabled={
+              rolSeleccionado === 'provider' && loadingProviderConfig
+            }
+          >
             Save changes
           </Button>
         </DialogFooter>

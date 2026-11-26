@@ -37,6 +37,11 @@ export function MetricasCard({ metricas, loading }: MetricasCardProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">${(metricas.montoTotalRecargado || 0).toLocaleString()}</div>
+          {metricas.recargasArchivadas > 0 && (
+            <p className='mt-1 text-xs text-muted-foreground'>
+              Incluye ${(metricas.montoRecargasArchivadas || 0).toLocaleString()} archivado
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -67,6 +72,11 @@ export function MetricasCard({ metricas, loading }: MetricasCardProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{metricas.totalRecargas}</div>
+          {metricas.recargasArchivadas > 0 && (
+            <p className='mt-1 text-xs text-muted-foreground'>
+              Incluye {metricas.recargasArchivadas} archivadas
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

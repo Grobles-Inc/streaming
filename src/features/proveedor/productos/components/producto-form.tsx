@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -22,8 +22,12 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { useCategorias, useCreateProducto, useUpdateProducto, useConfiguracionSistema } from '../queries'
-import { productoSchema, type ProductoFormData } from '../data/schema'
+import { useCategorias, useCreateProducto, useUpdateProducto, useConfiguracionSistema, useConfiguracionProveedor } from '../queries'
+import {
+  productoSchema,
+  type DuracionCartel,
+  type ProductoFormData,
+} from '../data/schema'
 import { Categoria } from '../services'
 import { useAuth } from '@/stores/authStore'
 import { AlertCircleIcon, ImageIcon, LoaderIcon, UploadIcon, WalletIcon, XIcon } from "lucide-react"
@@ -65,6 +69,7 @@ export function ProductoFormDialog({
 
   // Hooks para obtener información de comisión y saldo
   const { data: configuracion, isLoading: loadingConfiguracion } = useConfiguracionSistema()
+  const { data: configuracionProveedor } = useConfiguracionProveedor(user?.id ?? '')
   const { data: billetera, isLoading: loadingBilletera } = useBilleteraByUsuario(user?.id ?? '')
 
   const isPending = isCreating || isUpdating || isSubmitting
@@ -125,10 +130,20 @@ export function ProductoFormDialog({
       deshabilitar_boton_comprar: false,
       muestra_disponibilidad_stock: false,
       tiempo_uso: 0,
+      duracion_cartel_dias: 30,
       nuevo: false,
       ...defaultValues,
     },
   })
+
+  useEffect(() => {
+    if (!isEditing && configuracionProveedor?.duracion_predeterminada_dias) {
+      form.setValue(
+        'duracion_cartel_dias',
+        configuracionProveedor.duracion_predeterminada_dias as DuracionCartel
+      )
+    }
+  }, [configuracionProveedor, form, isEditing])
 
   const handleSubmit = async (data: ProductoFormData) => {
     if (!user) {
@@ -290,7 +305,11 @@ export function ProductoFormDialog({
                     <FormItem>
                       <FormLabel>Nombre</FormLabel>
                       <FormControl>
-                        <Input placeholder="Nombre del producto" {...field} />
+                        <Textarea
+                          placeholder={'Nombre del producto\nPuedes usar saltos de línea'}
+                          rows={2}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -494,6 +513,31 @@ export function ProductoFormDialog({
                       <FormControl>
                         <Input type="number" min={0} placeholder="30" {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="duracion_cartel_dias"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Duración del cartel</FormLabel>
+                      <Select
+                        value={String(field.value)}
+                        onValueChange={(value) => field.onChange(Number(value))}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona duración" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="15">15 días</SelectItem>
+                          <SelectItem value="30">30 días</SelectItem>
+                          <SelectItem value="180">6 meses (180 días)</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}

@@ -23,6 +23,7 @@ interface CompraMessage {
   clave_cuenta: string
   perfil?: string
   pin?: string
+  url?: string | null
   fecha_inicio: string
   fecha_expiracion: string | null
   ciclo_facturacion: string
@@ -103,6 +104,8 @@ export async function CompraMessage(
   businessPhone: string,
   device: 'mobile' | 'web' = 'mobile'
 ) {
+  const urlLine = message.url ? `\n- *URL:* 🔗 ${message.url}` : ''
+
   const formattedMessage = `Hola, estos son los datos de tu *compra* 🛒:
 
 *DETALLES DE LA COMPRA:*
@@ -110,7 +113,7 @@ export async function CompraMessage(
 - *Email:* 📧 ${message.email_cuenta}
 - *Clave:* 🔑 ${message.clave_cuenta}
 - *Perfil:* 👤 ${message.perfil}
-- *PIN:* 🔢 ${message.pin}
+- *PIN:* 🔢 ${message.pin}${urlLine}
 - *Fecha de inicio:* 📅 ${message.fecha_inicio}
 - *Fecha de término:* 📅 ${message.fecha_expiracion || 'Sin activar'}
 - *Ciclo de facturación:* 🔄 ${message.ciclo_facturacion}

@@ -125,7 +125,12 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
                   <FormItem>
                     <FormLabel>Nombre del producto *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ej: Netflix Premium" {...field} />
+                      <Textarea
+                        placeholder="Ej: Netflix Premium&#10;2 pantallas"
+                        rows={2}
+                        {...field}
+                        value={field.value || ''}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -353,7 +358,9 @@ export function ProductoForm({ producto, onSuccess, onCancel }: ProductoFormProp
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="borrador">Borrador</SelectItem>
-                        <SelectItem value="publicado">Publicado</SelectItem>
+                        <SelectItem value="publicado" disabled>
+                          Publicado (solo proveedor)
+                        </SelectItem>
                         <SelectItem value="oculto">Oculto</SelectItem>
                       </SelectContent>
                     </Select>

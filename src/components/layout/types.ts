@@ -17,6 +17,7 @@ interface User {
 
 interface BaseNavItem {
   title: string
+  shortTitle?: string // Etiqueta corta para los bottom tabs
   badge?: string
   icon?: React.ElementType
   roles?: UserRole[] // Optional roles that can access this item

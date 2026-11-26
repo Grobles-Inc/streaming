@@ -320,6 +320,8 @@ export class BilleterasService {
         retiro: 0,
         compra: 0,
         renovacion: 0,
+        gasto_publicacion: 0,
+        reembolso: 0,
       },
     }
   }

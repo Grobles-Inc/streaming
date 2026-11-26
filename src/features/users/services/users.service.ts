@@ -54,6 +54,13 @@ export type UpdateUserData = Partial<
   Omit<SupabaseUser, 'id' | 'created_at' | 'updated_at'>
 >
 
+export type ConfiguracionProveedor = {
+  usuario_id: string
+  costo_publicacion_30d: number
+  costo_renovacion_30d: number
+  duracion_predeterminada_dias: number
+}
+
 export type GetUsersAdminParams = {
   /** Búsqueda por nombre de usuario. Vacío = sin filtrar. */
   search?: string
@@ -290,6 +297,49 @@ export class UsersService {
       billetera_id: data.billeteras?.[0]?.id || null,
       referido_por_usuario,
     }
+  }
+
+  // Configuración de carteles del proveedor
+  static async getConfiguracionProveedor(
+    usuarioId: string
+  ): Promise<ConfiguracionProveedor | null> {
+    const { data, error } = await supabase
+      .from('configuracion_proveedores')
+      .select('*')
+      .eq('usuario_id', usuarioId)
+      .maybeSingle()
+
+    if (error) {
+      console.error('Error fetching provider config:', error)
+      return null
+    }
+
+    return data
+  }
+
+  static async upsertConfiguracionProveedor(
+    usuarioId: string,
+    config: Omit<ConfiguracionProveedor, 'usuario_id'>
+  ): Promise<ConfiguracionProveedor> {
+    const { data, error } = await supabase
+      .from('configuracion_proveedores')
+      .upsert(
+        {
+          usuario_id: usuarioId,
+          ...config,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'usuario_id' }
+      )
+      .select('*')
+      .single()
+
+    if (error) {
+      console.error('Error upserting provider config:', error)
+      throw error
+    }
+
+    return data
   }
 
   // Crear nuevo usuario

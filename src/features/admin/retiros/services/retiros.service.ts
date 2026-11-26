@@ -102,9 +102,9 @@ export class RetirosService {
       // Consulta más simple sin filtros primero
       console.log('📊 Executing basic query to retiros table...')
       const { data: retirosBasicos, error: errorBasico } = await supabase
-        .from('retiros')
-        .select('*')
-        .order('created_at', { ascending: false })
+      .from('retiros')
+      .select('created_at, estado, id, monto, revisado_id, updated_at, usuario_id')
+      .order('created_at', { ascending: false })
 
       if (errorBasico) {
         console.error('❌ Error fetching basic retiros:', errorBasico)
@@ -195,7 +195,7 @@ export class RetirosService {
     // Primero obtener el retiro básico
     const { data: retiro, error } = await supabase
       .from('retiros')
-      .select('*')
+      .select('created_at, estado, id, monto, revisado_id, updated_at, usuario_id')
       .eq('id', id)
       .single()
 
@@ -241,7 +241,7 @@ export class RetirosService {
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
-      .select('*')
+      .select('created_at, estado, id, monto, revisado_id, updated_at, usuario_id')
       .single()
 
     if (error) {
@@ -420,7 +420,7 @@ export class RetirosService {
         updated_at: new Date().toISOString()
       })
       .in('id', ids)
-      .select('*')
+      .select('created_at, estado, id, monto, revisado_id, updated_at, usuario_id')
 
     if (error) {
       console.error('Error rejecting multiple retiros:', error)

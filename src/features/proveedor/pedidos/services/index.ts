@@ -385,7 +385,7 @@ export const procesarReembolsoProveedor = async (
     const { data: billeteraProveedor, error: errorBilleteraProveedor } =
       await supabase
         .from('billeteras')
-        .select('*')
+        .select('created_at, id, saldo, updated_at, usuario_id')
         .eq('usuario_id', proveedorId)
         .single()
 
@@ -399,7 +399,7 @@ export const procesarReembolsoProveedor = async (
     const { data: billeteraVendedor, error: errorBilleteraVendedor } =
       await supabase
         .from('billeteras')
-        .select('*')
+        .select('created_at, id, saldo, updated_at, usuario_id')
         .eq('usuario_id', vendedorId)
         .single()
 

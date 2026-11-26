@@ -26,7 +26,7 @@ export const createRecarga = async (recarga: RecargaInsert): Promise<Recarga | n
 export const getRecargaById = async (id: string): Promise<Recarga | null> => {
   const { data, error } = await supabase
     .from('recargas')
-    .select('*')
+    .select('created_at, estado, id, monto, revisado_id, updated_at, usuario_id')
     .eq('id', id)
     .single()
 
@@ -74,7 +74,7 @@ export const reciclarRecarga = async (id: string): Promise<boolean> => {
 export const getRecargasByVendedorId = async (vendedorId: string): Promise<Recarga[]> => {
   const { data, error } = await supabase
     .from('recargas')
-    .select('*')
+    .select('created_at, estado, id, monto, revisado_id, updated_at, usuario_id')
     .eq('usuario_id', vendedorId)
     .order('created_at', { ascending: false })
 
@@ -112,7 +112,7 @@ export const getRecargasPaginated = async (
 
   const { data, error, count } = await supabase
     .from('recargas')
-    .select('*', { count: 'exact' })
+    .select('created_at, estado, id, monto, revisado_id, updated_at, usuario_id', { count: 'exact' })
     .eq('usuario_id', vendedorId)
     .range(from, to)
     .order('created_at', { ascending: false })

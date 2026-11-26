@@ -21,7 +21,7 @@ export type CreateRetiroData = {
 export const getBilleteraByUsuarioId = async (usuarioId: string): Promise<Billetera | null> => {
   const { data, error } = await supabase
     .from('billeteras')
-    .select('*')
+    .select('created_at, id, saldo, updated_at, usuario_id')
     .eq('usuario_id', usuarioId)
     .single()
 
@@ -142,7 +142,7 @@ export const procesarRetiroAprobado = async (retiroId: number): Promise<boolean>
     // El trigger se encargará de manejar los fondos y comisiones automáticamente
     const { data: retiro, error: retiroError } = await supabase
       .from('retiros')
-      .select('*')
+      .select('created_at, id, saldo, updated_at, usuario_id')
       .eq('id', retiroId)
       .single()
 
@@ -162,7 +162,7 @@ export const procesarRetiroAprobado = async (retiroId: number): Promise<boolean>
 export const getHistorialTransacciones = async (usuarioId: string) => {
   const { data, error } = await supabase
     .from('recargas')
-    .select('*')
+    .select('created_at, id, saldo, updated_at, usuario_id')
     .eq('usuario_id', usuarioId)
     .order('created_at', { ascending: false })
 
@@ -178,7 +178,7 @@ export const getHistorialTransacciones = async (usuarioId: string) => {
 export const getHistorialRetiros = async (usuarioId: string) => {
   const { data, error } = await supabase
     .from('retiros')
-    .select('*')
+    .select('created_at, id, saldo, updated_at, usuario_id')
     .eq('usuario_id', usuarioId)
     .order('created_at', { ascending: false })
 
@@ -463,8 +463,8 @@ export const getBilleteraStats = async (usuarioId: string) => {
   }
 
   const totalRecargas = transacciones
-    .filter(t => t.estado === 'completado')
-    .reduce((sum, t) => sum + t.monto, 0)
+    .filter((t: any) => t.estado === 'completado')
+    .reduce((sum: number, t: any) => sum + t.monto, 0)
 
   return {
     saldoActual: billetera.saldo,

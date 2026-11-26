@@ -91,7 +91,7 @@ export const createCompra = async (compra: CompraInsert): Promise<Compra | null>
 export const getLatestCompras = async (usuarioId: string): Promise<Compra[]> => {
   const { data, error } = await supabase
     .from('compras')
-    .select('*, productos:producto_id (nombre, precio_publico)')
+    .select('created_at, cuenta_actualizada, estado, fecha_expiracion, fecha_inicio, id, idempotency_key, imap_enabled, mensaje_notificacion, monto_reembolso, nombre_cliente, precio, producto_id, proveedor_id, renovado, revisado_id, soporte_asunto, soporte_mensaje, soporte_respuesta, stock_producto_id, telefono_cliente, updated_at, vendedor_id, productos:producto_id (nombre, precio_publico)')
     .eq('vendedor_id', usuarioId)
     .order('created_at', { ascending: false })
     .limit(5)
@@ -107,7 +107,7 @@ export const getLatestCompras = async (usuarioId: string): Promise<Compra[]> => 
 export const getCompraById = async (id: number): Promise<Compra | null> => {
   const { data, error } = await supabase
     .from('compras')
-    .select('*')
+    .select('created_at, cuenta_actualizada, estado, fecha_expiracion, fecha_inicio, id, idempotency_key, imap_enabled, mensaje_notificacion, monto_reembolso, nombre_cliente, precio, producto_id, proveedor_id, renovado, revisado_id, soporte_asunto, soporte_mensaje, soporte_respuesta, stock_producto_id, telefono_cliente, updated_at, vendedor_id')
     .eq('id', id)
     .single()
 

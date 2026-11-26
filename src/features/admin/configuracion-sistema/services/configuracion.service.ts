@@ -16,7 +16,7 @@ export class ConfiguracionService {
   static async getLatestConfiguracion(): Promise<MappedConfiguracion | null> {
     const { data, error } = await supabase
       .from('configuracion')
-      .select('*')
+      .select('banner_images_urls, binance_info, comision, comision_publicacion_producto, conversion, email_soporte, id, mantenimiento, promotions_images, redirect_landing_url, register_link, registro_requiere_aprobacion, signup_mode, updated_at, yape_info')
       // Mismo criterio que getLatestConversion: una fila sin updated_at no
       // debe ganar como "la más reciente".
       .order('updated_at', { ascending: false, nullsFirst: false })
@@ -38,7 +38,7 @@ export class ConfiguracionService {
   static async getHistorialConfiguracion(): Promise<HistorialConfiguracion[]> {
     const { data, error } = await supabase
       .from('configuracion')
-      .select('*')
+      .select('banner_images_urls, binance_info, comision, comision_publicacion_producto, conversion, email_soporte, id, mantenimiento, promotions_images, redirect_landing_url, register_link, registro_requiere_aprobacion, signup_mode, updated_at, yape_info')
       .order('updated_at', { ascending: false })
 
     if (error) {
@@ -89,7 +89,7 @@ export class ConfiguracionService {
   static async getConfiguracionById(id: number): Promise<MappedConfiguracion | null> {
     const { data, error } = await supabase
       .from('configuracion')
-      .select('*')
+      .select('banner_images_urls, binance_info, comision, comision_publicacion_producto, conversion, email_soporte, id, mantenimiento, promotions_images, redirect_landing_url, register_link, registro_requiere_aprobacion, signup_mode, updated_at, yape_info')
       .eq('id', id)
       .single()
 

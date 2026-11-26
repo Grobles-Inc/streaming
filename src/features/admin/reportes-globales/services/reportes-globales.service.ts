@@ -6,7 +6,7 @@ export class ReportesGlobalesService {
   static async getUsuarios(): Promise<Usuario[]> {
     const { data, error } = await supabase
       .from('usuarios')
-      .select('*')
+      .select('id, email, nombres, apellidos, usuario, password, billetera_id, codigo_referido, referido_id, telefono, rol, created_at, updated_at, estado_habilitado')
       .order('created_at', { ascending: false })
     
     if (error) {
@@ -14,7 +14,7 @@ export class ReportesGlobalesService {
       throw error
     }
     
-    return data || []
+    return (data || []) as unknown as Usuario[]
   }
 
   static async updateUsuario(id: string, updates: Partial<Usuario>): Promise<Usuario> {
@@ -22,7 +22,7 @@ export class ReportesGlobalesService {
       .from('usuarios')
       .update(updates)
       .eq('id', id)
-      .select('*')
+      .select('id, email, nombres, apellidos, usuario, password, billetera_id, codigo_referido, referido_id, telefono, rol, created_at, updated_at, estado_habilitado')
       .single()
     
     if (error) {
@@ -30,7 +30,7 @@ export class ReportesGlobalesService {
       throw error
     }
     
-    return data
+    return data as unknown as Usuario
   }
 
   static async deleteUsuario(id: string): Promise<void> {
@@ -50,7 +50,7 @@ export class ReportesGlobalesService {
     const { data, error } = await supabase
       .from('productos')
       .select(`
-        *,
+        id, proveedor_id, created_at, updated_at, nombre, precio_publico, precio_vendedor, precio_renovacion, categoria_id, tiempo_uso, duracion_cartel_dias, nuevo, disponibilidad, renovable, descripcion, informacion, condiciones, imagen_url, descripcion_completa, solicitud, muestra_disponibilidad_stock, deshabilitar_boton_comprar, estado, fecha_expiracion, stock_de_productos,
         categorias(id, nombre),
         usuarios!proveedor_id(nombres, apellidos, usuario)
       `)
@@ -62,7 +62,7 @@ export class ReportesGlobalesService {
       // Fallback: obtener datos básicos y luego enriquecer
       const { data: simpleData, error: simpleError } = await supabase
         .from('productos')
-        .select('*')
+        .select('id, proveedor_id, created_at, updated_at, nombre, precio_publico, precio_vendedor, precio_renovacion, categoria_id, tiempo_uso, duracion_cartel_dias, nuevo, disponibilidad, renovable, descripcion, informacion, condiciones, imagen_url, descripcion_completa, solicitud, muestra_disponibilidad_stock, deshabilitar_boton_comprar, estado, fecha_expiracion, stock_de_productos')
         .order('created_at', { ascending: false })
       
       if (simpleError) {
@@ -70,10 +70,10 @@ export class ReportesGlobalesService {
         throw simpleError
       }
       
-      return simpleData || []
+      return (simpleData || []) as unknown as Producto[]
     }
     
-    return data || []
+    return (data || []) as unknown as Producto[]
   }
 
   static async updateProducto(id: string, updates: Partial<Producto>): Promise<Producto> {
@@ -81,7 +81,7 @@ export class ReportesGlobalesService {
       .from('productos')
       .update(updates)
       .eq('id', id)
-      .select('*')
+      .select('id, proveedor_id, created_at, updated_at, nombre, precio_publico, precio_vendedor, precio_renovacion, categoria_id, tiempo_uso, duracion_cartel_dias, nuevo, disponibilidad, renovable, descripcion, informacion, condiciones, imagen_url, descripcion_completa, solicitud, muestra_disponibilidad_stock, deshabilitar_boton_comprar, estado, fecha_expiracion, stock_de_productos')
       .single()
     
     if (error) {
@@ -89,7 +89,7 @@ export class ReportesGlobalesService {
       throw error
     }
     
-    return data
+    return data as unknown as Producto
   }
 
   // Recargas con nombres de usuario
@@ -108,7 +108,7 @@ export class ReportesGlobalesService {
       // Fallback: obtener datos básicos y enriquecer manualmente
       const { data: simpleData, error: simpleError } = await supabase
         .from('recargas')
-        .select('*')
+        .select('created_at, estado, id, monto, revisado_id, updated_at, usuario_id')
         .order('created_at', { ascending: false })
       
       if (simpleError) {
@@ -132,7 +132,7 @@ export class ReportesGlobalesService {
             }
           })
         )
-        return enrichedData.filter(r => r !== null)
+        return enrichedData.filter(r => r !== null) as unknown as Recarga[]
       }
       
       return []
@@ -163,7 +163,7 @@ export class ReportesGlobalesService {
       .from('recargas')
       .update({ estado, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .select('*')
+      .select('created_at, estado, id, monto, revisado_id, updated_at, usuario_id')
       .single()
     
     if (error) {

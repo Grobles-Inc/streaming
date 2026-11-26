@@ -55,7 +55,7 @@ export const createCategoria = async (categoria: CategoriaInsert): Promise<Categ
 export const getCategoriaById = async (id: string): Promise<Categoria | null> => {
   const { data, error } = await supabase
     .from('categorias')
-    .select('*')
+    .select('created_at, descripcion, id, imagen_url, nombre, orden, updated_at')
     .eq('id', id)
     .single()
 
@@ -104,7 +104,7 @@ export const deleteCategoria = async (id: string): Promise<boolean> => {
 export const getCategorias = async (): Promise<Categoria[]> => {
   const { data, error } = await supabase
     .from('categorias')
-    .select('*')
+    .select('created_at, descripcion, id, imagen_url, nombre, orden, updated_at')
     .order('orden', { ascending: true })
 
   if (error) {
@@ -125,7 +125,7 @@ export const getCategoriasPaginated = async (
 
   const { data, error, count } = await supabase
     .from('categorias')
-    .select('*', { count: 'exact' })
+    .select('created_at, descripcion, id, imagen_url, nombre, orden, updated_at', { count: 'exact' })
     .range(from, to)
     .order('orden', { ascending: true })
 
@@ -140,7 +140,7 @@ export const getCategoriasPaginated = async (
 export const getConfiguracionActual = async (): Promise<ConfiguracionRow | null> => {
   const { data, error } = await supabase
     .from('configuracion')
-    .select('*')
+    .select('banner_images_urls, binance_info, comision, comision_publicacion_producto, conversion, email_soporte, id, mantenimiento, promotions_images, redirect_landing_url, register_link, registro_requiere_aprobacion, signup_mode, updated_at, yape_info')
     .order('updated_at', { ascending: false })
     .limit(1)
     .single()

@@ -30,7 +30,7 @@ export const getProductosByCategoria = async (categoriaId: string): Promise<Prod
     const { data, error } = await supabase
       .from('productos')
       .select(`
-        *,
+        id, proveedor_id, created_at, updated_at, nombre, precio_publico, precio_vendedor, precio_renovacion, categoria_id, tiempo_uso, duracion_cartel_dias, nuevo, disponibilidad, renovable, descripcion, informacion, condiciones, imagen_url, descripcion_completa, solicitud, muestra_disponibilidad_stock, deshabilitar_boton_comprar, estado, fecha_expiracion, stock_de_productos, revisado_id,
         categorias:categoria_id(nombre),
         usuarios:proveedor_id(nombres, apellidos, billetera_id, usuario)
       `)
@@ -43,7 +43,7 @@ export const getProductosByCategoria = async (categoriaId: string): Promise<Prod
       return []
     }
 
-    return data || []
+    return (data || []) as unknown as Producto[]
   } catch (error) {
     console.error('Error en getProductosByCategoria:', error)
     return []
@@ -56,7 +56,7 @@ export const getProductoById = async (id: string): Promise<Producto | null> => {
   const { data, error } = await supabase
     .from('productos')
     .select(`
-      *,
+      id, proveedor_id, created_at, updated_at, nombre, precio_publico, precio_vendedor, precio_renovacion, categoria_id, tiempo_uso, duracion_cartel_dias, nuevo, disponibilidad, renovable, descripcion, informacion, condiciones, imagen_url, descripcion_completa, solicitud, muestra_disponibilidad_stock, deshabilitar_boton_comprar, estado, fecha_expiracion, stock_de_productos, revisado_id,
       categorias:categoria_id(nombre),
       usuarios:proveedor_id(nombres, usuario)
     `)
@@ -68,7 +68,7 @@ export const getProductoById = async (id: string): Promise<Producto | null> => {
     return null
   }
 
-  return data
+  return data as unknown as Producto
 }
 
 
@@ -77,7 +77,7 @@ export const getProductos = async (): Promise<Producto[]> => {
   const { data, error } = await supabase
     .from('productos')
     .select(`
-      *,
+      id, proveedor_id, created_at, updated_at, nombre, precio_publico, precio_vendedor, precio_renovacion, categoria_id, tiempo_uso, duracion_cartel_dias, nuevo, disponibilidad, renovable, descripcion, informacion, condiciones, imagen_url, descripcion_completa, solicitud, muestra_disponibilidad_stock, deshabilitar_boton_comprar, estado, fecha_expiracion, stock_de_productos, revisado_id,
       categorias:categoria_id(nombre),
       usuarios:proveedor_id(nombres, usuario)
     `)
@@ -88,7 +88,7 @@ export const getProductos = async (): Promise<Producto[]> => {
     return []
   }
 
-  return data || []
+  return (data || []) as unknown as Producto[]
 }
 
 // Get productos publicados (landing, sin paginación)
@@ -107,7 +107,7 @@ export const getProductosPublicados = async (): Promise<Producto[]> => {
     const { data, error } = await supabase
       .from('productos')
       .select(`
-        *,
+        id, proveedor_id, created_at, updated_at, nombre, precio_publico, precio_vendedor, precio_renovacion, categoria_id, tiempo_uso, duracion_cartel_dias, nuevo, disponibilidad, renovable, descripcion, informacion, condiciones, imagen_url, descripcion_completa, solicitud, muestra_disponibilidad_stock, deshabilitar_boton_comprar, estado, fecha_expiracion, stock_de_productos, revisado_id,
         categorias:categoria_id(nombre),
         usuarios:proveedor_id(nombres, apellidos, billetera_id, usuario)
       `)
@@ -119,7 +119,7 @@ export const getProductosPublicados = async (): Promise<Producto[]> => {
       return []
     }
 
-    return data || []
+    return (data || []) as unknown as Producto[]
   } catch (error) {
     console.error('Error en getProductosPublicados:', error)
     return []

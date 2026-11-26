@@ -56,7 +56,7 @@ export const createProductoWithCommission = async (
       .from('productos')
       .insert([producto])
       .select(`
-        *,
+        id, proveedor_id, created_at, updated_at, nombre, precio_publico, precio_vendedor, precio_renovacion, categoria_id, tiempo_uso, duracion_cartel_dias, nuevo, disponibilidad, renovable, descripcion, informacion, condiciones, imagen_url, descripcion_completa, solicitud, muestra_disponibilidad_stock, deshabilitar_boton_comprar, estado, fecha_expiracion, stock_de_productos, revisado_id,
         categorias:categoria_id(nombre, descripcion),
         usuarios:proveedor_id(nombres, apellidos, usuario)
       `)
@@ -84,7 +84,7 @@ export const getProductosByProveedorId = async (proveedorId: string): Promise<(P
   const { data, error } = await supabase
     .from('productos')
     .select(`
-      *,
+      id, proveedor_id, created_at, updated_at, nombre, precio_publico, precio_vendedor, precio_renovacion, categoria_id, tiempo_uso, duracion_cartel_dias, nuevo, disponibilidad, renovable, descripcion, informacion, condiciones, imagen_url, descripcion_completa, solicitud, muestra_disponibilidad_stock, deshabilitar_boton_comprar, estado, fecha_expiracion, stock_de_productos, revisado_id,
       categorias (
         id,
         nombre,
@@ -100,7 +100,7 @@ export const getProductosByProveedorId = async (proveedorId: string): Promise<(P
     return []
   }
 
-  return data || []
+  return (data || []) as any
 }
 
 // Get producto by ID
@@ -108,7 +108,7 @@ export const getProductoById = async (id: number): Promise<Producto | null> => {
   const { data, error } = await supabase
     .from('productos')
     .select(`
-      *,
+      id, proveedor_id, created_at, updated_at, nombre, precio_publico, precio_vendedor, precio_renovacion, categoria_id, tiempo_uso, duracion_cartel_dias, nuevo, disponibilidad, renovable, descripcion, informacion, condiciones, imagen_url, descripcion_completa, solicitud, muestra_disponibilidad_stock, deshabilitar_boton_comprar, estado, fecha_expiracion, stock_de_productos, revisado_id,
       categorias (
         id,
         nombre,
@@ -134,7 +134,7 @@ export const updateProducto = async (id: number, updates: ProductoUpdate): Promi
     .update(updates)
     .eq('id', id)
     .select(`
-      *,
+      id, proveedor_id, created_at, updated_at, nombre, precio_publico, precio_vendedor, precio_renovacion, categoria_id, tiempo_uso, duracion_cartel_dias, nuevo, disponibilidad, renovable, descripcion, informacion, condiciones, imagen_url, descripcion_completa, solicitud, muestra_disponibilidad_stock, deshabilitar_boton_comprar, estado, fecha_expiracion, stock_de_productos, revisado_id,
       categorias (
         id,
         nombre,
@@ -269,7 +269,7 @@ export const getCategorias = async (): Promise<Categoria[]> => {
     return []
   }
 
-  return data || []
+  return (data || []) as any
 }
 
 // Get productos stats for proveedor dashboard
@@ -567,7 +567,7 @@ export const publicarProductoWithCommission = async (
     // 1. Verificar que el producto existe y está en borrador
     const { data: producto, error: errorProducto } = await supabase
       .from('productos')
-      .select('*')
+      .select('id, proveedor_id, created_at, updated_at, nombre, precio_publico, precio_vendedor, precio_renovacion, categoria_id, tiempo_uso, duracion_cartel_dias, nuevo, disponibilidad, renovable, descripcion, informacion, condiciones, imagen_url, descripcion_completa, solicitud, muestra_disponibilidad_stock, deshabilitar_boton_comprar, estado, fecha_expiracion, stock_de_productos, revisado_id')
       .eq('id', productoId)
       .eq('proveedor_id', proveedorId)
       .eq('estado', 'borrador')
@@ -618,7 +618,7 @@ export const publicarProductoWithCommission = async (
       })
       .eq('id', productoId)
       .select(`
-        *,
+        id, proveedor_id, created_at, updated_at, nombre, precio_publico, precio_vendedor, precio_renovacion, categoria_id, tiempo_uso, duracion_cartel_dias, nuevo, disponibilidad, renovable, descripcion, informacion, condiciones, imagen_url, descripcion_completa, solicitud, muestra_disponibilidad_stock, deshabilitar_boton_comprar, estado, fecha_expiracion, stock_de_productos, revisado_id,
         categorias:categoria_id(nombre, descripcion),
         usuarios:proveedor_id(nombres, apellidos, usuario)
       `)
@@ -712,7 +712,7 @@ export const getStockProductosByProductoId = async (productoId: number) => {
     throw new Error(`Error al obtener el stock: ${error.message}`)
   }
 
-  return data || []
+  return (data || []) as any
 }
 
 // Create stock producto
@@ -812,7 +812,7 @@ export const renovarProducto = async (
     // 1. Verificar que el producto existe y está publicado
     const { data: producto, error: errorProducto } = await supabase
       .from('productos')
-      .select('*')
+      .select('id, proveedor_id, created_at, updated_at, nombre, precio_publico, precio_vendedor, precio_renovacion, categoria_id, tiempo_uso, duracion_cartel_dias, nuevo, disponibilidad, renovable, descripcion, informacion, condiciones, imagen_url, descripcion_completa, solicitud, muestra_disponibilidad_stock, deshabilitar_boton_comprar, estado, fecha_expiracion, stock_de_productos, revisado_id')
       .eq('id', productoId)
       .eq('proveedor_id', proveedorId)
       .eq('estado', 'publicado') // Solo productos publicados pueden renovarse
@@ -864,7 +864,7 @@ export const renovarProducto = async (
       })
       .eq('id', productoId)
       .select(`
-        *,
+        id, proveedor_id, created_at, updated_at, nombre, precio_publico, precio_vendedor, precio_renovacion, categoria_id, tiempo_uso, duracion_cartel_dias, nuevo, disponibilidad, renovable, descripcion, informacion, condiciones, imagen_url, descripcion_completa, solicitud, muestra_disponibilidad_stock, deshabilitar_boton_comprar, estado, fecha_expiracion, stock_de_productos, revisado_id,
         categorias:categoria_id(nombre, descripcion),
         usuarios:proveedor_id(nombres, apellidos, usuario)
       `)

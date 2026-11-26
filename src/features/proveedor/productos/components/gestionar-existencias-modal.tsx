@@ -347,7 +347,7 @@ export function GestionarExistenciasModal({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {stockItems.map((stock) => (
+                    {stockItems.map((stock: any) => (
                       <TableRow
                         key={stock.id}
                         data-state={bulk.isSelected(stock.id) && 'selected'}

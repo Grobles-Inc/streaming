@@ -8,7 +8,7 @@ export type BilleteraUpdate = Database['public']['Tables']['billeteras']['Update
 export const updateBilleteraProveedorSaldo = async (idBilletera: string, precioRenovacion: number): Promise<Billetera | null> => {
   const { data : billeteraData, error } = await supabase
     .from('billeteras')
-    .select('*')
+    .select('created_at, id, saldo, updated_at, usuario_id')
     .eq('id', idBilletera)
     .single()
 

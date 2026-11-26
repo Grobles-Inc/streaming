@@ -72,7 +72,7 @@ export const getStockProductosPaginated = async (
 
   const { data, error, count } = await supabase
     .from('stock_productos')
-    .select('*', { count: 'exact' })
+    .select('clave, created_at, email, estado, id, perfil, pin, producto_id, proveedor_id, publicado, soporte_stock_producto, tipo, url', { count: 'exact' })
     .range(from, to)
     .order('created_at', { ascending: false })
 

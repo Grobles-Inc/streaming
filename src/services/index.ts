@@ -25,7 +25,7 @@ export const createBilletera = async (billetera: BilleteraInsert): Promise<Bille
 export const getBilleteraById = async (id: string): Promise<Billetera | null> => {
   const { data, error } = await supabase
     .from('billeteras')
-    .select('*')
+    .select('created_at, id, saldo, updated_at, usuario_id')
     .eq('id', id)
     .single()
 
@@ -41,7 +41,7 @@ export const getBilleteraById = async (id: string): Promise<Billetera | null> =>
 export const getBilleteraByUsuarioId = async (usuarioId: string): Promise<Billetera | null> => {
   const { data, error } = await supabase
     .from('billeteras')
-    .select('*')
+    .select('created_at, id, saldo, updated_at, usuario_id')
     .eq('usuario_id', usuarioId)
     .single()
 

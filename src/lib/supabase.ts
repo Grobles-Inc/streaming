@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { compressImageForUpload } from '@/lib/image-compress'
 import { getProxiedImageUrl } from '@/hooks/use-image-proxy'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL!
@@ -25,13 +26,14 @@ export class SupabaseStorageService {
    * Sube una imagen al bucket de productos y retorna la URL optimizada
    */
   static async uploadProductImage(file: File, userId: string): Promise<string> {
-    const fileExtension = file.name.split('.').pop()
+    const optimized = await compressImageForUpload(file)
+    const fileExtension = optimized.name.split('.').pop()
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`
     const filePath = `productos/${userId}/${fileName}`
 
     const { data, error } = await supabase.storage
       .from('productos-images')
-      .upload(filePath, file, {
+      .upload(filePath, optimized, {
         cacheControl: '3600',
         upsert: false
       })
@@ -82,13 +84,14 @@ export class SupabaseStorageService {
    * Sube una imagen al bucket de categorías
    */
   static async uploadCategoryImage(file: File, userId: string): Promise<string> {
-    const fileExtension = file.name.split('.').pop()
+    const optimized = await compressImageForUpload(file)
+    const fileExtension = optimized.name.split('.').pop()
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`
     const filePath = `categorias/${userId}/${fileName}`
 
     const { data, error } = await supabase.storage
       .from('productos-images')
-      .upload(filePath, file, {
+      .upload(filePath, optimized, {
         cacheControl: '3600',
         upsert: false
       })
@@ -110,6 +113,8 @@ export class SupabaseStorageService {
    * Sube una imagen al bucket de configuración (QR de recarga)
    */
   static async uploadConfiguracionImage(file: File): Promise<string> {
+    // Sin compresión: se usa para códigos QR y el WebP con pérdida arruina el
+    // escaneo.
     const fileExtension = file.name.split('.').pop()
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`
     const filePath = `recargas/${fileName}`
@@ -192,13 +197,14 @@ export class SupabaseStorageService {
    * Sube una imagen al bucket de banners y retorna la URL pública
    */
   static async uploadBannerImage(file: File): Promise<string> {
-    const fileExtension = file.name.split('.').pop()
+    const optimized = await compressImageForUpload(file)
+    const fileExtension = optimized.name.split('.').pop()
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExtension}`
     const filePath = `banners/${fileName}`
 
     const { data, error } = await supabase.storage
       .from('banners')
-      .upload(filePath, file, {
+      .upload(filePath, optimized, {
         cacheControl: '3600',
         upsert: false,
       })

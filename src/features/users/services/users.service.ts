@@ -98,7 +98,7 @@ export class UsersService {
     includeDisabled: boolean = false
   ): Promise<SupabaseUserWithWallet[]> {
     let query = supabase.from('usuarios').select(`
-        *,
+        id, email, nombres, apellidos, usuario, password, billetera_id, codigo_referido, referido_id, telefono, rol, created_at, updated_at, estado_habilitado,
         billeteras!billeteras_usuario_id_fkey (
           id,
           saldo
@@ -602,7 +602,7 @@ export class UsersService {
 
     const { data, error } = await supabase
       .from('usuarios')
-      .select('*')
+      .select('id, email, nombres, apellidos, usuario, password, billetera_id, codigo_referido, referido_id, telefono, rol, created_at, updated_at, estado_habilitado')
       .eq('codigo_referido', codigo.trim())
       .eq('estado_habilitado', true) // Solo usuarios habilitados pueden referir
       .single()

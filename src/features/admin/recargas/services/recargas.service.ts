@@ -139,7 +139,7 @@ export class RecargasService {
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
-      .select('*')
+      .select('created_at, estado, id, monto, revisado_id, updated_at, usuario_id')
       .single()
 
     if (error) {
@@ -196,7 +196,7 @@ export class RecargasService {
         updated_at: new Date().toISOString()
       })
       .in('id', ids)
-      .select('*')
+      .select('created_at, estado, id, monto, revisado_id, updated_at, usuario_id')
 
     if (error) {
       console.error('Error approving multiple recargas:', error)
@@ -215,7 +215,7 @@ export class RecargasService {
         updated_at: new Date().toISOString()
       })
       .in('id', ids)
-      .select('*')
+      .select('created_at, estado, id, monto, revisado_id, updated_at, usuario_id')
 
     if (error) {
       console.error('Error rejecting multiple recargas:', error)

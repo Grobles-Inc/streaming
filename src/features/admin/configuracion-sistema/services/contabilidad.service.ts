@@ -9,7 +9,7 @@ export class ContabilidadService {
   static async getUltimaPurga(): Promise<ArchivoContableRow | null> {
     const { data, error } = await supabase
       .from('contabilidad_archivo')
-      .select('*')
+      .select('dias_antiguedad, ejecutado_at, ejecutado_por, filas_recargas, filas_retiros, id, periodo_desde, periodo_hasta, recargas_aprobadas, recargas_por_estado, recargas_total, retiros_aprobados, retiros_por_estado, retiros_total')
       .order('ejecutado_at', { ascending: false })
       .limit(1)
       .maybeSingle()

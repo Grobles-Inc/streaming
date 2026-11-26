@@ -27,7 +27,7 @@ export const useAuthStore = create<AuthState>((set, _get) => ({
       // Find user by username
       const { data: userData, error } = await supabase
         .from('usuarios')
-        .select('*')
+        .select('id, email, nombres, apellidos, usuario, password, billetera_id, codigo_referido, referido_id, telefono, rol, created_at, updated_at, estado_habilitado, ip_registro')
         .eq('usuario', usuario)
         .single()
 
@@ -157,7 +157,7 @@ export const useAuthStore = create<AuthState>((set, _get) => ({
     // Fetch user data from usuarios table
     const { data: userData, error: userError } = await supabase
       .from('usuarios')
-      .select('*')
+      .select('id, email, nombres, apellidos, usuario, password, billetera_id, codigo_referido, referido_id, telefono, rol, created_at, updated_at, estado_habilitado, ip_registro')
       .eq('id', currentUserId)
       .single()
 
